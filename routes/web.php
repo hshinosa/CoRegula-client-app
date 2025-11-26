@@ -65,8 +65,10 @@ Route::middleware('auth.jwt')->group(function () {
         // Groups
         Route::get('/courses/{course}/groups', [GroupController::class, 'index'])->name('groups.index');
         Route::post('/courses/{course}/groups', [GroupController::class, 'store'])->name('groups.store');
+        Route::delete('/courses/{course}/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
         Route::post('/courses/{course}/groups/{group}/members', [GroupController::class, 'addMembers'])
             ->name('groups.members.store');
+        Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
     });
 
     /*

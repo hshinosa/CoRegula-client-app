@@ -30,10 +30,15 @@ interface ChatSpace {
     createdAt?: string;
 }
 
+const isClosedChatSpace = (space: ChatSpace) => {
+    return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
+};
+
 // Helper function to get the correct URL based on whether goal exists
 const getChatSpaceUrl = (courseId: string, chatSpace: ChatSpace): string => {
+    const closed = isClosedChatSpace(chatSpace);
     // If session is closed, always go to room to view history
-    if (chatSpace.isClosed) {
+    if (closed) {
         return chatRoom.url({ course: courseId, chatSpace: chatSpace.id });
     }
     if (chatSpace.myGoal) {
@@ -132,80 +137,91 @@ export default function ChatSpacesIndex({ course, group }: Props) {
                         transition={{ delay: 0.1 }}
                     >
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            {chatSpaces.map((chatSpace, index) => (
-                                <Link
-                                    key={chatSpace.id}
-                                    href={getChatSpaceUrl(course.id, chatSpace)}
-                                    className={`card group block p-4 transition-all hover:shadow-md ${
-                                        chatSpace.isClosed
-                                            ? 'border-zinc-300 bg-zinc-50 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:border-zinc-600'
-                                            : 'hover:border-primary-300 dark:hover:border-primary-700'
-                                    }`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                                            chatSpace.isClosed
-                                                ? 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
-                                                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                                        }`}>
-                                            {chatSpace.isClosed ? (
-                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                                                </svg>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className={`font-semibold truncate ${
-                                                chatSpace.isClosed
-                                                    ? 'text-zinc-600 group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-200'
-                                                    : 'text-zinc-900 group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400'
+                            {chatSpaces.map((chatSpace) => {
+                                const closed = isClosedChatSpace(chatSpace);
+                                const dateSource = closed ? chatSpace.closedAt : chatSpace.createdAt;
+                                const formattedDate = formatDate(dateSource);
+                                const dateLabel = formattedDate ? `${closed ? 'Ditutup' : 'Dibuat'} ${formattedDate}` : '';
+                                return (
+                                    <Link
+                                        key={chatSpace.id}
+                                        href={getChatSpaceUrl(course.id, chatSpace)}
+                                        className={`card group block p-4 transition-all hover:shadow-md ${
+                                            closed
+                                                ? 'border-zinc-300 bg-zinc-50 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:border-zinc-600'
+                                                : 'hover:border-primary-300 dark:hover:border-primary-700'
+                                        }`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                                                closed
+                                                    ? 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
+                                                    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
                                             }`}>
-                                                {chatSpace.name}
-                                            </h3>
-                                            {chatSpace.description && (
-                                                <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">
-                                                    {chatSpace.description}
-                                                </p>
-                                            )}
-                                            <div className="mt-2 flex items-center gap-2">
-                                                {chatSpace.isClosed ? (
-                                                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                                                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                        </svg>
-                                                        Sesi Ditutup
-                                                    </span>
-                                                ) : chatSpace.myGoal ? (
-                                                    <span className="inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs text-accent-700 dark:bg-accent-900/30 dark:text-accent-300">
-                                                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                        </svg>
-                                                        Masuk Diskusi
-                                                    </span>
+                                                {closed ? (
+                                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 rounded-full bg-caution-100 px-2 py-0.5 text-xs text-caution-700 dark:bg-caution-900/30 dark:text-caution-300">
-                                                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                        Tetapkan Tujuan
-                                                    </span>
+                                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                                    </svg>
                                                 )}
                                             </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className={`font-semibold truncate ${
+                                                    closed
+                                                        ? 'text-zinc-600 group-hover:text-zinc-800 dark:text-zinc-400 dark:group-hover:text-zinc-200'
+                                                        : 'text-zinc-900 group-hover:text-primary-600 dark:text-zinc-100 dark:group-hover:text-primary-400'
+                                                }`}>
+                                                    {chatSpace.name}
+                                                </h3>
+                                                {chatSpace.description && (
+                                                    <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">
+                                                        {chatSpace.description}
+                                                    </p>
+                                                )}
+                                                {dateLabel && (
+                                                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                                                        {dateLabel}
+                                                    </p>
+                                                )}
+                                                <div className="mt-2 flex items-center gap-2">
+                                                    {closed ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                                                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            </svg>
+                                                            Sesi Ditutup
+                                                        </span>
+                                                    ) : chatSpace.myGoal ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs text-accent-700 dark:bg-accent-900/30 dark:text-accent-300">
+                                                            <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                            </svg>
+                                                            Masuk Diskusi
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-caution-100 px-2 py-0.5 text-xs text-caution-700 dark:bg-caution-900/30 dark:text-caution-300">
+                                                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                            Tetapkan Tujuan
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <svg className={`h-5 w-5 flex-shrink-0 transition-transform group-hover:translate-x-1 ${
+                                                closed
+                                                    ? 'text-zinc-400 group-hover:text-zinc-500'
+                                                    : 'text-zinc-400 group-hover:text-primary-500'
+                                            }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
                                         </div>
-                                        <svg className={`h-5 w-5 flex-shrink-0 transition-transform group-hover:translate-x-1 ${
-                                            chatSpace.isClosed
-                                                ? 'text-zinc-400 group-hover:text-zinc-500'
-                                                : 'text-zinc-400 group-hover:text-primary-500'
-                                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}

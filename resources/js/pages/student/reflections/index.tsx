@@ -55,8 +55,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     };
 
     const createdAtFor = (reflection: Reflection) => {
-        // Accept both snake_case and camelCase date fields from different backends
-        return (reflection as any).created_at ?? (reflection as any).createdAt ?? '';
+        return reflection.createdAt ?? reflection.created_at ?? '';
     };
 
     return (

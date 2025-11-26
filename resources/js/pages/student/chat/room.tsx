@@ -114,6 +114,10 @@ interface ChatSpaceData {
     myGoal?: ChatSpaceGoal | null;
 }
 
+const isClosedChatSpace = (space: ChatSpaceData) => {
+    return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
+};
+
 interface Props {
     course: Course;
     group: Group;
@@ -171,6 +175,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const { auth } = usePage<SharedData>().props;
     const hasGoal = !!chatSpace.myGoal;
     const goal = chatSpace.myGoal;
+    const initialSessionClosed = isClosedChatSpace(chatSpace);
+    const [sessionClosed, setSessionClosed] = useState(initialSessionClosed);
+    const [sessionClosedAt, setSessionClosedAt] = useState<string | null>(chatSpace.closedAt || null);
+    const [sessionClosedMessage, setSessionClosedMessage] = useState<string | null>(
+        initialSessionClosed ? 'Sesi diskusi ini telah ditutup.' : null
+    );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isConnected, setIsConnected] = useState(false);
@@ -180,11 +190,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
     const [showGoalBanner, setShowGoalBanner] = useState(!hasGoal);
-    const [sessionClosed, setSessionClosed] = useState(chatSpace.isClosed || false);
-    const [sessionClosedAt, setSessionClosedAt] = useState<string | null>(chatSpace.closedAt || null);
-    const [sessionClosedMessage, setSessionClosedMessage] = useState<string | null>(
-        chatSpace.isClosed ? 'Sesi diskusi ini telah ditutup.' : null
-    );
     const [isClosingSession, setIsClosingSession] = useState(false);
     const [closeSessionError, setCloseSessionError] = useState<string | null>(null);
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
@@ -903,7 +908,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         <AppLayout title={`${chatSpace.name} - ${group.name}`} navItems={navItems}>
             <Head title={`${chatSpace.name} - ${course.name}`} />
 
-            <div className="flex h-[calc(100vh-8rem)] min-h-0 gap-4 overflow-hidden sm:h-[calc(100vh-10rem)]">
+            <div className="flex h-[calc(100vh-5rem)] min-h-0 gap-4 overflow-hidden sm:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)]">
                 {/* Main Chat Area */}
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     {/* Chat Header */}
@@ -925,6 +930,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 <p className="truncate text-xs text-zinc-500 sm:text-sm">
                                     {course.name} • Diskusi
                                 </p>
+                                {sessionClosed && (
+                                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        Sesi Ditutup
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-shrink-0 items-center gap-2">

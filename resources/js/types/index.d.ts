@@ -129,10 +129,12 @@ export interface Reflection {
     content: string;
     ai_feedback?: string;
     chatSpace?: ChatSpace;
-    created_at: string;
+    created_at?: string;
+    createdAt?: string;
     user?: User;
     goal?: LearningGoal;
     course?: Course;
+    group?: Pick<Group, 'id' | 'name'>;
 }
 
 export interface CreateReflectionData {

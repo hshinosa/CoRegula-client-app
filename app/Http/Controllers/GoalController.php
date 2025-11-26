@@ -23,7 +23,7 @@ class GoalController extends Controller
     /**
      * Show Goal Creation Page for a specific Chat Space
      */
-    public function create(string $course, string $chatSpace): Response
+    public function create(string $course, string $chatSpace): Response|\Illuminate\Http\RedirectResponse
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
@@ -42,6 +42,13 @@ class GoalController extends Controller
 
         if (!$courseData) {
             abort(404, 'Course not found');
+        }
+
+        // If chat space already has a shared goal (myGoal), redirect to chat spaces list
+        // This means another group member already set the goal for everyone
+        if ($chatSpaceData && isset($chatSpaceData['myGoal']) && $chatSpaceData['myGoal']) {
+            return redirect()->route('student.courses.chat-spaces', ['course' => $course])
+                ->with('info', 'Goal sudah ditetapkan oleh anggota grup lain. Silakan masuk ke sesi diskusi.');
         }
 
         return Inertia::render('student/goals/create', [

@@ -226,4 +226,36 @@ class GroupController extends Controller
             return back()->withErrors(['name' => 'Tidak dapat membuat ruang chat']);
         }
     }
+
+    /**
+     * Delete Group (Lecturer only)
+     */
+    public function destroy(string $course, string $group)
+    {
+        try {
+            $response = $this->apiRequest()->delete(
+                $this->apiUrl() . "/api/groups/{$group}"
+            );
+
+            if ($response->successful()) {
+                return back()->with('success', 'Grup berhasil dihapus!');
+            }
+
+            Log::error('Delete group failed', [
+                'course' => $course,
+                'group' => $group,
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return back()->withErrors(['group' => $response->json('message', 'Gagal menghapus grup')]);
+        } catch (\Exception $e) {
+            Log::error('Delete group exception', [
+                'course' => $course,
+                'group' => $group,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors(['group' => 'Tidak dapat menghapus grup']);
+        }
+    }
 }
