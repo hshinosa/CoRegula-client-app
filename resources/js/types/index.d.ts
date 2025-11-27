@@ -38,7 +38,7 @@ export interface RegisterData {
 
 // ============ Course Types ============
 
-export type VectorStatus = 'pending' | 'processing' | 'ready' | 'failed';
+export type VectorStatus = 'pending' | 'processing' | 'ready' | 'failed' | 'skipped';
 
 export interface Course {
     id: string;
@@ -57,12 +57,16 @@ export interface Course {
 
 export interface KnowledgeBase {
     id: string;
-    course_id: string;
+    course_id?: string;
     file_name: string;
-    file_url: string;
-    uploaded_by: string;
+    file_url?: string;
+    uploaded_by?: string;
     vector_status: VectorStatus;
     uploaded_at: string;
+    file_size?: number;
+    file_type?: string;
+    processed_at?: string | null;
+    error_message?: string | null;
 }
 
 export interface CreateCourseData {

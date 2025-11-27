@@ -95,27 +95,80 @@ class CourseController extends Controller
     }
 
     /**
-     * Upload Knowledge Base PDF
+     * Upload course knowledge base materials (multi-format & batch)
      */
     public function uploadKnowledgeBase(Request $request, string $course)
     {
+        $allowedMimetypes = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/markdown',
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/gif',
+            'image/webp',
+            'application/zip',
+            'application/x-zip-compressed',
+        ];
+
         $request->validate([
-            'file' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+            'files' => 'nullable|array|min:1|max:50',
+            'files.*' => 'file|mimetypes:' . implode(',', $allowedMimetypes) . '|max:51200', // 50MB per file
+            'file' => 'nullable|file|mimetypes:' . implode(',', $allowedMimetypes) . '|max:51200',
+            'extract_images' => 'nullable|boolean',
+            'perform_ocr' => 'nullable|boolean',
+        ], [
+            'files.min' => 'Pilih minimal satu berkas untuk diunggah.',
         ]);
 
-        try {
-            $response = $this->apiRequest()
-                ->attach('file', $request->file('file')->get(), $request->file('file')->getClientOriginalName())
-                ->post($this->apiUrl() . "/api/courses/{$course}/knowledge-base");
+        $uploadedFiles = collect($request->file('files', []));
+        if ($request->file('file')) {
+            $uploadedFiles->push($request->file('file'));
+        }
 
-            if ($response->successful()) {
-                return back()->with('success', 'PDF uploaded successfully! Processing will begin shortly.');
+        if ($uploadedFiles->isEmpty()) {
+            return back()->withErrors(['files' => 'Pilih minimal satu berkas untuk diunggah.']);
+        }
+
+        try {
+            $pendingRequest = $this->apiRequest();
+
+            foreach ($uploadedFiles as $file) {
+                $pendingRequest = $pendingRequest->attach(
+                    'files[]',
+                    fopen($file->getRealPath(), 'r'),
+                    $file->getClientOriginalName()
+                );
             }
 
-            return back()->withErrors(['file' => $response->json('message', 'Upload failed')]);
+            $payload = [
+                'extract_images' => $request->boolean('extract_images', true) ? 'true' : 'false',
+                'perform_ocr' => $request->boolean('perform_ocr', false) ? 'true' : 'false',
+            ];
+
+            $response = $pendingRequest
+                ->post($this->apiUrl() . "/api/courses/{$course}/knowledge-base/batch", $payload);
+
+            if ($response->successful()) {
+                $stats = $response->json('data.stats');
+                $message = $stats
+                    ? sprintf('Mengunggah %d berkas berhasil, %d ditolak.', $stats['totalUploaded'] ?? 0, $stats['totalRejected'] ?? 0)
+                    : 'Berkas berhasil diunggah. Proses akan berlangsung di latar belakang.';
+
+                return back()->with('success', $message);
+            }
+
+            $errorMessage = $response->json('error.message')
+                ?? $response->json('message')
+                ?? 'Upload gagal, silakan coba lagi.';
+
+            return back()->withErrors(['files' => $errorMessage]);
         } catch (\Exception $e) {
             Log::error('Knowledge base upload failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['file' => 'Unable to upload file']);
+            return back()->withErrors(['files' => 'Tidak dapat mengunggah berkas saat ini.']);
         }
     }
 

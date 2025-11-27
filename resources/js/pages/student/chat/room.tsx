@@ -222,6 +222,25 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     // Right sidebar state (mobile)
     const [showRightSidebar, setShowRightSidebar] = useState(false);
     
+    // Quality feedback state (real-time from AI-Engine)
+    const [qualityScore, setQualityScore] = useState<number | null>(null);
+    const [engagementFeedback, setEngagementFeedback] = useState<{
+        hotPercentage?: number;
+        lexicalVariety?: number;
+        engagementType?: string;
+    } | null>(null);
+    const [showQualityBadge, setShowQualityBadge] = useState(false);
+    
+    // Discussion quality state (from AI orchestration)
+    interface DiscussionQuality {
+        qualityScore: number;
+        engagementTypes: Record<string, number>;
+        hotPercentage: number;
+        lastMessage?: string;
+    }
+    const [discussionQuality, setDiscussionQuality] = useState<DiscussionQuality | null>(null);
+    const [showQualityFeedback, setShowQualityFeedback] = useState(false);
+    
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -240,16 +259,37 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         }, 4000);
     }, []);
 
-    // Filter members for mention suggestions
+    // AI mention option
+    const aiMentionOption = {
+        id: 'ai',
+        name: 'AI Assistant',
+        email: 'Tanyakan kepada AI',
+        isAI: true,
+    };
+
+    // Filter members for mention suggestions (including AI)
     const filteredMembers = useMemo(() => {
-        if (!group.members) return [];
         const filter = mentionFilter.toLowerCase();
-        return group.members.filter(
+        
+        // Check if AI matches the filter
+        const aiMatches = 'ai'.includes(filter) || 
+                         'ai assistant'.includes(filter) ||
+                         filter === '';
+        
+        // Filter group members
+        const members = (group.members || []).filter(
             (member) =>
                 member.id !== auth.user?.id &&
                 (member.name.toLowerCase().includes(filter) ||
                  member.email.toLowerCase().includes(filter))
         );
+        
+        // Add AI option at the top if it matches
+        if (aiMatches) {
+            return [aiMentionOption, ...members];
+        }
+        
+        return members;
     }, [group.members, mentionFilter, auth.user?.id]);
 
     const navItems = useStudentNav('chat-room', { courseId: course.id });
@@ -403,11 +443,40 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             setOnlineUsers((prev) => prev.filter((u) => u.odId !== data.userId));
         });
 
+        // Listen for discussion quality updates from AI orchestration
+        socketRef.current.on('quality_update', (data: { 
+            qualityScore: number; 
+            engagementTypes: Record<string, number>; 
+            hotPercentage: number; 
+            message?: string 
+        }) => {
+            setDiscussionQuality({
+                qualityScore: data.qualityScore,
+                engagementTypes: data.engagementTypes,
+                hotPercentage: data.hotPercentage,
+                lastMessage: data.message
+            });
+            // Show feedback briefly when quality updates
+            setShowQualityFeedback(true);
+            setTimeout(() => setShowQualityFeedback(false), 5000);
+        });
+
+        // Listen for AI interventions
+        socketRef.current.on('intervention_sent', (data: { 
+            message: string; 
+            triggerReason: string;
+        }) => {
+            // Intervention will come as a regular message, this is just for notification
+            console.log('AI Intervention triggered:', data.triggerReason);
+        });
+
         return () => {
             // Use chatSpaceId as roomId
             const roomId = chatSpace.id;
             socketRef.current?.off('session_closed');
             socketRef.current?.off('session_reopened');
+            socketRef.current?.off('quality_update');
+            socketRef.current?.off('intervention_sent');
             socketRef.current?.emit('leave_room', roomId);
             socketRef.current?.disconnect();
         };
@@ -548,12 +617,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     };
 
     // Insert mention
-    const insertMention = useCallback((member: GroupMember) => {
+    const insertMention = useCallback((member: { id: string; name: string; email: string; isAI?: boolean }) => {
         const beforeMention = newMessage.slice(0, mentionStartIndex);
         const cursorPos = inputRef.current?.selectionStart || newMessage.length;
         const afterMention = newMessage.slice(cursorPos);
         
-        const newText = `${beforeMention}@${member.name} ${afterMention}`;
+        // Use "@ai" for AI, otherwise use member name
+        const mentionText = member.isAI ? '@ai' : `@${member.name}`;
+        const newText = `${beforeMention}${mentionText} ${afterMention}`;
         setNewMessage(newText);
         setShowMentionList(false);
         setMentionFilter('');
@@ -1445,15 +1516,32 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         : 'hover:bg-zinc-50 dark:hover:bg-zinc-700'
                                                 }`}
                                             >
-                                                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 sm:h-8 sm:w-8">
-                                                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300 sm:text-sm">
-                                                        {member.name.charAt(0).toUpperCase()}
-                                                    </span>
-                                                </div>
+                                                {'isAI' in member && member.isAI ? (
+                                                    // AI Avatar
+                                                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-accent-500 sm:h-8 sm:w-8">
+                                                        <svg className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                ) : (
+                                                    // Member Avatar
+                                                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 sm:h-8 sm:w-8">
+                                                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300 sm:text-sm">
+                                                            {member.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                )}
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{member.name}</p>
+                                                    <p className={`truncate text-sm font-medium ${'isAI' in member && member.isAI ? 'text-primary-600 dark:text-primary-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                                                        {'isAI' in member && member.isAI ? '@AI' : member.name}
+                                                    </p>
                                                     <p className="hidden truncate text-xs text-zinc-500 sm:block">{member.email}</p>
                                                 </div>
+                                                {'isAI' in member && member.isAI && (
+                                                    <span className="hidden rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 sm:inline-block">
+                                                        Asisten
+                                                    </span>
+                                                )}
                                             </button>
                                         ))}
                                     </motion.div>
@@ -1535,6 +1623,116 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                 {/* Right Sidebar - Desktop */}
                 <aside className="hidden w-72 flex-shrink-0 flex-col gap-4 overflow-y-auto lg:flex">
+                    {/* Discussion Quality Feedback - AI Analytics */}
+                    <AnimatePresence>
+                        {discussionQuality && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className={`rounded-xl border p-4 shadow-sm transition-all ${
+                                    discussionQuality.qualityScore >= 70
+                                        ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                                        : discussionQuality.qualityScore >= 40
+                                          ? 'border-caution-200 bg-caution-50 dark:border-caution-800 dark:bg-caution-900/20'
+                                          : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                                }`}
+                            >
+                                <div className="mb-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                                            Kualitas Diskusi
+                                        </h3>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowQualityFeedback(!showQualityFeedback)}
+                                        className="rounded p-1 text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
+                                    >
+                                        <svg className={`h-4 w-4 transition-transform ${showQualityFeedback ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                {/* Quality Score */}
+                                <div className="mb-3 flex items-center gap-3">
+                                    <div className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold ${
+                                        discussionQuality.qualityScore >= 70
+                                            ? 'bg-green-500 text-white'
+                                            : discussionQuality.qualityScore >= 40
+                                              ? 'bg-caution-500 text-white'
+                                              : 'bg-red-500 text-white'
+                                    }`}>
+                                        {Math.round(discussionQuality.qualityScore)}
+                                    </div>
+                                    <div>
+                                        <p className={`text-sm font-medium ${
+                                            discussionQuality.qualityScore >= 70
+                                                ? 'text-green-700 dark:text-green-300'
+                                                : discussionQuality.qualityScore >= 40
+                                                  ? 'text-caution-700 dark:text-caution-300'
+                                                  : 'text-red-700 dark:text-red-300'
+                                        }`}>
+                                            {discussionQuality.qualityScore >= 70
+                                                ? 'Diskusi Berkualitas!'
+                                                : discussionQuality.qualityScore >= 40
+                                                  ? 'Terus Tingkatkan'
+                                                  : 'Perlu Perhatian'}
+                                        </p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                            HOT: {discussionQuality.hotPercentage.toFixed(1)}%
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Engagement Types - Collapsible */}
+                                <AnimatePresence>
+                                    {showQualityFeedback && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="space-y-2 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+                                                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Tipe Keterlibatan:</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {Object.entries(discussionQuality.engagementTypes).map(([type, count]) => (
+                                                        <span
+                                                            key={type}
+                                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                                type === 'Cognitive'
+                                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                                                    : type === 'Behavioral'
+                                                                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                                      : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
+                                                            }`}
+                                                        >
+                                                            {type === 'Cognitive' ? '🧠' : type === 'Behavioral' ? '⚡' : '💭'}
+                                                            {type}: {count}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <div className="mt-2 rounded-lg bg-white/50 p-2 dark:bg-zinc-800/50">
+                                                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                                                        {discussionQuality.qualityScore >= 70
+                                                            ? '✨ Luar biasa! Diskusi menunjukkan pemikiran tingkat tinggi.'
+                                                            : discussionQuality.qualityScore >= 40
+                                                              ? '💡 Coba ajukan pertanyaan analisis atau evaluasi untuk meningkatkan kualitas.'
+                                                              : '🎯 Gunakan kata-kata seperti "mengapa", "bagaimana jika", atau "bandingkan" untuk diskusi lebih mendalam.'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* My Goal Section */}
                     {hasGoal && goal && (
                         <div className="rounded-xl border border-accent-200 bg-accent-50 p-4 shadow-sm dark:border-accent-800 dark:bg-accent-900/20">
@@ -1676,6 +1874,70 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         </svg>
                                     </button>
                                 </div>
+
+                                {/* Discussion Quality Feedback - Mobile */}
+                                {discussionQuality && (
+                                    <div className={`mb-4 rounded-lg border p-3 ${
+                                        discussionQuality.qualityScore >= 70
+                                            ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                                            : discussionQuality.qualityScore >= 40
+                                              ? 'border-caution-200 bg-caution-50 dark:border-caution-800 dark:bg-caution-900/20'
+                                              : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                                    }`}>
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <svg className="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                            </svg>
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                                                Kualitas Diskusi
+                                            </h3>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-bold ${
+                                                discussionQuality.qualityScore >= 70
+                                                    ? 'bg-green-500 text-white'
+                                                    : discussionQuality.qualityScore >= 40
+                                                      ? 'bg-caution-500 text-white'
+                                                      : 'bg-red-500 text-white'
+                                            }`}>
+                                                {Math.round(discussionQuality.qualityScore)}
+                                            </div>
+                                            <div>
+                                                <p className={`text-sm font-medium ${
+                                                    discussionQuality.qualityScore >= 70
+                                                        ? 'text-green-700 dark:text-green-300'
+                                                        : discussionQuality.qualityScore >= 40
+                                                          ? 'text-caution-700 dark:text-caution-300'
+                                                          : 'text-red-700 dark:text-red-300'
+                                                }`}>
+                                                    {discussionQuality.qualityScore >= 70
+                                                        ? 'Diskusi Berkualitas!'
+                                                        : discussionQuality.qualityScore >= 40
+                                                          ? 'Terus Tingkatkan'
+                                                          : 'Perlu Perhatian'}
+                                                </p>
+                                                <p className="text-xs text-zinc-500">HOT: {discussionQuality.hotPercentage.toFixed(1)}%</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {Object.entries(discussionQuality.engagementTypes).map(([type, count]) => (
+                                                <span
+                                                    key={type}
+                                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                        type === 'Cognitive'
+                                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                                            : type === 'Behavioral'
+                                                              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                              : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
+                                                    }`}
+                                                >
+                                                    {type === 'Cognitive' ? '🧠' : type === 'Behavioral' ? '⚡' : '💭'}
+                                                    {count}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* My Goal Section - Mobile */}
                                 {hasGoal && goal && (

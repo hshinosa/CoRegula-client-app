@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ReflectionController;
-use App\Http\Controllers\AiChatController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -69,6 +70,12 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/courses/{course}/groups/{group}/members', [GroupController::class, 'addMembers'])
             ->name('groups.members.store');
         Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
+
+        // Analytics Dashboard
+        Route::get('/courses/{course}/analytics', [AnalyticsController::class, 'courseIndex'])->name('analytics.index');
+        Route::get('/courses/{course}/analytics/groups/{group}', [AnalyticsController::class, 'groupShow'])->name('analytics.group');
+        Route::get('/courses/{course}/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
+        Route::get('/courses/{course}/analytics/live', [AnalyticsController::class, 'liveStats'])->name('analytics.live');
     });
 
     /*
