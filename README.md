@@ -1,6 +1,6 @@
 # CoRegula Client App
 
-Frontend application for CoRegula - AI-Powered Collaborative Learning Platform. Built with Laravel 12, Vue 3, TypeScript, and Tailwind CSS.
+Frontend application for CoRegula - AI-Powered Collaborative Learning Platform. Built with Laravel 12, React 19, TypeScript, and Tailwind CSS.
 
 ## 🎯 Purpose
 
@@ -138,13 +138,13 @@ client-app/
 │   ├── css/
 │   │   └── app.css                # Global Tailwind styles
 │   ├── js/
-│   │   ├── app.ts                 # Vue app setup
+│   │   ├── app.ts                 # React app setup
 │   │   ├── Pages/                 # Inertia page components
 │   │   │   ├── Auth/
 │   │   │   ├── Dashboard/
 │   │   │   ├── Lecturer/
 │   │   │   └── Student/
-│   │   ├── components/            # Reusable Vue components
+│   │   ├── components/            # Reusable React components
 │   │   ├── layouts/               # Layout wrappers
 │   │   ├── types/                 # TypeScript interfaces
 │   │   └── utils/                 # Helper functions
@@ -407,7 +407,7 @@ npm run dev
 ## 📖 Additional Resources
 
 - [Laravel Documentation](https://laravel.com/docs)
-- [Vue 3 Guide](https://vuejs.org/guide/)
+- [React 19 Guide](https://react.dev/reference/react)
 - [Inertia.js Documentation](https://inertiajs.com)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 
