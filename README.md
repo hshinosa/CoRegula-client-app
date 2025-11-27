@@ -13,7 +13,7 @@ CoRegula is an educational platform designed for **Socially Shared Regulated Lea
 ## 🛠️ Tech Stack
 
 - **Backend Framework**: Laravel 12 (PHP 8.3+)
-- **Frontend Framework**: Vue 3 + TypeScript
+- **Frontend Framework**: React 19 + TypeScript
 - **State Management**: Inertia.js (server-side state)
 - **Styling**: Tailwind CSS
 - **Build Tool**: Vite (HMR-enabled)
