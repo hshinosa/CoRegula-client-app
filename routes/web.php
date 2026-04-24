@@ -47,6 +47,11 @@ Route::middleware('auth.jwt')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Plan vs Diskusi Chart
+    Route::get('/plan-vs-diskusi', function () {
+        return Inertia::render('PlanVsDiskusiPage');
+    })->name('plan-vs-diskusi');
+
     /*
     |--------------------------------------------------------------------------
     | Lecturer Routes
@@ -76,6 +81,11 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/courses/{course}/analytics/groups/{group}', [AnalyticsController::class, 'groupShow'])->name('analytics.group');
         Route::get('/courses/{course}/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
         Route::get('/courses/{course}/analytics/live', [AnalyticsController::class, 'liveStats'])->name('analytics.live');
+
+        // Radar Chart Page
+        Route::get('/radar-chart', function () {
+            return Inertia::render('lecturer/RadarChartPage');
+        })->name('radar-chart');
     });
 
     /*
@@ -102,7 +112,7 @@ Route::middleware('auth.jwt')->group(function () {
 
         // Chat Spaces (list of sessions)
         Route::get('/courses/{course}/chat-spaces', [CourseController::class, 'chatSpaces'])->name('courses.chat-spaces');
-        
+
         // Chat (specific chat space)
         Route::get('/courses/{course}/chat', [CourseController::class, 'chat'])->name('courses.chat.index');
         Route::get('/courses/{course}/chat/{chatSpace}', [CourseController::class, 'chatRoom'])->name('courses.chat.room');

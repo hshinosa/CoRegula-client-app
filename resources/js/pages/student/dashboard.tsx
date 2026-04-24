@@ -2,11 +2,12 @@ import { Head, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { BookOpen, MessageSquare, Pencil, Sparkles, Users } from 'lucide-react';
 
-import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
-import { SharedData } from '@/types';
-import student from '@/routes/student';
+import PlanVsDiskusiChart from '@/components/PlanVsDiskusiChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
+import AppLayout from '@/layouts/app-layout';
+import student from '@/routes/student';
+import { SharedData } from '@/types';
 
 export default function StudentDashboard() {
     const { auth } = usePage<SharedData>().props;
@@ -22,30 +23,21 @@ export default function StudentDashboard() {
                 <OrganicBlob className="top-40 -right-20" delay={-5} color="rgba(136, 22, 28, 0.03)" size={250} />
 
                 <div className="relative space-y-6">
-                    {/* Welcome Card with Glass Morphism */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
+                    {/* Welcome Card */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h1 
-                                        className="text-2xl font-bold"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                    >
+                                    <h1 className="text-2xl font-bold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                         Selamat datang kembali, {auth.user?.name}!
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">
-                                        Pantau progres belajar Anda dan berkolaborasi dengan tim
-                                    </p>
+                                    <p className="mt-2 text-[#6B7280]">Pantau progres belajar Anda dan berkolaborasi dengan tim</p>
                                 </div>
-                                <div 
+                                <div
                                     className="flex h-14 w-14 items-center justify-center rounded-2xl"
-                                    style={{ 
-                                        background: 'rgba(136,22,28,0.08)', 
-                                        border: '1px solid rgba(136,22,28,0.12)' 
+                                    style={{
+                                        background: 'rgba(136,22,28,0.08)',
+                                        border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
                                     <span className="text-2xl">👋</span>
@@ -54,7 +46,7 @@ export default function StudentDashboard() {
                         </LiquidGlassCard>
                     </motion.div>
 
-                    {/* Quick Stats with Glass Morphism */}
+                    {/* Quick Stats */}
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {[
                             { label: 'Mata Kuliah Terdaftar', value: '—', icon: BookOpen, color: '#88161c' },
@@ -72,18 +64,18 @@ export default function StudentDashboard() {
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-sm text-[#6B7280]">{stat.label}</p>
-                                            <p 
+                                            <p
                                                 className="mt-2 text-3xl font-light"
                                                 style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                             >
                                                 {stat.value}
                                             </p>
                                         </div>
-                                        <div 
+                                        <div
                                             className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                            style={{ 
+                                            style={{
                                                 background: `${stat.color}15`,
-                                                border: `1px solid ${stat.color}25`
+                                                border: `1px solid ${stat.color}25`,
                                             }}
                                         >
                                             <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
@@ -94,17 +86,10 @@ export default function StudentDashboard() {
                         ))}
                     </div>
 
-                    {/* Quick Actions with Glass Morphism */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                    >
+                    {/* Quick Actions */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                            <h2 
-                                className="text-lg font-semibold mb-6"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                            >
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 Aksi Cepat
                             </h2>
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -161,26 +146,35 @@ export default function StudentDashboard() {
                                             e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
                                         }}
                                     >
-                                        <div 
+                                        <div
                                             className="flex h-12 w-12 items-center justify-center rounded-xl transition-all group-hover:scale-110"
-                                            style={{ 
+                                            style={{
                                                 background: `${action.color}10`,
-                                                border: `1px solid ${action.color}20`
+                                                border: `1px solid ${action.color}20`,
                                             }}
                                         >
                                             <action.icon className="h-6 w-6" style={{ color: action.color }} />
                                         </div>
                                         <div>
-                                            <p 
-                                                className="font-medium"
-                                                style={{ color: '#4A4A4A' }}
-                                            >
+                                            <p className="font-medium" style={{ color: '#4A4A4A' }}>
                                                 {action.title}
                                             </p>
                                             <p className="text-sm text-[#6B7280]">{action.desc}</p>
                                         </div>
                                     </motion.a>
                                 ))}
+                            </div>
+                        </LiquidGlassCard>
+                    </motion.div>
+
+                    {/* Plan vs Diskusi Chart */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
+                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Ringkasan Plan vs Diskusi
+                            </h2>
+                            <div className="h-[350px] w-full">
+                                <PlanVsDiskusiChart />
                             </div>
                         </LiquidGlassCard>
                     </motion.div>

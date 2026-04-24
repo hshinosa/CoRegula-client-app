@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BarChart3, BookOpen, Plus, Users } from 'lucide-react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import PlanVsDiskusiChart from '@/components/PlanVsDiskusiChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
@@ -168,6 +169,23 @@ export default function LecturerDashboard() {
                                     </motion.a>
                                 ))}
                             </div>
+                        </LiquidGlassCard>
+                    </motion.div>
+
+                    {/* Plan vs Diskusi Chart */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                    >
+                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                            <h2
+                                className="mb-6 text-lg font-semibold"
+                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            >
+                                Ringkasan Plan vs Diskusi
+                            </h2>
+                            <PlanVsDiskusiChart />
                         </LiquidGlassCard>
                     </motion.div>
                 </div>
