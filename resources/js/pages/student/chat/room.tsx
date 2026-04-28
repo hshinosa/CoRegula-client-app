@@ -9,6 +9,25 @@ import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, SharedData } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
+import {
+  createOptimisticMessage,
+  mapSocketMessageToDisplayMessage,
+  reconcileIncomingMessage,
+  markMessageFailed,
+  markMessageSending,
+  toSocketPayload,
+} from '@/features/chat/optimistic-message';
+type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
+type SocketChatMessage = import('@/features/chat/optimistic-message').ChatSocketMessage;
+type FileAttachment = import('@/features/chat/optimistic-message').FileAttachment;
+type ReplyTo = import('@/features/chat/optimistic-message').ReplyTo;
+
+interface ProcessedMessage extends DisplayMessage {
+    showAvatar: boolean;
+    showName: boolean;
+    showTime: boolean;
+    isGrouped: boolean;
+}
 
 interface GroupMember {
     id: string;
@@ -43,78 +62,31 @@ interface Group {
     chatSpaces?: ChatSpace[];
 }
 
-interface ReplyTo {
-    messageId: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-}
+// Types migrated to optimistic-message helpers
 
-interface FileAttachment {
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    previewUrl?: string;
-}
-
-interface SocketChatMessage {
-    id: string;
-    senderId: string;
-    senderName: string;
-    senderType: string;
-    content: string;
-    createdAt: string;
-    isIntervention?: boolean;
-    replyTo?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
-
-interface DisplayMessage {
-    id: string;
-    sender_id: string;
-    sender_type: string;
-    sender_name: string;
-    content: string;
-    created_at: string;
-    is_intervention?: boolean;
-    reply_to?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
-
-interface ProcessedMessage extends DisplayMessage {
-    showAvatar: boolean;
-    showName: boolean;
-    showTime: boolean;
-    isGrouped: boolean;
-}
-
-interface PendingFile {
-    file: File;
-    preview?: string;
-    id: string;
-}
+    interface PendingFile {
+        file: File;
+        preview?: string;
+        id: string;
+    }
 
 interface OnlineUser {
     odId: string;
     userName: string;
 }
 
-interface ChatSpaceData {
-    id: string;
-    name: string;
-    description?: string;
-    isDefault: boolean;
-    groupId: string;
-    isClosed?: boolean;
-    closedAt?: string;
-    hasReflection?: boolean;
-    needsReflection?: boolean;
-    myGoal?: ChatSpaceGoal | null;
-}
+    interface ChatSpaceData {
+        id: string;
+        name: string;
+        description?: string;
+        isDefault: boolean;
+        groupId: string;
+        isClosed?: boolean;
+        closedAt?: string;
+        hasReflection?: boolean;
+        needsReflection?: boolean;
+        myGoal?: ChatSpaceGoal | null;
+    }
 
 const isClosedChatSpace = (space: ChatSpaceData) => {
     return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
@@ -127,7 +99,7 @@ interface Props {
     socketUrl?: string;
 }
 
-// Helper to check if two messages are in the same minute
+    // Helper to check if two messages are in the same minute
 const isSameMinute = (date1: string, date2: string): boolean => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -270,7 +242,105 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         []
     );
 
-    // Filter members for mention suggestions (including AI)
+    // Helper builders for optimistic messaging (Task 4)
+    const createClientId = () => {
+        return `client-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    };
+
+    const emitChatMessage = useCallback((message: DisplayMessage) => {
+        if (!socketRef.current) {
+            setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
+            return;
+        }
+        socketRef.current.emit('send_message', toSocketPayload(message, {
+            roomId: chatSpace.id,
+            courseId: course.id,
+            groupId: group.id,
+        }));
+    }, [chatSpace.id, course.id, group.id]);
+
+    const handleSubmit = async (e: FormEvent) => {
+        if (sessionClosed) return;
+        e.preventDefault();
+        if ((!newMessage.trim() && pendingFiles.length === 0) || !socketRef.current) return;
+
+        // Use chatSpaceId as roomId for consistency
+        const roomId = chatSpace.id;
+
+        // Clear typing status
+        if (isTyping) {
+            socketRef.current.emit('typing', { roomId, isTyping: false });
+            setIsTyping(false);
+        }
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = null;
+        }
+
+        // Extract mentions
+        const mentions = extractMentions(newMessage);
+
+        // Upload files if any
+        let attachments: FileAttachment[] = [];
+        if (pendingFiles.length > 0) {
+            setIsUploading(true);
+            try {
+                attachments = await Promise.all(pendingFiles.map(async (pf) => {
+                    const base64 = await new Promise<string>((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.readAsDataURL(pf.file);
+                    });
+                    return {
+                        id: pf.id,
+                        name: pf.file.name,
+                        type: pf.file.type,
+                        size: pf.file.size,
+                        url: base64,
+                        previewUrl: pf.file.type.startsWith('image/') ? base64 : undefined,
+                    };
+                }));
+            } catch (error) {
+                console.error('File conversion failed:', error);
+            }
+            setIsUploading(false);
+        }
+
+        const clientId = createClientId();
+        const optimisticMessage = createOptimisticMessage({
+            clientId,
+            senderId: auth.user?.id || 'unknown',
+            senderName: auth.user?.name || 'You',
+            senderType: auth.user?.role || 'student',
+            content: newMessage.trim(),
+            createdAt: new Date().toISOString(),
+            replyTo: replyingTo || undefined,
+            attachments,
+            mentions,
+        });
+
+        setMessages((prev) => [...prev, optimisticMessage]);
+        emitChatMessage(optimisticMessage);
+
+        setNewMessage('');
+        setReplyingTo(null);
+        setPendingFiles([]);
+    };
+
+    const handleRetryMessage = (message: DisplayMessage) => {
+        const retryId = message.clientId || message.id;
+        setMessages((prev) => markMessageSending(prev, retryId));
+
+        const retryMessage: DisplayMessage = {
+            ...message,
+            clientId: retryId,
+            id: retryId,
+            deliveryStatus: 'sending',
+            isOptimistic: true,
+        };
+
+        emitChatMessage(retryMessage);
+    };
     const filteredMembers = useMemo(() => {
         const filter = mentionFilter.toLowerCase();
         
@@ -362,18 +432,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         });
 
         socketRef.current.on('chat_history', (data: { messages: SocketChatMessage[] }) => {
-            const historyMessages: DisplayMessage[] = data.messages.map((msg) => ({
-                id: msg.id,
-                sender_id: msg.senderId,
-                sender_type: msg.senderType,
-                sender_name: msg.senderName,
-                content: msg.content,
-                created_at: msg.createdAt,
-                is_intervention: msg.isIntervention,
-                reply_to: msg.replyTo,
-                attachments: msg.attachments,
-                mentions: msg.mentions,
-            }));
+            const historyMessages: DisplayMessage[] = data.messages.map((msg) => mapSocketMessageToDisplayMessage(msg));
             setMessages(historyMessages);
         });
 
@@ -399,19 +458,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         });
 
         socketRef.current.on('receive_message', (message: SocketChatMessage) => {
-            const displayMessage: DisplayMessage = {
-                id: message.id,
-                sender_id: message.senderId,
-                sender_type: message.senderType,
-                sender_name: message.senderName,
-                content: message.content,
-                created_at: message.createdAt,
-                is_intervention: message.isIntervention,
-                reply_to: message.replyTo,
-                attachments: message.attachments,
-                mentions: message.mentions,
-            };
-            setMessages((prev) => [...prev, displayMessage]);
+            // Use reconciliation flow to merge optimistic messages
+            setMessages((prev) => reconcileIncomingMessage(prev, message));
         });
 
         socketRef.current.on('message_deleted', (data: { messageId: string }) => {
@@ -764,69 +812,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         );
     };
 
-    const handleSubmit = async (e: FormEvent) => {
-        if (sessionClosed) return;
-        e.preventDefault();
-        if ((!newMessage.trim() && pendingFiles.length === 0) || !socketRef.current) return;
-
-        // Use chatSpaceId as roomId
-        const roomId = chatSpace.id;
-        
-        // Clear typing state first
-        if (isTyping) {
-            socketRef.current.emit('typing', { roomId, isTyping: false });
-            setIsTyping(false);
-        }
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-            typingTimeoutRef.current = null;
-        }
-
-        // Extract mentions
-        const mentions = extractMentions(newMessage);
-
-        // Upload files if any
-        let attachments: FileAttachment[] = [];
-        if (pendingFiles.length > 0) {
-            setIsUploading(true);
-            try {
-                // Convert files to base64 data URLs for transmission
-                attachments = await Promise.all(pendingFiles.map(async (pf) => {
-                    const base64 = await new Promise<string>((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.readAsDataURL(pf.file);
-                    });
-                    
-                    return {
-                        id: pf.id,
-                        name: pf.file.name,
-                        type: pf.file.type,
-                        size: pf.file.size,
-                        url: base64,
-                        previewUrl: pf.file.type.startsWith('image/') ? base64 : undefined,
-                    };
-                }));
-            } catch (error) {
-                console.error('File conversion failed:', error);
-            }
-            setIsUploading(false);
-        }
-        
-        socketRef.current.emit('send_message', { 
-            roomId,
-            courseId: course.id,
-            groupId: group.id,
-            content: newMessage,
-            replyTo: replyingTo || undefined,
-            attachments: attachments.length > 0 ? attachments : undefined,
-            mentions: mentions.length > 0 ? mentions : undefined,
-        });
-
-        setNewMessage('');
-        setReplyingTo(null);
-        setPendingFiles([]);
-    };
+    // Duplicate handleSubmit removed in this patch to keep a single submission path (early block remains)
 
     const handleCloseSession = useCallback(async () => {
         if (sessionClosed || isClosingSession) return;
@@ -942,6 +928,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         if (isSystemMessage(message)) return 'Kolabri';
         return message.sender_name;
     };
+
+    // Injected helpers for sending messages exist in the early block; remove the duplicate here
 
     return (
         <AppLayout title={`${chatSpace.name} - ${group.name}`} navItems={navItems}>
@@ -1378,11 +1366,25 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                             )}
 
                                                             {/* Time - only on last message of group */}
-                                                            {message.showTime && (
-                                                                <span className="mt-1 text-xs text-[#9CA3AF]">
-                                                                    {formatTime(message.created_at)}
-                                                                </span>
-                                                            )}
+                                                                    {message.showTime && (
+                                                                        <span className="mt-1 text-xs text-[#9CA3AF]">
+                                                                            {formatTime(message.created_at)}
+                                                                        </span>
+                                                                    )}
+                                                                    {ownMessage && (message.deliveryStatus === 'sending' || message.deliveryStatus === 'failed') && (
+                                                                        <div className="mt-1 flex items-center gap-2 text-xs text-[#6B7280]">
+                                                                            <span>
+                                                                                {message.deliveryStatus === 'sending' ? 'Mengirim...' : 'Gagal mengirim'}
+                                                                            </span>
+                                                                            <button
+                                                                                onClick={() => handleRetryMessage(message)}
+                                                                                className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#88161c]"
+                                                                                style={{ background: '#88161c' }}
+                                                                            >
+                                                                                Coba lagi
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
                                                         </div>
 
                                                         {/* Own message avatar placeholder for alignment */}
