@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { BarChart3, BookOpen, Plus, Users } from 'lucide-react';
 
+import MetricsRadarChart from '@/components/MetricsRadarChart';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import PlanVsDiskusiChart from '@/components/PlanVsDiskusiChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
@@ -22,23 +23,14 @@ export default function LecturerDashboard() {
                 <OrganicBlob className="top-40 -right-20" delay={-5} color="rgba(136, 22, 28, 0.03)" size={250} />
 
                 <div className="relative space-y-6">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <h1
-                                        className="text-2xl font-bold"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                    >
+                                    <h1 className="text-2xl font-bold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                         Selamat datang kembali, {auth.user?.name}!
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">
-                                        Kelola kelas Anda dan pantau kolaborasi mahasiswa dari satu tempat.
-                                    </p>
+                                    <p className="mt-2 text-[#6B7280]">Kelola kelas Anda dan pantau kolaborasi mahasiswa dari satu tempat.</p>
                                 </div>
                                 <div
                                     className="flex h-14 w-14 items-center justify-center rounded-2xl"
@@ -92,16 +84,9 @@ export default function LecturerDashboard() {
                         ))}
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                            <h2
-                                className="mb-6 text-lg font-semibold"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                            >
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 Tindakan Cepat
                             </h2>
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -173,19 +158,24 @@ export default function LecturerDashboard() {
                     </motion.div>
 
                     {/* Plan vs Diskusi Chart */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.5 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                            <h2
-                                className="mb-6 text-lg font-semibold"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                            >
-                                Ringkasan Plan vs Diskusi
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Chart Plan vs Diskusi
                             </h2>
                             <PlanVsDiskusiChart />
+                        </LiquidGlassCard>
+                    </motion.div>
+
+                    {/* RadarChart */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
+                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Chart Metrik Kelas
+                            </h2>
+                            <div className="h-[500px] w-full">
+                                <MetricsRadarChart />
+                            </div>
                         </LiquidGlassCard>
                     </motion.div>
                 </div>
