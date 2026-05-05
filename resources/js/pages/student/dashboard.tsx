@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { BookOpen, MessageSquare, Pencil, Sparkles, Users } from 'lucide-react';
 
+import MetricsRadarChart from '@/components/MetricsRadarChart';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import PlanVsDiskusiChart from '@/components/PlanVsDiskusiChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
@@ -171,10 +172,20 @@ export default function StudentDashboard() {
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                Ringkasan Plan vs Diskusi
+                                Chart Plan vs Diskusi
                             </h2>
-                            <div className="h-[350px] w-full">
-                                <PlanVsDiskusiChart />
+                            <PlanVsDiskusiChart />
+                        </LiquidGlassCard>
+                    </motion.div>
+
+                    {/* RadarChart */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
+                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                            <h2 className="mb-6 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Chart Metrik Kelas
+                            </h2>
+                            <div className="h-[500px] w-full">
+                                <MetricsRadarChart />
                             </div>
                         </LiquidGlassCard>
                     </motion.div>

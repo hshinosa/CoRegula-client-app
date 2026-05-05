@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
     Activity,
@@ -17,7 +17,8 @@ import { LiquidGlassCard, OrganicBlob, SecondaryButton } from '@/components/Welc
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
-import { Course, SharedData } from '@/types';
+import { Course } from '@/types';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 interface Member {
     id: string;
@@ -230,7 +231,7 @@ const formatDateTime = (value?: string | null) => {
 };
 
 export default function GroupAnalyticsDetail({ course, group, analytics, members, chatSpaces, recentActivity }: Props) {
-    const { auth } = usePage<SharedData>().props;
+    const [jwtToken, setJwtToken] = useState('');
 
     const safeAnalytics = analytics ?? {};
     const safeMembers = useMemo(() => members ?? [], [members]);
@@ -251,6 +252,10 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
     const navItems = useLecturerNav('analytics-group', { courseId: course.id, groupId: group.id });
 
     useEffect(() => {
+        getAuthToken().then(setJwtToken).catch(console.error);
+    }, []);
+
+    useEffect(() => {
         setLiveActivity(safeRecentActivity);
     }, [safeRecentActivity]);
 
@@ -259,11 +264,11 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
     }, [safeAnalytics.qualityScore]);
 
     useEffect(() => {
-        if (!auth.token) return;
+        if (!jwtToken) return;
 
         const apiUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const socket: Socket = io(apiUrl, {
-            auth: { token: auth.token },
+            auth: { token: jwtToken },
             transports: ['websocket', 'polling'],
         });
 
@@ -284,7 +289,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
         return () => {
             socket.disconnect();
         };
-    }, [auth.token, group.id]);
+    }, [jwtToken, group.id]);
 
     const qualityCards = [
         {
