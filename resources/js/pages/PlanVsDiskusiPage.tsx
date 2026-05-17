@@ -1,5 +1,5 @@
 import React from 'react';
-import PlanVsDiskusiChart from '../components/PlanVsDiskusiChart';
+import PlanVsDiskusiChart from '@/components/PlanVsDiskusiChart';
 
 const PlanVsDiskusiPage: React.FC = () => {
     return (

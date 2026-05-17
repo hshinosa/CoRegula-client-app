@@ -4,13 +4,49 @@ import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-const PlanVsDiskusiChart: React.FC = () => {
+interface PlanVsDiskusiChartProps {
+    planData?: number[];
+    diskusiData?: number[];
+    weekLabels?: string[];
+    isLoading?: boolean;
+    error?: string;
+}
+
+const DEFAULT_LABELS = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+
+const PlanVsDiskusiChart: React.FC<PlanVsDiskusiChartProps> = ({
+    planData,
+    diskusiData,
+    weekLabels = DEFAULT_LABELS,
+    isLoading = false,
+    error,
+}) => {
+    if (isLoading) {
+        return <div className="animate-pulse h-64 bg-gray-100 rounded-lg" />;
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-64 text-red-500 text-sm">
+                {error}
+            </div>
+        );
+    }
+
+    if (!planData || !diskusiData || planData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 text-gray-400">
+                Data belum tersedia
+            </div>
+        );
+    }
+
     const data: ChartData<'bar'> = {
-        labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+        labels: weekLabels,
         datasets: [
             {
                 label: 'Plan',
-                data: [12, 19, 15, 22],
+                data: planData,
                 backgroundColor: 'rgba(136, 22, 28, 0.75)',
                 borderColor: 'rgba(136, 22, 28, 1)',
                 borderWidth: 2,
@@ -20,7 +56,7 @@ const PlanVsDiskusiChart: React.FC = () => {
             },
             {
                 label: 'Diskusi',
-                data: [8, 15, 20, 18],
+                data: diskusiData,
                 backgroundColor: 'rgba(74, 74, 74, 0.65)',
                 borderColor: 'rgba(74, 74, 74, 1)',
                 borderWidth: 2,

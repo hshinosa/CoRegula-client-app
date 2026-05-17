@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\StudentCourseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\ReflectionController;
@@ -169,9 +170,9 @@ Route::middleware('auth.jwt')->group(function () {
     */
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
         // Courses
-        Route::get('/courses', [CourseController::class, 'enrolled'])->name('courses.index');
-        Route::post('/courses/join', [CourseController::class, 'join'])->name('courses.join');
-        Route::get('/courses/{course}', [CourseController::class, 'showStudent'])->name('courses.show');
+        Route::get('/courses', [StudentCourseController::class, 'enrolled'])->name('courses.index');
+        Route::post('/courses/join', [StudentCourseController::class, 'join'])->name('courses.join');
+        Route::get('/courses/{course}', [StudentCourseController::class, 'showStudent'])->name('courses.show');
 
         // Groups
         Route::get('/courses/{course}/groups', [GroupController::class, 'studentIndex'])->name('groups.index');
@@ -185,11 +186,10 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
 
         // Chat Spaces (list of sessions)
-        Route::get('/courses/{course}/chat-spaces', [CourseController::class, 'chatSpaces'])->name('courses.chat-spaces');
+        Route::get('/courses/{course}/chat-spaces', [StudentCourseController::class, 'chatSpaces'])->name('courses.chat-spaces');
 
-        // Chat (specific chat space)
-        Route::get('/courses/{course}/chat', [CourseController::class, 'chat'])->name('courses.chat.index');
-        Route::get('/courses/{course}/chat/{chatSpace}', [CourseController::class, 'chatRoom'])->name('courses.chat.room');
+        Route::get('/courses/{course}/chat', [StudentCourseController::class, 'chat'])->name('courses.chat.index');
+        Route::get('/courses/{course}/chat/{chatSpace}', [StudentCourseController::class, 'chatRoom'])->name('courses.chat.room');
 
         // Reflections
         Route::get('/reflections', [ReflectionController::class, 'index'])->name('reflections.index');

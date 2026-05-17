@@ -21,11 +21,9 @@ export default function GuestLayout({ children }: PropsWithChildren) {
         if (darkMode) {
             document.body.style.backgroundColor = '#0a0a0f';
             localStorage.setItem('kolabri_theme', 'dark');
-            localStorage.setItem('kolabri-dark', 'true');
         } else {
             document.body.style.backgroundColor = '#E8EDF8';
             localStorage.setItem('kolabri_theme', 'light');
-            localStorage.setItem('kolabri-dark', 'false');
         }
     }, [darkMode]);
 
