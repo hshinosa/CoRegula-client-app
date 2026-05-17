@@ -51,13 +51,14 @@ class AuditLogControllerTest extends TestCase
     {
         Http::fake([
             'http://localhost:3000/api/admin/audit-logs*' => Http::response([
-                'error' => ['message' => 'Server error'],
+                'message' => 'Server error',
             ], 500),
         ]);
 
         $response = $this->authenticatedSession()->get(route('admin.audit-log.page'));
 
         $response->assertStatus(500);
-        $response->assertJsonPath('error.message', 'Server error');
+        $response->assertJsonPath('message', 'Server error');
+        $response->assertJsonPath('code', 'API_ERROR');
     }
 }

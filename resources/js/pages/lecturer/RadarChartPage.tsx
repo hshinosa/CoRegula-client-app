@@ -1,5 +1,5 @@
 import React from 'react';
-import MetricsRadarChart from '../../components/MetricsRadarChart';
+import MetricsRadarChart from '@/components/MetricsRadarChart';
 
 const RadarChartPage: React.FC = () => {
     return (

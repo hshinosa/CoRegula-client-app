@@ -4,16 +4,48 @@ import { Radar } from 'react-chartjs-2';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
-const MetricsRadarChart: React.FC = () => {
-    const labels = ['Hot', 'Lexical Variety', 'Forethought', 'Performance', 'Collaboration', 'Reflection'];
+interface MetricsRadarChartProps {
+    data?: number[];
+    labels?: string[];
+    isLoading?: boolean;
+    error?: string;
+}
 
-    const data: ChartData<'radar'> = {
+const DEFAULT_LABELS = ['Hot', 'Lexical Variety', 'Forethought', 'Performance', 'Collaboration', 'Reflection'];
+
+const MetricsRadarChart: React.FC<MetricsRadarChartProps> = ({
+    data,
+    labels = DEFAULT_LABELS,
+    isLoading = false,
+    error,
+}) => {
+    if (isLoading) {
+        return <div className="animate-pulse h-64 bg-gray-100 rounded-lg" />;
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-64 text-red-500 text-sm">
+                {error}
+            </div>
+        );
+    }
+
+    if (!data || data.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 text-gray-400">
+                Data belum tersedia
+            </div>
+        );
+    }
+
+    const chartData: ChartData<'radar'> = {
         labels,
         datasets: [
             {
                 label: 'Rata-rata Kelas',
-                data: [8.7, 7.4, 9.2, 6.9, 8.3, 7.8],
-                backgroundColor: 'rgba(136, 22, 28, 0.25)', // warna merah khas Kolabri
+                data,
+                backgroundColor: 'rgba(136, 22, 28, 0.25)',
                 borderColor: 'rgba(136, 22, 28, 1)',
                 borderWidth: 3,
                 pointBackgroundColor: '#88161c',
@@ -64,31 +96,11 @@ const MetricsRadarChart: React.FC = () => {
                 },
             },
         },
-        // === FITUR KLIK ===
-        onClick: (event, elements) => {
-            if (elements.length > 0) {
-                const index = elements[0].index;
-                const metricName = labels[index];
-                const value = data.datasets[0].data[index];
-
-                const explanations: Record<string, string> = {
-                    Hot: 'Tingkat keterlibatan & antusiasme mahasiswa',
-                    'Lexical Variety': 'Keragaman kosakata dalam diskusi/refleksi',
-                    Forethought: 'Kemampuan perencanaan & pemikiran ke depan',
-                    Performance: 'Performa keseluruhan mahasiswa',
-                    Collaboration: 'Kemampuan bekerja sama dalam tim',
-                    Reflection: 'Kedalaman refleksi pembelajaran',
-                };
-
-                alert(`📊 ${metricName}: ${value} / 10\n\n${explanations[metricName] || 'Metrik penting untuk evaluasi kelas.'}`);
-                console.log(`Klik metrik: ${metricName} (${value})`);
-            }
-        },
     };
 
     return (
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" style={{ height: '520px' }}>
-            <Radar data={data} options={options} />
+        <div className="h-full w-full">
+            <Radar data={chartData} options={options} />
         </div>
     );
 };
