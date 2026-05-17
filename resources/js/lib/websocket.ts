@@ -5,7 +5,7 @@ export type AdminWebSocketEvent<T = unknown> = {
     data: T;
 };
 
-function resolveWebSocketUrl(token: string) {
+function resolveWebSocketUrl() {
     const baseUrl =
         import.meta.env.VITE_WS_URL ||
         import.meta.env.VITE_SOCKET_URL ||
@@ -18,7 +18,6 @@ function resolveWebSocketUrl(token: string) {
 
     normalizedUrl.protocol = normalizedUrl.protocol === 'https:' ? 'wss:' : 'ws:';
     normalizedUrl.pathname = '/ws';
-    normalizedUrl.searchParams.set('token', token);
 
     return normalizedUrl.toString();
 }
@@ -30,9 +29,10 @@ export async function connectWebSocket(options?: {
     onMessage?: <T>(message: AdminWebSocketEvent<T>) => void;
 }) {
     const token = await getAuthToken();
-    const socket = new WebSocket(resolveWebSocketUrl(token));
+    const socket = new WebSocket(resolveWebSocketUrl());
 
     socket.addEventListener('open', () => {
+        socket.send(JSON.stringify({ event: 'auth', data: { token } }));
         options?.onOpen?.();
     });
 
@@ -49,7 +49,6 @@ export async function connectWebSocket(options?: {
             const payload = JSON.parse(event.data) as AdminWebSocketEvent;
             options?.onMessage?.(payload);
         } catch {
-            // Ignore malformed payloads.
         }
     });
 

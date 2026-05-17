@@ -3,20 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class AISettingsController extends Controller
 {
-    protected function apiUrl(): string
-    {
-        return config('services.api.base_url');
-    }
-
-    protected function apiRequest()
-    {
-        return Http::withToken(session('jwt'));
-    }
 
     public function index(Request $request)
     {
@@ -29,7 +20,7 @@ class AISettingsController extends Controller
             $payload = $response->json();
 
             if (!$response->successful()) {
-                return response()->json($payload, $response->status());
+                return response()->json(['message' => $payload['message'] ?? 'Failed to fetch AI providers', 'code' => 'API_ERROR'], $response->status());
             }
 
             return Inertia::render('admin/ai-settings', [
@@ -37,13 +28,12 @@ class AISettingsController extends Controller
                 'meta' => $payload['meta'] ?? null,
                 'filters' => $request->query(),
             ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed fetching providers', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to fetch AI providers',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to fetch AI providers', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch AI providers', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
@@ -53,13 +43,12 @@ class AISettingsController extends Controller
             $response = $this->apiRequest()->get($this->apiUrl() . "/api/admin/ai-providers/{$id}");
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed fetching provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to fetch AI provider',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to fetch AI provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch AI provider', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
@@ -72,13 +61,12 @@ class AISettingsController extends Controller
             );
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed creating provider', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to create AI provider',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to create AI provider', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to create AI provider', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
@@ -91,13 +79,12 @@ class AISettingsController extends Controller
             );
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed updating provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to update AI provider',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to update AI provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to update AI provider', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
@@ -107,95 +94,64 @@ class AISettingsController extends Controller
             $response = $this->apiRequest()->delete($this->apiUrl() . "/api/admin/ai-providers/{$id}");
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed deleting provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to delete AI provider',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to delete AI provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to delete AI provider', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
-    public function test(Request $request, string $id)
+    public function setDefault(string $id)
     {
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/admin/ai-providers/{$id}/test",
-                $request->all()
+            $response = $this->apiRequest()->put($this->apiUrl() . "/api/admin/ai-providers/{$id}/default");
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed setting default provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
+        } catch (\Throwable $e) {
+            Log::error('AISettingsController: failed to set default AI provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to set default AI provider', 'code' => 'SERVER_ERROR'], 500);
+        }
+    }
+
+    public function test(string $id)
+    {
+        try {
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/admin/ai-providers/{$id}/test");
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed testing provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
+        } catch (\Throwable $e) {
+            Log::error('AISettingsController: failed to test AI provider', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to test AI provider', 'code' => 'SERVER_ERROR'], 500);
+        }
+    }
+
+    public function getComparisons(Request $request)
+    {
+        try {
+            $response = $this->apiRequest()->get(
+                $this->apiUrl() . '/api/admin/ai-comparisons',
+                $request->query()
             );
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed fetching comparisons', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to test AI provider connection',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to fetch AI comparisons', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch AI comparisons', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
-    public function activate(string $id)
-    {
-        try {
-            $response = $this->apiRequest()->post($this->apiUrl() . "/api/admin/ai-providers/{$id}/activate");
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to activate AI provider',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
-        }
-    }
-
-    public function updateFallbackOrder(Request $request)
-    {
-        try {
-            $response = $this->apiRequest()->put(
-                $this->apiUrl() . '/api/admin/ai-providers/fallback-order',
-                $request->all()
-            );
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to update fallback order',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
-        }
-    }
-
-    public function comparisonPage()
-    {
-        return Inertia::render('admin/ai-comparison');
-    }
-
-    public function compare(Request $request)
-    {
-        try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . '/api/admin/ai-compare',
-                $request->all()
-            );
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to compare AI models',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
-        }
-    }
-
-    public function usageStats(Request $request)
+    public function getUsageStats(Request $request)
     {
         try {
             $response = $this->apiRequest()->get(
@@ -204,31 +160,27 @@ class AISettingsController extends Controller
             );
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed fetching usage stats', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to fetch usage stats',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to fetch usage stats', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch usage stats', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 
-    public function usageReport(string $userId, int $month, int $year)
+    public function getProviderStats(string $id)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/admin/usage-report/{$userId}/{$month}/{$year}"
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/admin/ai-providers/{$id}/stats");
 
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('AISettingsController: connection failed fetching provider stats', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => [
-                    'message' => 'Failed to fetch usage report',
-                    'details' => $e->getMessage(),
-                ],
-            ], 500);
+            Log::error('AISettingsController: failed to fetch provider stats', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch provider stats', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 }

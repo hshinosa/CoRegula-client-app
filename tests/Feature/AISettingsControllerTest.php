@@ -77,13 +77,14 @@ class AISettingsControllerTest extends TestCase
     {
         Http::fake([
             'http://localhost:3000/api/admin/ai-providers*' => Http::response([
-                'error' => ['message' => 'Server error'],
+                'message' => 'Server error',
             ], 500),
         ]);
 
         $response = $this->authenticatedSession()->get(route('admin.ai-settings.index'));
 
         $response->assertStatus(500);
-        $response->assertJsonPath('error.message', 'Server error');
+        $response->assertJsonPath('message', 'Server error');
+        $response->assertJsonPath('code', 'API_ERROR');
     }
 }
