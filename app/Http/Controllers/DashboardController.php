@@ -3,22 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
-    protected function apiUrl(): string
-    {
-        return config('services.api.base_url');
-    }
-
-    protected function apiRequest()
-    {
-        return Http::withToken(session('jwt'));
-    }
 
     /**
      * Main Dashboard - Redirects based on user role

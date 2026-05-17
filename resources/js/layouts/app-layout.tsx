@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PropsWithChildren, useState } from 'react';
-import { LogOut, Menu, X } from 'lucide-react';
+import { PropsWithChildren, useEffect, useState } from 'react';
+import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 
 import { SharedData } from '@/types';
 import auth from '@/routes/auth';
@@ -29,6 +29,13 @@ interface AppLayoutProps extends PropsWithChildren {
 export default function AppLayout({ children, title, navItems = [] }: AppLayoutProps) {
     const { auth: authData, url } = usePage<SharedData>().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('kolabri_theme') === 'dark' ||
+                   localStorage.getItem('kolabri-dark') === 'true';
+        }
+        return false;
+    });
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         return navItems
             .filter(item => item.active && item.subItems && item.subItems.length > 0)
@@ -37,6 +44,18 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
 
     const user = authData?.user;
     void title;
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            document.body.style.backgroundColor = '#0a0a0f';
+            localStorage.setItem('kolabri_theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.style.backgroundColor = '#E8EDF8';
+            localStorage.setItem('kolabri_theme', 'light');
+        }
+    }, [darkMode]);
 
     const toggleExpanded = (itemName: string) => {
         setExpandedItems(prev => 
@@ -237,6 +256,14 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                     {user?.role || 'Tamu'}
                                 </p>
                             </div>
+                            <button
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="rounded-xl p-2 text-[#6B7280] hover:text-[#88161c] transition-colors"
+                                style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+                                title={darkMode ? 'Mode terang' : 'Mode gelap'}
+                            >
+                                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                            </button>
                             <Link
                                 href={auth.logout.url()}
                                 method="post"
@@ -378,8 +405,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
             <div className="flex flex-1 flex-col overflow-hidden">
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8">
-                    {/* Mobile Menu Button */}
-                    <div className="mb-4 lg:hidden">
+                    <div className="mb-4 flex items-center justify-between lg:hidden">
                         <button
                             onClick={() => setSidebarOpen(true)}
                             className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#4A4A4A] transition-all"
@@ -391,6 +417,17 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         >
                             <Menu className="h-5 w-5" />
                             Menu
+                        </button>
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className="flex h-9 w-9 items-center justify-center rounded-xl transition-all"
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.6)',
+                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                            }}
+                            title={darkMode ? 'Mode terang' : 'Mode gelap'}
+                        >
+                            {darkMode ? <Sun className="h-4 w-4 text-[#4A4A4A]" /> : <Moon className="h-4 w-4 text-[#4A4A4A]" />}
                         </button>
                     </div>
 

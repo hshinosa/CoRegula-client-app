@@ -25,7 +25,6 @@ export default function Welcome() {
             document.body.style.backgroundColor = '#E8EDF8';
         }
         document.body.style.overflowX = 'hidden';
-        localStorage.setItem('kolabri-dark', darkMode ? 'true' : 'false');
         localStorage.setItem('kolabri_theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);
 

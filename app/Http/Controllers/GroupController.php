@@ -3,22 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class GroupController extends Controller
 {
-    protected function apiUrl(): string
-    {
-        return config('services.api.base_url', 'http://localhost:3000');
-    }
-
-    protected function apiRequest()
-    {
-        return Http::withToken(session('jwt'));
-    }
 
     /**
      * List Groups in a Course (Lecturer view)

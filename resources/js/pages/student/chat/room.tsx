@@ -1,7 +1,6 @@
 import { Head, usePage, Link } from '@inertiajs/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useState, useEffect, useRef, FormEvent, useMemo, ChangeEvent, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { MessageSquare, Send, Paperclip, X, CornerUpLeft, Users, Lock, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -10,6 +9,7 @@ import { Course, SharedData } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { useSocketRoom } from '@/hooks/useSocketRoom';
 
 interface GroupMember {
     id: string;
@@ -194,14 +194,39 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [isConnected, setIsConnected] = useState(false);
-    const [connectionError, setConnectionError] = useState<string | null>(null);
     const [isTyping, setIsTyping] = useState(false);
-    const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch(console.error);
     }, []);
+
+    const { socketRef, isConnected, connectionError, typingUsers, onlineUsers, discussionQuality, showQualityFeedback } = useSocketRoom({
+        jwtToken,
+        courseId: course.id,
+        groupId: group.id,
+        chatSpaceId: chatSpace.id,
+        socketUrl,
+        onSessionClosed: (payload) => {
+            setSessionClosed(true);
+            setSessionClosedAt((prev) => payload?.closedAt ?? prev ?? new Date().toISOString());
+            setSessionClosedMessage(payload?.message || 'Sesi diskusi ini telah ditutup.');
+        },
+        onSessionReopened: () => {
+            setSessionClosed(false);
+            setSessionClosedAt(null);
+            setSessionClosedMessage(null);
+        },
+        onMessagesLoaded: (loadedMessages) => {
+            setMessages(loadedMessages);
+        },
+        onMessageReceived: (message) => {
+            setMessages((prev) => [...prev, message]);
+        },
+        onMessageDeleted: (messageId) => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+        },
+    });
+
     const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
     const [showGoalBanner, setShowGoalBanner] = useState(!hasGoal);
@@ -209,51 +234,33 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [closeSessionError, setCloseSessionError] = useState<string | null>(null);
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    
-    // Session closed state
+
     const [showReflectionModal, setShowReflectionModal] = useState(chatSpace.needsReflection || false);
     const [reflectionContent, setReflectionContent] = useState('');
     const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
     const [reflectionError, setReflectionError] = useState<string | null>(null);
     const [hasSubmittedReflection, setHasSubmittedReflection] = useState(chatSpace.hasReflection || false);
-    
-    // File upload state
+
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
-    
-    // Mention state
+
     const [showMentionList, setShowMentionList] = useState(false);
     const [mentionFilter, setMentionFilter] = useState('');
     const [mentionStartIndex, setMentionStartIndex] = useState(-1);
     const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-    
-    // Image preview state
+
     const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
     const [imageZoom, setImageZoom] = useState(1);
-    
-    // Online users state
-    const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-    
-    // Right sidebar state (mobile)
+
     const [showRightSidebar, setShowRightSidebar] = useState(false);
-    
-    // Discussion quality state (from AI orchestration)
-    interface DiscussionQuality {
-        qualityScore: number;
-        engagementTypes: Record<string, number>;
-        hotPercentage: number;
-        lastMessage?: string;
-    }
-    const [discussionQuality, setDiscussionQuality] = useState<DiscussionQuality | null>(null);
-    const [showQualityFeedback, setShowQualityFeedback] = useState(false);
-    
+
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const socketRef = useRef<Socket | null>(null);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeErrorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [qualityPanelExpanded, setQualityPanelExpanded] = useState(true);
     const showCloseError = useCallback((message: string) => {
         setCloseSessionError(message);
         if (closeErrorTimeoutRef.current) {
@@ -327,162 +334,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         });
     }, [messages]);
 
-    useEffect(() => {
-        if (!jwtToken) return;
-        if (!course?.id || !group?.id || !chatSpace?.id) {
-            setConnectionError('Missing course, group, or chat space information');
-            return;
-        }
-
-        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-        socketRef.current = io(apiUrl, {
-            auth: { token: jwtToken },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
-
-        socketRef.current.on('connect', () => {
-            setConnectionError(null);
-            socketRef.current?.emit('join_room', { 
-                courseId: course.id, 
-                groupId: group.id,
-                chatSpaceId: chatSpace.id
-            });
-        });
-
-        socketRef.current.on('connect_error', (error) => {
-            setConnectionError(`Connection failed: ${error.message}`);
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('room_joined', () => {
-            setIsConnected(true);
-            setConnectionError(null);
-        });
-
-        socketRef.current.on('chat_history', (data: { messages: SocketChatMessage[] }) => {
-            const historyMessages: DisplayMessage[] = data.messages.map((msg) => ({
-                id: msg.id,
-                sender_id: msg.senderId,
-                sender_type: msg.senderType,
-                sender_name: msg.senderName,
-                content: msg.content,
-                created_at: msg.createdAt,
-                is_intervention: msg.isIntervention,
-                reply_to: msg.replyTo,
-                attachments: msg.attachments,
-                mentions: msg.mentions,
-            }));
-            setMessages(historyMessages);
-        });
-
-        socketRef.current.on('disconnect', () => {
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('error', (data: { message: string }) => {
-            setConnectionError(data.message);
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('session_closed', (payload: { closedAt?: string; message?: string }) => {
-            setSessionClosed(true);
-            setSessionClosedAt((prev) => payload?.closedAt ?? prev ?? new Date().toISOString());
-            setSessionClosedMessage(payload?.message || 'Sesi diskusi ini telah ditutup.');
-        });
-
-        socketRef.current.on('session_reopened', () => {
-            setSessionClosed(false);
-            setSessionClosedAt(null);
-            setSessionClosedMessage(null);
-        });
-
-        socketRef.current.on('receive_message', (message: SocketChatMessage) => {
-            const displayMessage: DisplayMessage = {
-                id: message.id,
-                sender_id: message.senderId,
-                sender_type: message.senderType,
-                sender_name: message.senderName,
-                content: message.content,
-                created_at: message.createdAt,
-                is_intervention: message.isIntervention,
-                reply_to: message.replyTo,
-                attachments: message.attachments,
-                mentions: message.mentions,
-            };
-            setMessages((prev) => [...prev, displayMessage]);
-        });
-
-        socketRef.current.on('message_deleted', (data: { messageId: string }) => {
-            setMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
-        });
-
-        socketRef.current.on('user_typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
-            setTypingUsers((prev) => {
-                if (data.isTyping) {
-                    return prev.includes(data.userName) ? prev : [...prev, data.userName];
-                }
-                return prev.filter((name) => name !== data.userName);
-            });
-        });
-
-        // Listen for online users updates
-        socketRef.current.on('online_users', (data: { users: OnlineUser[] }) => {
-            setOnlineUsers(data.users);
-        });
-
-        socketRef.current.on('user_joined', (data: { userId: string; userName: string }) => {
-            setOnlineUsers((prev) => {
-                if (prev.some((u) => u.odId === data.userId)) return prev;
-                return [...prev, { odId: data.userId, userName: data.userName }];
-            });
-        });
-
-        socketRef.current.on('user_left', (data: { userId: string }) => {
-            setOnlineUsers((prev) => prev.filter((u) => u.odId !== data.userId));
-        });
-
-        // Listen for discussion quality updates from AI orchestration
-        socketRef.current.on('quality_update', (data: { 
-            qualityScore: number; 
-            engagementTypes: Record<string, number>; 
-            hotPercentage: number; 
-            message?: string 
-        }) => {
-            setDiscussionQuality({
-                qualityScore: data.qualityScore,
-                engagementTypes: data.engagementTypes,
-                hotPercentage: data.hotPercentage,
-                lastMessage: data.message
-            });
-            // Show feedback briefly when quality updates
-            setShowQualityFeedback(true);
-            setTimeout(() => setShowQualityFeedback(false), 5000);
-        });
-
-        // Listen for AI interventions
-        socketRef.current.on('intervention_sent', (data: { 
-            message: string; 
-            triggerReason: string;
-        }) => {
-            // Intervention will come as a regular message, this is just for notification
-            void data.triggerReason;
-        });
-
-        return () => {
-            // Use chatSpaceId as roomId
-            const roomId = chatSpace.id;
-            socketRef.current?.off('session_closed');
-            socketRef.current?.off('session_reopened');
-            socketRef.current?.off('quality_update');
-            socketRef.current?.off('intervention_sent');
-            socketRef.current?.emit('leave_room', roomId);
-            socketRef.current?.disconnect();
-        };
-    }, [jwtToken, course?.id, group?.id, chatSpace?.id, socketUrl]);
 
     useEffect(() => {
         return () => {
@@ -1681,10 +1532,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             </h3>
                                         </div>
                                         <button
-                                            onClick={() => setShowQualityFeedback(!showQualityFeedback)}
+                                            onClick={() => setQualityPanelExpanded(!qualityPanelExpanded)}
                                             className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50"
                                         >
-                                            <svg className={`h-4 w-4 transition-transform ${showQualityFeedback ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg className={`h-4 w-4 transition-transform ${qualityPanelExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </button>
