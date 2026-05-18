@@ -6,13 +6,10 @@ import { createRoot } from 'react-dom/client';
 
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
-import { setupAxiosInterceptors } from '@/lib/auth';
 import { refreshCsrfToken } from '@/lib/csrfRefresh';
 import axios from 'axios';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Kolabri';
-
-setupAxiosInterceptors();
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 if (csrfToken) {

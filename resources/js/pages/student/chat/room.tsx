@@ -13,6 +13,7 @@ import { useSocketRoom } from '@/hooks/useSocketRoom';
 import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
 import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
 import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
+import { safeAttachmentUrl } from '@/lib/attachment-url';
 import {
     createOptimisticMessage,
     markMessageFailed,
@@ -1144,11 +1145,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                                             {isImageFile(attachment.type) ? (
                                                                                 <button
                                                                                     type="button"
-                                                                                    onClick={() => openImagePreview(attachment.url, attachment.name)}
+                                                                                    onClick={() => openImagePreview(safeAttachmentUrl(attachment.url), attachment.name)}
                                                                                     className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[#88161c]"
                                                                                 >
                                                                                     <img 
-                                                                                        src={attachment.url} 
+                                                                                        src={safeAttachmentUrl(attachment.url)} 
                                                                                         alt={attachment.name}
                                                                                         className="max-h-32 max-w-[180px] rounded-xl object-cover transition-transform hover:scale-105 sm:max-h-48 sm:max-w-[250px]"
                                                                                         loading="lazy"
@@ -1161,7 +1162,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                                             ) : (
                                                                                 <button
                                                                                     type="button"
-                                                                                    onClick={() => downloadImage(attachment.url, attachment.name)}
+                                                                                    onClick={() => downloadImage(safeAttachmentUrl(attachment.url), attachment.name)}
                                                                                     className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-colors sm:gap-2 sm:px-3 sm:py-2 ${
                                                                                         ownMessage
                                                                                             ? 'text-white'
