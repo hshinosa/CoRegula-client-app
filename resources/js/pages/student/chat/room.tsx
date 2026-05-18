@@ -14,6 +14,7 @@ import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
 import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
 import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
 import { uploadAttachments } from '@/lib/upload-attachments';
+import { useMessageWindow } from '@/features/chat/use-message-window';
 import { safeAttachmentUrl } from '@/lib/attachment-url';
 import {
     createOptimisticMessage,
@@ -410,6 +411,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             };
         });
     }, [messages]);
+
+    const messageWindow = useMessageWindow(processedMessages);
+    const visibleMessages = messageWindow.visibleMessages;
+    const hiddenCount = messageWindow.hiddenCount;
+    const isVirtualized = messageWindow.isVirtualized;
+    const showAllMessages = messageWindow.showAll;
 
 
     useEffect(() => {
@@ -1076,13 +1083,24 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             >
                                 <LayoutGroup>
                                     <div className="space-y-1">
+                                        {isVirtualized && (
+                                            <div className="mb-2 flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={showAllMessages}
+                                                    className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    Tampilkan {hiddenCount} pesan sebelumnya
+                                                </button>
+                                            </div>
+                                        )}
                                         <AnimatePresence initial={false}>
-                                            {processedMessages.map((message, index) => {
+                                            {visibleMessages.map((message) => {
                                                 const ownMessage = isOwnMessage(message);
                                                 
                                                 return (
                                                     <motion.div
-                                                        key={message.id || index}
+                                                        key={message.id}
                                                         layout
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}

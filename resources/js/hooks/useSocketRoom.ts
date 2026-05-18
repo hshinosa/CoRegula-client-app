@@ -1,47 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { clearCachedToken, getAuthToken } from '@/lib/getAuthToken';
+import type {
+    ChatDisplayMessage as DisplayMessage,
+    ChatSocketMessage as SocketChatMessage,
+} from '@/types/chat';
 
-export interface SocketChatMessage {
-    id: string;
-    senderId: string;
-    senderName: string;
-    senderType: string;
-    content: string;
-    createdAt: string;
-    isIntervention?: boolean;
-    replyTo?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
-
-interface ReplyTo {
-    messageId: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-}
-
-interface FileAttachment {
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    previewUrl?: string;
-}
-
-interface DisplayMessage {
-    id: string;
-    sender_id: string;
-    sender_type: string;
-    sender_name: string;
-    content: string;
-    created_at: string;
-    is_intervention?: boolean;
-    reply_to?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
+export type { SocketChatMessage };
 
 interface OnlineUser {
     odId: string;
@@ -133,7 +98,28 @@ export function useSocketRoom({
             socketRef.current?.emit('join_room', { courseId, groupId, chatSpaceId });
         });
 
-        socketRef.current.on('connect_error', (error) => {
+        let reauthAttempted = false;
+        socketRef.current.on('connect_error', async (error) => {
+            const msg = (error?.message || '').toLowerCase();
+            const isAuthError = msg.includes('unauthorized') || msg.includes('expired') || msg.includes('token') || msg.includes('auth');
+
+            if (isAuthError && !reauthAttempted) {
+                reauthAttempted = true;
+                try {
+                    clearCachedToken();
+                    const newToken = await getAuthToken();
+                    if (socketRef.current) {
+                        socketRef.current.auth = { token: newToken };
+                        socketRef.current.connect();
+                    }
+                    return;
+                } catch {
+                    setConnectionError('Authentication failed. Please refresh the page.');
+                    setIsConnected(false);
+                    return;
+                }
+            }
+
             setConnectionError(`Connection failed: ${error.message}`);
             setIsConnected(false);
         });
