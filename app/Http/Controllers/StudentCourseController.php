@@ -14,16 +14,23 @@ class StudentCourseController extends Controller
      */
     public function enrolled(): Response
     {
+        $courses = [];
+        $serviceError = null;
         try {
             $response = $this->apiRequest()->get($this->apiUrl() . '/api/courses/enrolled');
-            $courses = $response->successful() ? $response->json('data', []) : [];
+            if ($response->successful()) {
+                $courses = $response->json('data', []);
+            } else {
+                $serviceError = 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.';
+            }
         } catch (\Exception $e) {
             Log::error('StudentCourseController: failed to fetch enrolled courses', ['error' => $e->getMessage()]);
-            $courses = [];
+            $serviceError = 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.';
         }
 
         return Inertia::render('student/courses/index', [
             'courses' => $courses,
+            'serviceError' => $serviceError,
         ]);
     }
 
