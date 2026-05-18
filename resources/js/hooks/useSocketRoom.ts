@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-interface SocketChatMessage {
+export interface SocketChatMessage {
     id: string;
     senderId: string;
     senderName: string;
@@ -64,7 +64,7 @@ interface UseSocketRoomOptions {
     onSessionClosed?: (payload: { closedAt?: string; message?: string }) => void;
     onSessionReopened?: () => void;
     onMessagesLoaded?: (messages: DisplayMessage[]) => void;
-    onMessageReceived?: (message: DisplayMessage) => void;
+    onMessageReceived?: (message: DisplayMessage, raw: SocketChatMessage) => void;
     onMessageDeleted?: (messageId: string) => void;
 }
 
@@ -97,6 +97,19 @@ export function useSocketRoom({
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
     const [discussionQuality, setDiscussionQuality] = useState<DiscussionQuality | null>(null);
     const [showQualityFeedback, setShowQualityFeedback] = useState(false);
+    const qualityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const onSessionClosedRef = useRef(onSessionClosed);
+    const onSessionReopenedRef = useRef(onSessionReopened);
+    const onMessagesLoadedRef = useRef(onMessagesLoaded);
+    const onMessageReceivedRef = useRef(onMessageReceived);
+    const onMessageDeletedRef = useRef(onMessageDeleted);
+
+    onSessionClosedRef.current = onSessionClosed;
+    onSessionReopenedRef.current = onSessionReopened;
+    onMessagesLoadedRef.current = onMessagesLoaded;
+    onMessageReceivedRef.current = onMessageReceived;
+    onMessageDeletedRef.current = onMessageDeleted;
 
     useEffect(() => {
         if (!jwtToken) return;
@@ -143,7 +156,7 @@ export function useSocketRoom({
                 attachments: msg.attachments,
                 mentions: msg.mentions,
             }));
-            onMessagesLoaded?.(historyMessages);
+            onMessagesLoadedRef.current?.(historyMessages);
         });
 
         socketRef.current.on('disconnect', () => {
@@ -156,11 +169,11 @@ export function useSocketRoom({
         });
 
         socketRef.current.on('session_closed', (payload: { closedAt?: string; message?: string }) => {
-            onSessionClosed?.(payload);
+            onSessionClosedRef.current?.(payload);
         });
 
         socketRef.current.on('session_reopened', () => {
-            onSessionReopened?.();
+            onSessionReopenedRef.current?.();
         });
 
         socketRef.current.on('receive_message', (message: SocketChatMessage) => {
@@ -176,11 +189,11 @@ export function useSocketRoom({
                 attachments: message.attachments,
                 mentions: message.mentions,
             };
-            onMessageReceived?.(displayMessage);
+            onMessageReceivedRef.current?.(displayMessage, message);
         });
 
         socketRef.current.on('message_deleted', (data: { messageId: string }) => {
-            onMessageDeleted?.(data.messageId);
+            onMessageDeletedRef.current?.(data.messageId);
         });
 
         socketRef.current.on('user_typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
@@ -220,7 +233,11 @@ export function useSocketRoom({
                 lastMessage: data.message,
             });
             setShowQualityFeedback(true);
-            setTimeout(() => setShowQualityFeedback(false), 5000);
+            if (qualityTimerRef.current) clearTimeout(qualityTimerRef.current);
+            qualityTimerRef.current = setTimeout(() => {
+                setShowQualityFeedback(false);
+                qualityTimerRef.current = null;
+            }, 5000);
         });
 
         socketRef.current.on('intervention_sent', (data: { message: string; triggerReason: string }) => {
@@ -228,6 +245,10 @@ export function useSocketRoom({
         });
 
         return () => {
+            if (qualityTimerRef.current) {
+                clearTimeout(qualityTimerRef.current);
+                qualityTimerRef.current = null;
+            }
             socketRef.current?.off('session_closed');
             socketRef.current?.off('session_reopened');
             socketRef.current?.off('quality_update');
