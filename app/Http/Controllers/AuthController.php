@@ -30,7 +30,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $response = Http::post($this->apiUrl() . '/api/auth/login', [
+            $response = $this->coreApiRequest()->post($this->apiUrl() . '/api/auth/login', [
                 'email' => $validated['email'],
                 'password' => $validated['password'],
             ]);
@@ -86,7 +86,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $response = Http::post($this->apiUrl() . '/api/auth/register', [
+            $response = $this->coreApiRequest()->post($this->apiUrl() . '/api/auth/register', [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => $validated['password'],
@@ -143,7 +143,7 @@ class AuthController extends Controller
         
         if ($refreshToken) {
             try {
-                Http::post($this->apiUrl() . '/api/auth/logout', [
+                $this->coreApiRequest()->post($this->apiUrl() . '/api/auth/logout', [
                     'refreshToken' => $refreshToken,
                 ]);
             } catch (\Exception $e) {

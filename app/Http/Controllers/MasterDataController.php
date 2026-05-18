@@ -350,4 +350,11 @@ class MasterDataController extends Controller
 
         return [];
     }
+
+    public function exportData(\Illuminate\Http\Request $request)
+    {
+        $params = $request->only(['limit', 'sortBy', 'sortOrder']);
+        $response = $this->apiRequest(30, 10)->get($this->apiUrl() . '/api/admin/courses', $params);
+        return response()->json($response->json(), $response->status());
+    }
 }

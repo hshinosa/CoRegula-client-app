@@ -15,10 +15,10 @@
 > Note: completion deferred to `client-app-summary-bff-proxy`. Tasks below
 > remain unchecked until that change implements the route + controller.
 
-- [ ] 3.1 Add `Route::get('/api/chatspaces/{chatSpace}/summary', ...)` in `routes/web.php`
-- [ ] 3.2 Add `summary()` method in `ChatSpaceController` (or create controller)
-- [ ] 3.3 Forward to Core API via `$this->apiRequest()`
-- [ ] 3.4 Test: PHPUnit feature test for the route
+- [x] 3.1 Add `Route::get('/api/chatspaces/{chatSpace}/summary', ...)` in `routes/web.php`
+- [x] 3.2 Add `summary()` method in `ChatSpaceController` (or create controller)
+- [x] 3.3 Forward to Core API via `$this->apiRequest()`
+- [x] 3.4 Test: PHPUnit feature test for the route
 
 ## 4. Create useChatSummary hook
 

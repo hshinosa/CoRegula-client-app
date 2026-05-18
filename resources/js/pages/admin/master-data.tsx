@@ -1130,25 +1130,11 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
 
     const handleExportCourses = async () => {
         try {
-            const response = await axios.get('/api/auth/token');
-            const token = response.data?.data?.token;
-
-            if (!token) {
-                throw new Error('Missing auth token');
-            }
-
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3000';
-            const exportResponse = await fetch(`${apiBaseUrl}/api/admin/courses?limit=1000&sortBy=createdAt&sortOrder=desc`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+            const exportResponse = await axios.get('/admin/master-data/export', {
+                params: { limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' },
             });
 
-            if (!exportResponse.ok) {
-                throw new Error('Failed to fetch course data');
-            }
-
-            const payload = await exportResponse.json();
+            const payload = exportResponse.data;
             const exportRows = (payload.data ?? []).map((course: CourseItem) => ({
                 code: course.code,
                 name: course.name,

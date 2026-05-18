@@ -222,11 +222,9 @@ export default function CourseAnalytics({ course, analytics }: Props) {
 
     const refreshAnalytics = useCallback(async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            const response = await fetch(`${apiUrl}/api/analytics/course/${course.id}`, {
-                headers: {
-                    Authorization: `Bearer ${jwtToken}`,
-                },
+            const response = await fetch(`/lecturer/courses/${course.id}/analytics/live`, {
+                credentials: 'include',
+                headers: { 'Accept': 'application/json' },
             });
 
             if (response.ok) {
@@ -236,7 +234,7 @@ export default function CourseAnalytics({ course, analytics }: Props) {
         } catch (error) {
             console.error('Failed to refresh analytics:', error);
         }
-    }, [course.id, jwtToken]);
+    }, [course.id]);
 
     const liveSummary = useMemo(() => {
         const qualityScores = liveGroups

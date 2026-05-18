@@ -201,13 +201,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [isClosingSession, setIsClosingSession] = useState(false);
     const [closeSessionError, setCloseSessionError] = useState<string | null>(null);
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
     const { state: summaryState } = useChatSummary({
+        courseId: course.id,
         chatSpaceId: chatSpace.id,
         enabled: sessionClosed,
-        apiBaseUrl,
-        jwtToken,
     });
 
     const [showReflectionModal, setShowReflectionModal] = useState(chatSpace.needsReflection || false);
@@ -704,20 +702,18 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     const handleCloseSession = useCallback(async () => {
         if (sessionClosed || isClosingSession) return;
-        if (!jwtToken) {
-            showCloseError('Authentication required');
-            return;
-        }
 
         setIsClosingSession(true);
         setCloseSessionError(null);
 
         try {
-            const response = await fetch(`${apiBaseUrl}/api/chat-spaces/${chatSpace.id}/close`, {
+            const response = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/close`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${jwtToken}`,
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
                 },
             });
 
@@ -731,7 +727,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         } finally {
             setIsClosingSession(false);
         }
-    }, [sessionClosed, isClosingSession, apiBaseUrl, chatSpace.id, jwtToken, showCloseError]);
+    }, [sessionClosed, isClosingSession, course.id, chatSpace.id, showCloseError]);
 
     const handleOpenCloseConfirmModal = useCallback(() => {
         if (sessionClosed || isClosingSession) return;
@@ -769,12 +765,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         setReflectionError(null);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            const response = await fetch(`${apiUrl}/api/chat-spaces/${chatSpace.id}/reflection`, {
+            const response = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/reflection`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`,
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
                 },
                 body: JSON.stringify({ content: reflectionContent }),
             });

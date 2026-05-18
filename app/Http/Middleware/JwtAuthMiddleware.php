@@ -46,11 +46,11 @@ class JwtAuthMiddleware
         $payload = $this->decodeJwtPayload((string) session('jwt'));
         $exp = is_array($payload) && isset($payload['exp']) ? (int) $payload['exp'] : null;
 
-        if ($exp !== null && $exp <= time()) {
+        if (!is_array($payload) || $exp === null || !is_numeric($payload['exp']) || $exp <= time()) {
             session()->forget(['jwt', 'refresh_token', 'user']);
 
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Session expired'], 401);
+                return response()->json(['message' => 'Session expired or invalid token'], 401);
             }
 
             return redirect()->route('auth.login.index')->with('error', 'Session expired');

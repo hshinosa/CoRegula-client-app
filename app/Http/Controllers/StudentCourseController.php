@@ -176,4 +176,29 @@ class StudentCourseController extends Controller
             'socketUrl' => config('services.api.socket_url', 'http://localhost:3000'),
         ]);
     }
+
+    public function closeSession(string $course, string $chatSpace)
+    {
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/close");
+        return response()->json($response->json(), $response->status());
+    }
+
+    public function submitReflection(\Illuminate\Http\Request $request, string $course, string $chatSpace)
+    {
+        $validated = $request->validate(['content' => 'required|string|min:50|max:5000']);
+        $response = $this->apiRequest()->post(
+            $this->apiUrl() . "/api/chat-spaces/{$chatSpace}/reflection",
+            $validated
+        );
+        return response()->json($response->json(), $response->status());
+    }
+
+    public function chatSpaceSummary(string $course, string $chatSpace)
+    {
+        $response = $this->apiRequest()->get($this->apiUrl() . "/api/chatspaces/{$chatSpace}/summary");
+        if ($response->status() === 404) {
+            return response()->json(['summary' => null], 200);
+        }
+        return response()->json($response->json(), $response->status());
+    }
 }

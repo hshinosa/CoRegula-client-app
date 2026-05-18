@@ -17,4 +17,9 @@ abstract class Controller
             ->timeout($timeout)
             ->connectTimeout($connectTimeout);
     }
+
+    protected function coreApiRequest(int $timeout = 10, int $connectTimeout = 5)
+    {
+        return Http::timeout($timeout)->connectTimeout($connectTimeout);
+    }
 }

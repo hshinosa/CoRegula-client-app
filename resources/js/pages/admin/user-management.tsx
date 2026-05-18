@@ -702,25 +702,11 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
 
     const handleExportUsers = async () => {
         try {
-            const response = await axios.get('/api/auth/token');
-            const token = response.data?.data?.token;
-
-            if (!token) {
-                throw new Error('Missing auth token');
-            }
-
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3000';
-            const exportResponse = await fetch(`${apiBaseUrl}/api/admin/users?limit=1000&sortBy=createdAt&sortOrder=desc`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+            const exportResponse = await axios.get('/admin/users/export', {
+                params: { limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' },
             });
 
-            if (!exportResponse.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-
-            const payload = await exportResponse.json();
+            const payload = exportResponse.data;
             const exportRows = (payload.data ?? []).map((user: User) => ({
                 name: user.name,
                 email: user.email,
