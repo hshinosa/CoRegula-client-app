@@ -1,7 +1,6 @@
 import { Head, usePage, Link } from '@inertiajs/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useState, useEffect, useRef, FormEvent, useMemo, ChangeEvent, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { MessageSquare, Send, Paperclip, X, CornerUpLeft, Users } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -10,9 +9,9 @@ import { Course, SharedData, LearningGoal } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { useSocketRoom } from '@/hooks/useSocketRoom';
 import {
     createOptimisticMessage,
-    mapSocketMessageToDisplayMessage,
     reconcileIncomingMessage,
     markMessageFailed,
     markMessageSending,
@@ -53,7 +52,6 @@ interface Group {
 }
 
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
-type SocketChatMessage = import('@/features/chat/optimistic-message').ChatSocketMessage;
 type FileAttachment = import('@/features/chat/optimistic-message').FileAttachment;
 type ReplyTo = import('@/features/chat/optimistic-message').ReplyTo;
 type ProcessedMessage = DisplayMessage & {
@@ -63,17 +61,10 @@ type ProcessedMessage = DisplayMessage & {
     isGrouped: boolean;
 };
 
-// Removed top-level Task 4 helpers; Task 5 helpers moved inside the component scope
-
 interface PendingFile {
     file: File;
     preview?: string;
     id: string;
-}
-
-interface OnlineUser {
-    odId: string;
-    userName: string;
 }
 
 interface Props {
@@ -135,12 +126,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
-    // Task 5 internal helpers moved below activeChatSpace definition (see below)
     const [newMessage, setNewMessage] = useState('');
-    const [isConnected, setIsConnected] = useState(false);
-    const [connectionError, setConnectionError] = useState<string | null>(null);
     const [isTyping, setIsTyping] = useState(false);
-    const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
     const [showGoalBanner, setShowGoalBanner] = useState(!hasGoal);
@@ -191,16 +178,12 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
     const [imageZoom, setImageZoom] = useState(1);
     
-    // Online users state
-    const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-    
     // Right sidebar state (mobile)
     const [showRightSidebar, setShowRightSidebar] = useState(false);
     
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const socketRef = useRef<Socket | null>(null);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -242,102 +225,22 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         });
     }, [messages]);
 
-    useEffect(() => {
-        if (!jwtToken) {
-            setConnectionError('No authentication token available');
-            return;
-        }
-
-        if (!course?.id || !group?.id || !activeChatSpace?.id) {
-            setConnectionError('Missing course, group, or chat space information');
-            return;
-        }
-
-        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-        socketRef.current = io(apiUrl, {
-            auth: { token: jwtToken },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
-
-        socketRef.current.on('connect', () => {
-            setConnectionError(null);
-            socketRef.current?.emit('join_room', { 
-                courseId: course.id, 
-                groupId: group.id,
-                chatSpaceId: activeChatSpace.id
-            });
-        });
-
-        socketRef.current.on('connect_error', (error) => {
-            setConnectionError(`Connection failed: ${error.message}`);
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('room_joined', () => {
-            setIsConnected(true);
-            setConnectionError(null);
-        });
-
-        socketRef.current.on('chat_history', (data: { messages: SocketChatMessage[] }) => {
-            // Load chat history using shared mapper
-            const historyMessages: DisplayMessage[] = data.messages.map((msg) => mapSocketMessageToDisplayMessage(msg));
-            setMessages(historyMessages as DisplayMessage[]);
-        });
-
-        socketRef.current.on('disconnect', () => {
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('error', (data: { message: string }) => {
-            setConnectionError(data.message);
-            setIsConnected(false);
-        });
-
-        socketRef.current.on('receive_message', (message: SocketChatMessage) => {
-            // Reconcile incoming message with optimistic queue
-            setMessages((prev) => reconcileIncomingMessage(prev, message));
-        });
-
-        socketRef.current.on('message_deleted', (data: { messageId: string }) => {
-            setMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
-        });
-
-        socketRef.current.on('user_typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
-            setTypingUsers((prev) => {
-                if (data.isTyping) {
-                    return prev.includes(data.userName) ? prev : [...prev, data.userName];
-                }
-                return prev.filter((name) => name !== data.userName);
-            });
-        });
-
-        // Listen for online users updates
-        socketRef.current.on('online_users', (data: { users: OnlineUser[] }) => {
-            setOnlineUsers(data.users);
-        });
-
-        socketRef.current.on('user_joined', (data: { userId: string; userName: string }) => {
-            setOnlineUsers((prev) => {
-                if (prev.some((u) => u.odId === data.userId)) return prev;
-                return [...prev, { odId: data.userId, userName: data.userName }];
-            });
-        });
-
-        socketRef.current.on('user_left', (data: { userId: string }) => {
-            setOnlineUsers((prev) => prev.filter((u) => u.odId !== data.userId));
-        });
-
-        return () => {
-            // Use chatSpaceId as roomId
-            const roomId = activeChatSpace.id;
-            socketRef.current?.emit('leave_room', roomId);
-            socketRef.current?.disconnect();
-        };
-    }, [jwtToken, course?.id, group?.id, activeChatSpace?.id, socketUrl]);
+    const { socketRef, isConnected, connectionError, typingUsers, onlineUsers } = useSocketRoom({
+        jwtToken,
+        courseId: course?.id ?? '',
+        groupId: group?.id ?? '',
+        chatSpaceId: activeChatSpace?.id ?? '',
+        socketUrl,
+        onMessagesLoaded: (loaded) => {
+            setMessages(loaded);
+        },
+        onMessageReceived: (_display, raw) => {
+            setMessages((prev) => reconcileIncomingMessage(prev, raw));
+        },
+        onMessageDeleted: (messageId) => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+        },
+    });
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
