@@ -1,37 +1,7 @@
 import React from 'react';
+import type { ChatDisplayMessage } from '@/types/chat';
 
-interface ReplyTo {
-    messageId: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-}
-
-interface FileAttachment {
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    previewUrl?: string;
-}
-
-export interface ChatMessage {
-    id: string;
-    sender_id: string;
-    sender_type: string;
-    sender_name: string;
-    content: string;
-    created_at: string;
-    is_intervention?: boolean;
-    reply_to?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-    showAvatar?: boolean;
-    showName?: boolean;
-    showTime?: boolean;
-    isGrouped?: boolean;
-}
+export type ChatMessage = ChatDisplayMessage;
 
 interface ChatMessageListProps {
     messages: ChatMessage[];
