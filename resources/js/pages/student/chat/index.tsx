@@ -17,6 +17,7 @@ import {
     markMessageSending,
     toSocketPayload,
 } from '@/features/chat/optimistic-message';
+import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
 
 interface GroupMember {
     id: string;
@@ -154,6 +155,15 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
     // File upload state
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+    const pendingFilesRef = useRef<PendingFile[]>([]);
+    useEffect(() => {
+        pendingFilesRef.current = pendingFiles;
+    }, [pendingFiles]);
+    useEffect(() => {
+        return () => {
+            revokePendingFilePreviews(pendingFilesRef.current);
+        };
+    }, []);
     const [isUploading, setIsUploading] = useState(false);
     
     // Mention state
@@ -589,6 +599,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
         setNewMessage('');
         setReplyingTo(null);
+        revokePendingFilePreviews(pendingFiles);
         setPendingFiles([]);
     };
 
