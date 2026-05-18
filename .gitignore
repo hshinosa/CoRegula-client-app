@@ -32,3 +32,4 @@ yarn-error.log
 /blob-report/
 /playwright/.cache/
 /test-screenshots/
+.worktrees
