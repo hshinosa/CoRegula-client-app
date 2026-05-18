@@ -10,6 +10,14 @@ import { Course, SharedData, LearningGoal } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
+import {
+    createOptimisticMessage,
+    mapSocketMessageToDisplayMessage,
+    reconcileIncomingMessage,
+    markMessageFailed,
+    markMessageSending,
+    toSocketPayload,
+} from '@/features/chat/optimistic-message';
 
 interface GroupMember {
     id: string;
@@ -44,54 +52,18 @@ interface Group {
     chatSpaces?: ChatSpace[];
 }
 
-interface ReplyTo {
-    messageId: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-}
-
-interface FileAttachment {
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    previewUrl?: string;
-}
-
-interface SocketChatMessage {
-    id: string;
-    senderId: string;
-    senderName: string;
-    senderType: string;
-    content: string;
-    createdAt: string;
-    isIntervention?: boolean;
-    replyTo?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
-
-interface DisplayMessage {
-    id: string;
-    sender_id: string;
-    sender_type: string;
-    sender_name: string;
-    content: string;
-    created_at: string;
-    is_intervention?: boolean;
-    reply_to?: ReplyTo;
-    attachments?: FileAttachment[];
-    mentions?: string[];
-}
-
-interface ProcessedMessage extends DisplayMessage {
+type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
+type SocketChatMessage = import('@/features/chat/optimistic-message').ChatSocketMessage;
+type FileAttachment = import('@/features/chat/optimistic-message').FileAttachment;
+type ReplyTo = import('@/features/chat/optimistic-message').ReplyTo;
+type ProcessedMessage = DisplayMessage & {
     showAvatar: boolean;
     showName: boolean;
     showTime: boolean;
     isGrouped: boolean;
-}
+};
+
+// Removed top-level Task 4 helpers; Task 5 helpers moved inside the component scope
 
 interface PendingFile {
     file: File;
@@ -163,6 +135,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    // Task 5 internal helpers moved below activeChatSpace definition (see below)
     const [newMessage, setNewMessage] = useState('');
     const [isConnected, setIsConnected] = useState(false);
     const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -186,6 +159,23 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         group.chatSpaces?.find(cs => cs.id === activeChatSpaceId) || group.chatSpaces?.[0] || null,
         [group.chatSpaces, activeChatSpaceId]
     );
+
+    // Task 5 internal helpers (inside component scope)
+    const createClientId = () => {
+        return `client-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    };
+
+    const emitChatMessage = useCallback((message: DisplayMessage) => {
+        if (!socketRef.current || !activeChatSpace) {
+            setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
+            return;
+        }
+        socketRef.current.emit('send_message', toSocketPayload(message, {
+            roomId: activeChatSpace.id,
+            courseId: course.id,
+            groupId: group.id,
+        }));
+    }, [activeChatSpace?.id, course.id, group.id]);
     
     // File upload state
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -293,20 +283,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         });
 
         socketRef.current.on('chat_history', (data: { messages: SocketChatMessage[] }) => {
-            // Load chat history
-            const historyMessages: DisplayMessage[] = data.messages.map((msg) => ({
-                id: msg.id,
-                sender_id: msg.senderId,
-                sender_type: msg.senderType,
-                sender_name: msg.senderName,
-                content: msg.content,
-                created_at: msg.createdAt,
-                is_intervention: msg.isIntervention,
-                reply_to: msg.replyTo,
-                attachments: msg.attachments,
-                mentions: msg.mentions,
-            }));
-            setMessages(historyMessages);
+            // Load chat history using shared mapper
+            const historyMessages: DisplayMessage[] = data.messages.map((msg) => mapSocketMessageToDisplayMessage(msg));
+            setMessages(historyMessages as DisplayMessage[]);
         });
 
         socketRef.current.on('disconnect', () => {
@@ -319,19 +298,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         });
 
         socketRef.current.on('receive_message', (message: SocketChatMessage) => {
-            const displayMessage: DisplayMessage = {
-                id: message.id,
-                sender_id: message.senderId,
-                sender_type: message.senderType,
-                sender_name: message.senderName,
-                content: message.content,
-                created_at: message.createdAt,
-                is_intervention: message.isIntervention,
-                reply_to: message.replyTo,
-                attachments: message.attachments,
-                mentions: message.mentions,
-            };
-            setMessages((prev) => [...prev, displayMessage]);
+            // Reconcile incoming message with optimistic queue
+            setMessages((prev) => reconcileIncomingMessage(prev, message));
         });
 
         socketRef.current.on('message_deleted', (data: { messageId: string }) => {
@@ -699,15 +667,22 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
             setIsUploading(false);
         }
         
-        socketRef.current.emit('send_message', { 
-            roomId,
-            courseId: course.id,
-            groupId: group.id,
-            content: newMessage,
+        // New optimistic sending flow (Task 5)
+        const clientId = createClientId();
+        const optimisticMessage = createOptimisticMessage({
+            clientId,
+            senderId: auth.user?.id || 'unknown',
+            senderName: auth.user?.name || 'You',
+            senderType: auth.user?.role || 'student',
+            content: newMessage.trim(),
+            createdAt: new Date().toISOString(),
             replyTo: replyingTo || undefined,
             attachments: attachments.length > 0 ? attachments : undefined,
             mentions: mentions.length > 0 ? mentions : undefined,
         });
+
+        setMessages((prev) => [...prev, optimisticMessage]);
+        emitChatMessage(optimisticMessage);
 
         setNewMessage('');
         setReplyingTo(null);
@@ -732,6 +707,22 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
     const cancelReply = () => {
         setReplyingTo(null);
+    };
+
+    // Task 5: retry a message sent earlier
+    const handleRetryMessage = (message: DisplayMessage) => {
+        const retryId = message.clientId || message.id;
+        setMessages((prev) => markMessageSending(prev, retryId));
+
+        const retryMessage: DisplayMessage = {
+            ...message,
+            clientId: retryId,
+            id: retryId,
+            deliveryStatus: 'sending',
+            isOptimistic: true,
+        };
+
+        emitChatMessage(retryMessage);
     };
 
     const formatTime = (date: string) => {
@@ -1068,6 +1059,16 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                             {renderMessageContent(message.content, message.mentions)}
                                                                         </p>
                                                                     </div>
+
+                                                                    {ownMessage && (
+                                                                        <div className="mt-1 text-xs text-[#6B7280]">
+                                                                            {message.deliveryStatus === 'sending' ? (
+                                                                                <span>Mengirim...</span>
+                                                                            ) : message.deliveryStatus === 'failed' ? (
+                                                                                <button onClick={() => handleRetryMessage(message)} className="text-[#88161c] hover:underline">Coba lagi</button>
+                                                                            ) : null}
+                                                                        </div>
+                                                                    )}
 
                                                                     {/* Action buttons - show on right for others' messages */}
                                                                     {!ownMessage && (
