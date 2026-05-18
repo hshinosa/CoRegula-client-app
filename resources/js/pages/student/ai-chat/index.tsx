@@ -4,25 +4,17 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+import AppLayout from '@/layouts/app-layout';
+import student from '@/routes/student';
+import { useStudentNav } from '@/components/navigation/student-nav';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { ChatSkeleton } from '@/components/ui/skeletons';
 import { AiMessage, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { formatAiOutput } from '@/lib/formatAiOutput';
-import { getAuthToken } from '@/lib/getAuthToken';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
 
-const getCoreApiUrl = () => {
-    if (typeof window !== 'undefined') {
-        const hostname = window.location.hostname;
-        return `http://${hostname}:3000`;
-    }
-    return 'http://localhost:3000';
-};
-import student from '@/routes/student';
-import { useStudentNav } from '@/components/navigation/student-nav';
-import AppLayout from '@/layouts/app-layout';
 
 interface AiChat {
     id: string;
@@ -75,7 +67,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             error?: string;
         };
     };
-    const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('ai-chat');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
@@ -88,11 +79,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const [fetchError, setFetchError] = useState<string | null>(null);
 
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
-    }, []);
-
-    useEffect(() => {
-        if (!activeChat?.id || !jwtToken) {
+        if (!activeChat?.id) {
             setLoadedMessages([]);
             return;
         }
@@ -103,7 +90,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             .then(setLoadedMessages)
             .catch(err => setFetchError(err.message))
             .finally(() => setIsLoadingMessages(false));
-    }, [activeChat?.id, jwtToken]);
+    }, [activeChat?.id]);
     const [editingChatId, setEditingChatId] = useState<string | null>(null);
     const [editingTitle, setEditingTitle] = useState('');
     const [inputValue, setInputValue] = useState('');
@@ -240,8 +227,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
 
     const apiHeaders = useMemo(() => ({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`,
-    }), [jwtToken]);
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+    }), []);
 
     const displayedStreamingContentRef = useRef('');
 
@@ -256,8 +244,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setDisplayedStreamingContent('');
 
         try {
-            const resp = await fetch(`${getCoreApiUrl()}/api/ai-chats/${chatId}/messages/stream`, {
+            const resp = await fetch(`/ai-chat/${chatId}/messages/stream`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
                 body: JSON.stringify({ content }),
             });
@@ -310,8 +299,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setDisplayedStreamingContent('');
 
         try {
-            const createResp = await fetch(`${getCoreApiUrl()}/api/ai-chats`, {
+            const createResp = await fetch('/ai-chat', {
                 method: 'POST',
+                credentials: 'include',
                 headers: apiHeaders,
                 body: JSON.stringify({ title: content.substring(0, 50) }),
             });
@@ -325,8 +315,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             const { data: newChat } = await createResp.json();
             const chatId = newChat.id;
 
-            const streamResp = await fetch(`${getCoreApiUrl()}/api/ai-chats/${chatId}/messages/stream`, {
+            const streamResp = await fetch(`/ai-chat/${chatId}/messages/stream`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
                 body: JSON.stringify({ content }),
             });
@@ -609,7 +600,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                if (activeChat?.id && jwtToken) {
+                                                if (activeChat?.id) {
                                                     setFetchError(null);
                                                     setIsLoadingMessages(true);
                                                     fetchChatMessages(activeChat.id)

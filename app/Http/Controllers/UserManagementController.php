@@ -147,4 +147,11 @@ class UserManagementController extends Controller
             return response()->json(['message' => 'Failed to toggle user status', 'code' => 'SERVER_ERROR'], 500);
         }
     }
+
+    public function exportData(\Illuminate\Http\Request $request)
+    {
+        $params = $request->only(['limit', 'sortBy', 'sortOrder']);
+        $response = $this->apiRequest(30, 10)->get($this->apiUrl() . '/api/admin/users', $params);
+        return response()->json($response->json(), $response->status());
+    }
 }

@@ -2,28 +2,20 @@ import { useEffect, useState } from 'react';
 import type { ChatDiscussionSummary, ChatSummaryState } from './types';
 
 export interface UseChatSummaryOptions {
+    courseId: string | undefined;
     chatSpaceId: string | undefined;
     enabled: boolean;
-    apiBaseUrl?: string;
-    jwtToken?: string;
 }
 
 export function useChatSummary({
+    courseId,
     chatSpaceId,
     enabled,
-    apiBaseUrl,
-    jwtToken,
 }: UseChatSummaryOptions): { state: ChatSummaryState } {
     const [state, setState] = useState<ChatSummaryState>({ status: 'loading' });
 
     useEffect(() => {
-        if (!enabled || !chatSpaceId) {
-            setState({ status: 'empty' });
-            return;
-        }
-
-        const baseUrl = apiBaseUrl || import.meta.env.VITE_API_URL || '';
-        if (!baseUrl || !jwtToken) {
+        if (!enabled || !chatSpaceId || !courseId) {
             setState({ status: 'empty' });
             return;
         }
@@ -31,11 +23,9 @@ export function useChatSummary({
         let cancelled = false;
         setState({ status: 'loading' });
 
-        fetch(`${baseUrl}/api/chatspaces/${chatSpaceId}/summary`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${jwtToken}`,
-            },
+        fetch(`/student/courses/${courseId}/chat-spaces/${chatSpaceId}/summary`, {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' },
         })
             .then((response) => {
                 if (response.status === 404) return null;
@@ -61,7 +51,7 @@ export function useChatSummary({
         return () => {
             cancelled = true;
         };
-    }, [chatSpaceId, enabled, apiBaseUrl, jwtToken]);
+    }, [courseId, chatSpaceId, enabled]);
 
     return { state };
 }
