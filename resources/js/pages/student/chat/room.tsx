@@ -10,6 +10,8 @@ import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
+import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
+import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
 import {
     createOptimisticMessage,
     markMessageFailed,
@@ -199,6 +201,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+    const { state: summaryState } = useChatSummary({
+        chatSpaceId: chatSpace.id,
+        enabled: sessionClosed,
+        apiBaseUrl,
+        jwtToken,
+    });
+
     const [showReflectionModal, setShowReflectionModal] = useState(chatSpace.needsReflection || false);
     const [reflectionContent, setReflectionContent] = useState('');
     const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
@@ -262,7 +271,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             courseId: course.id,
             groupId: group.id,
         }));
-    }, [chatSpace.id, course.id, group.id]);
+    }, [chatSpace.id, course.id, group.id, socketRef]);
 
     const handleSubmit = async (e: FormEvent) => {
         if (sessionClosed) return;
@@ -965,6 +974,16 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     </AnimatePresence>
 
                     {/* Closed Session Banner */}
+                    {sessionClosed && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mb-4"
+                        >
+                            <ChatSummaryCard state={summaryState} onOpenDetail={() => {}} />
+                        </motion.div>
+                    )}
+
                     {sessionClosed && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
