@@ -18,6 +18,7 @@ import {
     toSocketPayload,
 } from '@/features/chat/optimistic-message';
 import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
+import { uploadAttachments } from '@/lib/upload-attachments';
 import { safeAttachmentUrl } from '@/lib/attachment-url';
 
 interface GroupMember {
@@ -556,27 +557,17 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         if (pendingFiles.length > 0) {
             setIsUploading(true);
             try {
-                // Convert files to base64 data URLs for transmission
-                // In production, you would upload to a server/S3 instead
-                attachments = await Promise.all(pendingFiles.map(async (pf) => {
-                    // Convert file to base64 data URL
-                    const base64 = await new Promise<string>((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.readAsDataURL(pf.file);
-                    });
-                    
-                    return {
-                        id: pf.id,
-                        name: pf.file.name,
-                        type: pf.file.type,
-                        size: pf.file.size,
-                        url: base64, // Use base64 for transmission
-                        previewUrl: pf.file.type.startsWith('image/') ? base64 : undefined,
-                    };
+                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file));
+                attachments = uploaded.map((u, i) => ({
+                    id: pendingFiles[i].id,
+                    name: u.name,
+                    type: u.type,
+                    size: u.size,
+                    url: u.url,
+                    previewUrl: u.previewUrl ?? undefined,
                 }));
             } catch (error) {
-                console.error('File conversion failed:', error);
+                console.error('File upload failed:', error);
             }
             setIsUploading(false);
         }

@@ -5,6 +5,7 @@ use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatUploadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
@@ -52,6 +53,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth.jwt')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/api/auth/token', [AuthController::class, 'getToken'])->name('auth.token');
+    Route::post('/api/chat/upload', [ChatUploadController::class, 'store'])->name('chat.upload');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
