@@ -49,6 +49,7 @@ export async function connectWebSocket(options?: {
             const payload = JSON.parse(event.data) as AdminWebSocketEvent;
             options?.onMessage?.(payload);
         } catch {
+            // Silently ignore malformed payloads — admin WS broadcasts are best-effort
         }
     });
 

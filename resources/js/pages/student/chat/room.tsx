@@ -12,14 +12,11 @@ import { getAuthToken } from '@/lib/getAuthToken';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
 import {
     createOptimisticMessage,
-    mapSocketMessageToDisplayMessage,
-    reconcileIncomingMessage,
     markMessageFailed,
     markMessageSending,
     toSocketPayload,
 } from '@/features/chat/optimistic-message';
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
-type SocketChatMessage = import('@/features/chat/optimistic-message').ChatSocketMessage;
 type FileAttachment = import('@/features/chat/optimistic-message').FileAttachment;
 type ReplyTo = import('@/features/chat/optimistic-message').ReplyTo;
 
@@ -70,11 +67,6 @@ interface Group {
         preview?: string;
         id: string;
     }
-
-interface OnlineUser {
-    odId: string;
-    userName: string;
-}
 
     interface ChatSpaceData {
         id: string;
