@@ -152,18 +152,6 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         return `client-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     };
 
-    const emitChatMessage = useCallback((message: DisplayMessage) => {
-        if (!socketRef.current || !activeChatSpace) {
-            setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
-            return;
-        }
-        socketRef.current.emit('send_message', toSocketPayload(message, {
-            roomId: activeChatSpace.id,
-            courseId: course.id,
-            groupId: group.id,
-        }));
-    }, [activeChatSpace?.id, course.id, group.id]);
-    
     // File upload state
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -241,6 +229,18 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
             setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
         },
     });
+
+    const emitChatMessage = useCallback((message: DisplayMessage) => {
+        if (!socketRef.current || !activeChatSpace) {
+            setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
+            return;
+        }
+        socketRef.current.emit('send_message', toSocketPayload(message, {
+            roomId: activeChatSpace.id,
+            courseId: course.id,
+            groupId: group.id,
+        }));
+    }, [activeChatSpace, course.id, group.id, socketRef]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
