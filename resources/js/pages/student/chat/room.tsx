@@ -12,10 +12,12 @@ import { getAuthToken } from '@/lib/getAuthToken';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
 import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
 import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
+import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
 import {
     createOptimisticMessage,
     markMessageFailed,
     markMessageSending,
+    reconcileIncomingMessage,
     toSocketPayload,
 } from '@/features/chat/optimistic-message';
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
@@ -185,8 +187,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         onMessagesLoaded: (loadedMessages) => {
             setMessages(loadedMessages);
         },
-        onMessageReceived: (message) => {
-            setMessages((prev) => [...prev, message]);
+        onMessageReceived: (_display, raw) => {
+            setMessages((prev) => reconcileIncomingMessage(prev, raw));
         },
         onMessageDeleted: (messageId) => {
             setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
@@ -215,6 +217,15 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [hasSubmittedReflection, setHasSubmittedReflection] = useState(chatSpace.hasReflection || false);
 
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+    const pendingFilesRef = useRef<PendingFile[]>([]);
+    useEffect(() => {
+        pendingFilesRef.current = pendingFiles;
+    }, [pendingFiles]);
+    useEffect(() => {
+        return () => {
+            revokePendingFilePreviews(pendingFilesRef.current);
+        };
+    }, []);
     const [isUploading, setIsUploading] = useState(false);
 
     const [showMentionList, setShowMentionList] = useState(false);
@@ -338,6 +349,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
         setNewMessage('');
         setReplyingTo(null);
+        revokePendingFilePreviews(pendingFiles);
         setPendingFiles([]);
     };
 
