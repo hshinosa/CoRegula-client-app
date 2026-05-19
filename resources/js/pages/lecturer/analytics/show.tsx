@@ -6,7 +6,7 @@ import {
     Clock3,
     Download,
     MessageSquare,
-    Sparkles,
+    Lightbulb,
     Users,
     X,
 } from 'lucide-react';
@@ -161,15 +161,15 @@ const getSenderTypeStyle = (type: string): CSSProperties => {
     switch (type) {
         case 'ai':
             return {
-                background: 'rgba(168,85,247,0.10)',
-                color: '#7e22ce',
-                border: '1px solid rgba(168,85,247,0.16)',
+                background: 'rgba(180,83,9,0.10)',
+                color: '#92400e',
+                border: '1px solid rgba(180,83,9,0.18)',
             };
         case 'bot':
             return {
-                background: 'rgba(59,130,246,0.10)',
-                color: '#1d4ed8',
-                border: '1px solid rgba(59,130,246,0.16)',
+                background: 'rgba(71,85,105,0.10)',
+                color: '#334155',
+                border: '1px solid rgba(71,85,105,0.18)',
             };
         case 'system':
             return neutralChipStyle;
@@ -192,11 +192,11 @@ const engagementTypeInfo: Record<
         description: 'Pemikiran kritis, analisis, dan pemahaman konsep.',
         examples: ['mengapa', 'bagaimana jika', 'bandingkan', 'analisis'],
         chipStyle: {
-            background: 'rgba(59,130,246,0.10)',
-            color: '#1d4ed8',
-            border: '1px solid rgba(59,130,246,0.16)',
+            background: 'rgba(71,85,105,0.10)',
+            color: '#334155',
+            border: '1px solid rgba(71,85,105,0.18)',
         },
-        bar: '#3b82f6',
+        bar: '#475569',
         icon: '🧠',
     },
     behavioral: {
@@ -210,11 +210,11 @@ const engagementTypeInfo: Record<
         description: 'Dukungan emosional, motivasi, dan empati antaranggota.',
         examples: ['bagus', 'semangat', 'terima kasih', 'jangan khawatir'],
         chipStyle: {
-            background: 'rgba(168,85,247,0.10)',
-            color: '#7e22ce',
-            border: '1px solid rgba(168,85,247,0.16)',
+            background: 'rgba(180,83,9,0.10)',
+            color: '#92400e',
+            border: '1px solid rgba(180,83,9,0.18)',
         },
-        bar: '#a855f7',
+        bar: '#b45309',
         icon: '💜',
     },
 };
@@ -296,13 +296,13 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             label: 'HOT Thinking',
             value: `${hotPercentage.toFixed(0)}%`,
             detail: 'Higher-order discussion',
-            color: '#1d4ed8',
+            color: '#334155',
         },
         {
             label: 'Lexical Variety',
             value: `${(lexicalVariety * 100).toFixed(0)}%`,
             detail: 'Keragaman kosakata',
-            color: '#7e22ce',
+            color: '#92400e',
         },
         {
             label: 'Participants',
@@ -339,7 +339,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                 label: 'Total Pesan',
                 value: safeAnalytics.local_message_count ?? 0,
                 detail: 'Pesan yang dianalisis pada grup ini',
-                color: '#1d4ed8',
+                color: '#334155',
             },
             {
                 label: 'Status',
@@ -461,7 +461,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     {safeAnalytics.recommendation && (
                                         <div className="mt-4 rounded-[24px] p-4" style={glassPanelStyle}>
                                             <div className="flex items-start gap-3">
-                                                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
+                                                <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
                                                 <p className="text-sm leading-6 text-[#6B7280]">{safeAnalytics.recommendation}</p>
                                             </div>
                                         </div>
@@ -567,11 +567,11 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             <div
                                                 className="flex h-11 w-11 items-center justify-center rounded-2xl"
                                                 style={{
-                                                    background: 'rgba(59,130,246,0.10)',
-                                                    border: '1px solid rgba(59,130,246,0.16)',
+                                                    background: 'rgba(71,85,105,0.10)',
+                                                    border: '1px solid rgba(71,85,105,0.18)',
                                                 }}
                                             >
-                                                <BarChart3 className="h-5 w-5" style={{ color: '#1d4ed8' }} />
+                                                <BarChart3 className="h-5 w-5" style={{ color: '#334155' }} />
                                             </div>
                                             <div>
                                                 <h2 className="text-lg font-semibold" style={headingStyle}>
@@ -705,8 +705,8 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             style={
                                                 activity.isIntervention
                                                     ? {
-                                                          background: 'rgba(168,85,247,0.10)',
-                                                          border: '1px solid rgba(168,85,247,0.16)',
+                                                          background: 'rgba(180,83,9,0.10)',
+                                                          border: '1px solid rgba(180,83,9,0.18)',
                                                       }
                                                     : glassPanelStyle
                                             }
@@ -734,9 +734,9 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                             <span
                                                                 className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium"
                                                                 style={{
-                                                                    background: 'rgba(168,85,247,0.10)',
-                                                                    color: '#7e22ce',
-                                                                    border: '1px solid rgba(168,85,247,0.16)',
+                                                                    background: 'rgba(180,83,9,0.10)',
+                                                                    color: '#92400e',
+                                                                    border: '1px solid rgba(180,83,9,0.18)',
                                                                 }}
                                                             >
                                                                 Intervensi
