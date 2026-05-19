@@ -7,7 +7,7 @@ import {
     BarChart3,
     MessageSquare,
     RefreshCw,
-    Sparkles,
+    Lightbulb,
     Users,
 } from 'lucide-react';
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
@@ -128,11 +128,11 @@ const getEngagementStyle = (type: string) => {
     if (key.includes('cognitive')) {
         return {
             chip: {
-                background: 'rgba(59,130,246,0.10)',
-                color: '#1d4ed8',
-                border: '1px solid rgba(59,130,246,0.16)',
+                background: 'rgba(71,85,105,0.10)',
+                color: '#334155',
+                border: '1px solid rgba(71,85,105,0.18)',
             } satisfies CSSProperties,
-            bar: '#3b82f6',
+            bar: '#475569',
         };
     }
 
@@ -145,11 +145,11 @@ const getEngagementStyle = (type: string) => {
 
     return {
         chip: {
-            background: 'rgba(168,85,247,0.10)',
-            color: '#7e22ce',
-            border: '1px solid rgba(168,85,247,0.16)',
+            background: 'rgba(180,83,9,0.10)',
+            color: '#92400e',
+            border: '1px solid rgba(180,83,9,0.18)',
         } satisfies CSSProperties,
-        bar: '#a855f7',
+        bar: '#b45309',
     };
 };
 
@@ -470,7 +470,7 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                                                 border: '1px solid rgba(136,22,28,0.12)',
                                             }}
                                         >
-                                            <Sparkles className="h-5 w-5" style={{ color: '#88161c' }} />
+                                            <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
                                         </div>
                                         <div>
                                             <h2 className="text-lg font-semibold" style={headingStyle}>
@@ -618,11 +618,11 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                                             <div
                                                 className="flex h-11 w-11 items-center justify-center rounded-2xl"
                                                 style={{
-                                                    background: 'rgba(59,130,246,0.10)',
-                                                    border: '1px solid rgba(59,130,246,0.16)',
+                                                    background: 'rgba(71,85,105,0.10)',
+                                                    border: '1px solid rgba(71,85,105,0.18)',
                                                 }}
                                             >
-                                                <Activity className="h-5 w-5" style={{ color: '#1d4ed8' }} />
+                                                <Activity className="h-5 w-5" style={{ color: '#334155' }} />
                                             </div>
                                             <div>
                                                 <h2 className="text-lg font-semibold" style={headingStyle}>
@@ -711,7 +711,7 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                                                 {group.recommendation && (
                                                     <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
                                                         <div className="flex items-start gap-3">
-                                                            <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
+                                                            <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
                                                             <p className="text-sm leading-6 text-[#6B7280]">{group.recommendation}</p>
                                                         </div>
                                                     </div>
