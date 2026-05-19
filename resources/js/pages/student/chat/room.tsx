@@ -204,11 +204,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [isClosingSession, setIsClosingSession] = useState(false);
     const [closeSessionError, setCloseSessionError] = useState<string | null>(null);
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
+    const [initialSummary, setInitialSummary] = useState<import('@/features/chat/summary/types').ChatDiscussionSummary | null>(null);
 
     const { state: summaryState } = useChatSummary({
         courseId: course.id,
         chatSpaceId: chatSpace.id,
         enabled: sessionClosed,
+        initialSummary,
     });
 
     const [showReflectionModal, setShowReflectionModal] = useState(chatSpace.needsReflection || false);
@@ -723,6 +725,20 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             if (!response.ok) {
                 const data = await response.json().catch(() => null);
                 throw new Error(data?.message || 'Gagal menutup sesi diskusi');
+            }
+
+            // Capture summary from close response (Core API returns it inline)
+            const responseData = await response.json().catch(() => null);
+            const summaryText = responseData?.data?.summary;
+            if (typeof summaryText === 'string' && summaryText.trim().length > 0) {
+                const lines = summaryText.split('\n').filter((l: string) => l.trim().length > 0);
+                setInitialSummary({
+                    roomId: chatSpace.id,
+                    headline: lines[0]?.replace(/^#+\s*/, '').slice(0, 120) || 'Ringkasan diskusi',
+                    keyPoints: lines.slice(1).filter((l: string) => l.startsWith('-') || l.startsWith('*')).map((l: string) => l.replace(/^[-*]\s*/, '')).slice(0, 5),
+                    detailedSummary: summaryText,
+                    generatedAt: new Date().toISOString(),
+                });
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Gagal menutup sesi diskusi';

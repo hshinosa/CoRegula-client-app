@@ -5,16 +5,26 @@ export interface UseChatSummaryOptions {
     courseId: string | undefined;
     chatSpaceId: string | undefined;
     enabled: boolean;
+    initialSummary?: ChatDiscussionSummary | null;
 }
 
 export function useChatSummary({
     courseId,
     chatSpaceId,
     enabled,
+    initialSummary,
 }: UseChatSummaryOptions): { state: ChatSummaryState } {
-    const [state, setState] = useState<ChatSummaryState>({ status: 'loading' });
+    const [state, setState] = useState<ChatSummaryState>(() => {
+        if (initialSummary) return { status: 'ready', summary: initialSummary };
+        return enabled && chatSpaceId && courseId ? { status: 'loading' } : { status: 'empty' };
+    });
 
     useEffect(() => {
+        if (initialSummary) {
+            setState({ status: 'ready', summary: initialSummary });
+            return;
+        }
+
         if (!enabled || !chatSpaceId || !courseId) {
             setState({ status: 'empty' });
             return;
@@ -51,7 +61,7 @@ export function useChatSummary({
         return () => {
             cancelled = true;
         };
-    }, [courseId, chatSpaceId, enabled]);
+    }, [courseId, chatSpaceId, enabled, initialSummary]);
 
     return { state };
 }

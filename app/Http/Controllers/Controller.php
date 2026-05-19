@@ -22,4 +22,16 @@ abstract class Controller
     {
         return Http::timeout($timeout)->connectTimeout($connectTimeout);
     }
+
+    /**
+     * Forward a Core API client response to the frontend, invalidating the
+     * Laravel session if Core returned 401 (token revoked mid-session).
+     */
+    protected function proxyResponse(\Illuminate\Http\Client\Response $response): \Illuminate\Http\JsonResponse
+    {
+        if ($response->status() === 401) {
+            session()->forget(['jwt', 'refresh_token', 'user']);
+        }
+        return response()->json($response->json(), $response->status());
+    }
 }

@@ -12,6 +12,7 @@ import axios from 'axios';
 const appName = import.meta.env.VITE_APP_NAME || 'Kolabri';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+axios.defaults.withCredentials = true;
 if (csrfToken) {
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 }
