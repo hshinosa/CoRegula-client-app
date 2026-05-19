@@ -187,7 +187,7 @@ class StudentCourseController extends Controller
     public function closeSession(string $course, string $chatSpace)
     {
         $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/close");
-        return response()->json($response->json(), $response->status());
+        return $this->proxyResponse($response);
     }
 
     public function submitReflection(\Illuminate\Http\Request $request, string $course, string $chatSpace)
@@ -197,7 +197,7 @@ class StudentCourseController extends Controller
             $this->apiUrl() . "/api/chat-spaces/{$chatSpace}/reflection",
             $validated
         );
-        return response()->json($response->json(), $response->status());
+        return $this->proxyResponse($response);
     }
 
     public function chatSpaceSummary(string $course, string $chatSpace)
@@ -206,6 +206,6 @@ class StudentCourseController extends Controller
         if ($response->status() === 404) {
             return response()->json(['summary' => null], 200);
         }
-        return response()->json($response->json(), $response->status());
+        return $this->proxyResponse($response);
     }
 }

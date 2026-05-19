@@ -53,7 +53,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth.jwt')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/api/auth/token', [AuthController::class, 'getToken'])->name('auth.token');
-    Route::post('/api/chat/upload', [ChatUploadController::class, 'store'])->name('chat.upload');
+    Route::post('/api/chat/upload', [ChatUploadController::class, 'store'])
+        ->middleware('throttle:30,5')
+        ->name('chat.upload');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -83,13 +85,17 @@ Route::middleware('auth.jwt')->group(function () {
             Route::put('/{id}', [UserManagementController::class, 'update'])->name('update');
             Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/reset-password', [UserManagementController::class, 'resetPassword'])->name('reset-password');
-            Route::get('/export', [UserManagementController::class, 'exportData'])->name('export');
+            Route::get('/export', [UserManagementController::class, 'exportData'])
+                ->middleware('throttle:10,1')
+                ->name('export');
         });
 
         Route::prefix('master-data')->name('master-data.')->group(function () {
             Route::get('/', [MasterDataController::class, 'index'])->name('index');
             Route::get('/archived', [MasterDataController::class, 'index'])->name('archived');
-            Route::get('/export', [MasterDataController::class, 'exportData'])->name('export');
+            Route::get('/export', [MasterDataController::class, 'exportData'])
+                ->middleware('throttle:10,1')
+                ->name('export');
             Route::post('/bulk-activate', [MasterDataController::class, 'bulkActivate'])->name('bulk-activate');
             Route::post('/bulk-deactivate', [MasterDataController::class, 'bulkDeactivate'])->name('bulk-deactivate');
             Route::post('/bulk-import', [MasterDataController::class, 'bulkImport'])->name('bulk-import');
@@ -196,8 +202,12 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/courses/{course}/chat/{chatSpace}', [StudentCourseController::class, 'chatRoom'])->name('courses.chat.room');
 
         // BFF proxy routes for chat-space close/reflection/summary
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/close', [StudentCourseController::class, 'closeSession'])->name('chat-spaces.close');
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/reflection', [StudentCourseController::class, 'submitReflection'])->name('chat-spaces.reflection');
+        Route::post('/courses/{course}/chat-spaces/{chatSpace}/close', [StudentCourseController::class, 'closeSession'])
+            ->middleware('throttle:10,5')
+            ->name('chat-spaces.close');
+        Route::post('/courses/{course}/chat-spaces/{chatSpace}/reflection', [StudentCourseController::class, 'submitReflection'])
+            ->middleware('throttle:10,5')
+            ->name('chat-spaces.reflection');
         Route::get('/courses/{course}/chat-spaces/{chatSpace}/summary', [StudentCourseController::class, 'chatSpaceSummary'])->name('chat-spaces.summary');
 
         // Reflections

@@ -152,6 +152,6 @@ class UserManagementController extends Controller
     {
         $params = $request->only(['limit', 'sortBy', 'sortOrder']);
         $response = $this->apiRequest(30, 10)->get($this->apiUrl() . '/api/admin/users', $params);
-        return response()->json($response->json(), $response->status());
+        return $this->proxyResponse($response);
     }
 }

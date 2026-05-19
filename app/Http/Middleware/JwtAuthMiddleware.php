@@ -12,7 +12,7 @@ class JwtAuthMiddleware
     {
         $parts = explode('.', $token);
 
-        if (count($parts) < 2) {
+        if (count($parts) !== 3 || empty($parts[2])) {
             return null;
         }
 
