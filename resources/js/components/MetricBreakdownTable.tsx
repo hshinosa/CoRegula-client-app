@@ -7,6 +7,7 @@ interface MetricBreakdownTableProps {
     primaryLabel: string;
     comparisonMetrics?: number[];
     comparisonLabel?: string;
+    metricDefinitions?: Record<string, string>;
 }
 
 const formatScore = (n: number) => n.toFixed(1);
@@ -29,6 +30,7 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
     primaryLabel,
     comparisonMetrics,
     comparisonLabel,
+    metricDefinitions,
 }) => {
     const showComparison = comparisonMetrics && comparisonMetrics.length === metrics.length;
 
@@ -62,7 +64,15 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
 
                         return (
                             <tr key={label} style={{ borderBottom: idx === labels.length - 1 ? 'none' : '1px solid rgba(74,74,74,0.06)' }}>
-                                <td className="px-4 py-3 font-medium text-[#4A4A4A]">{label}</td>
+                                <td className="px-4 py-3 font-medium text-[#4A4A4A]">
+                                    {metricDefinitions?.[label] ? (
+                                        <span title={metricDefinitions[label]} className="cursor-help border-b border-dashed border-[#9CA3AF]">
+                                            {label}
+                                        </span>
+                                    ) : (
+                                        label
+                                    )}
+                                </td>
                                 <td className="px-4 py-3 text-right font-semibold text-[#88161c]">
                                     {formatScore(value)}
                                 </td>

@@ -10,6 +10,7 @@ import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers
 import AppLayout from '@/layouts/app-layout';
 
 type Scope = 'class' | 'group' | 'student' | 'session';
+type SortMode = 'default' | 'score-desc' | 'score-asc' | 'name';
 
 interface RadarEntry {
     id: string;
@@ -38,6 +39,23 @@ const METRIC_LABELS = [
     'Collaboration',
     'Reflection',
 ];
+
+const METRIC_DEFINITIONS: Record<string, string> = {
+    'Hot': 'Higher-Order Thinking — frekuensi argumen analitis, evaluatif, atau sintetis dalam diskusi',
+    'Lexical Variety': 'Keragaman kosakata akademis yang dipakai mahasiswa',
+    'Forethought': 'Kemampuan merencanakan langkah belajar sebelum eksekusi (fase perencanaan SRL)',
+    'Performance': 'Kualitas eksekusi tugas dan kontribusi konkret pada diskusi',
+    'Collaboration': 'Frekuensi interaksi yang membangun ide rekan dan menjawab pertanyaan',
+    'Reflection': 'Kemampuan mengevaluasi proses dan hasil belajar (fase refleksi SRL)',
+};
+
+const avgOf = (metrics: number[]) => metrics.reduce((a, b) => a + b, 0) / metrics.length;
+
+const scoreToneStyle = (score: number) => {
+    if (score >= 7) return { background: 'rgba(34,197,94,0.10)', color: '#166534', border: '1px solid rgba(34,197,94,0.18)' };
+    if (score >= 5) return { background: 'rgba(245,158,11,0.10)', color: '#92400e', border: '1px solid rgba(245,158,11,0.18)' };
+    return { background: 'rgba(239,68,68,0.10)', color: '#b91c1c', border: '1px solid rgba(239,68,68,0.18)' };
+};
 
 const MOCK_CLASSES: ClassEntity[] = [
     {
@@ -200,6 +218,7 @@ const RadarChartPage: React.FC = () => {
     const [activeSessionId, setActiveSessionId] = useState<string>(MOCK_CLASSES[0].sessionEntries[0].id);
     const [comparisonMode, setComparisonMode] = useState(false);
     const [secondaryId, setSecondaryId] = useState<string | null>(null);
+    const [sortMode, setSortMode] = useState<SortMode>('default');
 
     const activeClass = useMemo(
         () => MOCK_CLASSES.find((c) => c.id === activeClassId) ?? MOCK_CLASSES[0],
@@ -278,19 +297,28 @@ const RadarChartPage: React.FC = () => {
     );
 
     const selectorItems = useMemo(() => {
+        let items: Array<{ id: string; title: string; subtitle: string; score: number }>;
         switch (scope) {
             case 'group':
-                return activeClass.groups.map((g) => ({ id: g.id, title: g.label, subtitle: g.sublabel }));
+                items = activeClass.groups.map((g) => ({ id: g.id, title: g.label, subtitle: g.sublabel, score: avgOf(g.metrics) }));
+                break;
             case 'student':
-                return activeClass.groups.flatMap((g) =>
-                    g.students.map((s) => ({ id: s.id, title: s.label, subtitle: `${g.label} · ${s.sublabel}` })),
+                items = activeClass.groups.flatMap((g) =>
+                    g.students.map((s) => ({ id: s.id, title: s.label, subtitle: `${g.label} · ${s.sublabel}`, score: avgOf(s.metrics) })),
                 );
+                break;
             case 'session':
-                return activeClass.sessionEntries.map((s) => ({ id: s.id, title: s.label, subtitle: s.sublabel }));
+                items = activeClass.sessionEntries.map((s) => ({ id: s.id, title: s.label, subtitle: s.sublabel, score: avgOf(s.metrics) }));
+                break;
             default:
-                return MOCK_CLASSES.map((c) => ({ id: c.id, title: c.label, subtitle: c.sublabel }));
+                items = MOCK_CLASSES.map((c) => ({ id: c.id, title: c.label, subtitle: c.sublabel, score: avgOf(c.metrics) }));
         }
-    }, [scope, activeClass]);
+
+        if (sortMode === 'score-desc') return [...items].sort((a, b) => b.score - a.score);
+        if (sortMode === 'score-asc') return [...items].sort((a, b) => a.score - b.score);
+        if (sortMode === 'name') return [...items].sort((a, b) => a.title.localeCompare(b.title));
+        return items;
+    }, [scope, activeClass, sortMode]);
 
     const selectorTitle = useMemo(() => {
         switch (scope) {
@@ -412,12 +440,31 @@ const RadarChartPage: React.FC = () => {
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <LiquidGlassCard intensity="medium" className="p-6 lg:col-span-1" lightMode={true}>
-                            <h2 className="text-base font-semibold" style={headingStyle}>{selectorTitle}</h2>
-                            <p className={`mt-1 ${bodyTextClass}`}>{selectorItems.length} item tersedia.</p>
+                            <div className="flex items-start justify-between gap-2">
+                                <div>
+                                    <h2 className="text-base font-semibold" style={headingStyle}>{selectorTitle}</h2>
+                                    <p className={`mt-1 ${bodyTextClass}`}>{selectorItems.length} item tersedia.</p>
+                                </div>
+                            </div>
+                            <div className="mt-3">
+                                <label className="text-xs uppercase tracking-wider text-[#6B7280]">Urutkan:</label>
+                                <select
+                                    value={sortMode}
+                                    onChange={(e) => setSortMode(e.target.value as SortMode)}
+                                    className="ml-2 rounded-xl border px-2 py-1 text-xs"
+                                    style={{ background: 'rgba(255,255,255,0.55)', borderColor: 'rgba(74,74,74,0.18)', color: '#4A4A4A' }}
+                                >
+                                    <option value="default">Default</option>
+                                    <option value="score-desc">Skor tertinggi</option>
+                                    <option value="score-asc">Skor terendah</option>
+                                    <option value="name">Nama A→Z</option>
+                                </select>
+                            </div>
                             <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
                                 {selectorItems.map((item) => {
                                     const isPrimary = item.id === primaryId;
                                     const isSecondary = item.id === secondaryId;
+                                    const tone = scoreToneStyle(item.score);
                                     return (
                                         <button
                                             key={item.id}
@@ -433,18 +480,26 @@ const RadarChartPage: React.FC = () => {
                                                 <p className="text-sm font-semibold" style={{ color: isPrimary ? '#88161c' : isSecondary ? '#475569' : '#4A4A4A' }}>
                                                     {item.title}
                                                 </p>
-                                                {comparisonMode && (
+                                                <div className="flex items-center gap-1.5">
                                                     <span
-                                                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
-                                                        style={
-                                                            isPrimary ? { background: 'rgba(136,22,28,0.18)', color: '#88161c' }
-                                                                : isSecondary ? { background: 'rgba(71,85,105,0.18)', color: '#475569' }
-                                                                : { background: 'rgba(74,74,74,0.10)', color: '#6B7280' }
-                                                        }
+                                                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                        style={tone}
                                                     >
-                                                        {isPrimary ? 'Primer' : isSecondary ? 'Pembanding' : 'Pilih'}
+                                                        {item.score.toFixed(1)}
                                                     </span>
-                                                )}
+                                                    {comparisonMode && (
+                                                        <span
+                                                            className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                                                            style={
+                                                                isPrimary ? { background: 'rgba(136,22,28,0.18)', color: '#88161c' }
+                                                                    : isSecondary ? { background: 'rgba(71,85,105,0.18)', color: '#475569' }
+                                                                    : { background: 'rgba(74,74,74,0.10)', color: '#6B7280' }
+                                                            }
+                                                        >
+                                                            {isPrimary ? 'Primer' : isSecondary ? 'Pembanding' : 'Pilih'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <p className="mt-0.5 text-xs text-[#6B7280]">{item.subtitle}</p>
                                         </button>
@@ -521,6 +576,7 @@ const RadarChartPage: React.FC = () => {
                                 primaryLabel={primaryEntity.label}
                                 comparisonMetrics={secondaryEntity?.metrics}
                                 comparisonLabel={secondaryEntity?.label}
+                                metricDefinitions={METRIC_DEFINITIONS}
                             />
                         </LiquidGlassCard>
                     </motion.div>

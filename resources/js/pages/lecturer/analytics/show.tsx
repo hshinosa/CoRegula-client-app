@@ -15,6 +15,8 @@ import { io, Socket } from 'socket.io-client';
 
 import { LiquidGlassCard, OrganicBlob, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import MetricBreakdownTable from '@/components/MetricBreakdownTable';
+import MetricsRadarChart from '@/components/MetricsRadarChart';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
@@ -118,6 +120,24 @@ const glassPanelStyle = {
 } as const;
 
 const modalBackdropClass = 'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm';
+
+const RADAR_METRIC_LABELS = [
+    'Hot',
+    'Lexical Variety',
+    'Forethought',
+    'Performance',
+    'Collaboration',
+    'Reflection',
+];
+
+const RADAR_METRIC_DEFINITIONS: Record<string, string> = {
+    'Hot': 'Higher-Order Thinking — frekuensi argumen analitis, evaluatif, atau sintetis.',
+    'Lexical Variety': 'Keragaman kosakata akademis dalam diskusi grup.',
+    'Forethought': 'Proxy dari proporsi engagement kognitif (planning phase SRL).',
+    'Performance': 'Skor kualitas diskusi keseluruhan dari analytics pipeline.',
+    'Collaboration': 'Proporsi engagement perilaku + sosial vs total engagement.',
+    'Reflection': 'Proxy turunan dari quality score (perlu data refleksi sesungguhnya untuk akurasi).',
+};
 
 const getQualityChipStyle = (score?: number | null): CSSProperties => {
     if (score === undefined || score === null) return neutralChipStyle;
@@ -233,11 +253,11 @@ const formatDateTime = (value?: string | null) => {
 export default function GroupAnalyticsDetail({ course, group, analytics, members, chatSpaces, recentActivity }: Props) {
     const [jwtToken, setJwtToken] = useState('');
 
-    const safeAnalytics = analytics ?? {};
+    const safeAnalytics = useMemo(() => analytics ?? {}, [analytics]);
     const safeMembers = useMemo(() => members ?? [], [members]);
     const safeChatSpaces = useMemo(() => chatSpaces ?? [], [chatSpaces]);
     const safeRecentActivity = useMemo(() => recentActivity ?? [], [recentActivity]);
-    const safeQualityBreakdown = safeAnalytics.qualityBreakdown ?? {};
+    const safeQualityBreakdown = useMemo(() => safeAnalytics.qualityBreakdown ?? {}, [safeAnalytics]);
 
     const [liveActivity, setLiveActivity] = useState<RecentActivity[]>(safeRecentActivity);
     const [liveQuality, setLiveQuality] = useState(safeAnalytics.qualityScore);
@@ -248,6 +268,40 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
     const hotPercentage = safeQualityBreakdown.hot_percentage ?? safeAnalytics.hotPercentage ?? 0;
     const lexicalVariety = safeQualityBreakdown.lexical_variety ?? 0;
     const participantCount = safeQualityBreakdown.participation ?? safeMembers.length ?? 0;
+
+    const radarMetrics = useMemo<number[] | null>(() => {
+        const qualityScore = safeAnalytics.qualityScore ?? null;
+        const cognitive = safeAnalytics.engagementDistribution?.cognitive ?? 0;
+        const behavioral = safeAnalytics.engagementDistribution?.behavioral ?? 0;
+        const social = safeAnalytics.engagementDistribution?.social ?? 0;
+        const totalEngagement = cognitive + behavioral + social;
+        const engagementSignal = totalEngagement > 0
+            ? ((behavioral + social) / totalEngagement) * 10
+            : 0;
+
+        if (qualityScore === null && hotPercentage === 0 && totalEngagement === 0) {
+            return null;
+        }
+
+        const hot = Math.min(10, hotPercentage / 10);
+        const lexical = Math.min(10, lexicalVariety * 10);
+        const performance = qualityScore !== null ? qualityScore / 10 : 0;
+        const cognitiveSignal = totalEngagement > 0 ? (cognitive / totalEngagement) * 10 : 0;
+        const collaboration = Math.min(10, engagementSignal);
+        const reflectionProxy = qualityScore !== null
+            ? Math.min(10, (qualityScore / 10) * 0.85)
+            : 0;
+        const forethoughtProxy = Math.min(10, cognitiveSignal);
+
+        return [
+            Number(hot.toFixed(1)),
+            Number(lexical.toFixed(1)),
+            Number(forethoughtProxy.toFixed(1)),
+            Number(performance.toFixed(1)),
+            Number(collaboration.toFixed(1)),
+            Number(reflectionProxy.toFixed(1)),
+        ];
+    }, [safeAnalytics, hotPercentage, lexicalVariety]);
 
     const navItems = useLecturerNav('analytics-group', { courseId: course.id, groupId: group.id });
 
@@ -639,6 +693,54 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             </div>
                                         );
                                     })}
+                                </div>
+                            </LiquidGlassCard>
+                        </motion.div>
+                    )}
+
+                    {radarMetrics && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25 }}
+                        >
+                            <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="flex h-11 w-11 items-center justify-center rounded-2xl"
+                                                style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
+                                            >
+                                                <BarChart3 className="h-5 w-5" style={{ color: '#88161c' }} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-semibold" style={headingStyle}>
+                                                    Radar metrik SSRL
+                                                </h2>
+                                                <p className={`mt-1 ${bodyTextClass}`}>
+                                                    Profil enam dimensi kualitas diskusi grup dalam skala 0–10.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                    <div className="h-[360px] w-full">
+                                        <MetricsRadarChart
+                                            data={radarMetrics}
+                                            labels={RADAR_METRIC_LABELS}
+                                            primaryLabel={group.name}
+                                        />
+                                    </div>
+                                    <MetricBreakdownTable
+                                        metrics={radarMetrics}
+                                        labels={RADAR_METRIC_LABELS}
+                                        classAverage={radarMetrics}
+                                        primaryLabel={group.name}
+                                        metricDefinitions={RADAR_METRIC_DEFINITIONS}
+                                    />
                                 </div>
                             </LiquidGlassCard>
                         </motion.div>
