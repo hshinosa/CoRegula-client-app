@@ -1,12 +1,13 @@
 import { Head } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Activity, BookOpen, Lightbulb, Users } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Activity, BookOpen, Lightbulb, Plus, Users, X } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import MetricBreakdownTable from '@/components/MetricBreakdownTable';
+import MetricsRadarChart from '@/components/MetricsRadarChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
-import MetricsRadarChart from '@/components/MetricsRadarChart';
 
 type Scope = 'class' | 'group' | 'student' | 'session';
 
@@ -197,32 +198,38 @@ const RadarChartPage: React.FC = () => {
     const [activeGroupId, setActiveGroupId] = useState<string>(MOCK_CLASSES[0].groups[0].id);
     const [activeStudentId, setActiveStudentId] = useState<string>(MOCK_CLASSES[0].groups[0].students[0].id);
     const [activeSessionId, setActiveSessionId] = useState<string>(MOCK_CLASSES[0].sessionEntries[0].id);
+    const [comparisonMode, setComparisonMode] = useState(false);
+    const [secondaryId, setSecondaryId] = useState<string | null>(null);
 
     const activeClass = useMemo(
         () => MOCK_CLASSES.find((c) => c.id === activeClassId) ?? MOCK_CLASSES[0],
         [activeClassId],
     );
 
-    const activeEntity: RadarEntry = useMemo(() => {
+    const primaryId = useMemo(() => {
         switch (scope) {
-            case 'group': {
-                const g = activeClass.groups.find((x) => x.id === activeGroupId) ?? activeClass.groups[0];
-                return g;
-            }
-            case 'student': {
-                const allStudents = activeClass.groups.flatMap((g) => g.students);
-                return allStudents.find((s) => s.id === activeStudentId) ?? allStudents[0];
-            }
-            case 'session': {
-                return (
-                    activeClass.sessionEntries.find((s) => s.id === activeSessionId) ??
-                    activeClass.sessionEntries[0]
-                );
-            }
-            default:
-                return activeClass;
+            case 'group': return activeGroupId;
+            case 'student': return activeStudentId;
+            case 'session': return activeSessionId;
+            default: return activeClassId;
         }
-    }, [scope, activeClass, activeGroupId, activeStudentId, activeSessionId]);
+    }, [scope, activeClassId, activeGroupId, activeStudentId, activeSessionId]);
+
+    const getEntityById = useCallback((id: string): RadarEntry | null => {
+        if (scope === 'class') return MOCK_CLASSES.find((c) => c.id === id) ?? null;
+        if (scope === 'group') return activeClass.groups.find((g) => g.id === id) ?? null;
+        if (scope === 'student') {
+            const all = activeClass.groups.flatMap((g) => g.students);
+            return all.find((s) => s.id === id) ?? null;
+        }
+        return activeClass.sessionEntries.find((s) => s.id === id) ?? null;
+    }, [scope, activeClass]);
+
+    const primaryEntity = useMemo<RadarEntry>(() => getEntityById(primaryId) ?? activeClass, [primaryId, getEntityById, activeClass]);
+    const secondaryEntity = useMemo<RadarEntry | null>(
+        () => (comparisonMode && secondaryId ? getEntityById(secondaryId) : null),
+        [comparisonMode, secondaryId, getEntityById],
+    );
 
     const handleClassChange = (classId: string) => {
         const cls = MOCK_CLASSES.find((c) => c.id === classId);
@@ -231,6 +238,28 @@ const RadarChartPage: React.FC = () => {
         setActiveGroupId(cls.groups[0]?.id ?? '');
         setActiveStudentId(cls.groups[0]?.students[0]?.id ?? '');
         setActiveSessionId(cls.sessionEntries[0]?.id ?? '');
+        setSecondaryId(null);
+    };
+
+    const handleScopeChange = (next: Scope) => {
+        setScope(next);
+        setSecondaryId(null);
+    };
+
+    const handleSidebarSelect = (id: string) => {
+        if (comparisonMode && id !== primaryId) {
+            setSecondaryId(id);
+            return;
+        }
+        if (scope === 'class') {
+            handleClassChange(id);
+        } else if (scope === 'group') {
+            setActiveGroupId(id);
+        } else if (scope === 'student') {
+            setActiveStudentId(id);
+        } else {
+            setActiveSessionId(id);
+        }
     };
 
     const summaryCards = useMemo(
@@ -241,51 +270,27 @@ const RadarChartPage: React.FC = () => {
                 icon: Activity,
                 label: 'Skor Rata-rata',
                 value: (
-                    activeEntity.metrics.reduce((a, b) => a + b, 0) / activeEntity.metrics.length
+                    primaryEntity.metrics.reduce((a, b) => a + b, 0) / primaryEntity.metrics.length
                 ).toFixed(1),
             },
         ],
-        [activeClass, activeEntity],
+        [activeClass, primaryEntity],
     );
 
     const selectorItems = useMemo(() => {
         switch (scope) {
             case 'group':
-                return activeClass.groups.map((g) => ({
-                    id: g.id,
-                    title: g.label,
-                    subtitle: g.sublabel,
-                    activeId: activeGroupId,
-                    onClick: () => setActiveGroupId(g.id),
-                }));
+                return activeClass.groups.map((g) => ({ id: g.id, title: g.label, subtitle: g.sublabel }));
             case 'student':
                 return activeClass.groups.flatMap((g) =>
-                    g.students.map((s) => ({
-                        id: s.id,
-                        title: s.label,
-                        subtitle: `${g.label} · ${s.sublabel}`,
-                        activeId: activeStudentId,
-                        onClick: () => setActiveStudentId(s.id),
-                    })),
+                    g.students.map((s) => ({ id: s.id, title: s.label, subtitle: `${g.label} · ${s.sublabel}` })),
                 );
             case 'session':
-                return activeClass.sessionEntries.map((s) => ({
-                    id: s.id,
-                    title: s.label,
-                    subtitle: s.sublabel,
-                    activeId: activeSessionId,
-                    onClick: () => setActiveSessionId(s.id),
-                }));
+                return activeClass.sessionEntries.map((s) => ({ id: s.id, title: s.label, subtitle: s.sublabel }));
             default:
-                return MOCK_CLASSES.map((c) => ({
-                    id: c.id,
-                    title: c.label,
-                    subtitle: c.sublabel,
-                    activeId: activeClassId,
-                    onClick: () => handleClassChange(c.id),
-                }));
+                return MOCK_CLASSES.map((c) => ({ id: c.id, title: c.label, subtitle: c.sublabel }));
         }
-    }, [scope, activeClass, activeClassId, activeGroupId, activeStudentId, activeSessionId]);
+    }, [scope, activeClass]);
 
     const selectorTitle = useMemo(() => {
         switch (scope) {
@@ -295,6 +300,8 @@ const RadarChartPage: React.FC = () => {
             default: return 'Pilih Kelas';
         }
     }, [scope]);
+
+    const showClassAvgOverlay = scope !== 'class';
 
     return (
         <AppLayout title="Radar Metrik" navItems={navItems}>
@@ -309,48 +316,32 @@ const RadarChartPage: React.FC = () => {
                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
                             <div className="flex flex-col gap-4">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span
-                                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                        style={brandChipStyle}
-                                    >
+                                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={brandChipStyle}>
                                         Mock Preview
                                     </span>
-                                    <span
-                                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                        style={neutralChipStyle}
-                                    >
+                                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={neutralChipStyle}>
                                         {activeClass.label}
                                     </span>
                                 </div>
-
                                 <div>
                                     <h1 className="text-2xl font-bold sm:text-3xl" style={headingStyle}>
                                         Radar Metrik Diskusi
                                     </h1>
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
-                                        Lihat enam metrik SSRL pada empat tingkat agregasi: kelas, kelompok, mahasiswa
-                                        individual, atau sesi diskusi tertentu. Data berikut masih mock untuk preview tampilan.
+                                        Lihat enam metrik SSRL pada empat tingkat agregasi. Aktifkan mode bandingkan untuk
+                                        overlay dua entitas, dan periksa tabel rincian skor di bawah radar.
                                     </p>
                                 </div>
-
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <label className="text-xs uppercase tracking-wider text-[#6B7280]">
-                                        Kelas:
-                                    </label>
+                                    <label className="text-xs uppercase tracking-wider text-[#6B7280]">Kelas:</label>
                                     <select
                                         value={activeClassId}
                                         onChange={(e) => handleClassChange(e.target.value)}
                                         className="rounded-xl border px-3 py-2 text-sm"
-                                        style={{
-                                            background: 'rgba(255,255,255,0.55)',
-                                            borderColor: 'rgba(74,74,74,0.18)',
-                                            color: '#4A4A4A',
-                                        }}
+                                        style={{ background: 'rgba(255,255,255,0.55)', borderColor: 'rgba(74,74,74,0.18)', color: '#4A4A4A' }}
                                     >
                                         {MOCK_CLASSES.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.label}
-                                            </option>
+                                            <option key={c.id} value={c.id}>{c.label}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -358,103 +349,103 @@ const RadarChartPage: React.FC = () => {
                         </LiquidGlassCard>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.05 }}
-                        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         {summaryCards.map(({ icon: Icon, label, value }) => (
                             <LiquidGlassCard key={label} intensity="medium" className="p-4" lightMode={true}>
                                 <div className="flex items-start gap-3">
-                                    <div
-                                        className="flex h-10 w-10 items-center justify-center rounded-2xl"
-                                        style={brandChipStyle}
-                                    >
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={brandChipStyle}>
                                         <Icon className="h-5 w-5" />
                                     </div>
                                     <div>
                                         <p className="text-xs uppercase tracking-wider text-[#6B7280]">{label}</p>
-                                        <p className="mt-1 text-2xl font-semibold" style={headingStyle}>
-                                            {value}
-                                        </p>
+                                        <p className="mt-1 text-2xl font-semibold" style={headingStyle}>{value}</p>
                                     </div>
                                 </div>
                             </LiquidGlassCard>
                         ))}
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                         <LiquidGlassCard intensity="medium" className="p-3" lightMode={true}>
-                            <div className="flex flex-wrap items-center gap-1">
-                                {SCOPE_TABS.map((tab) => {
-                                    const isActive = tab.key === scope;
-                                    return (
-                                        <button
-                                            key={tab.key}
-                                            type="button"
-                                            onClick={() => setScope(tab.key)}
-                                            className="rounded-full px-4 py-1.5 text-sm font-medium transition"
-                                            style={{
-                                                background: isActive
-                                                    ? 'rgba(136,22,28,0.12)'
-                                                    : 'transparent',
-                                                color: isActive ? '#88161c' : '#6B7280',
-                                                border: isActive
-                                                    ? '1px solid rgba(136,22,28,0.25)'
-                                                    : '1px solid transparent',
-                                            }}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    );
-                                })}
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-1">
+                                    {SCOPE_TABS.map((tab) => {
+                                        const isActive = tab.key === scope;
+                                        return (
+                                            <button
+                                                key={tab.key}
+                                                type="button"
+                                                onClick={() => handleScopeChange(tab.key)}
+                                                className="rounded-full px-4 py-1.5 text-sm font-medium transition"
+                                                style={{
+                                                    background: isActive ? 'rgba(136,22,28,0.12)' : 'transparent',
+                                                    color: isActive ? '#88161c' : '#6B7280',
+                                                    border: isActive ? '1px solid rgba(136,22,28,0.25)' : '1px solid transparent',
+                                                }}
+                                            >
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { setComparisonMode((prev) => !prev); setSecondaryId(null); }}
+                                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition"
+                                    style={
+                                        comparisonMode
+                                            ? { background: '#88161c', color: '#fff', border: '1px solid #88161c' }
+                                            : { background: 'rgba(255,255,255,0.55)', color: '#88161c', border: '1px solid rgba(136,22,28,0.25)' }
+                                    }
+                                >
+                                    {comparisonMode ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                                    {comparisonMode ? 'Selesai Bandingkan' : 'Bandingkan'}
+                                </button>
                             </div>
+                            {comparisonMode && !secondaryId && (
+                                <p className="mt-2 px-1 text-xs text-[#6B7280]">
+                                    Pilih item kedua di sidebar untuk dibandingkan dengan {primaryEntity.label}.
+                                </p>
+                            )}
                         </LiquidGlassCard>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.15 }}
-                        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <LiquidGlassCard intensity="medium" className="p-6 lg:col-span-1" lightMode={true}>
-                            <h2 className="text-base font-semibold" style={headingStyle}>
-                                {selectorTitle}
-                            </h2>
-                            <p className={`mt-1 ${bodyTextClass}`}>
-                                {selectorItems.length} item tersedia.
-                            </p>
-
+                            <h2 className="text-base font-semibold" style={headingStyle}>{selectorTitle}</h2>
+                            <p className={`mt-1 ${bodyTextClass}`}>{selectorItems.length} item tersedia.</p>
                             <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
                                 {selectorItems.map((item) => {
-                                    const isActive = item.id === item.activeId;
+                                    const isPrimary = item.id === primaryId;
+                                    const isSecondary = item.id === secondaryId;
                                     return (
                                         <button
                                             key={item.id}
                                             type="button"
-                                            onClick={item.onClick}
+                                            onClick={() => handleSidebarSelect(item.id)}
                                             className="w-full rounded-2xl px-3 py-3 text-left transition"
                                             style={{
-                                                background: isActive
-                                                    ? 'rgba(136,22,28,0.08)'
-                                                    : 'rgba(255,255,255,0.55)',
-                                                border: isActive
-                                                    ? '1px solid rgba(136,22,28,0.25)'
-                                                    : '1px solid rgba(74,74,74,0.08)',
+                                                background: isPrimary ? 'rgba(136,22,28,0.08)' : isSecondary ? 'rgba(71,85,105,0.10)' : 'rgba(255,255,255,0.55)',
+                                                border: isPrimary ? '1px solid rgba(136,22,28,0.25)' : isSecondary ? '1px solid rgba(71,85,105,0.30)' : '1px solid rgba(74,74,74,0.08)',
                                             }}
                                         >
-                                            <p
-                                                className="text-sm font-semibold"
-                                                style={{ color: isActive ? '#88161c' : '#4A4A4A' }}
-                                            >
-                                                {item.title}
-                                            </p>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-sm font-semibold" style={{ color: isPrimary ? '#88161c' : isSecondary ? '#475569' : '#4A4A4A' }}>
+                                                    {item.title}
+                                                </p>
+                                                {comparisonMode && (
+                                                    <span
+                                                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                                                        style={
+                                                            isPrimary ? { background: 'rgba(136,22,28,0.18)', color: '#88161c' }
+                                                                : isSecondary ? { background: 'rgba(71,85,105,0.18)', color: '#475569' }
+                                                                : { background: 'rgba(74,74,74,0.10)', color: '#6B7280' }
+                                                        }
+                                                    >
+                                                        {isPrimary ? 'Primer' : isSecondary ? 'Pembanding' : 'Pilih'}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="mt-0.5 text-xs text-[#6B7280]">{item.subtitle}</p>
                                         </button>
                                     );
@@ -465,27 +456,72 @@ const RadarChartPage: React.FC = () => {
                         <LiquidGlassCard intensity="medium" className="p-6 lg:col-span-2" lightMode={true}>
                             <div className="mb-4">
                                 <h2 className="text-base font-semibold" style={headingStyle}>
-                                    {activeEntity.label}
+                                    {primaryEntity.label}
+                                    {secondaryEntity && (<span className="text-[#475569]"> vs {secondaryEntity.label}</span>)}
                                 </h2>
-                                <p className={`mt-1 ${bodyTextClass}`}>{activeEntity.sublabel}</p>
+                                <p className={`mt-1 ${bodyTextClass}`}>
+                                    {secondaryEntity
+                                        ? 'Mode perbandingan aktif. Polygon burgundy = primer, slate = pembanding, bayangan abu = rata-rata kelas.'
+                                        : showClassAvgOverlay
+                                        ? 'Polygon burgundy = entitas aktif, bayangan abu = rata-rata kelas.'
+                                        : primaryEntity.sublabel}
+                                </p>
                             </div>
 
                             <div className="h-[420px] w-full">
-                                <MetricsRadarChart data={activeEntity.metrics} labels={METRIC_LABELS} />
+                                <MetricsRadarChart
+                                    data={primaryEntity.metrics}
+                                    labels={METRIC_LABELS}
+                                    primaryLabel={primaryEntity.label}
+                                    comparisonData={secondaryEntity?.metrics}
+                                    comparisonLabel={secondaryEntity?.label}
+                                    classAverageData={showClassAvgOverlay ? activeClass.metrics : undefined}
+                                    classAverageLabel="Rata-rata kelas"
+                                    showLegend={Boolean(secondaryEntity || showClassAvgOverlay)}
+                                />
                             </div>
 
-                            <div
-                                className="mt-4 rounded-2xl p-4"
-                                style={{ background: 'rgba(255,255,255,0.45)' }}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <Lightbulb
-                                        className="mt-0.5 h-4 w-4 flex-shrink-0"
-                                        style={{ color: '#88161c' }}
-                                    />
-                                    <p className="text-sm leading-6 text-[#6B7280]">{activeEntity.note}</p>
+                            <div className="mt-4 grid grid-cols-1 gap-3">
+                                <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
+                                    <div className="flex items-start gap-3">
+                                        <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">{primaryEntity.label}</p>
+                                            <p className="mt-1 text-sm leading-6 text-[#6B7280]">{primaryEntity.note}</p>
+                                        </div>
+                                    </div>
                                 </div>
+                                {secondaryEntity && (
+                                    <div className="rounded-2xl p-4" style={{ background: 'rgba(71,85,105,0.06)' }}>
+                                        <div className="flex items-start gap-3">
+                                            <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#475569' }} />
+                                            <div>
+                                                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>{secondaryEntity.label}</p>
+                                                <p className="mt-1 text-sm leading-6 text-[#6B7280]">{secondaryEntity.note}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
+                        </LiquidGlassCard>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                            <div className="mb-3">
+                                <h2 className="text-base font-semibold" style={headingStyle}>Rincian Skor per Metrik</h2>
+                                <p className={`mt-1 ${bodyTextClass}`}>
+                                    Δ vs Kelas membandingkan skor entitas aktif dengan rata-rata kelas {activeClass.label}.
+                                </p>
+                            </div>
+                            <MetricBreakdownTable
+                                metrics={primaryEntity.metrics}
+                                labels={METRIC_LABELS}
+                                classAverage={activeClass.metrics}
+                                primaryLabel={primaryEntity.label}
+                                comparisonMetrics={secondaryEntity?.metrics}
+                                comparisonLabel={secondaryEntity?.label}
+                            />
                         </LiquidGlassCard>
                     </motion.div>
                 </div>
