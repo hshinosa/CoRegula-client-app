@@ -202,7 +202,7 @@ class StudentCourseController extends Controller
 
     public function chatSpaceSummary(string $course, string $chatSpace)
     {
-        $response = $this->apiRequest()->get($this->apiUrl() . "/api/chatspaces/{$chatSpace}/summary");
+        $response = $this->apiRequest()->get($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/summary");
         if ($response->status() === 404) {
             return response()->json(['summary' => null], 200);
         }
