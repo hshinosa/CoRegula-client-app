@@ -40,7 +40,7 @@ export default function Welcome() {
         const onScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener('scroll', onScroll, { passive: true });
 
-        const sections = ['hero', 'statistik', 'fitur', 'cara-kerja', 'demo', 'use-cases', 'testimoni', 'faq', 'tentang', 'cta'];
+        const sections = ['hero', 'statistik', 'fitur', 'cara-kerja', 'demo', 'use-cases', 'faq', 'tentang', 'cta'];
         const observers: IntersectionObserver[] = [];
         sections.forEach((id) => {
             const el = document.getElementById(id);

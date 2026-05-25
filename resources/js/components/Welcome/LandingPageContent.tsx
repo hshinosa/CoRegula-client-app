@@ -9,7 +9,6 @@ import StatsSection from './StatsSection';
 const HowItWorksSection = lazy(() => import('./HowItWorksSection'));
 const DemoSection = lazy(() => import('./DemoSection'));
 const UseCasesSection = lazy(() => import('./UseCasesSection'));
-const TestimonialsSection = lazy(() => import('./TestimonialsSection'));
 const AboutSection = lazy(() => import('./AboutSection'));
 const FaqSection = lazy(() => import('./FaqSection'));
 const CtaSection = lazy(() => import('./CtaSection'));
@@ -53,7 +52,6 @@ export default function LandingPageContent({ lightMode, darkMode, scrolled, menu
                 <HowItWorksSection lightMode={lightMode} />
                 <DemoSection lightMode={lightMode} />
                 <UseCasesSection lightMode={lightMode} />
-                <TestimonialsSection lightMode={lightMode} />
                 <AboutSection lightMode={lightMode} />
                 <FaqSection lightMode={lightMode} />
                 <CtaSection lightMode={lightMode} />
