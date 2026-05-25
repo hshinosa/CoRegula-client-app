@@ -2,7 +2,7 @@ import { dashboard } from '@/routes'
 import lecturer from '@/routes/lecturer'
 import { NavItem } from './student-nav'
 
-type ActivePage = 'dashboard' | 'courses' | 'course-create' | 'course-detail' | 'groups' | 'analytics-overview' | 'analytics' | 'analytics-group' | 'ai-settings';
+type ActivePage = 'dashboard' | 'courses' | 'course-create' | 'course-detail' | 'groups' | 'analytics-overview' | 'analytics' | 'analytics-group';
 
 const Icons = {
     dashboard: (
@@ -51,12 +51,6 @@ export function useLecturerNav(activePage: ActivePage): NavItem[] {
             href: lecturer.analytics.overview.url(),
             icon: Icons.analytics,
             active: ['analytics-overview', 'analytics', 'analytics-group'].includes(activePage),
-        },
-        {
-            name: 'AI Settings',
-            href: '/lecturer/ai-settings',
-            icon: Icons['ai-settings'],
-            active: activePage === 'ai-settings',
         },
     ]
 }
