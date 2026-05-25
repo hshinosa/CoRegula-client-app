@@ -1,16 +1,14 @@
 import { Link, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PropsWithChildren, useState, useMemo } from 'react';
-import { LogOut, Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X } from 'lucide-react';
 
 import { SharedData } from '@/types';
-import auth from '@/routes/auth';
 import { OrganicBlob } from '@/components/Welcome/utils/helpers';
 import { AdminNav } from '@/components/navigation/admin-nav';
-import DarkModeToggle from '@/components/ui/DarkModeToggle';
-import NotificationCenter from '@/components/dashboard/NotificationCenter';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { KeyboardShortcutsHelpModal } from '@/components/ui/KeyboardShortcutsHelpModal';
+import ProfileDropdown from '@/components/ui/ProfileDropdown';
 import { useKeyboardShortcuts, KeyboardShortcutMap } from '@/hooks/useKeyboardShortcuts';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { adminShortcuts } from '@/config/shortcuts/admin';
@@ -291,24 +289,13 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                     {user?.role || 'Tamu'}
                                 </p>
                             </div>
-                            <NotificationCenter lightMode={!darkMode} />
-                            <DarkModeToggle
-                                darkMode={darkMode}
-                                onToggle={toggleDarkMode}
-                                className="rounded-xl p-2"
-                            />
-                            <Link
-                                href={auth.logout.url()}
-                                method="post"
-                                as="button"
-                                className="rounded-xl p-2 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)] transition-colors"
-                                style={{
-                                    background: 'var(--dm-surface-transparent)',
-                                }}
-                                title="Keluar"
-                            >
-                                <LogOut className="h-5 w-5" />
-                            </Link>
+                            {user && (
+                                <ProfileDropdown
+                                    user={{ name: user.name, email: user.email, role: user.role }}
+                                    darkMode={darkMode}
+                                    onToggleDarkMode={toggleDarkMode}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -428,18 +415,13 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                                 {user?.role || 'Tamu'}
                                             </p>
                                         </div>
-                                        <Link
-                                            href={auth.logout.url()}
-                                            method="post"
-                                            as="button"
-                                            className="flex-shrink-0 rounded-xl p-1.5 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)] sm:p-2"
-                                            style={{
-                                                background: 'var(--dm-surface-transparent)',
-                                            }}
-                                            title="Keluar"
-                                        >
-                                            <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        </Link>
+                                        {user && (
+                                            <ProfileDropdown
+                                                user={{ name: user.name, email: user.email, role: user.role }}
+                                                darkMode={darkMode}
+                                                onToggleDarkMode={toggleDarkMode}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -475,13 +457,13 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         >
                             <Search className="h-4 w-4" />
                         </button>
-                        <NotificationCenter lightMode={!darkMode} />
-                        <DarkModeToggle
-                            darkMode={darkMode}
-                            onToggle={toggleDarkMode}
-                            size="sm"
-                            className="h-9 w-9"
-                        />
+                        {user && (
+                            <ProfileDropdown
+                                user={{ name: user.name, email: user.email, role: user.role }}
+                                darkMode={darkMode}
+                                onToggleDarkMode={toggleDarkMode}
+                            />
+                        )}
                     </div>
 
                     <motion.div

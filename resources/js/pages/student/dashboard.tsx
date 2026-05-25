@@ -4,7 +4,6 @@ import { BookOpen, MessageSquare, Pencil, Sparkles, Users } from 'lucide-react';
 
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import QuickActionsGrid from '@/components/dashboard/QuickActionsGrid';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
@@ -114,7 +113,6 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                                 </div>
                             </LiquidGlassCard>
                         </motion.div>
-                        <NotificationsBell />
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -2,10 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 
 export function getInitialDarkMode(): boolean {
     if (typeof window === 'undefined') return false;
-    return (
-        localStorage.getItem('kolabri_theme') === 'dark' ||
-        localStorage.getItem('kolabri-dark') === 'true'
-    );
+    
+    const stored = localStorage.getItem('kolabri_theme');
+    if (stored) {
+        return stored === 'dark';
+    }
+    
+    const legacyStored = localStorage.getItem('kolabri-dark');
+    if (legacyStored) {
+        return legacyStored === 'true';
+    }
+    
+    return false;
 }
 
 export function applyDarkMode(dark: boolean) {

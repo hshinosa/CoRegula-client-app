@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 
 import MetricsRadarChart from '@/components/MetricsRadarChart';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
@@ -138,7 +137,6 @@ export default function StudentAnalytics({ analytics }: Props) {
                         <h1 className="mt-2 text-3xl font-bold text-gray-900">Analitik Aktivitas</h1>
                         <p className="mt-1 text-sm text-gray-600">Pantau perkembangan dan partisipasi Anda</p>
                     </div>
-                    <NotificationsBell />
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

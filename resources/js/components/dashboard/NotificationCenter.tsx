@@ -8,9 +8,10 @@ type Tab = 'unread' | 'history';
 
 interface NotificationCenterProps {
     lightMode?: boolean;
+    inDropdown?: boolean;
 }
 
-export default function NotificationCenter({ lightMode = true }: NotificationCenterProps) {
+export default function NotificationCenter({ lightMode = true, inDropdown = false }: NotificationCenterProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [tab, setTab] = useState<Tab>('unread');
     const [apiNotifications, setApiNotifications] = useState<StoredNotification[]>([]);
@@ -113,6 +114,54 @@ export default function NotificationCenter({ lightMode = true }: NotificationCen
         warning: '#f59e0b',
         error: '#ef4444',
     };
+
+    if (inDropdown) {
+        return (
+            <div>
+                <div className="mb-3 flex items-center gap-2 px-2">
+                    <Bell className="h-4 w-4" style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb' }} />
+                    <h3 className="text-sm font-semibold" style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb' }}>
+                        Notifikasi
+                    </h3>
+                    {unreadCount > 0 && (
+                        <span
+                            className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white"
+                            style={{ background: '#88161c' }}
+                        >
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </div>
+                <div className="max-h-72 overflow-y-auto rounded-xl" style={{ background: lightMode ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)' }}>
+                    {displayNotifications.length === 0 ? (
+                        <div className="px-4 py-6 text-center text-sm" style={{ color: lightMode ? '#6B7280' : '#9CA3AF' }}>
+                            Belum ada notifikasi
+                        </div>
+                    ) : (
+                        displayNotifications.slice(0, 5).map((notification) => (
+                            <div
+                                key={notification.id}
+                                className="border-b px-4 py-3 last:border-b-0"
+                                style={{ borderColor: lightMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)' }}
+                            >
+                                <div className="mb-1 flex items-start justify-between gap-2">
+                                    <p className="text-sm font-medium" style={{ color: lightMode ? '#111827' : '#F3F4F6' }}>
+                                        {notification.title}
+                                    </p>
+                                    <span className="shrink-0 text-[11px]" style={{ color: lightMode ? '#6B7280' : '#9CA3AF' }}>
+                                        {formatTimestamp(notification.timestamp)}
+                                    </span>
+                                </div>
+                                <p className="text-xs leading-relaxed" style={{ color: lightMode ? '#6B7280' : '#9CA3AF' }}>
+                                    {notification.message}
+                                </p>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative" ref={dropdownRef}>

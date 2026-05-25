@@ -23,7 +23,6 @@ import { SkeletonDashboard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { connectWebSocket } from '@/lib/websocket';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, UserRole } from '@/types';
 
@@ -842,7 +841,6 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                         </div>
                     </LiquidGlassCard>
                     </motion.div>
-                    <NotificationsBell />
                 </div>
 
                 {isStatsLoading && !dashboardStats ? (

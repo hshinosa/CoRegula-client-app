@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
@@ -151,7 +150,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                             </div>
                         </LiquidGlassCard>
                         </motion.div>
-                        <NotificationsBell />
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
