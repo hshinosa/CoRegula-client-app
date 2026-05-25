@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     Activity,
@@ -8,13 +8,16 @@ import {
     MessageSquare,
     RefreshCw,
     Lightbulb,
+    TrendingUp,
     Users,
 } from 'lucide-react';
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+import { DateRangePicker, ExportMenu, TrendChart, type TrendDataPoint } from '@/components/analytics';
 import { LiquidGlassCard, OrganicBlob, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import { DashboardSkeleton } from '@/components/ui/skeletons';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
@@ -39,20 +42,32 @@ interface CourseAnalyticsSummary {
     groupsNeedingAttention: number;
 }
 
+interface TrendsData {
+    engagement?: TrendDataPoint[];
+    completion?: TrendDataPoint[];
+    attendance?: TrendDataPoint[];
+}
+
+interface FiltersState {
+    startDate?: string;
+    endDate?: string;
+    preset?: string;
+}
+
 interface Props {
     course: Course;
     analytics: {
         summary: CourseAnalyticsSummary;
         groups: GroupAnalytics[];
+        trends?: TrendsData | null;
     };
+    filters?: FiltersState;
 }
 
 const headingStyle = {
     color: '#4A4A4A',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
-
-const bodyTextClass = 'text-sm text-[#6B7280]';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
@@ -153,7 +168,16 @@ const getEngagementStyle = (type: string) => {
     };
 };
 
-export default function CourseAnalytics({ course, analytics }: Props) {
+type TrendMetric = 'engagement' | 'completion' | 'attendance';
+
+const TREND_METRIC_OPTIONS: Array<{ value: TrendMetric; label: string }> = [
+    { value: 'engagement', label: 'Engagement' },
+    { value: 'completion', label: 'Completion Rate' },
+    { value: 'attendance', label: 'Attendance' },
+];
+
+export default function CourseAnalytics({ course, analytics, filters }: Props) {
+    const [isLoading, setIsLoading] = useState(true);
     const [jwtToken, setJwtToken] = useState('');
     const summary = analytics?.summary ?? defaultSummary;
     const groups = useMemo(() => analytics?.groups ?? [], [analytics?.groups]);
@@ -169,6 +193,20 @@ export default function CourseAnalytics({ course, analytics }: Props) {
         }>
     >([]);
     const [isConnected, setIsConnected] = useState(false);
+    const [selectedMetric, setSelectedMetric] = useState<TrendMetric>('engagement');
+    const [trendData, setTrendData] = useState<TrendsData | null>(analytics?.trends ?? null);
+    const [isLoadingTrends, setIsLoadingTrends] = useState(false);
+
+    const [activePreset, setActivePreset] = useState<string | undefined>(filters?.preset);
+    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | undefined>(
+        filters?.startDate && filters?.endDate
+            ? { startDate: filters.startDate, endDate: filters.endDate }
+            : undefined,
+    );
+
+    useEffect(() => {
+        setIsLoading(false);
+    }, []);
 
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch(console.error);
@@ -178,7 +216,7 @@ export default function CourseAnalytics({ course, analytics }: Props) {
         setLiveGroups(groups);
     }, [groups]);
 
-    const navItems = useLecturerNav('analytics', { courseId: course.id });
+    const navItems = useLecturerNav('analytics');
 
     useEffect(() => {
         if (!jwtToken) return;
@@ -222,7 +260,12 @@ export default function CourseAnalytics({ course, analytics }: Props) {
 
     const refreshAnalytics = useCallback(async () => {
         try {
-            const response = await fetch(`/lecturer/courses/${course.id}/analytics/live`, {
+            const params = new URLSearchParams();
+            if (dateRange?.startDate) params.set('start_date', dateRange.startDate);
+            if (dateRange?.endDate) params.set('end_date', dateRange.endDate);
+            if (activePreset) params.set('preset', activePreset);
+
+            const response = await fetch(`/lecturer/courses/${course.id}/analytics/live?${params.toString()}`, {
                 credentials: 'include',
                 headers: { 'Accept': 'application/json' },
             });
@@ -234,7 +277,66 @@ export default function CourseAnalytics({ course, analytics }: Props) {
         } catch (error) {
             console.error('Failed to refresh analytics:', error);
         }
-    }, [course.id]);
+    }, [course.id, dateRange, activePreset]);
+
+    const fetchTrends = useCallback(async (metric: TrendMetric) => {
+        setIsLoadingTrends(true);
+        try {
+            const params = new URLSearchParams({ metric });
+            if (dateRange?.startDate) params.set('start_date', dateRange.startDate);
+            if (dateRange?.endDate) params.set('end_date', dateRange.endDate);
+            if (activePreset) params.set('preset', activePreset);
+
+            const response = await fetch(`/lecturer/courses/${course.id}/analytics/trends?${params.toString()}`, {
+                credentials: 'include',
+                headers: { 'Accept': 'application/json' },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setTrendData((prev) => ({
+                    ...prev,
+                    [metric]: data.points ?? data,
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to fetch trends:', error);
+        } finally {
+            setIsLoadingTrends(false);
+        }
+    }, [course.id, dateRange, activePreset]);
+
+    const handleDateChange = useCallback(
+        (range: { startDate: string; endDate: string }, preset?: string) => {
+            setDateRange(range);
+            setActivePreset(preset);
+
+            const params: Record<string, string> = {};
+            if (preset) {
+                params.preset = preset;
+            } else {
+                params.start_date = range.startDate;
+                params.end_date = range.endDate;
+            }
+
+            router.get(
+                lecturer.analytics.index.url({ course: course.id }),
+                params,
+                { preserveState: true, preserveScroll: true },
+            );
+        },
+        [course.id],
+    );
+
+    const handleMetricChange = useCallback(
+        (metric: TrendMetric) => {
+            setSelectedMetric(metric);
+            if (!trendData?.[metric]) {
+                fetchTrends(metric);
+            }
+        },
+        [trendData, fetchTrends],
+    );
 
     const liveSummary = useMemo(() => {
         const qualityScores = liveGroups
@@ -291,9 +393,7 @@ export default function CourseAnalytics({ course, analytics }: Props) {
         },
     ];
 
-    const groupsWithEngagement = liveGroups.filter(
-        (group) => group.engagementDistribution && Object.keys(group.engagementDistribution).length > 0,
-    );
+    const currentTrendData = trendData?.[selectedMetric] ?? [];
 
     return (
         <AppLayout title={`Analytics - ${course.name}`} navItems={navItems}>
@@ -304,107 +404,81 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                 <OrganicBlob className="top-32 -right-12" delay={-5} color="rgba(136, 22, 28, 0.03)" size={260} />
 
                 <div className="relative space-y-6">
+                    {isLoading ? (
+                        <DashboardSkeleton />
+                    ) : (
+                    <>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
-                            <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                                <div className="max-w-3xl">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={brandChipStyle}>
-                                            {course.code}
-                                        </span>
-                                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={neutralChipStyle}>
-                                            {liveGroups.length} grup termonitor
-                                        </span>
-                                        <span
-                                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                            style={isConnected ? successChipStyle : neutralChipStyle}
-                                        >
-                                            <Activity className="h-3.5 w-3.5" />
-                                            {isConnected ? 'Live analytics aktif' : 'Menunggu koneksi live'}
-                                        </span>
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex items-start gap-4">
+                                    <div
+                                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                                        style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
+                                    >
+                                        <BarChart3 className="h-6 w-6" style={{ color: '#88161c' }} />
                                     </div>
-
-                                    <h1 className="mt-3 text-2xl font-bold sm:text-3xl" style={headingStyle}>
-                                        Monitoring kualitas diskusi lintas grup
-                                    </h1>
-                                    <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
-                                        Lihat kesehatan percakapan, sinyal SSRL, dan grup yang butuh intervensi tanpa mengubah
-                                        alur refresh, socket alert, atau detail analytics yang sudah berjalan.
-                                    </p>
+                                    <div>
+                                        <h1 className="text-2xl font-bold" style={headingStyle}>
+                                            {course.name}
+                                        </h1>
+                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                            {course.code} · Analytics Dashboard
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px] xl:grid-cols-1">
-                                    <div className="rounded-[28px] p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#6B7280]">Perlu perhatian</p>
-                                        <p className="mt-2 text-2xl font-semibold" style={headingStyle}>
-                                            {liveSummary.groupsNeedingAttention}
-                                        </p>
-                                        <p className="mt-1 text-xs text-[#6B7280]">Grup dengan skor rendah atau alert aktif.</p>
-                                    </div>
-
-                                    <SecondaryButton onClick={refreshAnalytics} className="justify-center">
-                                        <RefreshCw className="h-4 w-4" />
-                                        Refresh analytics
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <DateRangePicker
+                                        value={dateRange}
+                                        preset={activePreset}
+                                        onChange={handleDateChange}
+                                    />
+                                    <ExportMenu
+                                        courseId={course.id}
+                                        startDate={dateRange?.startDate}
+                                        endDate={dateRange?.endDate}
+                                        preset={activePreset}
+                                    />
+                                    <SecondaryButton onClick={refreshAnalytics}>
+                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                        Refresh
                                     </SecondaryButton>
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-300'}`}
+                                        />
+                                        <span className="text-xs text-[#6B7280]">
+                                            {isConnected ? 'Live' : 'Offline'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </LiquidGlassCard>
                     </motion.div>
 
                     {alerts.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.08 }}
-                        >
-                            <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                                                style={{
-                                                    background: 'rgba(239,68,68,0.10)',
-                                                    border: '1px solid rgba(239,68,68,0.18)',
-                                                }}
-                                            >
-                                                <AlertTriangle className="h-5 w-5" style={{ color: '#b91c1c' }} />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-lg font-semibold" style={headingStyle}>
-                                                    Alert kualitas terbaru
-                                                </h2>
-                                                <p className={`mt-1 ${bodyTextClass}`}>
-                                                    Notifikasi dari socket dosen ditampilkan real-time dan tetap bisa ditutup satu per satu.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <span className="rounded-full px-3 py-1 text-xs font-medium" style={dangerChipStyle}>
-                                        {alerts.length} alert aktif
-                                    </span>
-                                </div>
-
-                                <div className="mt-5 space-y-3">
+                        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                            <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
+                                <div className="space-y-3">
                                     {alerts.map((alert, index) => (
                                         <div
                                             key={`${alert.groupId}-${alert.timestamp}`}
-                                            className="flex flex-col gap-3 rounded-[24px] p-4 sm:flex-row sm:items-center sm:justify-between"
-                                            style={{
-                                                background: 'rgba(239,68,68,0.08)',
-                                                border: '1px solid rgba(239,68,68,0.12)',
-                                            }}
+                                            className="flex items-center justify-between gap-4 rounded-2xl p-4"
+                                            style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)' }}
                                         >
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-medium text-[#7f1d1d]">{alert.message}</p>
-                                                <p className="mt-1 text-xs text-[#b91c1c]">
-                                                    Skor {alert.qualityScore?.toFixed(1) || '—'} •{' '}
-                                                    {new Date(alert.timestamp).toLocaleTimeString('id-ID', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                                </p>
+                                            <div className="flex items-center gap-3">
+                                                <AlertTriangle className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-[#7f1d1d]">{alert.message}</p>
+                                                    <p className="mt-1 text-xs text-[#b91c1c]">
+                                                        Skor {alert.qualityScore?.toFixed(1) || '—'} •{' '}
+                                                        {new Date(alert.timestamp).toLocaleTimeString('id-ID', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                        })}
+                                                    </p>
+                                                </div>
                                             </div>
 
                                             <button
@@ -440,11 +514,8 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                                             <p className="mt-1 text-xs text-[#6B7280]">{card.detail}</p>
                                         </div>
                                         <div
-                                            className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: `${card.color}12`,
-                                                border: `1px solid ${card.color}20`,
-                                            }}
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                                            style={{ background: `${card.color}12`, border: `1px solid ${card.color}20` }}
                                         >
                                             <card.icon className="h-5 w-5" style={{ color: card.color }} />
                                         </div>
@@ -454,274 +525,252 @@ export default function CourseAnalytics({ course, analytics }: Props) {
                         ))}
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.22 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
                         <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: 'rgba(136,22,28,0.08)',
-                                                border: '1px solid rgba(136,22,28,0.12)',
-                                            }}
+                            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-2">
+                                    <TrendingUp className="h-5 w-5" style={{ color: '#88161c' }} />
+                                    <h2 className="text-lg font-semibold" style={headingStyle}>
+                                        Trend Analytics
+                                    </h2>
+                                </div>
+                                <div className="flex gap-2">
+                                    {TREND_METRIC_OPTIONS.map((option) => (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => handleMetricChange(option.value)}
+                                            className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+                                            style={
+                                                selectedMetric === option.value
+                                                    ? { background: 'rgba(136,22,28,0.12)', color: '#88161c', border: '1px solid rgba(136,22,28,0.25)' }
+                                                    : { background: 'rgba(136,22,28,0.04)', color: '#6B7280', border: '1px solid rgba(136,22,28,0.08)' }
+                                            }
                                         >
-                                            <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-lg font-semibold" style={headingStyle}>
-                                                Analisis grup per tim
-                                            </h2>
-                                            <p className={`mt-1 ${bodyTextClass}`}>
-                                                Tabel analytics mempertahankan tautan detail, status kualitas, dan konteks diskusi untuk setiap grup.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <span className="rounded-full px-3 py-1 text-xs font-medium" style={neutralChipStyle}>
-                                    {liveGroups.length} baris data
-                                </span>
-                            </div>
-
-                            <div className="mt-5 overflow-hidden rounded-[28px]" style={glassPanelStyle}>
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full border-separate border-spacing-0">
-                                        <thead style={tableHeaderStyle}>
-                                            <tr>
-                                                {['Grup', 'Anggota', 'Pesan', 'Skor kualitas', 'Status', 'Aksi'].map((label) => (
-                                                    <th
-                                                        key={label}
-                                                        className={`px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7280] ${
-                                                            label === 'Aksi' ? 'text-right' : label === 'Grup' ? 'text-left' : 'text-center'
-                                                        }`}
-                                                    >
-                                                        {label}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {liveGroups.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={6} className="px-6 py-14 text-center">
-                                                        <div
-                                                            className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
-                                                            style={{
-                                                                background: 'rgba(136,22,28,0.08)',
-                                                                border: '1px solid rgba(136,22,28,0.12)',
-                                                            }}
-                                                        >
-                                                            <BarChart3 className="h-6 w-6" style={{ color: '#88161c' }} />
-                                                        </div>
-                                                        <p className="mt-4 text-base font-semibold" style={headingStyle}>
-                                                            Belum ada data analytics grup
-                                                        </p>
-                                                        <p className={`mx-auto mt-2 max-w-md ${bodyTextClass}`}>
-                                                            Begitu grup mulai berdiskusi, ringkasan kualitas dan engagement akan muncul di sini.
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                liveGroups.map((group) => {
-                                                    const rowStyle: CSSProperties | undefined = group.needsAttention
-                                                        ? {
-                                                              background: 'rgba(245,158,11,0.08)',
-                                                          }
-                                                        : undefined;
-
-                                                    return (
-                                                        <tr key={group.groupId} style={rowStyle}>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-left align-top">
-                                                                <div className="flex items-center gap-3">
-                                                                    <span
-                                                                        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-semibold"
-                                                                        style={brandChipStyle}
-                                                                    >
-                                                                        {group.groupName.charAt(0).toUpperCase()}
-                                                                    </span>
-                                                                    <div className="min-w-0">
-                                                                        <p className="truncate text-sm font-semibold" style={headingStyle}>
-                                                                            {group.groupName}
-                                                                        </p>
-                                                                        <p className="mt-1 text-xs text-[#6B7280]">
-                                                                            {group.chatSpaceCount} sesi diskusi
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
-                                                                {group.memberCount}
-                                                            </td>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
-                                                                {group.messageCount}
-                                                            </td>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-center align-top">
-                                                                <span
-                                                                    className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                                                                    style={getQualityChipStyle(group.qualityScore)}
-                                                                >
-                                                                    {group.qualityScore?.toFixed(1) || '—'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-center align-top">
-                                                                <div className="inline-flex flex-col items-center gap-2">
-                                                                    <span
-                                                                        className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                                                                        style={getQualityChipStyle(group.qualityScore)}
-                                                                    >
-                                                                        {getStatusLabel(group.qualityScore)}
-                                                                    </span>
-                                                                    {group.needsAttention && (
-                                                                        <span className="text-[11px] font-medium text-[#92400e]">Alert aktif</span>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                            <td className="border-t border-white/50 px-4 py-4 text-right align-top">
-                                                                <Link
-                                                                    href={lecturer.analytics.group.url({
-                                                                        course: course.id,
-                                                                        group: group.groupId,
-                                                                    })}
-                                                                    className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-transform hover:-translate-y-0.5"
-                                                                    style={glassPanelStyle}
-                                                                >
-                                                                    Detail
-                                                                    <ArrowRight className="h-4 w-4" />
-                                                                </Link>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
-                                            )}
-                                        </tbody>
-                                    </table>
+                                            {option.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
+                            {isLoadingTrends ? (
+                                <div className="flex h-[300px] items-center justify-center">
+                                    <RefreshCw className="h-6 w-6 animate-spin text-[#6B7280]" />
+                                </div>
+                            ) : (
+                                <TrendChart
+                                    data={currentTrendData}
+                                    lines={[
+                                        {
+                                            dataKey: 'value',
+                                            color: '#88161c',
+                                            label: TREND_METRIC_OPTIONS.find((o) => o.value === selectedMetric)?.label ?? selectedMetric,
+                                        },
+                                    ]}
+                                    height={300}
+                                    yAxisLabel={selectedMetric === 'engagement' ? 'Skor' : '%'}
+                                    targetLine={selectedMetric === 'completion' ? 70 : undefined}
+                                    targetLabel="Target"
+                                />
+                            )}
                         </LiquidGlassCard>
                     </motion.div>
 
-                    {groupsWithEngagement.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
+                    {liveGroups.length > 0 && (
+                        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
                             <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                                                style={{
-                                                    background: 'rgba(71,85,105,0.10)',
-                                                    border: '1px solid rgba(71,85,105,0.18)',
-                                                }}
-                                            >
-                                                <Activity className="h-5 w-5" style={{ color: '#334155' }} />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-lg font-semibold" style={headingStyle}>
-                                                    Distribusi engagement dan rekomendasi
-                                                </h2>
-                                                <p className={`mt-1 ${bodyTextClass}`}>
-                                                    Tiap kartu memperlihatkan distribusi sinyal keterlibatan dan catatan intervensi yang sudah tersedia.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <span className="rounded-full px-3 py-1 text-xs font-medium" style={neutralChipStyle}>
-                                        {groupsWithEngagement.length} grup dengan data SSRL
-                                    </span>
+                                <div className="mb-6 flex items-center gap-2">
+                                    <Users className="h-5 w-5" style={{ color: '#88161c' }} />
+                                    <h2 className="text-lg font-semibold" style={headingStyle}>
+                                        Detail per Grup
+                                    </h2>
                                 </div>
 
-                                <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                                    {groupsWithEngagement.map((group) => {
-                                        const total = Object.values(group.engagementDistribution || {}).reduce(
-                                            (sum, value) => sum + value,
-                                            0,
-                                        );
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr>
+                                                <th
+                                                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Grup
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Anggota
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Pesan
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Kualitas
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Status
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    style={tableHeaderStyle}
+                                                >
+                                                    Aksi
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {liveGroups.map((group) => {
+                                                const engagementEntries = Object.entries(group.engagementDistribution || {});
+                                                const total = engagementEntries.reduce((sum, [, count]) => sum + (count as number), 0);
 
-                                        return (
-                                            <div key={group.groupId} className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                                    <div>
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <span className="rounded-full px-3 py-1 text-xs font-medium" style={brandChipStyle}>
-                                                                {group.groupName}
-                                                            </span>
+                                                return (
+                                                    <tr key={group.groupId} className="group/row">
+                                                        <td className="border-t border-white/50 px-4 py-4 align-top">
+                                                            <div className="flex items-center gap-3">
+                                                                <div
+                                                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                                                    style={{
+                                                                        background: group.needsAttention
+                                                                            ? 'rgba(239,68,68,0.08)'
+                                                                            : 'rgba(136,22,28,0.06)',
+                                                                        border: `1px solid ${group.needsAttention ? 'rgba(239,68,68,0.15)' : 'rgba(136,22,28,0.1)'}`,
+                                                                    }}
+                                                                >
+                                                                    <Users
+                                                                        className="h-4 w-4"
+                                                                        style={{ color: group.needsAttention ? '#dc2626' : '#88161c' }}
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-[#4A4A4A]">
+                                                                        {group.groupName}
+                                                                    </p>
+                                                                    <p className="mt-0.5 text-xs text-[#6B7280]">
+                                                                        {group.chatSpaceCount} sesi diskusi
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
+                                                            {group.memberCount}
+                                                        </td>
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
+                                                            {group.messageCount}
+                                                        </td>
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top">
                                                             <span
-                                                                className="rounded-full px-3 py-1 text-xs font-medium"
+                                                                className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                                                                style={getQualityChipStyle(group.qualityScore)}
+                                                            >
+                                                                {group.qualityScore?.toFixed(1) || '—'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top">
+                                                            <span
+                                                                className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
                                                                 style={getQualityChipStyle(group.qualityScore)}
                                                             >
                                                                 {getStatusLabel(group.qualityScore)}
                                                             </span>
+                                                        </td>
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top">
+                                                            <Link
+                                                                href={lecturer.analytics.group.url({
+                                                                    course: course.id,
+                                                                    group: group.groupId,
+                                                                })}
+                                                                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+                                                                style={brandChipStyle}
+                                                            >
+                                                                Detail
+                                                                <ArrowRight className="h-3 w-3" />
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {liveGroups.filter((g) => g.engagementDistribution && Object.keys(g.engagementDistribution).length > 0)
+                                    .length > 0 && (
+                                    <div className="mt-8 space-y-6">
+                                        <h3 className="text-sm font-semibold text-[#4A4A4A]">Distribusi Engagement per Grup</h3>
+                                        {liveGroups
+                                            .filter(
+                                                (group) =>
+                                                    group.engagementDistribution &&
+                                                    Object.keys(group.engagementDistribution).length > 0,
+                                            )
+                                            .map((group) => {
+                                                const engagementEntries = Object.entries(group.engagementDistribution!);
+                                                const total = engagementEntries.reduce((sum, [, count]) => sum + (count as number), 0);
+
+                                                return (
+                                                    <div key={group.groupId} className="rounded-2xl p-4" style={glassPanelStyle}>
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <p className="text-sm font-medium text-[#4A4A4A]">
+                                                                {group.groupName}
+                                                            </p>
+                                                            <span className="text-xs text-[#6B7280]">{total} total</span>
                                                         </div>
-                                                        <p className="mt-3 text-sm font-medium" style={headingStyle}>
-                                                            Peta distribusi percakapan
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-[#6B7280]">
-                                                            {total} indikator engagement terklasifikasi dari percakapan grup.
-                                                        </p>
-                                                    </div>
-                                                    <Link
-                                                        href={lecturer.analytics.group.url({ course: course.id, group: group.groupId })}
-                                                        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-transform hover:-translate-y-0.5"
-                                                        style={glassPanelStyle}
-                                                    >
-                                                        Buka detail
-                                                        <ArrowRight className="h-3.5 w-3.5" />
-                                                    </Link>
-                                                </div>
 
-                                                <div className="mt-4 space-y-3">
-                                                    {Object.entries(group.engagementDistribution || {}).map(([type, count]) => {
-                                                        const percentage = total > 0 ? (count / total) * 100 : 0;
-                                                        const engagementStyle = getEngagementStyle(type);
+                                                        <div className="mt-4 space-y-3">
+                                                            {Object.entries(group.engagementDistribution || {}).map(([type, count]) => {
+                                                                const percentage = total > 0 ? (count / total) * 100 : 0;
+                                                                const engagementStyle = getEngagementStyle(type);
 
-                                                        return (
-                                                            <div key={type} className="space-y-2 rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.48)' }}>
-                                                                <div className="flex items-center justify-between gap-3">
-                                                                    <span
-                                                                        className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize"
-                                                                        style={engagementStyle.chip}
-                                                                    >
-                                                                        {type}
-                                                                    </span>
-                                                                    <span className="text-sm font-medium text-[#4A4A4A]">
-                                                                        {count} • {percentage.toFixed(0)}%
-                                                                    </span>
-                                                                </div>
-                                                                <div className="h-2 overflow-hidden rounded-full bg-white/70">
-                                                                    <div
-                                                                        className="h-full rounded-full transition-all duration-500"
-                                                                        style={{ width: `${percentage}%`, background: engagementStyle.bar }}
-                                                                    />
+                                                                return (
+                                                                    <div key={type} className="space-y-2 rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.48)' }}>
+                                                                        <div className="flex items-center justify-between gap-3">
+                                                                            <span
+                                                                                className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize"
+                                                                                style={engagementStyle.chip}
+                                                                            >
+                                                                                {type}
+                                                                            </span>
+                                                                            <span className="text-sm font-medium text-[#4A4A4A]">
+                                                                                {count} • {percentage.toFixed(0)}%
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="h-2 overflow-hidden rounded-full bg-white/70">
+                                                                            <div
+                                                                                className="h-full rounded-full transition-all duration-500"
+                                                                                style={{ width: `${percentage}%`, background: engagementStyle.bar }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+
+                                                        {group.recommendation && (
+                                                            <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
+                                                                <div className="flex items-start gap-3">
+                                                                    <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
+                                                                    <p className="text-sm leading-6 text-[#6B7280]">{group.recommendation}</p>
                                                                 </div>
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-
-                                                {group.recommendation && (
-                                                    <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
-                                                        <div className="flex items-start gap-3">
-                                                            <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
-                                                            <p className="text-sm leading-6 text-[#6B7280]">{group.recommendation}</p>
-                                                        </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                                );
+                                            })}
+                                    </div>
+                                )}
                             </LiquidGlassCard>
                         </motion.div>
+                    )}
+                    </>
                     )}
                 </div>
             </div>

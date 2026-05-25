@@ -24,6 +24,15 @@ export default defineConfig({
             webp: { quality: 85 },
         }),
     ],
+    server: {
+        proxy: {
+            '/socket.io': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                ws: true,
+            },
+        },
+    },
     esbuild: {
         jsx: 'automatic',
         drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],

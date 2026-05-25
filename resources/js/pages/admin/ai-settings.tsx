@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
+import { SkeletonCard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import AppLayout from '@/layouts/app-layout';
 
@@ -64,7 +66,7 @@ interface ApiErrorResponse {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
@@ -156,10 +158,10 @@ function FormModal({
                     <div
                         className={`w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl`}
                         style={{
-                            background: 'rgba(255,255,255,0.95)',
+                            background: 'var(--dm-surface)',
                             backdropFilter: 'blur(24px)',
                             WebkitBackdropFilter: 'blur(24px)',
-                            border: '1px solid rgba(255,255,255,0.6)',
+                            border: '1px solid var(--dm-border-strong)',
                         }}
                     >
                         <div className="flex items-start justify-between gap-4">
@@ -374,6 +376,7 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
     const [showCreateApiKey, setShowCreateApiKey] = useState(false);
     const [showEditApiKey, setShowEditApiKey] = useState(false);
     const [savingFallbackOrder, setSavingFallbackOrder] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const activeProvider = useMemo(() => providerList.find((provider) => provider.isActive) ?? null, [providerList]);
     const fallbackProviders = useMemo(
@@ -382,12 +385,14 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
     );
 
     const syncProviders = () => {
+        setIsSyncing(true);
         router.reload({
             only: ['providers'],
             onSuccess: (page) => {
                 const nextProviders = (page.props.providers ?? []) as AiProvider[];
                 setProviderList(nextProviders);
             },
+            onFinish: () => setIsSyncing(false),
         });
     };
 
@@ -655,6 +660,7 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
             <Head title="Admin - AI Settings" />
 
             <div className="space-y-6">
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'AI Settings' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -662,11 +668,11 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
                                 <div
                                     className="flex h-12 w-12 items-center justify-center rounded-xl"
                                     style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
+background: 'var(--dm-accent-bg)',
+                                border: '1px solid var(--dm-accent-border-light)',
                                     }}
                                 >
-                                    <Server className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <Server className="h-6 w-6" style={{ color: 'var(--dm-accent)' }} />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
@@ -705,6 +711,9 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
                 </motion.div>
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.4 }}>
+                    {isSyncing ? (
+                        <SkeletonCard cardCount={providerList.length || 3} />
+                    ) : (
                     <LiquidGlassCard intensity="medium" className="overflow-hidden p-0" lightMode={true}>
                         <div className="border-b border-black/5 px-6 py-4">
                             <h2 className="text-lg font-semibold text-[#4A4A4A]">Provider List</h2>
@@ -837,6 +846,7 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
                             </>
                         )}
                     </LiquidGlassCard>
+                    )}
                 </motion.div>
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4 }}>

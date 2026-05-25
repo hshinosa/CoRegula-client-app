@@ -24,7 +24,7 @@ const availableModels = [
 ];
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 

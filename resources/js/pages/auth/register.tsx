@@ -7,7 +7,8 @@ import GuestLayout, { useTheme } from '@/layouts/guest-layout';
 import { LiquidGlassCard, PrimaryButton } from '@/components/Welcome/utils/helpers';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
-import { setupCsrfRefresh } from '@/lib/csrfRefresh';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { setupCsrfRefresh, refreshCsrfToken } from '@/lib/csrfRefresh';
 
 export default function Register() {
     const { lightMode } = useTheme();
@@ -17,6 +18,7 @@ export default function Register() {
         password: '',
         password_confirmation: '',
         role: 'student' as 'student' | 'lecturer',
+        terms: false as boolean,
     });
 
     useEffect(() => {
@@ -24,8 +26,9 @@ export default function Register() {
         return cleanup;
     }, []);
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        await refreshCsrfToken();
         post('/register');
     };
 
@@ -199,6 +202,35 @@ export default function Register() {
                                 autoComplete="new-password"
                             />
                             <InputError message={errors.password_confirmation} />
+                        </div>
+
+                        <div>
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <div className="pt-0.5">
+                                    <CustomCheckbox
+                                        id="terms"
+                                        name="terms"
+                                        checked={data.terms}
+                                        onChange={(e) => setData('terms', e.target.checked)}
+                                        lightMode={lightMode}
+                                    />
+                                </div>
+                                <span
+                                    className="text-sm leading-relaxed transition-colors"
+                                    style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
+                                >
+                                    Saya menyetujui{' '}
+                                    <Link href="/terms" className="font-medium text-[#88161c] hover:underline">
+                                        Syarat & Ketentuan
+                                    </Link>
+                                    {' '}dan{' '}
+                                    <Link href="/privacy" className="font-medium text-[#88161c] hover:underline">
+                                        Kebijakan Privasi
+                                    </Link>
+                                    {' '}Kolabri
+                                </span>
+                            </label>
+                            <InputError message={errors.terms} />
                         </div>
 
                         <div className="pt-1">

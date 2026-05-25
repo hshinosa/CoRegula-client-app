@@ -12,10 +12,7 @@ class AISettingsController extends Controller
     public function index(Request $request)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . '/api/admin/ai-providers',
-                $request->query()
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/ai-providers', $request->query());
 
             $payload = $response->json();
 
@@ -55,10 +52,7 @@ class AISettingsController extends Controller
     public function store(Request $request)
     {
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . '/api/admin/ai-providers',
-                $request->all()
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . '/api/admin/ai-providers', $request->all());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -73,10 +67,7 @@ class AISettingsController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $response = $this->apiRequest()->put(
-                $this->apiUrl() . "/api/admin/ai-providers/{$id}",
-                $request->all()
-            );
+            $response = $this->apiRequest()->put($this->apiUrl() . "/api/admin/ai-providers/{$id}", $request->all());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -136,10 +127,7 @@ class AISettingsController extends Controller
     public function getComparisons(Request $request)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . '/api/admin/ai-comparisons',
-                $request->query()
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/ai-comparisons', $request->query());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -154,10 +142,7 @@ class AISettingsController extends Controller
     public function getUsageStats(Request $request)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . '/api/admin/usage-stats',
-                $request->query()
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/usage-stats', $request->query());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {

@@ -2,44 +2,37 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\UserAvatar;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
+        $user = session('user');
+        $avatarUrls = null;
+
+        if ($user && isset($user['id'])) {
+            $avatar = UserAvatar::where('user_id', $user['id'])->first();
+            if ($avatar) {
+                $avatarUrls = $avatar->getUrls();
+            }
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name', 'Kolabri'),
             'auth' => [
-                'user' => session('user'),
+                'user' => $user,
+                'avatar' => $avatarUrls,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

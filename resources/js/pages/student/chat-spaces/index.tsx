@@ -1,7 +1,7 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, FormEvent } from 'react';
-import { Lightbulb, Lock, MessageCircle, MessageSquare, Pencil, Plus, X } from 'lucide-react';
+import { useState, FormEvent, useMemo, useEffect } from 'react';
+import { Lightbulb, Plus, X } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
@@ -9,15 +9,23 @@ import { Course } from '@/types';
 import student from '@/routes/student';
 import { room as chatRoom } from '@/routes/student/courses/chat';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { Skeleton } from '@/components/ui/skeletons';
+
+import { useSpaceFilters } from '@/hooks/useSpaceFilters';
+import { SearchBar } from '@/components/chat-spaces/SearchBar';
+import { FilterChips } from '@/components/chat-spaces/FilterChips';
+import { SortDropdown } from '@/components/chat-spaces/SortDropdown';
+import { SpaceCard } from '@/components/chat-spaces/SpaceCard';
+import { EmptyState } from '@/components/chat-spaces/EmptyState';
+import { Pagination } from '@/components/chat-spaces/Pagination';
+
+import type { SpaceType, SpaceStatus } from '@/hooks/useSpaceFilters';
 
 interface ChatSpaceGoal {
     id: string;
     content: string;
     isValidated: boolean;
-    createdBy: {
-        id: string;
-        name: string;
-    };
+    createdBy: { id: string; name: string };
     createdAt: string;
 }
 
@@ -30,6 +38,11 @@ interface ChatSpace {
     closedAt?: string;
     myGoal?: ChatSpaceGoal | null;
     createdAt?: string;
+    lastMessage?: string | null;
+    lastMessageAt?: string | null;
+    lastMessageSender?: string | null;
+    type?: SpaceType;
+    status?: SpaceStatus;
 }
 
 const isClosedChatSpace = (space: ChatSpace) => {
@@ -61,9 +74,20 @@ interface Group {
     chatSpaces?: ChatSpace[];
 }
 
+interface ChatSpaceMeta {
+    data?: ChatSpace[];
+    pagination?: {
+        total: number;
+        per_page: number;
+        current_page: number;
+        last_page: number;
+    };
+}
+
 interface Props {
     course: Course;
     group: Group;
+    chatSpaceMeta?: ChatSpaceMeta | null;
 }
 
 const headingStyle = {
@@ -73,13 +97,106 @@ const headingStyle = {
 
 const bodyTextClass = 'text-sm text-[#6B7280]';
 
-export default function ChatSpacesIndex({ course, group }: Props) {
+export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const navItems = useStudentNav('chat-spaces', { courseId: course.id });
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
     });
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsInitialLoading(false), 300);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const {
+        filters,
+        setQuery,
+        toggleType,
+        toggleStatus,
+        setSort,
+        setPage,
+        clearFilters,
+        clearSearch,
+        hasActiveFilters,
+        activeFilterCount,
+    } = useSpaceFilters();
+
+    const allChatSpaces: ChatSpace[] = group.chatSpaces || [];
+    const hasServerData = !!chatSpaceMeta?.data;
+
+    const {
+        filteredSpaces,
+        typeCounts,
+        statusCounts,
+    } = useMemo(() => {
+        if (hasServerData) {
+            const serverSpaces = chatSpaceMeta!.data!;
+            const tCounts: Record<SpaceType, number> = { Akademik: 0, Proyek: 0, Umum: 0 };
+            const sCounts: Record<SpaceStatus, number> = { Aktif: 0, 'Tidak aktif': 0 };
+            allChatSpaces.forEach((s) => {
+                if (s.type) tCounts[s.type] = (tCounts[s.type] || 0) + 1;
+                const isActive = !isClosedChatSpace(s);
+                sCounts[isActive ? 'Aktif' : 'Tidak aktif'] += 1;
+            });
+            return { filteredSpaces: serverSpaces, typeCounts: tCounts, statusCounts: sCounts };
+        }
+
+        let spaces = [...allChatSpaces];
+
+        if (filters.q) {
+            const q = filters.q.toLowerCase();
+            spaces = spaces.filter(
+                (s) =>
+                    s.name.toLowerCase().includes(q) ||
+                    (s.description && s.description.toLowerCase().includes(q))
+            );
+        }
+
+        if (filters.types.length > 0) {
+            spaces = spaces.filter((s) => s.type && filters.types.includes(s.type));
+        }
+
+        if (filters.statuses.length > 0) {
+            spaces = spaces.filter((s) => {
+                const isActive = !isClosedChatSpace(s);
+                const spaceStatus: SpaceStatus = isActive ? 'Aktif' : 'Tidak aktif';
+                return filters.statuses.includes(spaceStatus);
+            });
+        }
+
+        const sortFns: Record<string, (a: ChatSpace, b: ChatSpace) => number> = {
+            'terbaru': (a, b) => {
+                const dateA = a.lastMessageAt || a.createdAt || '';
+                const dateB = b.lastMessageAt || b.createdAt || '';
+                return new Date(dateB).getTime() - new Date(dateA).getTime();
+            },
+            'paling-aktif': (_a, _b) => 0,
+            'alfabet': (a, b) => a.name.localeCompare(b.name, 'id'),
+        };
+
+        spaces.sort(sortFns[filters.sort] || sortFns['terbaru']);
+
+        const tCounts: Record<SpaceType, number> = { Akademik: 0, Proyek: 0, Umum: 0 };
+        const sCounts: Record<SpaceStatus, number> = { Aktif: 0, 'Tidak aktif': 0 };
+        allChatSpaces.forEach((s) => {
+            if (s.type) tCounts[s.type] = (tCounts[s.type] || 0) + 1;
+            const isActive = !isClosedChatSpace(s);
+            sCounts[isActive ? 'Aktif' : 'Tidak aktif'] += 1;
+        });
+
+        return { filteredSpaces: spaces, typeCounts: tCounts, statusCounts: sCounts };
+    }, [allChatSpaces, filters.q, filters.types, filters.statuses, filters.sort, hasServerData, chatSpaceMeta]);
+
+    const totalPages = chatSpaceMeta?.pagination?.last_page ?? Math.ceil(filteredSpaces.length / filters.perPage);
+    const totalItems = chatSpaceMeta?.pagination?.total ?? filteredSpaces.length;
+    const currentPage = chatSpaceMeta?.pagination?.current_page ?? filters.page;
+    const paginatedSpaces = chatSpaceMeta?.data ?? filteredSpaces.slice(
+        (filters.page - 1) * filters.perPage,
+        filters.page * filters.perPage
+    );
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -91,31 +208,48 @@ export default function ChatSpacesIndex({ course, group }: Props) {
         });
     };
 
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return '';
-        return new Date(dateString).toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
-
-    const chatSpaces = group.chatSpaces || [];
+    const showEmptyState = allChatSpaces.length === 0 && !filters.q && !hasActiveFilters;
+    const showFilterEmpty = filteredSpaces.length === 0 && hasActiveFilters && !filters.q;
+    const showSearchEmpty = filteredSpaces.length === 0 && filters.q.length > 0;
 
     return (
         <AppLayout title={`Diskusi - ${group.name}`} navItems={navItems}>
             <Head title={`Diskusi - ${course.name}`} />
 
+            {isInitialLoading ? (
+                <div className="space-y-6">
+                    <div className="rounded-3xl p-6" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="mt-2 h-4 w-64" />
+                    </div>
+                    <Skeleton className="h-12 w-full rounded-xl" />
+                    <div className="flex gap-2">
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                        <Skeleton className="h-8 w-24 rounded-full" />
+                    </div>
+                    <div className="space-y-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="rounded-3xl p-5" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                                <Skeleton className="h-6 w-40" />
+                                <Skeleton className="mt-2 h-4 w-64" />
+                                <div className="mt-3 flex gap-2">
+                                    <Skeleton className="h-6 w-16 rounded-full" />
+                                    <Skeleton className="h-6 w-16 rounded-full" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
+
+            {!isInitialLoading && (
+            <>
             <div className="space-y-6">
                 <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1
-                                className="text-2xl font-bold"
-                                style={headingStyle}
-                            >
+                            <h1 className="text-2xl font-bold" style={headingStyle}>
                                 Sesi Diskusi
                             </h1>
                             <p className={`mt-1 ${bodyTextClass}`}>
@@ -129,192 +263,128 @@ export default function ChatSpacesIndex({ course, group }: Props) {
                     </div>
                 </LiquidGlassCard>
 
-                {chatSpaces.length > 0 && (
+                {allChatSpaces.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 }}
+                        className="space-y-4"
+                    >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <SearchBar
+                                value={filters.q}
+                                onChange={setQuery}
+                                onClear={clearSearch}
+                            />
+                            <SortDropdown
+                                value={filters.sort}
+                                onChange={setSort}
+                            />
+                        </div>
+
+                        <FilterChips
+                            selectedTypes={filters.types}
+                            selectedStatuses={filters.statuses}
+                            onToggleType={toggleType}
+                            onToggleStatus={toggleStatus}
+                            onClearAll={clearFilters}
+                            typeCounts={typeCounts}
+                            statusCounts={statusCounts}
+                        />
+
+                        {activeFilterCount > 0 && (
+                            <p className="text-xs text-[#6B7280]">
+                                {activeFilterCount} filter aktif • {filteredSpaces.length} ruang ditemukan
+                            </p>
+                        )}
+                    </motion.div>
+                )}
+
+                {paginatedSpaces.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
                     >
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            {chatSpaces.map((chatSpace) => {
-                                const closed = isClosedChatSpace(chatSpace);
-                                const dateSource = closed ? chatSpace.closedAt : chatSpace.createdAt;
-                                const formattedDate = formatDate(dateSource);
-                                const dateLabel = formattedDate ? `${closed ? 'Ditutup' : 'Dibuat'} ${formattedDate}` : '';
-                                return (
-                                    <Link
-                                        key={chatSpace.id}
-                                        href={getChatSpaceUrl(course.id, chatSpace)}
-                                        className="group block"
-                                    >
-                                        <LiquidGlassCard
-                                            intensity="light"
-                                            className="p-5 transition-all duration-300 group-hover:shadow-lg"
-                                            lightMode={true}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div
-                                                    className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                                    style={{
-                                                        background: closed
-                                                            ? 'rgba(107,114,128,0.08)'
-                                                            : 'rgba(136,22,28,0.08)',
-                                                        border: closed
-                                                            ? '1px solid rgba(107,114,128,0.12)'
-                                                            : '1px solid rgba(136,22,28,0.12)',
-                                                        color: closed ? '#6B7280' : '#88161c',
-                                                    }}
-                                                >
-                                                    {closed ? (
-                                                        <Lock className="h-5 w-5" />
-                                                    ) : (
-                                                        <MessageSquare className="h-5 w-5" />
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <h3
-                                                        className="font-semibold truncate"
-                                                        style={{
-                                                            color: closed ? '#6B7280' : '#4A4A4A',
-                                                        }}
-                                                    >
-                                                        {chatSpace.name}
-                                                    </h3>
-                                                    {chatSpace.description && (
-                                                        <p className="mt-0.5 text-xs text-[#6B7280] line-clamp-2">
-                                                            {chatSpace.description}
-                                                        </p>
-                                                    )}
-                                                    {dateLabel && (
-                                                        <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
-                                                            {dateLabel}
-                                                        </p>
-                                                    )}
-                                                    <div className="mt-2 flex items-center gap-2">
-                                                        {closed ? (
-                                                            <span
-                                                                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                                                                style={{
-                                                                    background: 'rgba(107,114,128,0.08)',
-                                                                    color: '#6B7280',
-                                                                    border: '1px solid rgba(107,114,128,0.15)',
-                                                                }}
-                                                            >
-                                                                <Lock className="h-3 w-3" />
-                                                                Sesi Ditutup
-                                                            </span>
-                                                        ) : chatSpace.myGoal ? (
-                                                            <span
-                                                                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                                                                style={{
-                                                                    background: 'rgba(136,22,28,0.08)',
-                                                                    color: '#88161c',
-                                                                    border: '1px solid rgba(136,22,28,0.15)',
-                                                                }}
-                                                            >
-                                                                <MessageCircle className="h-3 w-3" />
-                                                                Masuk Diskusi
-                                                            </span>
-                                                        ) : (
-                                                            <span
-                                                                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                                                                style={{
-                                                                    background: 'rgba(245,158,11,0.08)',
-                                                                    color: '#92400e',
-                                                                    border: '1px solid rgba(245,158,11,0.15)',
-                                                                }}
-                                                            >
-                                                                <Pencil className="h-3 w-3" />
-                                                                Tetapkan Tujuan
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <svg
-                                                    className="h-5 w-5 flex-shrink-0 transition-transform group-hover:translate-x-1"
-                                                    style={{ color: closed ? '#6B7280' : '#88161c' }}
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
-                                        </LiquidGlassCard>
-                                    </Link>
-                                );
-                            })}
+                            {paginatedSpaces.map((chatSpace, index) => (
+                                <SpaceCard
+                                    key={chatSpace.id}
+                                    space={chatSpace}
+                                    courseId={course.id}
+                                    getChatSpaceUrl={getChatSpaceUrl}
+                                    index={index}
+                                />
+                            ))}
                         </div>
                     </motion.div>
                 )}
 
-                {chatSpaces.length === 0 && (
+                {showEmptyState && (
+                    <EmptyState
+                        variant="no-spaces"
+                        onCreateNew={() => setShowCreateModal(true)}
+                    />
+                )}
+
+                {showFilterEmpty && (
+                    <EmptyState
+                        variant="no-filter-results"
+                        onClearFilters={clearFilters}
+                    />
+                )}
+
+                {showSearchEmpty && (
+                    <EmptyState
+                        variant="no-search-results"
+                        onClearSearch={clearSearch}
+                        searchQuery={filters.q}
+                    />
+                )}
+
+                {totalPages > 1 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        perPage={filters.perPage}
+                        onPageChange={setPage}
+                    />
+                )}
+
+                {!showEmptyState && !showFilterEmpty && !showSearchEmpty && allChatSpaces.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
                     >
-                        <LiquidGlassCard
-                            intensity="medium"
-                            className="flex flex-col items-center justify-center py-16 text-center"
-                            lightMode={true}
-                        >
-                            <div
-                                className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl"
-                                style={{
-                                    background: 'rgba(136,22,28,0.08)',
-                                    border: '1px solid rgba(136,22,28,0.12)',
-                                }}
-                            >
-                                <MessageSquare className="h-8 w-8" style={{ color: '#88161c' }} />
-                            </div>
-                            <h3
-                                className="text-lg font-semibold"
-                                style={headingStyle}
-                            >
-                                Belum Ada Sesi Diskusi
-                            </h3>
-                            <p className={`mt-2 max-w-sm ${bodyTextClass}`}>
-                                Buat sesi diskusi baru untuk mulai belajar bersama.
-                            </p>
-                            <div className="mt-6">
-                                <PrimaryButton onClick={() => setShowCreateModal(true)}>
-                                    <Plus className="h-4 w-4" />
-                                    Buat Sesi Pertama
-                                </PrimaryButton>
+                        <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
+                            <div className="flex items-start gap-4">
+                                <div
+                                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+                                    style={{
+                                        background: 'rgba(136,22,28,0.08)',
+                                        border: '1px solid rgba(136,22,28,0.12)',
+                                    }}
+                                >
+                                    <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
+                                </div>
+                                <div>
+                                    <p className="text-base font-semibold" style={headingStyle}>
+                                        Tips: Gunakan Sesi Terpisah
+                                    </p>
+                                    <p className={`mt-2 leading-6 ${bodyTextClass}`}>
+                                        Buat sesi diskusi terpisah untuk topik berbeda agar diskusi lebih terfokus.
+                                        Setiap sesi memiliki tujuan pembelajaran sendiri.
+                                    </p>
+                                </div>
                             </div>
                         </LiquidGlassCard>
                     </motion.div>
                 )}
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
-                        <div className="flex items-start gap-4">
-                            <div
-                                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
-                                style={{
-                                    background: 'rgba(136,22,28,0.08)',
-                                    border: '1px solid rgba(136,22,28,0.12)',
-                                }}
-                            >
-                                <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
-                            </div>
-                            <div>
-                                <p className="text-base font-semibold" style={headingStyle}>
-                                    Tips: Gunakan Sesi Terpisah
-                                </p>
-                                <p className={`mt-2 leading-6 ${bodyTextClass}`}>
-                                    Buat sesi diskusi terpisah untuk topik berbeda agar diskusi lebih terfokus.
-                                    Setiap sesi memiliki tujuan pembelajaran sendiri.
-                                </p>
-                            </div>
-                        </div>
-                    </LiquidGlassCard>
-                </motion.div>
             </div>
+            </>
+            )}
 
             <AnimatePresence>
                 {showCreateModal && (
@@ -335,10 +405,7 @@ export default function ChatSpacesIndex({ course, group }: Props) {
                             <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3
-                                            className="text-lg font-semibold"
-                                            style={headingStyle}
-                                        >
+                                        <h3 className="text-lg font-semibold" style={headingStyle}>
                                             Buat Sesi Diskusi Baru
                                         </h3>
                                         <p className={`mt-1 ${bodyTextClass}`}>
@@ -356,9 +423,7 @@ export default function ChatSpacesIndex({ course, group }: Props) {
 
                                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                                     <div>
-                                        <label
-                                            className="block text-sm font-medium text-[#4A4A4A]"
-                                        >
+                                        <label className="block text-sm font-medium text-[#4A4A4A]">
                                             Nama Sesi <span style={{ color: '#88161c' }}>*</span>
                                         </label>
                                         <input
@@ -375,9 +440,7 @@ export default function ChatSpacesIndex({ course, group }: Props) {
                                     </div>
 
                                     <div>
-                                        <label
-                                            className="block text-sm font-medium text-[#4A4A4A]"
-                                        >
+                                        <label className="block text-sm font-medium text-[#4A4A4A]">
                                             Deskripsi (Opsional)
                                         </label>
                                         <textarea

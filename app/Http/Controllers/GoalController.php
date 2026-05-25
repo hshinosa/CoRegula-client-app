@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -23,7 +25,12 @@ class GoalController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
             $chatSpaceData = $chatSpaceResponse->successful() ? $chatSpaceResponse->json('data') : null;
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Failed to fetch goal creation data', ['error' => $e->getMessage()]);
+            $courseData = null;
+            $group = null;
+            $chatSpaceData = null;
+        } catch (RequestException $e) {
             Log::error('Failed to fetch goal creation data', ['error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
@@ -110,7 +117,10 @@ class GoalController extends Controller
             }
 
             return back()->withErrors(['content' => $response->json('message', 'Failed to save goal')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Goal creation failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['content' => 'Unable to save goal']);
+        } catch (RequestException $e) {
             Log::error('Goal creation failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['content' => 'Unable to save goal']);
         }

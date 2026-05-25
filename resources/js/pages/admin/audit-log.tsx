@@ -4,7 +4,10 @@ import { motion } from 'framer-motion';
 import { Download, Eye, Filter, Search, Shield, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { AdminPagination } from '@/components/ui/AdminPagination';
+import { SkeletonTable } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV } from '@/lib/csv-utils';
 import AppLayout from '@/layouts/app-layout';
@@ -53,7 +56,7 @@ type PageProps = {
 };
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
@@ -212,10 +215,11 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
         toast.success('Audit log CSV exported.');
     };
 
-    const handlePageChange = (direction: 'prev' | 'next') => {
-        const nextOffset = direction === 'prev'
-            ? Math.max(0, auditMeta.offset - auditMeta.limit)
-            : auditMeta.offset + auditMeta.limit;
+    const currentPage = Math.floor(auditMeta.offset / auditMeta.limit) + 1;
+    const totalPages = Math.max(1, Math.ceil(auditMeta.total / auditMeta.limit));
+
+    const handlePageChange = (page: number) => {
+        const nextOffset = (page - 1) * auditMeta.limit;
 
         const nextFilters = {
             ...filterState,
@@ -231,6 +235,7 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
             <Head title="Admin - Audit Log" />
 
             <div className="space-y-6">
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Audit Log' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -238,11 +243,11 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
                                 <div
                                     className="flex h-12 w-12 items-center justify-center rounded-xl"
                                     style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
+background: 'var(--dm-accent-bg)',
+                                border: '1px solid var(--dm-accent-border-light)',
                                     }}
                                 >
-                                    <Shield className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <Shield className="h-6 w-6" style={{ color: 'var(--dm-accent)' }} />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
@@ -348,7 +353,12 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
                             </SecondaryButton>
                         </div>
 
-                        <div className="overflow-x-auto rounded-2xl border border-white/70 bg-white/55">
+                        <div className="relative overflow-x-auto rounded-2xl border border-white/70 bg-white/55">
+                            {isLoading && (
+                                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/65 backdrop-blur-[2px]">
+                                    <SkeletonTable columns={6} rows={6} />
+                                </div>
+                            )}
                             <table className="min-w-full divide-y divide-white/70">
                                 <thead className="bg-white/70">
                                     <tr>
@@ -404,20 +414,15 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
                             </table>
                         </div>
 
-                        <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-                            <p className="text-sm text-[#6B7280]">
-                                Showing {auditMeta.offset + 1}-{Math.min(auditMeta.offset + auditMeta.limit, auditMeta.total)} of {auditMeta.total} logs
-                            </p>
-
-                            <div className="flex items-center gap-2">
-                                <SecondaryButton onClick={() => handlePageChange('prev')} className="px-4 py-2 text-sm" disabled={auditMeta.offset <= 0 || isLoading}>
-                                    Previous
-                                </SecondaryButton>
-                                <SecondaryButton onClick={() => handlePageChange('next')} className="px-4 py-2 text-sm" disabled={!auditMeta.hasMore || isLoading}>
-                                    Next
-                                </SecondaryButton>
-                            </div>
-                        </div>
+                        <AdminPagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={auditMeta.total}
+                            perPage={auditMeta.limit}
+                            onPageChange={handlePageChange}
+                            isLoading={isLoading}
+                            itemLabel="log"
+                        />
                     </LiquidGlassCard>
                 </motion.div>
             </div>

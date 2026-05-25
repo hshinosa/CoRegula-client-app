@@ -5,34 +5,83 @@ import { LiquidGlassCard } from './utils/helpers';
 
 type Props = { lightMode: boolean };
 
-const faqs = [
+type FaqCategory = {
+    label: string;
+    items: {
+        question: string;
+        answer: string;
+    }[];
+};
+
+const faqCategories: FaqCategory[] = [
     {
-        question: 'Siapa yang mengembangkan Kolabri?',
-        answer: 'Kolabri dikembangkan sebagai proyek penelitian mahasiswa di Telkom University, dirancang khusus untuk mendukung pembelajaran kolaboratif di lingkungan perguruan tinggi.',
+        label: 'Umum',
+        items: [
+            {
+                question: 'Siapa yang mengembangkan Kolabri?',
+                answer: 'Kolabri dikembangkan sebagai proyek penelitian mahasiswa di Telkom University, dirancang khusus untuk mendukung pembelajaran kolaboratif di lingkungan perguruan tinggi.',
+            },
+            {
+                question: 'Bagaimana cara memulai menggunakan Kolabri?',
+                answer: 'Cukup daftar akun sebagai dosen, buat kelas baru, undang mahasiswa, dan mulai diskusi. Setup bisa dilakukan dalam waktu kurang dari 5 menit.',
+            },
+            {
+                question: 'Berapa jumlah mahasiswa yang bisa ditampung?',
+                answer: 'Kolabri dirancang untuk menangani kelas dengan jumlah mahasiswa yang bervariasi, dari kelas kecil hingga kelas besar dengan ratusan mahasiswa.',
+            },
+        ],
     },
     {
-        question: 'Bagaimana data mahasiswa dilindungi?',
-        answer: 'Keamanan data adalah prioritas kami. Semua data dienkripsi dan disimpan secara aman. Kami mengikuti standar keamanan data akademik dan hanya menggunakan data untuk keperluan analitik pembelajaran.',
+        label: 'Teknis',
+        items: [
+            {
+                question: 'Apakah bisa diintegrasikan dengan LMS yang sudah ada?',
+                answer: 'Saat ini Kolabri berjalan sebagai platform mandiri. Integrasi dengan LMS populer seperti Moodle dan Google Classroom ada dalam roadmap pengembangan kami.',
+            },
+            {
+                question: 'Browser apa saja yang didukung?',
+                answer: 'Kolabri mendukung semua browser modern termasuk Chrome, Firefox, Safari, dan Edge. Kami merekomendasikan menggunakan versi terbaru untuk pengalaman terbaik.',
+            },
+            {
+                question: 'Apakah Kolabri bisa diakses dari mobile?',
+                answer: 'Ya! Kolabri didesain responsive dan bisa diakses dari smartphone dan tablet. Semua fitur utama tersedia di versi mobile.',
+            },
+        ],
     },
     {
-        question: 'Apakah bisa diintegrasikan dengan LMS yang sudah ada?',
-        answer: 'Saat ini Kolabri berjalan sebagai platform mandiri. Integrasi dengan LMS populer seperti Moodle dan Google Classroom ada dalam roadmap pengembangan kami.',
+        label: 'Akademik',
+        items: [
+            {
+                question: 'Apa itu analitik SRL?',
+                answer: 'SRL (Self-Regulated Learning) adalah kerangka kerja yang mengukur kemampuan mahasiswa dalam mengatur proses belajar mereka sendiri. Kolabri menganalisis 3 dimensi utama: perencanaan, monitoring, dan evaluasi diri.',
+            },
+            {
+                question: 'Bagaimana AI membantu dalam diskusi?',
+                answer: 'AI di Kolabri bertindak sebagai fasilitator diskusi yang membantu mengarahkan percakapan, memberikan prompt reflektif, dan mengidentifikasi pola diskusi yang perlu ditingkatkan.',
+            },
+            {
+                question: 'Apakah dosen bisa memantau diskusi secara real-time?',
+                answer: 'Ya, dosen memiliki dashboard khusus yang menampilkan aktivitas diskusi secara real-time, termasuk metrik partisipasi dan analitik sentimen.',
+            },
+        ],
     },
     {
-        question: 'Berapa jumlah mahasiswa yang bisa ditampung?',
-        answer: 'Kolabri dirancang untuk menangani kelas dengan jumlah mahasiswa yang bervariasi, dari kelas kecil hingga kelas besar dengan ratusan mahasiswa.',
-    },
-    {
-        question: 'Apa itu analitik SRL?',
-        answer: 'SRL (Self-Regulated Learning) adalah kerangka kerja yang mengukur kemampuan mahasiswa dalam mengatur proses belajar mereka sendiri. Kolabri menganalisis 3 dimensi utama: perencanaan, monitoring, dan evaluasi diri.',
-    },
-    {
-        question: 'Bagaimana cara memulai menggunakan Kolabri?',
-        answer: 'Cukup daftar akun sebagai dosen, buat kelas baru, undang mahasiswa, dan mulai diskusi. Setup bisa dilakukan dalam waktu kurang dari 5 menit.',
+        label: 'Keamanan & Privasi',
+        items: [
+            {
+                question: 'Bagaimana data mahasiswa dilindungi?',
+                answer: 'Keamanan data adalah prioritas kami. Semua data dienkripsi dan disimpan secara aman. Kami mengikuti standar keamanan data akademik dan hanya menggunakan data untuk keperluan analitik pembelajaran.',
+            },
+            {
+                question: 'Siapa yang bisa melihat data analitik saya?',
+                answer: 'Data analitik hanya dapat diakses oleh dosen pengampu kelas dan admin yang berwenang. Mahasiswa bisa melihat data refleksi diri mereka sendiri.',
+            },
+        ],
     },
 ];
 
 export default function FaqSection({ lightMode }: Props) {
+    const [activeCategory, setActiveCategory] = useState(0);
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     const toggle = (index: number) => {
@@ -53,7 +102,7 @@ export default function FaqSection({ lightMode }: Props) {
                     />
                 </div>
 
-                <div className="relative mx-auto max-w-3xl px-6">
+                <div className="relative mx-auto max-w-4xl px-6">
                     {/* Section header */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -62,70 +111,143 @@ export default function FaqSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">FAQ</span>
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">
+                            FAQ
+                        </span>
                         <h2
-                            className="mx-auto max-w-3xl text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            className="text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
+                            style={{
+                                color: lightMode ? '#4A4A4A' : '#e5e7eb',
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            }}
                         >
                             Pertanyaan yang <span className="text-[#6B7280] italic">sering ditanyakan</span>
                         </h2>
+                        <p className="mx-auto mt-4 max-w-xl text-base text-[#6B7280]">
+                            Temukan jawaban untuk pertanyaan umum seputar Kolabri
+                        </p>
+                    </motion.div>
+
+                    {/* Category tabs */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="mb-8 flex flex-wrap justify-center gap-2"
+                    >
+                        {faqCategories.map((cat, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => {
+                                    setActiveCategory(idx);
+                                    setOpenIndex(null);
+                                }}
+                                className="rounded-full px-5 py-2 text-sm font-medium transition-all duration-300"
+                                style={{
+                                    background: activeCategory === idx
+                                        ? 'linear-gradient(135deg, rgba(164,18,25,0.85) 0%, rgba(136,22,28,0.9) 100%)'
+                                        : lightMode
+                                            ? 'rgba(0,0,0,0.04)'
+                                            : 'rgba(255,255,255,0.06)',
+                                    color: activeCategory === idx
+                                        ? 'white'
+                                        : lightMode ? '#4A4A4A' : '#9ca3af',
+                                    border: activeCategory === idx
+                                        ? '1px solid rgba(255,255,255,0.2)'
+                                        : lightMode
+                                            ? '1px solid rgba(0,0,0,0.08)'
+                                            : '1px solid rgba(255,255,255,0.08)',
+                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                }}
+                            >
+                                {cat.label}
+                                <span className="ml-1.5 text-xs opacity-60">({cat.items.length})</span>
+                            </button>
+                        ))}
                     </motion.div>
 
                     {/* FAQ items */}
-                    <div className="flex flex-col gap-4">
-                        {faqs.map((faq, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                whileHover={{ y: -3 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                                layout
-                            >
-                                <LiquidGlassCard intensity="light" lightMode={lightMode} className="overflow-hidden">
-                                    {/* Question button */}
-                                    <motion.button
-                                        onClick={() => toggle(i)}
-                                        className="flex w-full items-center justify-between px-6 py-5 text-left"
-                                        aria-expanded={openIndex === i}
-                                        whileTap={{ scale: 0.995 }}
-                                        transition={{ type: 'spring', stiffness: 500, damping: 34 }}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeCategory}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-4"
+                        >
+                            {faqCategories[activeCategory].items.map((faq, index) => {
+                                const isOpen = openIndex === index;
+                                return (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: index * 0.1 }}
                                     >
-                                        <span
-                                            className="pr-4 text-sm font-medium md:text-base"
-                                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                        >
-                                            {faq.question}
-                                        </span>
-                                        <motion.span
-                                            animate={{ rotate: openIndex === i ? 180 : 0 }}
-                                            transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-                                            className="shrink-0"
-                                        >
-                                            <ChevronDown size={18} style={{ color: '#88161c' }} />
-                                        </motion.span>
-                                    </motion.button>
-
-                                    {/* Answer */}
-                                    <AnimatePresence initial={false}>
-                                        {openIndex === i && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                                        <LiquidGlassCard className="overflow-hidden !p-0" intensity="light" lightMode={lightMode}>
+                                            <button
+                                                onClick={() => toggle(index)}
+                                                className="flex w-full items-center justify-between p-6 text-left"
                                             >
-                                                <div className="border-t px-6 pb-5 pt-4" style={{ borderColor: lightMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)' }}>
-                                                    <p className="text-sm leading-relaxed text-[#6B7280]">{faq.answer}</p>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </LiquidGlassCard>
-                            </motion.div>
-                        ))}
-                    </div>
+                                                <span
+                                                    className="pr-4 text-base font-medium md:text-lg"
+                                                    style={{
+                                                        color: lightMode ? '#4A4A4A' : '#e5e7eb',
+                                                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                                    }}
+                                                >
+                                                    {faq.question}
+                                                </span>
+                                                <motion.div
+                                                    animate={{ rotate: isOpen ? 180 : 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="flex-shrink-0"
+                                                >
+                                                    <ChevronDown
+                                                        className="h-5 w-5"
+                                                        style={{ color: '#88161c' }}
+                                                    />
+                                                </motion.div>
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {isOpen && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                                                    >
+                                                        <div
+                                                            className="px-6 pb-6"
+                                                            style={{
+                                                                borderTop: lightMode
+                                                                    ? '1px solid rgba(0,0,0,0.06)'
+                                                                    : '1px solid rgba(255,255,255,0.06)',
+                                                            }}
+                                                        >
+                                                            <p
+                                                                className="pt-4 text-sm leading-relaxed md:text-base"
+                                                                style={{
+                                                                    color: '#6B7280',
+                                                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                                                }}
+                                                            >
+                                                                {faq.answer}
+                                                            </p>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </LiquidGlassCard>
+                                    </motion.div>
+                                );
+                            })}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </section>
         </>

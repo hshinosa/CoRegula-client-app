@@ -19,8 +19,11 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { useCallback, useEffect, useState } from 'react';
 
 import { LiquidGlassCard, SecondaryButton, OrganicBlob } from '@/components/Welcome/utils/helpers';
+import { SkeletonDashboard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { connectWebSocket } from '@/lib/websocket';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
+import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, UserRole } from '@/types';
 
@@ -110,7 +113,7 @@ type DateRangeState = {
 const DASHBOARD_RANGE_STORAGE_KEY = 'kolabri_admin_dashboard_range';
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
@@ -200,9 +203,9 @@ function getActivityIconStyle(type: string) {
     }
 
     return {
-        background: 'rgba(136,22,28,0.08)',
-        border: '1px solid rgba(136,22,28,0.12)',
-        color: '#88161c',
+        background: 'var(--dm-accent-bg)',
+        border: '1px solid var(--dm-accent-border-light)',
+        color: 'var(--dm-accent)',
     };
 }
 
@@ -715,7 +718,10 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={300} />
                 <OrganicBlob className="top-40 -right-20" delay={-5} color="rgba(136, 22, 28, 0.03)" size={250} />
 
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Dashboard' }]} />
+
+                <div className="flex items-start justify-between">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex-1">
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                             <div className="max-w-3xl">
@@ -723,11 +729,11 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                     <div
                                         className="flex h-14 w-14 items-center justify-center rounded-2xl"
                                         style={{
-                                            background: 'rgba(136,22,28,0.08)',
-                                            border: '1px solid rgba(136,22,28,0.12)',
+                                            background: 'var(--dm-accent-bg)',
+                                            border: '1px solid var(--dm-accent-border-light)',
                                         }}
                                     >
-                                        <Shield className="h-7 w-7" style={{ color: '#88161c' }} />
+                                        <Shield className="h-7 w-7" style={{ color: 'var(--dm-accent)' }} />
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-bold" style={headingStyle}>
@@ -835,9 +841,15 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                             </div>
                         </div>
                     </LiquidGlassCard>
-                </motion.div>
+                    </motion.div>
+                    <NotificationsBell />
+                </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {isStatsLoading && !dashboardStats ? (
+                    <SkeletonDashboard />
+                ) : (
+                    <>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                     {statsCards.map((card, index) => (
                         <motion.div
                             key={card.title}
@@ -1021,6 +1033,9 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                         </LiquidGlassCard>
                     </motion.div>
                 </div>
+                    </>
+                )}
+
             </div>
 
             <DateRangeModal

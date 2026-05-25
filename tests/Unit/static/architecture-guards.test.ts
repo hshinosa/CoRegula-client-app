@@ -10,7 +10,7 @@ function grepInPages(pattern: string, allowedFiles: string[] = []): string[] {
         return result
             .split('\n')
             .filter(Boolean)
-            .filter((line) => !allowedFiles.some((allowed) => line.startsWith(allowed)));
+            .filter((line: string) => !allowedFiles.some((allowed) => line.startsWith(allowed)));
     } catch {
         return [];
     }

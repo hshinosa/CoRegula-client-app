@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,14 +18,103 @@ class CourseController extends Controller
         try {
             $response = $this->apiRequest()->get($this->apiUrl() . '/api/courses');
             $courses = $response->successful() ? $response->json('data', []) : [];
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('CourseController: failed to fetch courses', ['error' => $e->getMessage()]);
             $courses = [];
         }
 
+        // Compute analytics from courses data
+        $analytics = $this->computeAnalytics($courses);
+
         return Inertia::render('lecturer/courses/index', [
             'courses' => $courses,
+            'analytics' => $analytics,
         ]);
+    }
+
+    /**
+     * Compute analytics aggregation from courses array.
+     */
+    private function computeAnalytics(array $courses): array
+    {
+        $totalCourses = count($courses);
+        $totalStudents = 0;
+        $totalGroups = 0;
+        $totalEngagement = 0;
+        $statusCounts = ['aktif' => 0, 'selesai' => 0, 'belum_mulai' => 0];
+        $semesterCounts = [];
+
+        foreach ($courses as $course) {
+            $totalStudents += $course['students_count'] ?? 0;
+            $totalGroups += $course['groups_count'] ?? 0;
+            $totalEngagement += $course['engagement_count'] ?? 0;
+            $status = $course['status'] ?? 'belum_mulai';
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            }
+
+            $semester = $course['semester'] ?? null;
+            $academicYear = $course['academic_year'] ?? null;
+            if ($semester && $academicYear) {
+                $key = "{$semester} {$academicYear}";
+                $semesterCounts[$key] = ($semesterCounts[$key] ?? 0) + 1;
+            }
+        }
+
+        return [
+            'total_courses' => $totalCourses,
+            'total_students' => $totalStudents,
+            'total_groups' => $totalGroups,
+            'avg_students_per_course' => $totalCourses > 0 ? round($totalStudents / $totalCourses, 1) : 0,
+            'avg_engagement' => $totalCourses > 0 ? round($totalEngagement / $totalCourses, 1) : 0,
+            'status_counts' => $statusCounts,
+            'semester_counts' => $semesterCounts,
+        ];
+    }
+
+    /**
+     * Bulk archive courses (max 50 per request).
+     */
+    public function bulkArchive(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_ids' => 'required|array|min:1|max:50',
+            'course_ids.*' => 'string',
+        ]);
+
+        $results = ['succeeded' => [], 'failed' => []];
+
+        foreach ($validated['course_ids'] as $courseId) {
+            try {
+                $response = $this->apiRequest()->put($this->apiUrl() . "/api/courses/{$courseId}", [
+                    'status' => 'selesai',
+                ]);
+
+                if ($response->successful()) {
+                    $results['succeeded'][] = $courseId;
+                } else {
+                    $results['failed'][] = $courseId;
+                }
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to fetch course for edit', ['error' => $e->getMessage()]);
+            return redirect()->route('lecturer.courses.index')->with('error', 'Gagal memuat data mata kuliah');
+        }
+        }
+
+        $totalRequested = count($validated['course_ids']);
+        $totalSucceeded = count($results['succeeded']);
+
+        if ($totalSucceeded === $totalRequested) {
+            return response()->json([
+                'message' => "{$totalSucceeded} kelas berhasil diarsipkan.",
+                'data' => $results,
+            ]);
+        }
+
+        return response()->json([
+            'message' => "{$totalSucceeded} dari {$totalRequested} kelas berhasil diarsipkan.",
+            'data' => $results,
+        ], $totalSucceeded > 0 ? 200 : 500);
     }
 
     public function create(): Response
@@ -35,6 +127,8 @@ class CourseController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:50',
             'name' => 'required|string|max:255',
+            'semester' => 'nullable|string|in:Ganjil,Genap',
+            'academic_year' => 'nullable|string|regex:/^\d{4}\/\d{4}$/',
         ]);
 
         try {
@@ -47,9 +141,9 @@ class CourseController extends Controller
             }
 
             return back()->withErrors(['code' => $response->json('message', 'Failed to create course')]);
-        } catch (\Exception $e) {
-            Log::error('CourseController: course creation failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['code' => 'Unable to create course']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to create course', ['error' => $e->getMessage()]);
+            return back()->withErrors(['code' => 'Gagal membuat mata kuliah']);
         }
     }
 
@@ -58,9 +152,9 @@ class CourseController extends Controller
         try {
             $response = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
             $courseData = $response->successful() ? $response->json('data') : null;
-        } catch (\Exception $e) {
-            Log::error('CourseController: failed to fetch course', ['course' => $course, 'error' => $e->getMessage()]);
-            $courseData = null;
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to fetch course detail', ['error' => $e->getMessage()]);
+            return redirect()->route('lecturer.courses.index')->with('error', 'Gagal memuat detail mata kuliah');
         }
 
         if (!$courseData) {
@@ -137,9 +231,9 @@ class CourseController extends Controller
             }
 
             return back()->withErrors(['files' => $response->json('message', 'Gagal mengunggah berkas.')]);
-        } catch (\Exception $e) {
-            Log::error('CourseController: knowledge base upload failed', ['course' => $course, 'error' => $e->getMessage()]);
-            return back()->withErrors(['files' => 'Tidak dapat mengunggah berkas saat ini.']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to upload knowledge base', ['error' => $e->getMessage()]);
+            return back()->withErrors(['files' => 'Gagal mengunggah berkas.']);
         }
     }
 }

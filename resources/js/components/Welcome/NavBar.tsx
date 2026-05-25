@@ -100,6 +100,7 @@ export default function NavBar({ lightMode, darkMode, scrolled, menuOpen, setMen
                                 <div className="pointer-events-auto flex items-center gap-0.5">
                                     {[
                                         { id: 'fitur', label: 'Fitur' },
+                                        { id: 'testimoni', label: 'Testimoni' },
                                         { id: 'faq', label: 'FAQ' },
                                         { id: 'tentang', label: 'Tentang' },
                                     ].map((link) => {
@@ -264,7 +265,7 @@ export default function NavBar({ lightMode, darkMode, scrolled, menuOpen, setMen
                         {[
                             { id: 'fitur', label: 'Fitur' },
                             { id: 'demo', label: 'Demo' },
-
+                            { id: 'testimoni', label: 'Testimoni' },
                             { id: 'faq', label: 'FAQ' },
                             { id: 'tentang', label: 'Tentang' },
                         ].map((link) => {

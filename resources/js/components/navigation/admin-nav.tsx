@@ -119,16 +119,16 @@ export function AdminNav({ isMobile = false, onNavigate }: AdminNavProps) {
                         href={item.href}
                         onClick={isMobile ? onNavigate : undefined}
                         className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                            active ? 'text-[#88161c]' : 'text-[#4A4A4A] hover:text-[#88161c]'
+                            active ? 'text-[var(--dm-accent)]' : 'text-[var(--dm-text)] hover:text-[var(--dm-accent)]'
                         }`}
                         style={{
-                            background: active ? 'rgba(136,22,28,0.08)' : 'transparent',
-                            border: active ? '1px solid rgba(136,22,28,0.15)' : '1px solid transparent',
+                            background: active ? 'var(--dm-accent-bg)' : 'transparent',
+                            border: active ? '1px solid var(--dm-accent-border)' : '1px solid transparent',
                         }}
                     >
-                        <span className={active ? 'text-[#88161c]' : 'text-[#6B7280]'}>{item.icon}</span>
+                        <span className={active ? 'text-[var(--dm-accent)]' : 'text-[var(--dm-text-secondary)]'}>{item.icon}</span>
                         {item.name}
-                        {active && <span className="ml-auto h-2 w-2 rounded-full bg-[#88161c]" />}
+                        {active && <span className="ml-auto h-2 w-2 rounded-full bg-[var(--dm-accent)]" />}
                     </Link>
                 );
             })}

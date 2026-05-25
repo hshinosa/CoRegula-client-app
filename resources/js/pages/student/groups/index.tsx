@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { Check, KeyRound, Plus, Users, X } from 'lucide-react';
 
 import { InputError } from '@/components/ui/input-error';
@@ -10,6 +10,7 @@ import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, User } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { Skeleton } from '@/components/ui/skeletons';
 
 interface ChatSpace {
     id: string;
@@ -44,6 +45,12 @@ const bodyTextClass = 'text-sm text-[#6B7280]';
 export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsInitialLoading(false), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     const navItems = useStudentNav('groups', { courseId: course.id });
 
@@ -79,6 +86,46 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
         <AppLayout title={`Grup - ${course.name}`} navItems={navItems}>
             <Head title={`Grup - ${course.name}`} />
 
+            {isInitialLoading ? (
+                <div className="space-y-6">
+                    <div className="rounded-3xl p-6" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                        <Skeleton className="mt-3 h-8 w-48" />
+                        <Skeleton className="mt-2 h-4 w-72" />
+                    </div>
+                    <div className="rounded-3xl p-6" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                        <div className="flex items-center gap-4">
+                            <Skeleton className="h-12 w-12 rounded-xl" />
+                            <div className="flex-1">
+                                <Skeleton className="h-5 w-56" />
+                                <Skeleton className="mt-2 h-4 w-32" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i} className="rounded-3xl p-6" style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                                <Skeleton className="h-14 w-14 rounded-xl" />
+                                <Skeleton className="mt-3 h-5 w-40" />
+                                <Skeleton className="mt-2 h-4 w-32" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="space-y-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="rounded-3xl p-4" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <div className="flex-1">
+                                        <Skeleton className="h-5 w-32" />
+                                        <Skeleton className="mt-1 h-3 w-20" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : (
             <div className="space-y-6">
                 <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                     <div className="flex items-center gap-2">
@@ -141,17 +188,29 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                         </code>
                                     </p>
                                 </div>
-                                <a
-                                    href={student.courses.show.url({ course: course.id })}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-                                    style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        color: '#88161c',
-                                        border: '1px solid rgba(136,22,28,0.15)',
-                                    }}
-                                >
-                                    Kembali ke Kelas
-                                </a>
+                                <div className="flex items-center gap-2">
+                                    <a
+                                        href={`/student/groups/${myGroup.id}`}
+                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+                                        style={{
+                                            background: '#88161c',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        Buka Grup
+                                    </a>
+                                    <a
+                                        href={student.courses.show.url({ course: course.id })}
+                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+                                        style={{
+                                            background: 'rgba(136,22,28,0.08)',
+                                            color: '#88161c',
+                                            border: '1px solid rgba(136,22,28,0.15)',
+                                        }}
+                                    >
+                                        Kembali ke Kelas
+                                    </a>
+                                </div>
                             </div>
                         </LiquidGlassCard>
                     </motion.div>
@@ -370,6 +429,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                     </motion.div>
                 )}
             </div>
+            )}
 
             {/* Create Group Modal */}
             <AnimatePresence>

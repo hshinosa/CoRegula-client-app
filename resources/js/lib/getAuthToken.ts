@@ -26,6 +26,9 @@ export async function getAuthToken(): Promise<string> {
             cachedAt = Date.now();
             return cachedToken;
         } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                window.location.href = '/login';
+            }
             console.error('Failed to fetch auth token:', error);
             throw new Error('Authentication failed');
         } finally {
@@ -36,7 +39,15 @@ export async function getAuthToken(): Promise<string> {
     return tokenPromise;
 }
 
-export function clearCachedToken() {
-    cachedToken = null;
-    cachedAt = null;
+export async function refreshAuthToken(): Promise<string | null> {
+    try {
+        const response = await axios.get<{ data: { token: string } }>('/api/auth/refresh-token');
+        const newToken = response.data.data.token;
+        cachedToken = newToken;
+        cachedAt = Date.now();
+        return newToken;
+    } catch (error) {
+        console.error('Failed to refresh auth token:', error);
+        return null;
+    }
 }

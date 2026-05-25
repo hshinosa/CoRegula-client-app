@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CalendarDays, FolderArchive, Loader2, Pencil, Plus, Trash2, User2 } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
 import { toast } from '@/components/ui/toaster';
@@ -67,7 +68,7 @@ interface PageProps {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
@@ -294,6 +295,7 @@ export default function AdminTemplatesPage({ templates, lecturers }: PageProps) 
             <Head title="Admin - Course Templates" />
 
             <div className="space-y-6">
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Templates' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -301,11 +303,11 @@ export default function AdminTemplatesPage({ templates, lecturers }: PageProps) 
                                 <div
                                     className="flex h-12 w-12 items-center justify-center rounded-xl"
                                     style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
+background: 'var(--dm-accent-bg)',
+                                border: '1px solid var(--dm-accent-border-light)',
                                     }}
                                 >
-                                    <FolderArchive className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <FolderArchive className="h-6 w-6" style={{ color: 'var(--dm-accent)' }} />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>

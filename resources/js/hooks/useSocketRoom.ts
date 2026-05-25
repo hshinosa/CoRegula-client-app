@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { clearCachedToken, getAuthToken } from '@/lib/getAuthToken';
+import { refreshAuthToken } from '@/lib/getAuthToken';
 import type {
     ChatDisplayMessage as DisplayMessage,
     ChatSocketMessage as SocketChatMessage,
@@ -29,18 +29,29 @@ interface UseSocketRoomOptions {
     onSessionClosed?: (payload: { closedAt?: string; message?: string }) => void;
     onSessionReopened?: () => void;
     onMessagesLoaded?: (messages: DisplayMessage[]) => void;
+    onMessagesPageLoaded?: (messages: DisplayMessage[], hasMore: boolean) => void;
     onMessageReceived?: (message: DisplayMessage, raw: SocketChatMessage) => void;
     onMessageDeleted?: (messageId: string) => void;
+    onMessageEdited?: (messageId: string, newContent: string, editedAt: string) => void;
+    onMessagePinned?: (pinnedMessage: { messageId: string; conversationId: string; content: string; sender_name: string; pinned_at: string }) => void;
+    onMessageUnpinned?: (messageId: string) => void;
 }
 
 interface UseSocketRoomReturn {
-    socketRef: React.MutableRefObject<Socket | null>;
+    socketRef: React.RefObject<Socket | null>;
     isConnected: boolean;
     connectionError: string | null;
+    connectionStatus: 'connecting' | 'reconnecting' | 'disconnected' | 'connected';
     typingUsers: string[];
     onlineUsers: OnlineUser[];
     discussionQuality: DiscussionQuality | null;
     showQualityFeedback: boolean;
+    hasMoreMessages: boolean;
+    loadMoreMessages: (chatSpaceId: string, beforeMessageId: string) => void;
+    emitEditMessage: (messageId: string, content: string, oldContent: string) => void;
+    emitDeleteMessage: (messageId: string) => void;
+    emitPinMessage: (messageId: string, content: string, senderName: string) => void;
+    emitUnpinMessage: (messageId: string) => void;
 }
 
 export function useSocketRoom({
@@ -52,29 +63,43 @@ export function useSocketRoom({
     onSessionClosed,
     onSessionReopened,
     onMessagesLoaded,
+    onMessagesPageLoaded,
     onMessageReceived,
     onMessageDeleted,
+    onMessageEdited,
+    onMessagePinned,
+    onMessageUnpinned,
 }: UseSocketRoomOptions): UseSocketRoomReturn {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionError, setConnectionError] = useState<string | null>(null);
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'reconnecting' | 'disconnected' | 'connected'>('connecting');
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
     const [discussionQuality, setDiscussionQuality] = useState<DiscussionQuality | null>(null);
     const [showQualityFeedback, setShowQualityFeedback] = useState(false);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
     const qualityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const onSessionClosedRef = useRef(onSessionClosed);
     const onSessionReopenedRef = useRef(onSessionReopened);
     const onMessagesLoadedRef = useRef(onMessagesLoaded);
+    const onMessagesPageLoadedRef = useRef(onMessagesPageLoaded);
     const onMessageReceivedRef = useRef(onMessageReceived);
     const onMessageDeletedRef = useRef(onMessageDeleted);
+    const onMessageEditedRef = useRef(onMessageEdited);
+    const onMessagePinnedRef = useRef(onMessagePinned);
+    const onMessageUnpinnedRef = useRef(onMessageUnpinned);
 
     onSessionClosedRef.current = onSessionClosed;
     onSessionReopenedRef.current = onSessionReopened;
     onMessagesLoadedRef.current = onMessagesLoaded;
+    onMessagesPageLoadedRef.current = onMessagesPageLoaded;
     onMessageReceivedRef.current = onMessageReceived;
     onMessageDeletedRef.current = onMessageDeleted;
+    onMessageEditedRef.current = onMessageEdited;
+    onMessagePinnedRef.current = onMessagePinned;
+    onMessageUnpinnedRef.current = onMessageUnpinned;
 
     useEffect(() => {
         if (!jwtToken) return;
@@ -83,11 +108,12 @@ export function useSocketRoom({
             return;
         }
 
-        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const isDev = import.meta.env.DEV;
+        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || (isDev ? window.location.origin : 'http://localhost:3000');
 
         socketRef.current = io(apiUrl, {
             auth: { token: jwtToken },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
@@ -95,22 +121,42 @@ export function useSocketRoom({
 
         socketRef.current.on('connect', () => {
             setConnectionError(null);
+            setConnectionStatus('connected');
             socketRef.current?.emit('join_room', { courseId, groupId, chatSpaceId });
+            setTypingUsers([]);
+        });
+
+        socketRef.current.on('reconnect_attempt', () => {
+            setConnectionStatus('reconnecting');
+        });
+
+        socketRef.current.on('reconnect', () => {
+            setConnectionStatus('connected');
+        });
+
+        socketRef.current.on('reconnect_failed', () => {
+            setConnectionStatus('disconnected');
         });
 
         let reauthAttempted = false;
         socketRef.current.on('connect_error', async (error) => {
+            if (socketRef.current?.connected) {
+                return;
+            }
+
             const msg = (error?.message || '').toLowerCase();
             const isAuthError = msg.includes('unauthorized') || msg.includes('expired') || msg.includes('token') || msg.includes('auth');
 
             if (isAuthError && !reauthAttempted) {
                 reauthAttempted = true;
                 try {
-                    clearCachedToken();
-                    const newToken = await getAuthToken();
-                    if (socketRef.current) {
+                    const newToken = await refreshAuthToken();
+                    if (newToken && socketRef.current) {
                         socketRef.current.auth = { token: newToken };
                         socketRef.current.connect();
+                    } else {
+                        setConnectionError('Session expired. Please refresh the page.');
+                        setIsConnected(false);
                     }
                     return;
                 } catch {
@@ -145,11 +191,29 @@ export function useSocketRoom({
             onMessagesLoadedRef.current?.(historyMessages);
         });
 
-        socketRef.current.on('disconnect', () => {
-            setIsConnected(false);
+        socketRef.current.on('chat_history_page', (data: { messages: SocketChatMessage[]; hasMore: boolean }) => {
+            const pageMessages: DisplayMessage[] = data.messages.map((msg) => ({
+                id: msg.id,
+                sender_id: msg.senderId,
+                sender_type: msg.senderType,
+                sender_name: msg.senderName,
+                content: msg.content,
+                created_at: msg.createdAt,
+                is_intervention: msg.isIntervention,
+                reply_to: msg.replyTo,
+                attachments: msg.attachments,
+                mentions: msg.mentions,
+            }));
+            setHasMoreMessages(data.hasMore);
+            onMessagesPageLoadedRef.current?.(pageMessages, data.hasMore);
         });
 
-        socketRef.current.on('error', (data: { message: string }) => {
+        socketRef.current.on('disconnect', () => {
+            setIsConnected(false);
+            setConnectionStatus('reconnecting');
+        });
+
+        socketRef.current.on('server_error', (data: { message: string }) => {
             setConnectionError(data.message);
             setIsConnected(false);
         });
@@ -180,6 +244,18 @@ export function useSocketRoom({
 
         socketRef.current.on('message_deleted', (data: { messageId: string }) => {
             onMessageDeletedRef.current?.(data.messageId);
+        });
+
+        socketRef.current.on('message_edited', (data: { messageId: string; content: string; editedAt: string }) => {
+            onMessageEditedRef.current?.(data.messageId, data.content, data.editedAt);
+        });
+
+        socketRef.current.on('message_pinned', (data: { messageId: string; conversationId: string; content: string; sender_name: string; pinned_at: string }) => {
+            onMessagePinnedRef.current?.(data);
+        });
+
+        socketRef.current.on('message_unpinned', (data: { messageId: string }) => {
+            onMessageUnpinnedRef.current?.(data.messageId);
         });
 
         socketRef.current.on('user_typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
@@ -239,18 +315,71 @@ export function useSocketRoom({
             socketRef.current?.off('session_reopened');
             socketRef.current?.off('quality_update');
             socketRef.current?.off('intervention_sent');
+            socketRef.current?.off('reconnect_attempt');
+            socketRef.current?.off('reconnect');
+            socketRef.current?.off('reconnect_failed');
+            socketRef.current?.off('chat_history_page');
+            socketRef.current?.off('message_edited');
+            socketRef.current?.off('message_pinned');
+            socketRef.current?.off('message_unpinned');
             socketRef.current?.emit('leave_room', chatSpaceId);
             socketRef.current?.disconnect();
         };
     }, [jwtToken, courseId, groupId, chatSpaceId, socketUrl]);
 
+    const loadMoreMessages = useCallback((chatSpaceIdParam: string, beforeMessageId: string) => {
+        socketRef.current?.emit('load_more_messages', {
+            chatSpaceId: chatSpaceIdParam,
+            beforeMessageId,
+        });
+    }, []);
+
+    const emitEditMessage = useCallback((messageId: string, content: string, oldContent: string) => {
+        socketRef.current?.emit('edit_message', {
+            messageId,
+            content,
+            oldContent,
+            chatSpaceId,
+        });
+    }, [chatSpaceId]);
+
+    const emitDeleteMessage = useCallback((messageId: string) => {
+        socketRef.current?.emit('delete_message', {
+            messageId,
+            chatSpaceId,
+        });
+    }, [chatSpaceId]);
+
+    const emitPinMessage = useCallback((messageId: string, content: string, senderName: string) => {
+        socketRef.current?.emit('pin_message', {
+            messageId,
+            content,
+            senderName,
+            chatSpaceId,
+        });
+    }, [chatSpaceId]);
+
+    const emitUnpinMessage = useCallback((messageId: string) => {
+        socketRef.current?.emit('unpin_message', {
+            messageId,
+            chatSpaceId,
+        });
+    }, [chatSpaceId]);
+
     return {
         socketRef,
         isConnected,
         connectionError,
+        connectionStatus,
         typingUsers,
         onlineUsers,
         discussionQuality,
         showQualityFeedback,
+        hasMoreMessages,
+        loadMoreMessages,
+        emitEditMessage,
+        emitDeleteMessage,
+        emitPinMessage,
+        emitUnpinMessage,
     };
 }

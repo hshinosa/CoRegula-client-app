@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, Bookmark, FileText, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import AppLayout from '@/layouts/app-layout';
@@ -14,6 +14,8 @@ import { usePage } from '@inertiajs/react';
 import { formatAiOutput } from '@/lib/formatAiOutput';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { SearchBar, BookmarkButton, BookmarkPanel, TemplatePanel } from './components';
+import { useAiChatSync } from '@/hooks/useAiChatSync';
 
 
 interface AiChat {
@@ -92,6 +94,87 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             .finally(() => setIsLoadingMessages(false));
     }, [activeChat?.id]);
     const [editingChatId, setEditingChatId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!activeChat?.id) {
+            setBookmarkedMessageIds(new Set());
+            return;
+        }
+
+        const messageIds = loadedMessages.map((m) => m.id);
+        if (messageIds.length === 0) return;
+
+        fetch('/ai-chat/bookmarks/check', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message_ids: messageIds }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.data) {
+                    setBookmarkedMessageIds(new Set(data.data));
+                }
+            })
+            .catch(() => {});
+    }, [activeChat?.id, loadedMessages]);
+
+    const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false);
+    const [templatePanelOpen, setTemplatePanelOpen] = useState(false);
+    const [bookmarkedMessageIds, setBookmarkedMessageIds] = useState<Set<string>>(new Set());
+    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+
+    const { broadcast } = useAiChatSync({
+        onBookmarkToggled: (messageId, bookmarked) => {
+            setBookmarkedMessageIds((prev) => {
+                const next = new Set(prev);
+                if (bookmarked) {
+                    next.add(messageId);
+                } else {
+                    next.delete(messageId);
+                }
+                return next;
+            });
+        },
+        onTemplateUpdated: () => {
+            if (templatePanelOpen) {
+                router.reload({ only: [] });
+            }
+        },
+        onTemplateDeleted: () => {
+            if (templatePanelOpen) {
+                router.reload({ only: [] });
+            }
+        },
+    });
+
+    const handleBookmarkToggle = useCallback((messageId: string, bookmarked: boolean) => {
+        setBookmarkedMessageIds((prev) => {
+            const next = new Set(prev);
+            if (bookmarked) {
+                next.add(messageId);
+            } else {
+                next.delete(messageId);
+            }
+            return next;
+        });
+        broadcast({ type: 'bookmark:toggled', messageId, bookmarked });
+    }, [broadcast]);
+
+    const handleNavigateToMessage = useCallback((conversationId: string, messageId: string) => {
+        setBookmarkPanelOpen(false);
+        router.visit(student.aiChat.show.url({ chat: conversationId }), {
+            onSuccess: () => {
+                setHighlightedMessageId(messageId);
+                setTimeout(() => setHighlightedMessageId(null), 3000);
+            },
+        });
+    }, []);
+
+    const handleSearchSelect = useCallback((chatId: string) => {
+        router.visit(student.aiChat.show.url({ chat: chatId }));
+    }, []);
+
     const [editingTitle, setEditingTitle] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [inputError, setInputError] = useState('');
@@ -100,7 +183,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
 
     const safeChats = chats ?? [];
     const serverMessages = useMemo(() => loadedMessages, [loadedMessages]);
@@ -469,7 +551,25 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             <Head title="Chat dengan AI" />
 
             <div className="flex h-[calc(100vh-100px)] flex-col">
-                <div className="flex items-center justify-end mb-3">
+                <div className="flex items-center justify-end mb-3 gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setTemplatePanelOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-[#4A4A4A] shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-[#88161c]"
+                        title="Template prompt"
+                    >
+                        <FileText className="h-4.5 w-4.5" />
+                        Template
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setBookmarkPanelOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-[#4A4A4A] shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-[#88161c]"
+                        title="Bookmark"
+                    >
+                        <Bookmark className="h-4.5 w-4.5" />
+                        Bookmark
+                    </button>
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(true)}
@@ -513,7 +613,8 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             key={message.id}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+                                            id={`message-${message.id}`}
+                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''} ${highlightedMessageId === message.id ? 'ring-2 ring-[#88161c]/30 rounded-2xl bg-[#88161c]/5 -mx-2 px-2 py-1 transition-all duration-500' : ''}`}
                                         >
                                             <div
                                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
@@ -558,6 +659,16 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 <p className={`mt-1 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-[#6B7280]'}`}>
                                                     {formatTime(message.created_at)}
                                                 </p>
+                                                {message.role === 'assistant' && activeChat && (
+                                                    <div className="mt-1 flex justify-end">
+                                                        <BookmarkButton
+                                                            messageId={message.id}
+                                                            conversationId={activeChat.id}
+                                                            initialBookmarked={bookmarkedMessageIds.has(message.id)}
+                                                            onToggle={(bookmarked) => handleBookmarkToggle(message.id, bookmarked)}
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         </motion.div>
                                     ))}
@@ -665,6 +776,14 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         >
                                             <Plus className="h-4.5 w-4.5" />
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTemplatePanelOpen(true)}
+                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-[#6B7280] transition-colors hover:bg-[#f3f4f6] hover:text-[#88161c]"
+                                            title="Pilih template"
+                                        >
+                                            <FileText className="h-4.5 w-4.5" />
+                                        </button>
                                         <textarea
                                             ref={inputRef}
                                             value={inputValue}
@@ -748,6 +867,13 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     <Plus className="h-4 w-4" />
                                     Chat Baru
                                 </PrimaryButton>
+
+                                <div className="mt-3">
+                                    <SearchBar
+                                        onSelectResult={handleSearchSelect}
+                                        className="w-full"
+                                    />
+                                </div>
 
                                 <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
                                     {safeChats.length === 0 ? (
@@ -909,6 +1035,29 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                     </>
                 )}
             </AnimatePresence>
+
+            <BookmarkPanel
+                isOpen={bookmarkPanelOpen}
+                onClose={() => setBookmarkPanelOpen(false)}
+                onNavigateToMessage={handleNavigateToMessage}
+                onBookmarkDeleted={(bookmarkId) => {
+                    broadcast({ type: 'bookmark:deleted', bookmarkId });
+                }}
+            />
+
+            <TemplatePanel
+                isOpen={templatePanelOpen}
+                onClose={() => setTemplatePanelOpen(false)}
+                onSelectTemplate={(promptBody) => {
+                    setInputValue(promptBody);
+                    requestAnimationFrame(() => {
+                        inputRef.current?.focus({ preventScroll: true });
+                    });
+                }}
+                onTemplateCreated={(templateId) => broadcast({ type: 'template:created', templateId })}
+                onTemplateUpdated={(templateId) => broadcast({ type: 'template:updated', templateId })}
+                onTemplateDeleted={(templateId) => broadcast({ type: 'template:deleted', templateId })}
+            />
         </AppLayout>
     );
 }

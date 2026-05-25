@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import ReactLoadingSkeleton from 'react-loading-skeleton';
 
 interface SkeletonProps {
     className?: string;
@@ -11,6 +12,21 @@ export function Skeleton({ className = '' }: SkeletonProps) {
         />
     );
 }
+
+const ShimmerBar = (props: { width?: number | string; height?: number | string; borderRadius?: string; className?: string }) => (
+    <ReactLoadingSkeleton
+        baseColor="#E8EDF8"
+        highlightColor="#F5F7FC"
+        width={typeof props.width === 'string' ? undefined : props.width}
+        height={typeof props.height === 'string' ? undefined : props.height}
+        borderRadius={props.borderRadius ?? '0.5rem'}
+        className={props.className}
+        style={{
+            ...(typeof props.width === 'string' ? { width: props.width } : {}),
+            ...(typeof props.height === 'string' ? { height: props.height } : {}),
+        }}
+    />
+);
 
 export function CardSkeleton() {
     return (
@@ -195,6 +211,249 @@ export function ProfileSkeleton() {
                 <div>
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="mt-1 h-10 w-full" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+const shimmerRadius = '1rem';
+export function SkeletonDashboard() {
+    return (
+        <div className="space-y-6">
+            <div
+                className="rounded-3xl p-6"
+                style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+            >
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex items-start gap-3">
+                        <ShimmerBar width={56} height={56} borderRadius="1rem" />
+                        <div className="space-y-2">
+                            <ShimmerBar width={260} height={28} />
+                            <ShimmerBar width={360} height={16} />
+                            <ShimmerBar width={180} height={14} borderRadius="9999px" />
+                        </div>
+                    </div>
+                    <div className="hidden w-[280px] space-y-3 lg:block">
+                        <ShimmerBar width="100%" height={48} borderRadius={shimmerRadius} />
+                        <div className="flex gap-2">
+                            <ShimmerBar width={60} height={28} borderRadius="9999px" />
+                            <ShimmerBar width={60} height={28} borderRadius="9999px" />
+                            <ShimmerBar width={60} height={28} borderRadius="9999px" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="rounded-2xl p-5"
+                        style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)' }}
+                    >
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-3 flex-1">
+                                <ShimmerBar width={80} height={14} />
+                                <ShimmerBar width="60%" height={32} />
+                            </div>
+                            <ShimmerBar width={44} height={44} borderRadius="0.75rem" />
+                        </div>
+                        <div className="mt-4 space-y-2">
+                            <ShimmerBar width="40%" height={14} />
+                            <ShimmerBar width="80%" height={12} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="rounded-3xl p-6"
+                        style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+                    >
+                        <ShimmerBar width={180} height={20} />
+                        <ShimmerBar width={140} height={14} className="mt-2" />
+                        <ShimmerBar width="100%" height={220} borderRadius={shimmerRadius} className="mt-4" />
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+                <div
+                    className="rounded-3xl p-6"
+                    style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+                >
+                    <ShimmerBar width={120} height={20} borderRadius="9999px" />
+                    <ShimmerBar width={220} height={24} className="mt-4" />
+                    <ShimmerBar width="70%" height={14} className="mt-2" />
+                    <div className="mt-6 grid gap-4 md:grid-cols-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <ShimmerBar key={i} width="100%" height={80} borderRadius="1.5rem" />
+                        ))}
+                    </div>
+                </div>
+                <div
+                    className="space-y-3 rounded-3xl p-6"
+                    style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+                >
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                            <ShimmerBar width={32} height={32} borderRadius="9999px" />
+                            <div className="flex-1 space-y-1">
+                                <ShimmerBar width={`${60 + (i % 3) * 10}%`} height={14} />
+                                <ShimmerBar width="30%" height={10} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function SkeletonTable({ columns = 6, rows = 8 }: { columns?: number; rows?: number }) {
+    return (
+        <div className="space-y-6">
+            <div
+                className="rounded-3xl p-6"
+                style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+            >
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-start gap-4">
+                        <ShimmerBar width={48} height={48} borderRadius="0.75rem" />
+                        <div className="space-y-2">
+                            <ShimmerBar width={220} height={28} />
+                            <ShimmerBar width={300} height={16} />
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <ShimmerBar width={100} height={36} borderRadius="9999px" />
+                        <ShimmerBar width={100} height={36} borderRadius="9999px" />
+                        <ShimmerBar width={120} height={36} borderRadius="9999px" />
+                    </div>
+                </div>
+            </div>
+
+            <div
+                className="space-y-4 rounded-3xl p-5 sm:p-6"
+                style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.4)' }}
+            >
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <ShimmerBar width="100%" height={64} borderRadius={shimmerRadius} />
+                        <ShimmerBar width="100%" height={64} borderRadius={shimmerRadius} />
+                        <ShimmerBar width="100%" height={64} borderRadius={shimmerRadius} />
+                    </div>
+                    <div className="flex gap-2">
+                        <ShimmerBar width={120} height={36} borderRadius="9999px" />
+                    </div>
+                </div>
+            </div>
+
+            <div
+                className="overflow-hidden rounded-2xl"
+                style={{ background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)' }}
+            >
+                <table className="min-w-full divide-y divide-white/70">
+                    <thead className="bg-white/70">
+                        <tr>
+                            {Array.from({ length: columns }).map((_, i) => (
+                                <th key={i} className="px-4 py-3 text-left">
+                                    <ShimmerBar width={80} height={12} />
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/70">
+                        {Array.from({ length: rows }).map((_, rowIdx) => (
+                            <tr key={rowIdx} className="hover:bg-white/60">
+                                {Array.from({ length: columns }).map((_, colIdx) => (
+                                    <td key={colIdx} className="px-4 py-3.5">
+                                        <ShimmerBar width={`${50 + ((rowIdx + colIdx) % 3) * 15}%`} height={14} />
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="flex items-center justify-between">
+                <ShimmerBar width={160} height={16} />
+                <div className="flex gap-2">
+                    <ShimmerBar width={80} height={32} borderRadius="9999px" />
+                    <ShimmerBar width={80} height={32} borderRadius="9999px" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function SkeletonCard({ cardCount = 4 }: { cardCount?: number }) {
+    return (
+        <div className="space-y-6">
+            <div
+                className="rounded-3xl p-6"
+                style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.6)' }}
+            >
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-start gap-4">
+                        <ShimmerBar width={48} height={48} borderRadius="0.75rem" />
+                        <div className="space-y-2">
+                            <ShimmerBar width={200} height={28} />
+                            <ShimmerBar width={340} height={16} />
+                        </div>
+                    </div>
+                    <ShimmerBar width={120} height={36} borderRadius="9999px" />
+                </div>
+
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="rounded-2xl border border-white/60 bg-white/70 p-4">
+                            <ShimmerBar width={100} height={14} />
+                            <ShimmerBar width="50%" height={24} className="mt-2" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div
+                className="overflow-hidden rounded-3xl"
+                style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)' }}
+            >
+                <div className="border-b border-black/5 px-6 py-4">
+                    <ShimmerBar width={140} height={20} />
+                    <ShimmerBar width={280} height={14} className="mt-1" />
+                </div>
+
+                <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: cardCount }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="rounded-2xl p-4"
+                            style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.4)' }}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-2 flex-1">
+                                    <ShimmerBar width="60%" height={16} />
+                                    <ShimmerBar width="40%" height={12} />
+                                </div>
+                                <ShimmerBar width={70} height={24} borderRadius="9999px" />
+                            </div>
+                            <div className="mt-4 space-y-2">
+                                <ShimmerBar width="100%" height={12} />
+                                <ShimmerBar width="70%" height={12} />
+                                <ShimmerBar width="50%" height={12} />
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                                <ShimmerBar width={80} height={32} borderRadius="9999px" />
+                                <ShimmerBar width={80} height={32} borderRadius="9999px" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

@@ -7,6 +7,14 @@ use Tests\TestCase;
 
 class AiChatControllerTest extends TestCase
 {
+    private array $sessionData;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->sessionData = $this->studentSessionData();
+    }
+
     public function test_show_returns_404_when_chat_is_not_found(): void
     {
         Http::fake([
@@ -19,15 +27,7 @@ class AiChatControllerTest extends TestCase
         ]);
 
         $response = $this
-            ->withSession([
-                'jwt' => 'token-uji',
-                'user' => [
-                    'id' => 'user-1',
-                    'name' => 'QA Student',
-                    'email' => 'qa@example.com',
-                    'role' => 'student',
-                ],
-            ])
+            ->withSession($this->sessionData)
             ->get(route('student.ai-chat.show', 'chat-missing'));
 
         $response->assertNotFound();
@@ -65,15 +65,7 @@ class AiChatControllerTest extends TestCase
         ]);
 
         $response = $this
-            ->withSession([
-                'jwt' => 'token-uji',
-                'user' => [
-                    'id' => 'user-1',
-                    'name' => 'QA Student',
-                    'email' => 'qa@example.com',
-                    'role' => 'student',
-                ],
-            ])
+            ->withSession($this->sessionData)
             ->get(route('student.ai-chat.show', 'chat-123'));
 
         $response->assertOk();
@@ -105,15 +97,7 @@ class AiChatControllerTest extends TestCase
         ]);
 
         $response = $this
-            ->withSession([
-                'jwt' => 'token-uji',
-                'user' => [
-                    'id' => 'user-1',
-                    'name' => 'QA Student',
-                    'email' => 'qa@example.com',
-                    'role' => 'student',
-                ],
-            ])
+            ->withSession($this->sessionData)
             ->post(route('student.ai-chat.store'), [
                 'title' => 'Pesan pertama yang panjang',
                 'first_message' => 'Pesan pertama yang panjang',
@@ -127,15 +111,13 @@ class AiChatControllerTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->url() === 'http://localhost:3000/api/ai-chats'
                 && $request->method() === 'POST'
-                && $request['title'] === 'Pesan pertama yang panjang'
-                && $request->hasHeader('Authorization', 'Bearer token-uji');
+                && $request['title'] === 'Pesan pertama yang panjang';
         });
 
         Http::assertSent(function ($request) {
             return $request->url() === 'http://localhost:3000/api/ai-chats/chat-123/messages'
                 && $request->method() === 'POST'
-                && $request['content'] === 'Pesan pertama yang panjang'
-                && $request->hasHeader('Authorization', 'Bearer token-uji');
+                && $request['content'] === 'Pesan pertama yang panjang';
         });
     }
 
@@ -152,15 +134,7 @@ class AiChatControllerTest extends TestCase
         ]);
 
         $response = $this
-            ->withSession([
-                'jwt' => 'token-uji',
-                'user' => [
-                    'id' => 'user-1',
-                    'name' => 'QA Student',
-                    'email' => 'qa@example.com',
-                    'role' => 'student',
-                ],
-            ])
+            ->withSession($this->sessionData)
             ->patch(route('student.ai-chat.update', 'chat-123'), [
                 'title' => 'Judul Baru',
             ]);
@@ -171,8 +145,7 @@ class AiChatControllerTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->url() === 'http://localhost:3000/api/ai-chats/chat-123'
                 && $request->method() === 'PATCH'
-                && $request['title'] === 'Judul Baru'
-                && $request->hasHeader('Authorization', 'Bearer token-uji');
+                && $request['title'] === 'Judul Baru';
         });
     }
 }

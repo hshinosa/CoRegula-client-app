@@ -2,8 +2,6 @@ import { Head, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ChevronLeft,
-    ChevronRight,
     Download,
     Filter,
     FileSpreadsheet,
@@ -21,11 +19,14 @@ import {
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { AdminPagination } from '@/components/ui/AdminPagination';
 import { InputError } from '@/components/ui/input-error';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import { SkeletonTable } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV, parseCSV, validateCSVColumns, type CsvRecord } from '@/lib/csv-utils';
 import { connectWebSocket } from '@/lib/websocket';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import AppLayout from '@/layouts/app-layout';
 import { User, UserRole } from '@/types';
 
@@ -80,7 +81,7 @@ const roleConfig: Record<UserRole, { label: string; className: string }> = {
 };
 
 const headingStyle = {
-    color: '#4A4A4A',
+    color: 'var(--dm-text-heading)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
@@ -95,22 +96,6 @@ function formatDate(date: string) {
         month: 'short',
         year: 'numeric',
     });
-}
-
-function getPaginationItems(currentPage: number, totalPages: number): Array<number | 'ellipsis'> {
-    if (totalPages <= 5) {
-        return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
-
-    if (currentPage <= 3) {
-        return [1, 2, 3, 4, 'ellipsis', totalPages];
-    }
-
-    if (currentPage >= totalPages - 2) {
-        return [1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    }
-
-    return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
 }
 
 function extractFirstError(errors: Record<string, string> | undefined, fallback: string) {
@@ -180,10 +165,10 @@ function FormModal({
                     <div
                         className="w-full max-w-lg rounded-3xl p-6 shadow-2xl"
                         style={{
-                            background: 'rgba(255,255,255,0.95)',
+                            background: 'var(--dm-surface)',
                             backdropFilter: 'blur(24px)',
                             WebkitBackdropFilter: 'blur(24px)',
-                            border: '1px solid rgba(255,255,255,0.6)',
+                            border: '1px solid var(--dm-border-strong)',
                         }}
                     >
                         <div className="flex items-start justify-between gap-4">
@@ -332,6 +317,12 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
         if (roleFilter !== 'all') count += 1;
         return count;
     }, [roleFilter, searchInput]);
+
+    const { start, end, total } = useMemo(() => {
+        const s = paginationState.total === 0 ? 0 : (paginationState.page - 1) * paginationState.limit + 1;
+        const e = Math.min(paginationState.page * paginationState.limit, paginationState.total);
+        return { start: s, end: e, total: paginationState.total };
+    }, [paginationState.page, paginationState.limit, paginationState.total]);
 
     useEffect(() => {
         setUserList(users);
@@ -779,16 +770,12 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
         }
     };
 
-        const total = paginationState.total;
-        const start = total === 0 ? 0 : (paginationState.page - 1) * paginationState.limit + 1;
-        const end = Math.min(paginationState.page * paginationState.limit, total);
-        const paginationItems = getPaginationItems(paginationState.page, paginationState.totalPages);
-
     return (
         <AppLayout title="User Management">
             <Head title="Admin - User Management" />
 
             <div className="space-y-6">
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Users' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -796,11 +783,11 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
                                 <div
                                     className="flex h-12 w-12 items-center justify-center rounded-xl"
                                     style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
+background: 'var(--dm-accent-bg)',
+                                border: '1px solid var(--dm-accent-border-light)',
                                     }}
                                 >
-                                    <UserCog className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <UserCog className="h-6 w-6" style={{ color: 'var(--dm-accent)' }} />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
@@ -934,10 +921,7 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
                         <div className="relative">
                             {isFetching && (
                                 <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/65 backdrop-blur-[2px]">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white px-4 py-2 text-sm text-[#4A4A4A] shadow-sm">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Loading users...
-                                    </div>
+                                    <SkeletonTable columns={6} rows={6} />
                                 </div>
                             )}
 
@@ -1065,56 +1049,15 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => requestUsers({ page: paginationState.page - 1 })}
-                                    disabled={paginationState.page <= 1 || isFetching}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                    Prev
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => requestUsers({ page: paginationState.page + 1 })}
-                                    disabled={paginationState.page >= paginationState.totalPages || isFetching}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    Next
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-1.5">
-                                {paginationItems.map((item, index) => {
-                                    if (item === 'ellipsis') {
-                                        return (
-                                            <span key={`ellipsis-${index}`} className="px-2 text-sm text-slate-500">
-                                                ...
-                                            </span>
-                                        );
-                                    }
-
-                                    return (
-                                        <button
-                                            key={item}
-                                            type="button"
-                                            onClick={() => requestUsers({ page: item })}
-                                            className={`h-9 min-w-9 rounded-lg px-3 text-sm transition ${
-                                                paginationState.page === item
-                                                    ? 'bg-[#88161c] text-white'
-                                                    : 'border border-slate-200 bg-white text-slate-700 hover:border-[#88161c]/40'
-                                            }`}
-                                        >
-                                            {item}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                        <AdminPagination
+                            currentPage={paginationState.page}
+                            totalPages={paginationState.totalPages}
+                            totalItems={paginationState.total}
+                            perPage={paginationState.limit}
+                            onPageChange={(page: number) => requestUsers({ page })}
+                            isLoading={isFetching}
+                            itemLabel="pengguna"
+                        />
                     </LiquidGlassCard>
                 </motion.div>
             </div>

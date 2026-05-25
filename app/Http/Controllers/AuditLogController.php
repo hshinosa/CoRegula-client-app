@@ -12,10 +12,7 @@ class AuditLogController extends Controller
     public function index(Request $request)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . '/api/admin/audit-logs',
-                $request->query() + ['limit' => $request->query('limit', 50)]
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/audit-logs', $request->query() + ['limit' => $request->query('limit', 50)]);
 
             $payload = $response->json();
 
@@ -57,9 +54,7 @@ class AuditLogController extends Controller
     public function entityHistory(string $entityType, string $entityId)
     {
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/admin/audit-logs/entity/{$entityType}/{$entityId}"
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/admin/audit-logs/entity/{$entityType}/{$entityId}");
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {

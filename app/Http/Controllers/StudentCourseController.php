@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -10,28 +12,150 @@ use Inertia\Response;
 class StudentCourseController extends Controller
 {
     /**
-     * List Student's Enrolled Courses
+     * List Student's Enrolled Courses (Inertia page render)
      */
     public function enrolled(): Response
     {
-        $courses = [];
-        $serviceError = null;
+        return Inertia::render('student/courses/index');
+    }
+
+    /**
+     * Fetch Student's Enrolled Courses (JSON API for React Query)
+     * Supports search (q), filter by status, and pagination
+     */
+    public function index(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => 'nullable|string|max:100',
+            'filter' => 'nullable|array',
+            'filter.status' => 'nullable|string|in:aktif,selesai,belum_mulai',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $query = $validated['q'] ?? null;
+        $statusFilter = $validated['filter']['status'] ?? null;
+        $page = $validated['page'] ?? 1;
+        $perPage = $validated['per_page'] ?? 12;
+
         try {
-            $response = $this->apiRequest()->get($this->apiUrl() . '/api/courses/enrolled');
+            // Build query params for external API
+            $params = array_filter([
+                'q' => $query,
+                'status' => $statusFilter,
+                'page' => $page,
+                'per_page' => $perPage,
+            ], fn($v) => $v !== null && $v !== '');
+
+            $response = $this->apiRequest()->get(
+                $this->apiUrl() . '/api/courses/enrolled',
+                $params
+            );
+
             if ($response->successful()) {
-                $courses = $response->json('data', []);
-            } else {
-                $serviceError = 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.';
+                $responseData = $response->json();
+                $courses = $responseData['data'] ?? [];
+
+                // Apply local filtering if external API doesn't support it
+                if ($query && !empty($courses)) {
+                    $courses = array_filter($courses, function ($course) use ($query) {
+                        $searchLower = mb_strtolower($query);
+                        $name = mb_strtolower($course['name'] ?? '');
+                        $code = mb_strtolower($course['code'] ?? '');
+                        return str_contains($name, $searchLower) || str_contains($code, $searchLower);
+                    });
+                    $courses = array_values($courses);
+                }
+
+                if ($statusFilter && !empty($courses)) {
+                    $courses = array_filter($courses, function ($course) use ($statusFilter) {
+                        return ($course['status'] ?? '') === $statusFilter;
+                    });
+                    $courses = array_values($courses);
+                }
+
+                // Calculate filter counts from all courses (unfiltered by status)
+                $allCourses = $responseData['data'] ?? [];
+                $filterCounts = $this->calculateFilterCounts($allCourses, $query);
+
+                // Local pagination
+                $total = count($courses);
+                $offset = ($page - 1) * $perPage;
+                $paginatedCourses = array_slice($courses, $offset, $perPage);
+
+                return response()->json([
+                    'data' => $paginatedCourses,
+                    'meta' => [
+                        'total' => $total,
+                        'per_page' => $perPage,
+                        'current_page' => $page,
+                        'last_page' => max(1, ceil($total / $perPage)),
+                    ],
+                    'filter_counts' => $filterCounts,
+                ]);
             }
-        } catch (\Exception $e) {
+
+            Log::warning('StudentCourseController: external API returned unsuccessful', [
+                'status' => $response->status(),
+            ]);
+
+            return response()->json([
+                'data' => [],
+                'meta' => ['total' => 0, 'per_page' => $perPage, 'current_page' => 1, 'last_page' => 1],
+                'filter_counts' => ['aktif' => 0, 'selesai' => 0, 'belum_mulai' => 0],
+                'error' => 'Layanan kursus sedang tidak tersedia.',
+            ], 503);
+
+        } catch (ConnectionException $e) {
             Log::error('StudentCourseController: failed to fetch enrolled courses', ['error' => $e->getMessage()]);
-            $serviceError = 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.';
+
+            return response()->json([
+                'data' => [],
+                'meta' => ['total' => 0, 'per_page' => $perPage, 'current_page' => 1, 'last_page' => 1],
+                'filter_counts' => ['aktif' => 0, 'selesai' => 0, 'belum_mulai' => 0],
+                'error' => 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.',
+            ], 500);
+        } catch (RequestException $e) {
+            Log::error('StudentCourseController: failed to fetch enrolled courses', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'data' => [],
+                'meta' => ['total' => 0, 'per_page' => $perPage, 'current_page' => 1, 'last_page' => 1],
+                'filter_counts' => ['aktif' => 0, 'selesai' => 0, 'belum_mulai' => 0],
+                'error' => 'Layanan kursus sedang tidak tersedia. Coba lagi nanti.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate filter counts for status chips
+     */
+    private function calculateFilterCounts(array $courses, ?string $query = null): array
+    {
+        $counts = [
+            'aktif' => 0,
+            'selesai' => 0,
+            'belum_mulai' => 0,
+        ];
+
+        foreach ($courses as $course) {
+            // If there's a search query, only count courses matching the query
+            if ($query) {
+                $searchLower = mb_strtolower($query);
+                $name = mb_strtolower($course['name'] ?? '');
+                $code = mb_strtolower($course['code'] ?? '');
+                if (!str_contains($name, $searchLower) && !str_contains($code, $searchLower)) {
+                    continue;
+                }
+            }
+
+            $status = $course['status'] ?? 'belum_mulai';
+            if (isset($counts[$status])) {
+                $counts[$status]++;
+            }
         }
 
-        return Inertia::render('student/courses/index', [
-            'courses' => $courses,
-            'serviceError' => $serviceError,
-        ]);
+        return $counts;
     }
 
     /**
@@ -55,7 +179,10 @@ class StudentCourseController extends Controller
             }
 
             return back()->withErrors(['join_code' => $response->json('message', 'Invalid join code')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('StudentCourseController: course join failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['join_code' => 'Unable to join course']);
+        } catch (RequestException $e) {
             Log::error('StudentCourseController: course join failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['join_code' => 'Unable to join course']);
         }
@@ -68,17 +195,28 @@ class StudentCourseController extends Controller
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
-            $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-group");
-            $goalResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-goal");
+            $groupsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
 
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
-            $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
-            $goal = $goalResponse->successful() ? $goalResponse->json('data') : null;
-        } catch (\Exception $e) {
+            $groups = $groupsResponse->successful() ? $groupsResponse->json('data') : [];
+
+            if ($courseData && is_array($groups)) {
+                foreach ($groups as &$group) {
+                    $chatSpacesResponse = $this->apiRequest()->get(
+                        $this->apiUrl() . "/api/groups/{$group['id']}/chat-spaces"
+                    );
+                    $group['chat_spaces'] = $chatSpacesResponse->successful() 
+                        ? $chatSpacesResponse->json('data') 
+                        : [];
+                }
+                $courseData['groups'] = $groups;
+            }
+        } catch (ConnectionException $e) {
             Log::error('StudentCourseController: failed to fetch course', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
-            $group = null;
-            $goal = null;
+        } catch (RequestException $e) {
+            Log::error('StudentCourseController: failed to fetch course', ['course' => $course, 'error' => $e->getMessage()]);
+            $courseData = null;
         }
 
         if (!$courseData) {
@@ -87,15 +225,13 @@ class StudentCourseController extends Controller
 
         return Inertia::render('student/courses/show', [
             'course' => $courseData,
-            'group' => $group,
-            'goal' => $goal,
         ]);
     }
 
     /**
      * Chat Spaces List Page (select or create chat session)
      */
-    public function chatSpaces(string $course): Response
+    public function chatSpaces(Request $request, string $course): Response
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
@@ -103,10 +239,37 @@ class StudentCourseController extends Controller
 
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
-        } catch (\Exception $e) {
+
+            $chatSpaceMeta = null;
+            if ($group) {
+                $queryParams = array_filter([
+                    'q' => $request->query('q'),
+                    'type' => $request->query('type'),
+                    'status' => $request->query('status'),
+                    'sort' => $request->query('sort'),
+                    'page' => $request->query('page'),
+                    'per_page' => $request->query('per_page'),
+                ], fn($v) => $v !== null && $v !== '');
+
+                $metaResponse = $this->apiRequest()->get(
+                    $this->apiUrl() . "/api/groups/{$group['id']}/chat-spaces",
+                    $queryParams
+                );
+
+                if ($metaResponse->successful()) {
+                    $chatSpaceMeta = $metaResponse->json();
+                }
+            }
+        } catch (ConnectionException $e) {
             Log::error('StudentCourseController: failed to fetch chat spaces data', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
+            $chatSpaceMeta = null;
+        } catch (RequestException $e) {
+            Log::error('StudentCourseController: failed to fetch chat spaces data', ['course' => $course, 'error' => $e->getMessage()]);
+            $courseData = null;
+            $group = null;
+            $chatSpaceMeta = null;
         }
 
         if (!$courseData || !$group) {
@@ -116,6 +279,7 @@ class StudentCourseController extends Controller
         return Inertia::render('student/chat-spaces/index', [
             'course' => $courseData,
             'group' => $group,
+            'chatSpaceMeta' => $chatSpaceMeta,
         ]);
     }
 
@@ -132,7 +296,12 @@ class StudentCourseController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
             $chatSpaceData = $chatSpaceResponse->successful() ? $chatSpaceResponse->json('data') : null;
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'chatSpace' => $chatSpace, 'error' => $e->getMessage()]);
+            $courseData = null;
+            $group = null;
+            $chatSpaceData = null;
+        } catch (RequestException $e) {
             Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'chatSpace' => $chatSpace, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
@@ -164,7 +333,12 @@ class StudentCourseController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
             $goal = $goalResponse->successful() ? $goalResponse->json('data') : null;
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('StudentCourseController: failed to fetch chat data', ['course' => $course, 'error' => $e->getMessage()]);
+            $courseData = null;
+            $group = null;
+            $goal = null;
+        } catch (RequestException $e) {
             Log::error('StudentCourseController: failed to fetch chat data', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
@@ -193,10 +367,7 @@ class StudentCourseController extends Controller
     public function submitReflection(\Illuminate\Http\Request $request, string $course, string $chatSpace)
     {
         $validated = $request->validate(['content' => 'required|string|min:50|max:5000']);
-        $response = $this->apiRequest()->post(
-            $this->apiUrl() . "/api/chat-spaces/{$chatSpace}/reflection",
-            $validated
-        );
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/reflection", $validated);
         return $this->proxyResponse($response);
     }
 

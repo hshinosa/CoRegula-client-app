@@ -119,8 +119,6 @@ const glassPanelStyle = {
     border: '1px solid rgba(255,255,255,0.65)',
 } as const;
 
-const modalBackdropClass = 'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm';
-
 const RADAR_METRIC_LABELS = [
     'Hot',
     'Lexical Variety',
@@ -206,36 +204,30 @@ const getSenderTypeStyle = (type: string): CSSProperties => {
 
 const engagementTypeInfo: Record<
     string,
-    { description: string; examples: string[]; chipStyle: CSSProperties; bar: string; icon: string }
+    { description: string; chipStyle: CSSProperties; bar: string }
 > = {
     cognitive: {
         description: 'Pemikiran kritis, analisis, dan pemahaman konsep.',
-        examples: ['mengapa', 'bagaimana jika', 'bandingkan', 'analisis'],
         chipStyle: {
             background: 'rgba(71,85,105,0.10)',
             color: '#334155',
             border: '1px solid rgba(71,85,105,0.18)',
         },
         bar: '#475569',
-        icon: '🧠',
     },
     behavioral: {
         description: 'Partisipasi aktif, koordinasi tugas, dan tindakan nyata.',
-        examples: ['saya akan', 'mari kita', 'sudah selesai', 'bisa bantu'],
         chipStyle: successChipStyle,
         bar: '#22c55e',
-        icon: '⚡',
     },
     emotional: {
         description: 'Dukungan emosional, motivasi, dan empati antaranggota.',
-        examples: ['bagus', 'semangat', 'terima kasih', 'jangan khawatir'],
         chipStyle: {
             background: 'rgba(180,83,9,0.10)',
             color: '#92400e',
             border: '1px solid rgba(180,83,9,0.18)',
         },
         bar: '#b45309',
-        icon: '💜',
     },
 };
 
@@ -284,7 +276,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
         }
 
         const hot = Math.min(10, hotPercentage / 10);
-        const lexical = Math.min(10, lexicalVariety * 10);
+        const lexical = Math.min(10, lexicalVariety / 10);
         const performance = qualityScore !== null ? qualityScore / 10 : 0;
         const cognitiveSignal = totalEngagement > 0 ? (cognitive / totalEngagement) * 10 : 0;
         const collaboration = Math.min(10, engagementSignal);
@@ -303,7 +295,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
         ];
     }, [safeAnalytics, hotPercentage, lexicalVariety]);
 
-    const navItems = useLecturerNav('analytics-group', { courseId: course.id, groupId: group.id });
+    const navItems = useLecturerNav('analytics-group');
 
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch(console.error);
@@ -340,6 +332,19 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             }
         });
 
+        socket.on('receive_message', (data: any) => {
+            if (data.senderType === 'system' || data.isIntervention) return;
+            const newItem: RecentActivity = {
+                id: data.id || String(Date.now()),
+                senderName: data.senderName || 'Unknown',
+                senderType: data.senderType || 'student',
+                content: (data.content || '').substring(0, 150),
+                createdAt: data.createdAt || new Date().toISOString(),
+                isIntervention: false,
+            };
+            setLiveActivity(prev => [newItem, ...prev].slice(0, 20));
+        });
+
         return () => {
             socket.disconnect();
         };
@@ -354,7 +359,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
         },
         {
             label: 'Lexical Variety',
-            value: `${(lexicalVariety * 100).toFixed(0)}%`,
+            value: `${lexicalVariety.toFixed(0)}%`,
             detail: 'Keragaman kosakata',
             color: '#92400e',
         },
@@ -643,52 +648,36 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     </span>
                                 </div>
 
-                                <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                                <div className="mt-5 space-y-3">
                                     {engagementEntries.map(([type, count]) => {
                                         const key = type.toLowerCase();
                                         const info = engagementTypeInfo[key] || engagementTypeInfo.behavioral;
-                                        const percentage = engagementTotal > 0 ? (count / engagementTotal) * 100 : 0;
+                                        const percentage = engagementTotal > 0 ? Math.round((count / engagementTotal) * 100) : 0;
 
                                         return (
-                                            <div key={type} className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-2xl">{info.icon}</span>
-                                                    <span
-                                                        className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize"
-                                                        style={info.chipStyle}
-                                                    >
-                                                        {type}
-                                                    </span>
-                                                </div>
+                                            <div key={type} className="rounded-xl p-4" style={glassPanelStyle}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-24 shrink-0">
+                                                        <p className="text-xs font-medium capitalize" style={{ color: info.chipStyle.color as string }}>
+                                                            {type}
+                                                        </p>
+                                                        <p className="mt-0.5 text-xs text-[#9CA3AF]">{info.description}</p>
+                                                    </div>
 
-                                                <div className="mt-4 flex items-end justify-between gap-3">
-                                                    <p className="text-4xl font-semibold" style={{ ...headingStyle, color: info.chipStyle.color as string }}>
-                                                        {count}
-                                                    </p>
-                                                    <p className="text-sm font-medium" style={{ color: info.chipStyle.color as string }}>
-                                                        {percentage.toFixed(0)}%
-                                                    </p>
-                                                </div>
-
-                                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/70">
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-500"
-                                                        style={{ width: `${percentage}%`, background: info.bar }}
-                                                    />
-                                                </div>
-
-                                                <p className="mt-3 text-sm leading-6 text-[#6B7280]">{info.description}</p>
-
-                                                <div className="mt-4 flex flex-wrap gap-2">
-                                                    {info.examples.map((example) => (
-                                                        <span
-                                                            key={example}
-                                                            className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium"
-                                                            style={info.chipStyle}
-                                                        >
-                                                            “{example}”
+                                                    <div className="flex flex-1 items-center gap-3">
+                                                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                                            <div
+                                                                className="h-full rounded-full transition-all duration-500"
+                                                                style={{ width: `${percentage}%`, background: info.bar }}
+                                                            />
+                                                        </div>
+                                                        <span className="w-8 text-right text-xs font-medium tabular-nums" style={{ color: info.chipStyle.color as string }}>
+                                                            {percentage}%
                                                         </span>
-                                                    ))}
+                                                        <span className="w-6 text-right text-sm font-semibold tabular-nums" style={{ color: info.chipStyle.color as string }}>
+                                                            {count}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -866,7 +855,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className={modalBackdropClass}
+                            className="fixed inset-0 z-50 bg-black/50"
                             onClick={() => setShowMemberModal(false)}
                         />
                         <motion.div
@@ -875,51 +864,53 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
-                                <div className="flex items-center justify-between gap-4">
+                            <div
+                                className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Daftar anggota ({safeMembers.length})
+                                        <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
+                                            Daftar Anggota ({safeMembers.length})
                                         </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Seluruh anggota grup tetap dapat ditinjau dari modal yang sama.
+                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                            Seluruh anggota grup dapat ditinjau dari modal ini.
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowMemberModal(false)}
-                                        className="rounded-full p-2 transition-colors"
-                                        style={glassPanelStyle}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-gray-100 hover:text-[#374151]"
                                     >
-                                        <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
+                                        <X className="h-4 w-4" />
                                     </button>
                                 </div>
 
-                                <div className="mt-6 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+                                <div className="mt-5 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                                     {safeMembers.length === 0 ? (
-                                        <div className="rounded-[24px] px-6 py-10 text-center" style={glassPanelStyle}>
+                                        <div className="rounded-xl border border-dashed border-gray-200 px-6 py-10 text-center">
                                             <p className="text-sm text-[#6B7280]">Belum ada anggota</p>
                                         </div>
                                     ) : (
                                         safeMembers.map((member) => (
-                                            <div key={member.id} className="flex items-center gap-3 rounded-[24px] p-4" style={glassPanelStyle}>
+                                            <div key={member.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                                                 <span
-                                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold"
+                                                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
                                                     style={brandChipStyle}
                                                 >
                                                     {member.name.charAt(0).toUpperCase()}
                                                 </span>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-semibold" style={headingStyle}>
+                                                    <p className="truncate text-sm font-medium text-[#1F2937]">
                                                         {member.name}
                                                     </p>
-                                                    <p className="mt-1 truncate text-xs text-[#6B7280]">{member.email}</p>
+                                                    <p className="mt-0.5 truncate text-xs text-[#6B7280]">{member.email}</p>
                                                 </div>
                                             </div>
                                         ))
                                     )}
                                 </div>
-                            </LiquidGlassCard>
+                            </div>
                         </motion.div>
                     </>
                 )}
@@ -932,7 +923,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className={modalBackdropClass}
+                            className="fixed inset-0 z-50 bg-black/50"
                             onClick={() => setShowSessionModal(false)}
                         />
                         <motion.div
@@ -941,60 +932,60 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
-                                <div className="flex items-center justify-between gap-4">
+                            <div
+                                className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Sesi diskusi ({safeChatSpaces.length})
+                                        <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
+                                            Sesi Diskusi ({safeChatSpaces.length})
                                         </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Seluruh status sesi, waktu dibuat, dan waktu selesai tetap tersedia di modal ini.
+                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                            Status sesi, waktu dibuat, dan waktu selesai.
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowSessionModal(false)}
-                                        className="rounded-full p-2 transition-colors"
-                                        style={glassPanelStyle}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-gray-100 hover:text-[#374151]"
                                     >
-                                        <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
+                                        <X className="h-4 w-4" />
                                     </button>
                                 </div>
 
-                                <div className="mt-6 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+                                <div className="mt-5 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                                     {safeChatSpaces.length === 0 ? (
-                                        <div className="rounded-[24px] px-6 py-10 text-center" style={glassPanelStyle}>
+                                        <div className="rounded-xl border border-dashed border-gray-200 px-6 py-10 text-center">
                                             <p className="text-sm text-[#6B7280]">Belum ada sesi diskusi</p>
                                         </div>
                                     ) : (
                                         safeChatSpaces.map((session) => (
-                                            <div key={session.id} className="rounded-[24px] p-4" style={glassPanelStyle}>
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className="text-sm font-semibold" style={headingStyle}>
-                                                            {session.name || 'Sesi Tanpa Judul'}
+                                            <div key={session.id} className="flex items-start justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-medium text-[#1F2937]">
+                                                        {session.name || 'Sesi Tanpa Judul'}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-[#6B7280]">
+                                                        Dibuat: {formatDateTime(session.createdAt)}
+                                                    </p>
+                                                    {session.closedAt && (
+                                                        <p className="mt-0.5 text-xs text-[#6B7280]">
+                                                            Selesai: {formatDateTime(session.closedAt)}
                                                         </p>
-                                                        <p className="mt-2 text-xs text-[#6B7280]">
-                                                            Dibuat: {formatDateTime(session.createdAt)}
-                                                        </p>
-                                                        {session.closedAt && (
-                                                            <p className="mt-1 text-xs text-[#6B7280]">
-                                                                Selesai: {formatDateTime(session.closedAt)}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <span
-                                                        className="rounded-full px-3 py-1 text-xs font-medium"
-                                                        style={session.isClosed ? neutralChipStyle : successChipStyle}
-                                                    >
-                                                        {session.isClosed ? 'Selesai' : 'Aktif'}
-                                                    </span>
+                                                    )}
                                                 </div>
+                                                <span
+                                                    className="shrink-0 rounded-full px-3 py-1 text-xs font-medium"
+                                                    style={session.isClosed ? neutralChipStyle : successChipStyle}
+                                                >
+                                                    {session.isClosed ? 'Selesai' : 'Aktif'}
+                                                </span>
                                             </div>
                                         ))
                                     )}
                                 </div>
-                            </LiquidGlassCard>
+                            </div>
                         </motion.div>
                     </>
                 )}

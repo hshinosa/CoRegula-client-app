@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @import 'tailwindcss';
+@import 'react-loading-skeleton/dist/skeleton.css';
 
 /* Prevent white flash during page transitions */
 body {
@@ -85,6 +86,53 @@ body.dark {
     --color-parchment-50: #fefdfb;
     --color-parchment-100: #fdfaf5;
     --color-parchment-200: #faf5eb;
+}
+
+:root,
+html {
+    --dm-bg: #E8EDF8;
+    --dm-surface: rgba(255, 255, 255, 0.95);
+    --dm-surface-solid: #ffffff;
+    --dm-surface-hover: rgba(255, 255, 255, 0.8);
+    --dm-surface-transparent: rgba(255, 255, 255, 0.6);
+    --dm-surface-transparent-strong: rgba(255, 255, 255, 0.8);
+    --dm-border: rgba(0, 0, 0, 0.08);
+    --dm-border-strong: rgba(0, 0, 0, 0.12);
+    --dm-text: #4A4A4A;
+    --dm-text-secondary: #6B7280;
+    --dm-text-muted: #9CA3AF;
+    --dm-text-heading: #1F2937;
+    --dm-accent: #88161c;
+    --dm-accent-bg: rgba(136, 22, 28, 0.08);
+    --dm-accent-border: rgba(136, 22, 28, 0.15);
+    --dm-accent-border-light: rgba(136, 22, 28, 0.12);
+    --dm-shadow: rgba(0, 0, 0, 0.04);
+    --dm-sidebar-bg: rgba(255, 255, 255, 0.98);
+    --dm-sidebar-divider: rgba(255, 255, 255, 0.5);
+    --dm-sidebar-user-bg: rgba(255, 255, 255, 0.4);
+}
+
+.dark {
+    --dm-bg: #0a0a0f;
+    --dm-surface: rgba(20, 20, 30, 0.95);
+    --dm-surface-solid: #141419;
+    --dm-surface-hover: rgba(30, 30, 42, 0.9);
+    --dm-surface-transparent: rgba(255, 255, 255, 0.06);
+    --dm-surface-transparent-strong: rgba(255, 255, 255, 0.1);
+    --dm-border: rgba(255, 255, 255, 0.08);
+    --dm-border-strong: rgba(255, 255, 255, 0.15);
+    --dm-text: #D1D5DB;
+    --dm-text-secondary: #9CA3AF;
+    --dm-text-muted: #6B7280;
+    --dm-text-heading: #F3F4F6;
+    --dm-accent: #f87171;
+    --dm-accent-bg: rgba(248, 113, 113, 0.1);
+    --dm-accent-border: rgba(248, 113, 113, 0.2);
+    --dm-accent-border-light: rgba(248, 113, 113, 0.15);
+    --dm-shadow: rgba(0, 0, 0, 0.3);
+    --dm-sidebar-bg: #111116;
+    --dm-sidebar-divider: rgba(255, 255, 255, 0.08);
+    --dm-sidebar-user-bg: rgba(255, 255, 255, 0.06);
 }
 
 /* Custom Utility Classes */
@@ -366,3 +414,76 @@ body.dark {
         box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 16px rgba(136, 22, 28, 0.22);
     }
 }
+
+.dark .bg-white { background-color: var(--dm-surface-solid) !important; }
+.dark .bg-white\/95 { background-color: var(--dm-surface) !important; }
+.dark .bg-white\/90 { background-color: rgba(20, 20, 30, 0.90) !important; }
+.dark .bg-white\/60 { background-color: rgba(20, 20, 30, 0.60) !important; }
+.dark .bg-white\/40 { background-color: rgba(20, 20, 30, 0.40) !important; }
+
+.dark .text-\[\#4A4A4A\] { color: var(--dm-text) !important; }
+.dark .text-\[\#6B7280\] { color: var(--dm-text-secondary) !important; }
+.dark .text-\[\#88161c\] { color: var(--dm-accent) !important; }
+.dark .text-slate-700 { color: #D1D5DB !important; }
+.dark .text-slate-600 { color: #9CA3AF !important; }
+.dark .text-slate-500 { color: #6B7280 !important; }
+.dark .text-gray-700 { color: #D1D5DB !important; }
+.dark .text-gray-600 { color: #9CA3AF !important; }
+.dark .text-zinc-900 { color: #F3F4F6 !important; }
+
+.dark .border-slate-200 { border-color: var(--dm-border) !important; }
+.dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.12) !important; }
+.dark .border-zinc-200 { border-color: var(--dm-border) !important; }
+.dark .border-zinc-100 { border-color: rgba(255, 255, 255, 0.06) !important; }
+.dark .border-gray-200 { border-color: var(--dm-border) !important; }
+.dark .border-gray-300 { border-color: rgba(255, 255, 255, 0.12) !important; }
+.dark .border-green-200 { border-color: rgba(34, 197, 94, 0.3) !important; }
+.dark .border-blue-200 { border-color: rgba(99, 102, 241, 0.3) !important; }
+.dark .border-purple-200 { border-color: rgba(168, 85, 247, 0.3) !important; }
+.dark .border-red-200 { border-color: rgba(248, 113, 113, 0.3) !important; }
+.dark .border-yellow-200 { border-color: rgba(250, 204, 21, 0.3) !important; }
+
+.dark .bg-blue-100 { background-color: rgba(99, 102, 241, 0.15) !important; }
+.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.15) !important; }
+.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.15) !important; }
+.dark .bg-red-100 { background-color: rgba(248, 113, 113, 0.15) !important; }
+.dark .bg-yellow-50 { background-color: rgba(250, 204, 21, 0.08) !important; }
+.dark .bg-yellow-100 { background-color: rgba(250, 204, 21, 0.15) !important; }
+.dark .bg-red-50 { background-color: rgba(248, 113, 113, 0.08) !important; }
+.dark .bg-blue-50 { background-color: rgba(99, 102, 241, 0.08) !important; }
+.dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.08) !important; }
+.dark .bg-purple-50 { background-color: rgba(168, 85, 247, 0.08) !important; }
+
+.dark .text-blue-700 { color: #93A5F1 !important; }
+.dark .text-green-700 { color: #86EFAC !important; }
+.dark .text-purple-700 { color: #C4B5FD !important; }
+.dark .text-red-700 { color: #FCA5A5 !important; }
+.dark .text-yellow-700 { color: #FCD34D !important; }
+.dark .text-yellow-600 { color: #FBBF24 !important; }
+
+.dark .hover\:bg-black\/5:hover { background-color: rgba(255, 255, 255, 0.06) !important; }
+.dark .hover\:bg-slate-50:hover { background-color: rgba(255, 255, 255, 0.06) !important; }
+.dark .hover\:bg-slate-100:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
+.dark .hover\:border-\[\#88161c\]\/35:hover { border-color: rgba(248, 113, 113, 0.35) !important; }
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="search"],
+.dark input[type="date"],
+.dark select,
+.dark textarea {
+    background-color: var(--dm-surface-solid) !important;
+    color: #D1D5DB !important;
+    border-color: var(--dm-border) !important;
+}
+
+.dark table { color: #D1D5DB; }
+.dark thead { border-color: var(--dm-border) !important; }
+.dark tbody tr { border-color: var(--dm-border) !important; }
+.dark tbody tr:hover { background-color: rgba(255, 255, 255, 0.04) !important; }
+.dark td, .dark th { border-color: var(--dm-border) !important; }
+
+.dark .focus\:ring-\[\#88161c\]\/20:focus { --tw-ring-color: rgba(248, 113, 113, 0.2) !important; }
+.dark .focus\:ring-\[\#88161c\]\/30:focus { --tw-ring-color: rgba(248, 113, 113, 0.3) !important; }
+.dark .focus\:border-\[\#88161c\]:focus { border-color: var(--dm-accent) !important; }

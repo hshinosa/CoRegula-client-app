@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class JwtAuthMiddleware
@@ -29,17 +31,13 @@ class JwtAuthMiddleware
         return is_array($data) ? $data : null;
     }
 
-    /**
-     * Handle an incoming request.
-     * Checks if user has valid JWT session.
-     */
     public function handle(Request $request, Closure $next): Response
     {
         if (!session('jwt') || !session('user')) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated'], 401);
             }
-            
+
             return redirect()->route('auth.login.index')->with('error', 'Please login to continue');
         }
 
@@ -47,18 +45,62 @@ class JwtAuthMiddleware
         $exp = is_array($payload) && isset($payload['exp']) ? (int) $payload['exp'] : null;
 
         if (!is_array($payload) || $exp === null || !is_numeric($payload['exp']) || $exp <= time()) {
-            session()->forget(['jwt', 'refresh_token', 'user']);
+            if (session('refresh_token')) {
+                $newToken = $this->proactiveRefresh(session('refresh_token'));
 
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Session expired or invalid token'], 401);
+                if ($newToken) {
+                    session(['jwt' => $newToken]);
+                } else {
+                    session()->forget(['jwt', 'refresh_token', 'user']);
+
+                    if ($request->expectsJson()) {
+                        return response()->json(['message' => 'Session expired'], 401);
+                    }
+
+                    return redirect()->route('auth.login.index')->with('error', 'Session expired');
+                }
+            } else {
+                session()->forget(['jwt', 'refresh_token', 'user']);
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Session expired or invalid token'], 401);
+                }
+
+                return redirect()->route('auth.login.index')->with('error', 'Session expired');
             }
-
-            return redirect()->route('auth.login.index')->with('error', 'Session expired');
         }
 
-        // Share user data with all views
         $request->merge(['auth_user' => session('user')]);
 
         return $next($request);
+    }
+
+    private function proactiveRefresh(string $refreshToken): ?string
+    {
+        try {
+            $baseUrl = config('services.api.base_url', 'http://localhost:3000');
+
+            $response = Http::timeout(10)
+                ->connectTimeout(5)
+                ->post($baseUrl . '/api/auth/refresh', [
+                    'refreshToken' => $refreshToken,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json('data.accessToken');
+            }
+
+            Log::warning('JwtAuthMiddleware: proactive refresh failed', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('JwtAuthMiddleware: proactive refresh exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 }

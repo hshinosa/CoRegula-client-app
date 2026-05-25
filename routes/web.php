@@ -1,19 +1,51 @@
 <?php
 
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiChatSearchController;
+use App\Http\Controllers\AiChatTemplateController;
+use App\Http\Controllers\AiChatBookmarkController;
 use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ChatUploadController;
+use App\Http\Controllers\Student\MessageController;
+use App\Http\Controllers\Student\MessageSearchController;
+use App\Http\Controllers\Student\PinnedMessageController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\StudentCourseController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GroupMemberController;
+use App\Http\Controllers\GroupActivityController;
+use App\Http\Controllers\GroupSettingsController;
+use App\Http\Controllers\GroupMemberManagementController;
+use App\Http\Controllers\LecturerAISettingsController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReflectionController;
+use App\Http\Controllers\ReflectionTemplateController;
+use App\Http\Controllers\ReflectionAnalyticsController;
+use App\Http\Controllers\ReflectionTagController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SessionManagementController;
+use App\Http\Controllers\SessionTemplateController;
+use App\Http\Controllers\Lecturer\LearningSessionController;
+use App\Http\Controllers\Student\ProfileAvatarController;
+use App\Http\Controllers\Student\ProfileController;
+use App\Http\Controllers\Student\ProfilePreferenceController;
+use App\Http\Controllers\Student\ProfileStatsController;
+use App\Http\Controllers\Student\StudentAnalyticsController;
+use App\Http\Controllers\Student\GlobalSearchController as StudentGlobalSearchController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\Lecturer\LecturerAktivitasController;
+use App\Http\Controllers\Lecturer\LecturerAttendanceController;
+use App\Http\Controllers\Lecturer\LecturerMaterialsController;
+use App\Http\Controllers\Lecturer\GlobalSearchController as LecturerGlobalSearchController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -39,10 +71,20 @@ Route::get('/csrf-token', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('auth.login.index');
-    Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login.post');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('auth.register.index');
-    Route::post('/register', [AuthController::class, 'register'])->name('auth.register.post');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('auth.register.post');
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPassword'])->name('auth.forgot-password.index');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->middleware('throttle:forgot-password')->name('auth.forgot-password.post');
+    Route::get('/reset-password', [ForgotPasswordController::class, 'showResetPassword'])->name('auth.reset-password.index');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('auth.reset-password.post');
+    Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleCallback'])->name('auth.google.callback');
 });
+
+Route::get('/email/verify', [EmailVerificationController::class, 'showNotice'])->name('auth.verify-email.notice');
+Route::get('/email/verify/{token}', [EmailVerificationController::class, 'verify'])->name('auth.verify-email.verify');
+Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:6,1')->name('auth.verify-email.resend');
 
 /*
 |--------------------------------------------------------------------------
@@ -53,11 +95,44 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth.jwt')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/api/auth/token', [AuthController::class, 'getToken'])->name('auth.token');
+    Route::get('/api/auth/refresh-token', [AuthController::class, 'refreshToken'])->name('auth.refresh-token');
+    
+    Route::get('/api/notifications', [NotificationController::class, 'index'])->name('api.notifications.index');
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('api.notifications.read');
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('api.notifications.read-all');
+    
     Route::post('/api/chat/upload', [ChatUploadController::class, 'store'])
         ->middleware('throttle:30,5')
         ->name('chat.upload');
 
+    // Chat Message Edit/Delete
+    Route::patch('/api/chat/messages/{messageId}/edit', [MessageController::class, 'edit'])
+        ->name('chat.messages.edit');
+    Route::delete('/api/chat/messages/{messageId}', [MessageController::class, 'destroy'])
+        ->name('chat.messages.delete');
+    Route::get('/api/chat/messages/{messageId}/audit', [MessageController::class, 'audit'])
+        ->name('chat.messages.audit');
+
+    // Chat Message Search
+    Route::get('/api/chat/messages/search', [MessageSearchController::class, 'index'])
+        ->name('chat.messages.search');
+
+    // Chat Message Pin/Unpin
+    Route::post('/api/chat/messages/{messageId}/pin', [PinnedMessageController::class, 'store'])
+        ->name('chat.messages.pin');
+    Route::delete('/api/chat/messages/{messageId}/pin', [PinnedMessageController::class, 'destroy'])
+        ->name('chat.messages.unpin');
+    Route::get('/api/chat/messages/pinned', [PinnedMessageController::class, 'index'])
+        ->name('chat.messages.pinned');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
+    Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
 
     // Plan vs Diskusi Chart
     Route::get('/plan-vs-diskusi', function () {
@@ -143,11 +218,15 @@ Route::middleware('auth.jwt')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:lecturer')->prefix('lecturer')->name('lecturer.')->group(function () {
+        // Global Search
+        Route::get('/search', [LecturerGlobalSearchController::class, 'search'])->name('search');
+
         // Courses
         Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
         Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
         Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
         Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+        Route::post('/courses/bulk-archive', [CourseController::class, 'bulkArchive'])->name('courses.bulk-archive');
 
         // Knowledge Base Upload
         Route::post('/courses/{course}/knowledge-base', [CourseController::class, 'uploadKnowledgeBase'])
@@ -162,16 +241,122 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
 
         // Analytics Dashboard
+        Route::get('/analytics', [AnalyticsController::class, 'overview'])->name('analytics.overview');
         Route::get('/courses/{course}/analytics', [AnalyticsController::class, 'courseIndex'])->name('analytics.index');
         Route::get('/courses/{course}/analytics/groups/{group}', [AnalyticsController::class, 'groupShow'])->name('analytics.group');
         Route::get('/courses/{course}/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
         Route::get('/courses/{course}/analytics/live', [AnalyticsController::class, 'liveStats'])->name('analytics.live');
+        Route::get('/courses/{course}/analytics/trends', [AnalyticsController::class, 'trends'])->name('analytics.trends');
+        Route::get('/courses/{course}/analytics/detail', [AnalyticsController::class, 'detail'])->name('analytics.detail');
+        Route::get('/courses/{course}/analytics/students', [AnalyticsController::class, 'studentBreakdown'])->name('analytics.students');
+        Route::get('/courses/{course}/analytics/students/{student}', [AnalyticsController::class, 'studentDetail'])->name('analytics.student-detail');
+        Route::get('/courses/{course}/analytics/export-section', [AnalyticsController::class, 'exportSection'])->name('analytics.export-section');
+        Route::post('/courses/{course}/analytics/share', [AnalyticsController::class, 'generateShareLink'])->name('analytics.share');
+        Route::get('/courses/{course}/analytics/benchmark', [AnalyticsController::class, 'benchmark'])->name('analytics.benchmark');
+        Route::get('/analytics/comparison', [AnalyticsController::class, 'comparison'])->name('analytics.comparison');
 
         // Radar Chart Page
         Route::get('/radar-chart', function () {
             return Inertia::render('lecturer/RadarChartPage');
         })->name('radar-chart');
+
+        // AI Settings
+        Route::prefix('ai-settings')->name('ai-settings.')->group(function () {
+            Route::get('/', [LecturerAISettingsController::class, 'index'])->name('index');
+            Route::post('/preview', [LecturerAISettingsController::class, 'preview'])->name('preview');
+            Route::get('/courses/{courseId}/context', [LecturerAISettingsController::class, 'courseContext'])->name('course-context');
+            Route::get('/history', [LecturerAISettingsController::class, 'history'])->name('history');
+            Route::post('/history/archive', [LecturerAISettingsController::class, 'archiveHistory'])->name('history.archive');
+
+            Route::post('/presets', [LecturerAISettingsController::class, 'storePreset'])->name('presets.store');
+            Route::put('/presets/{id}', [LecturerAISettingsController::class, 'updatePreset'])->name('presets.update');
+            Route::delete('/presets/{id}', [LecturerAISettingsController::class, 'destroyPreset'])->name('presets.destroy');
+            Route::post('/presets/import', [LecturerAISettingsController::class, 'importPreset'])->name('presets.import');
+            Route::get('/presets/{id}/export', [LecturerAISettingsController::class, 'exportPreset'])->name('presets.export');
+
+            Route::get('/ab-tests', [LecturerAISettingsController::class, 'listAbTests'])->name('ab-tests.index');
+            Route::post('/ab-tests', [LecturerAISettingsController::class, 'storeAbTest'])->name('ab-tests.store');
+            Route::get('/ab-tests/{id}', [LecturerAISettingsController::class, 'showAbTest'])->name('ab-tests.show');
+            Route::put('/ab-tests/{id}', [LecturerAISettingsController::class, 'updateAbTest'])->name('ab-tests.update');
+            Route::delete('/ab-tests/{id}', [LecturerAISettingsController::class, 'destroyAbTest'])->name('ab-tests.destroy');
+            Route::get('/ab-tests/{id}/stats', [LecturerAISettingsController::class, 'abTestStats'])->name('ab-tests.stats');
+        });
+
+        // Aktivitas Diskusi
+        Route::get('/courses/{course}/aktivitas', [LecturerAktivitasController::class, 'index'])
+            ->name('courses.aktivitas.index');
+        Route::get('/courses/{course}/aktivitas/export', [LecturerAktivitasController::class, 'export'])
+            ->name('courses.aktivitas.export');
+
+        // Attendance
+        Route::get('/courses/{course}/attendance', [LecturerAttendanceController::class, 'index'])
+            ->name('courses.attendance.index');
+        Route::post('/courses/{course}/attendance/sessions', [LecturerAttendanceController::class, 'storeSession'])
+            ->name('courses.attendance.sessions.store');
+        Route::get('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'showSession'])
+            ->name('courses.attendance.sessions.show');
+        Route::put('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'updateSession'])
+            ->name('courses.attendance.sessions.update');
+        Route::delete('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'destroySession'])
+            ->name('courses.attendance.sessions.destroy');
+        Route::post('/courses/{course}/attendance/sessions/{sessionId}/mark', [LecturerAttendanceController::class, 'markAttendance'])
+            ->name('courses.attendance.mark');
+        Route::get('/courses/{course}/attendance/summary', [LecturerAttendanceController::class, 'summary'])
+            ->name('courses.attendance.summary');
+        Route::get('/courses/{course}/attendance/export', [LecturerAttendanceController::class, 'export'])
+            ->name('courses.attendance.export');
+
+        // Materials
+        Route::get('/courses/{course}/materials', [LecturerMaterialsController::class, 'index'])
+            ->name('courses.materials.index');
+        Route::post('/courses/{course}/materials', [LecturerMaterialsController::class, 'store'])
+            ->name('courses.materials.store');
+        Route::put('/courses/{course}/materials/{materialId}', [LecturerMaterialsController::class, 'update'])
+            ->name('courses.materials.update');
+        Route::delete('/courses/{course}/materials/{materialId}', [LecturerMaterialsController::class, 'destroy'])
+            ->name('courses.materials.destroy');
+        Route::post('/courses/{course}/materials/{materialId}/view', [LecturerMaterialsController::class, 'recordView'])
+            ->name('courses.materials.view');
+        Route::get('/courses/{course}/materials/{materialId}/stats', [LecturerMaterialsController::class, 'viewStats'])
+            ->name('courses.materials.stats');
+        Route::post('/courses/{course}/materials/modules', [LecturerMaterialsController::class, 'storeModule'])
+            ->name('courses.materials.modules.store');
+        Route::put('/courses/{course}/materials/modules/{moduleId}', [LecturerMaterialsController::class, 'updateModule'])
+            ->name('courses.materials.modules.update');
+        Route::delete('/courses/{course}/materials/modules/{moduleId}', [LecturerMaterialsController::class, 'destroyModule'])
+            ->name('courses.materials.modules.destroy');
+        Route::post('/courses/{course}/materials/modules/reorder', [LecturerMaterialsController::class, 'reorderModules'])
+            ->name('courses.materials.modules.reorder');
+
+        // Session Templates
+        Route::prefix('session-templates')->name('session-templates.')->group(function () {
+            Route::get('/', [SessionTemplateController::class, 'index'])->name('index');
+            Route::post('/', [SessionTemplateController::class, 'store'])->name('store');
+            Route::get('/{id}', [SessionTemplateController::class, 'show'])->name('show');
+            Route::put('/{id}', [SessionTemplateController::class, 'update'])->name('update');
+            Route::delete('/{id}', [SessionTemplateController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/apply', [SessionTemplateController::class, 'apply'])->name('apply');
+        });
+
+        // Learning Sessions
+        Route::prefix('sessions')->name('sessions.')->group(function () {
+            Route::get('/', [LearningSessionController::class, 'index'])->name('index');
+            Route::post('/', [LearningSessionController::class, 'store'])->name('store');
+            Route::get('/{id}', [LearningSessionController::class, 'show'])->name('show');
+            Route::put('/{id}', [LearningSessionController::class, 'update'])->name('update');
+            Route::delete('/{id}', [LearningSessionController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/schedule', [LearningSessionController::class, 'schedule'])->name('schedule');
+            Route::post('/{id}/cancel-schedule', [LearningSessionController::class, 'cancelSchedule'])->name('cancel-schedule');
+            Route::put('/{id}/auto-close', [LearningSessionController::class, 'autoCloseUpdate'])->name('auto-close');
+            Route::post('/{id}/activate', [LearningSessionController::class, 'activate'])->name('activate');
+            Route::post('/bulk/close', [LearningSessionController::class, 'bulkClose'])->name('bulk.close');
+            Route::post('/bulk/archive', [LearningSessionController::class, 'bulkArchive'])->name('bulk.archive');
+            Route::post('/bulk/delete', [LearningSessionController::class, 'bulkDestroy'])->name('bulk.destroy');
+        });
     });
+
+    // Public shared report access (no auth required)
+    Route::get('/analytics/shared/{token}', [AnalyticsController::class, 'accessShared'])->name('analytics.shared');
 
     /*
     |--------------------------------------------------------------------------
@@ -179,8 +364,12 @@ Route::middleware('auth.jwt')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
+        // Global Search
+        Route::get('/search', [StudentGlobalSearchController::class, 'search'])->name('search');
+
         // Courses
         Route::get('/courses', [StudentCourseController::class, 'enrolled'])->name('courses.index');
+        Route::get('/courses-data', [StudentCourseController::class, 'index'])->name('courses.data');
         Route::post('/courses/join', [StudentCourseController::class, 'join'])->name('courses.join');
         Route::get('/courses/{course}', [StudentCourseController::class, 'showStudent'])->name('courses.show');
 
@@ -190,6 +379,24 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/groups/join', [GroupController::class, 'join'])->name('groups.join');
         Route::post('/groups/{group}/invite', [GroupController::class, 'inviteMembers'])->name('groups.invite');
         Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
+
+        // Group Detail Page
+        Route::get('/groups/{group}', [GroupController::class, 'showStudent'])->name('groups.show');
+
+        // Group Members
+        Route::get('/groups/{group}/members/search', [GroupMemberController::class, 'search'])->name('groups.members.search');
+        Route::patch('/groups/{group}/members/{member}', [GroupMemberManagementController::class, 'updateRole'])->name('groups.members.update-role');
+        Route::delete('/groups/{group}/members/{member}', [GroupMemberManagementController::class, 'destroy'])->name('groups.members.destroy');
+
+        // Group Activity
+        Route::get('/groups/{group}/activities', [GroupActivityController::class, 'index'])->name('groups.activities.index');
+
+        // Group Settings
+        Route::get('/groups/{group}/settings', [GroupSettingsController::class, 'show'])->name('groups.settings.show');
+        Route::patch('/groups/{group}/settings', [GroupSettingsController::class, 'update'])->name('groups.settings.update');
+
+        // Leave Group
+        Route::post('/groups/{group}/leave', [GroupMemberManagementController::class, 'leave'])->name('groups.leave');
 
         // Goals - now per chat space
         Route::get('/courses/{course}/chat-spaces/{chatSpace}/goal', [GoalController::class, 'create'])->name('goals.create');
@@ -214,14 +421,68 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/reflections', [ReflectionController::class, 'index'])->name('reflections.index');
         Route::post('/reflections', [ReflectionController::class, 'store'])->name('reflections.store');
 
+        // Reflection Templates
+        Route::get('/reflections/templates', [ReflectionTemplateController::class, 'index'])->name('reflections.templates.index');
+        Route::post('/reflections/templates', [ReflectionTemplateController::class, 'store'])->name('reflections.templates.store');
+        Route::get('/reflections/templates/{template}', [ReflectionTemplateController::class, 'show'])->name('reflections.templates.show');
+        Route::put('/reflections/templates/{template}', [ReflectionTemplateController::class, 'update'])->name('reflections.templates.update');
+        Route::delete('/reflections/templates/{template}', [ReflectionTemplateController::class, 'destroy'])->name('reflections.templates.destroy');
+
+        // Reflection Analytics
+        Route::get('/reflections/analytics', [ReflectionAnalyticsController::class, 'index'])->name('reflections.analytics');
+
+        // Reflection Tags
+        Route::get('/reflections/tags', [ReflectionTagController::class, 'index'])->name('reflections.tags.index');
+        Route::post('/reflections/tags', [ReflectionTagController::class, 'store'])->name('reflections.tags.store');
+        Route::delete('/reflections/tags/{reflectionId}/{tag}', [ReflectionTagController::class, 'destroy'])->name('reflections.tags.destroy');
+        Route::get('/reflections/tags/suggestions', [ReflectionTagController::class, 'suggestions'])->name('reflections.tags.suggestions');
+
         // AI Chat
         Route::get('/ai-chat', [AiChatController::class, 'index'])->name('ai-chat.index');
         Route::post('/ai-chat', [AiChatController::class, 'store'])->name('ai-chat.store');
+
+        // AI Chat Search (must be before wildcard {chat})
+        Route::get('/ai-chat/search', [AiChatSearchController::class, 'index'])->name('ai-chat.search');
+
+        // AI Chat Templates (must be before wildcard {chat})
+        Route::get('/ai-chat/templates', [AiChatTemplateController::class, 'index'])->name('ai-chat.templates.index');
+        Route::post('/ai-chat/templates', [AiChatTemplateController::class, 'store'])->name('ai-chat.templates.store');
+        Route::get('/ai-chat/templates/categories', [AiChatTemplateController::class, 'categories'])->name('ai-chat.templates.categories');
+        Route::get('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'show'])->name('ai-chat.templates.show');
+        Route::put('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'update'])->name('ai-chat.templates.update');
+        Route::delete('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'destroy'])->name('ai-chat.templates.destroy');
+
+        // AI Chat Bookmarks (must be before wildcard {chat})
+        Route::get('/ai-chat/bookmarks', [AiChatBookmarkController::class, 'index'])->name('ai-chat.bookmarks.index');
+        Route::post('/ai-chat/bookmarks', [AiChatBookmarkController::class, 'store'])->name('ai-chat.bookmarks.store');
+        Route::post('/ai-chat/bookmarks/toggle', [AiChatBookmarkController::class, 'toggle'])->name('ai-chat.bookmarks.toggle');
+        Route::post('/ai-chat/bookmarks/check', [AiChatBookmarkController::class, 'check'])->name('ai-chat.bookmarks.check');
+        Route::delete('/ai-chat/bookmarks/{bookmark}', [AiChatBookmarkController::class, 'destroy'])->name('ai-chat.bookmarks.destroy');
+
+        // AI Chat wildcard routes
         Route::get('/ai-chat/{chat}', [AiChatController::class, 'show'])->name('ai-chat.show');
         Route::get('/ai-chat/{chat}/messages', [AiChatController::class, 'messages'])->name('ai-chat.messages.index');
         Route::patch('/ai-chat/{chat}', [AiChatController::class, 'update'])->name('ai-chat.update');
         Route::delete('/ai-chat/{chat}', [AiChatController::class, 'destroy'])->name('ai-chat.destroy');
         Route::post('/ai-chat/{chat}/messages', [AiChatController::class, 'sendMessage'])->name('ai-chat.messages.store');
         Route::post('/ai-chat/{chat}/messages/stream', [AiChatController::class, 'streamMessage'])->name('ai-chat.messages.stream');
+
+        // Profile
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+        Route::put('/profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
+
+        // Profile Avatar
+        Route::post('/profile/avatar', [ProfileAvatarController::class, 'store'])->name('profile.avatar.store');
+        Route::delete('/profile/avatar', [ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
+
+        // Profile Stats
+        Route::get('/profile/stats', [ProfileStatsController::class, 'index'])->name('profile.stats');
+
+        // Profile Preferences
+        Route::get('/profile/preferences', [ProfilePreferenceController::class, 'index'])->name('profile.preferences.index');
+        Route::patch('/profile/preferences', [ProfilePreferenceController::class, 'update'])->name('profile.preferences.update');
+
+        // Dashboard Analytics
+        Route::get('/dashboard/analytics', [StudentAnalyticsController::class, 'index'])->name('dashboard.analytics');
     });
 });

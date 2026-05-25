@@ -20,10 +20,7 @@ class UserManagementController extends Controller
         ];
 
         try {
-            $response = $this->apiRequest()->get(
-                $this->apiUrl() . '/api/admin/users',
-                $request->query()
-            );
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/users', $request->query());
 
             if ($response->successful()) {
                 $payload = $response->json();
@@ -67,10 +64,7 @@ class UserManagementController extends Controller
     public function store(Request $request)
     {
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . '/api/admin/users',
-                $request->all()
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . '/api/admin/users', $request->all());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -85,10 +79,7 @@ class UserManagementController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $response = $this->apiRequest()->put(
-                $this->apiUrl() . "/api/admin/users/{$id}",
-                $request->all()
-            );
+            $response = $this->apiRequest()->put($this->apiUrl() . "/api/admin/users/{$id}", $request->all());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -118,10 +109,7 @@ class UserManagementController extends Controller
     public function resetPassword(Request $request, $id)
     {
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/admin/users/{$id}/reset-password",
-                $request->all()
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/admin/users/{$id}/reset-password", $request->all());
 
             return response()->json($response->json(), $response->status());
         } catch (\Illuminate\Http\Client\ConnectionException $e) {

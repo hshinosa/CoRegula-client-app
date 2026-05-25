@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class CourseMaterial extends Model
+{
+    protected $fillable = [
+        'id',
+        'course_id',
+        'module_id',
+        'title',
+        'description',
+        'file_name',
+        'file_path',
+        'file_type',
+        'file_size',
+        'uploaded_by',
+        'view_count',
+        'sort_order',
+    ];
+
+    protected $casts = [
+        'file_size' => 'integer',
+        'view_count' => 'integer',
+        'sort_order' => 'integer',
+    ];
+
+    public function module(): BelongsTo
+    {
+        return $this->belongsTo(MaterialModule::class, 'module_id');
+    }
+
+    public function views(): HasMany
+    {
+        return $this->hasMany(MaterialView::class, 'material_id');
+    }
+}

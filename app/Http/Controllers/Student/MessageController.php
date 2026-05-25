@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Http\Controllers\Student;
+
+use App\Http\Controllers\Controller;
+use App\Models\ChatMessageAudit;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class MessageController extends Controller
+{
+    public function edit(Request $request, string $messageId): JsonResponse
+    {
+        $validated = $request->validate([
+            'content' => 'required|string|max:5000',
+            'conversation_id' => 'required|string',
+            'old_content' => 'required|string',
+        ]);
+
+        $userId = $request->user()->id;
+        $conversationId = $validated['conversation_id'];
+        $newContent = $validated['content'];
+        $oldContent = $validated['old_content'];
+
+        $lastAction = ChatMessageAudit::forMessage($messageId)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($lastAction && $lastAction->action === 'delete') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat mengedit pesan yang sudah dihapus',
+            ], 422);
+        }
+
+        if ($lastAction && $lastAction->user_id !== $userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda hanya bisa mengedit pesan sendiri',
+            ], 403);
+        }
+
+        $createdAt = $lastAction ? $lastAction->created_at : null;
+        if ($createdAt && $createdAt->diffInHours(now()) > 24) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesan hanya bisa diedit dalam 24 jam pertama',
+            ], 422);
+        }
+
+        ChatMessageAudit::create([
+            'message_id' => $messageId,
+            'user_id' => $userId,
+            'action' => 'edit',
+            'old_content' => $oldContent,
+            'new_content' => $newContent,
+            'conversation_id' => $conversationId,
+        ]);
+
+        Log::info('Message edited', [
+            'message_id' => $messageId,
+            'user_id' => $userId,
+            'conversation_id' => $conversationId,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesan berhasil diedit',
+            'data' => [
+                'message_id' => $messageId,
+                'edited_at' => now()->toISOString(),
+            ],
+        ]);
+    }
+
+    public function destroy(Request $request, string $messageId): JsonResponse
+    {
+        $validated = $request->validate([
+            'conversation_id' => 'required|string',
+            'content' => 'required|string',
+        ]);
+
+        $userId = $request->user()->id;
+        $conversationId = $validated['conversation_id'];
+        $content = $validated['content'];
+
+        $lastAction = ChatMessageAudit::forMessage($messageId)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($lastAction && $lastAction->action === 'delete') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesan sudah dihapus',
+            ], 422);
+        }
+
+        $isOwner = !$lastAction || $lastAction->user_id === $userId;
+        $isModerator = in_array($request->user()->role ?? '', ['moderator', 'admin', 'teacher']);
+
+        if (!$isOwner && !$isModerator) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menghapus pesan ini',
+            ], 403);
+        }
+
+        ChatMessageAudit::create([
+            'message_id' => $messageId,
+            'user_id' => $userId,
+            'action' => 'delete',
+            'old_content' => $content,
+            'new_content' => null,
+            'conversation_id' => $conversationId,
+        ]);
+
+        Log::info('Message deleted', [
+            'message_id' => $messageId,
+            'user_id' => $userId,
+            'conversation_id' => $conversationId,
+            'is_moderator_delete' => !$isOwner,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesan berhasil dihapus',
+            'data' => [
+                'message_id' => $messageId,
+                'deleted_at' => now()->toISOString(),
+            ],
+        ]);
+    }
+
+    public function audit(Request $request, string $messageId): JsonResponse
+    {
+        $audits = ChatMessageAudit::forMessage($messageId)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $audits,
+        ]);
+    }
+}

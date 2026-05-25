@@ -7,13 +7,10 @@ export default function Welcome() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState<string>('');
     const [darkMode, setDarkMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return (
-                localStorage.getItem('kolabri_theme') === 'dark' ||
-                localStorage.getItem('kolabri-dark') === 'true'
-            );
-        }
-        return false;
+        if (typeof window === 'undefined') return false;
+        const stored = localStorage.getItem('kolabri_theme') || localStorage.getItem('kolabri-dark');
+        if (stored) return stored === 'dark' || stored === 'true';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
     });
 
     useEffect(() => {
@@ -29,10 +26,21 @@ export default function Welcome() {
     }, [darkMode]);
 
     useEffect(() => {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = (e: MediaQueryListEvent) => {
+            if (!localStorage.getItem('kolabri_theme') && !localStorage.getItem('kolabri-dark')) {
+                setDarkMode(e.matches);
+            }
+        };
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
+
+    useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener('scroll', onScroll, { passive: true });
 
-        const sections = ['hero', 'statistik', 'fitur', 'cara-kerja', 'demo', 'use-cases', 'faq', 'tentang', 'cta'];
+        const sections = ['hero', 'statistik', 'fitur', 'cara-kerja', 'demo', 'use-cases', 'testimoni', 'faq', 'tentang', 'cta'];
         const observers: IntersectionObserver[] = [];
         sections.forEach((id) => {
             const el = document.getElementById(id);

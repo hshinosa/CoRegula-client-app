@@ -1,12 +1,21 @@
 import { Link, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PropsWithChildren, useEffect, useState } from 'react';
-import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { PropsWithChildren, useState, useMemo } from 'react';
+import { LogOut, Menu, Search, X } from 'lucide-react';
 
 import { SharedData } from '@/types';
 import auth from '@/routes/auth';
 import { OrganicBlob } from '@/components/Welcome/utils/helpers';
 import { AdminNav } from '@/components/navigation/admin-nav';
+import DarkModeToggle from '@/components/ui/DarkModeToggle';
+import NotificationCenter from '@/components/dashboard/NotificationCenter';
+import { GlobalSearch } from '@/components/admin/GlobalSearch';
+import { KeyboardShortcutsHelpModal } from '@/components/ui/KeyboardShortcutsHelpModal';
+import { useKeyboardShortcuts, KeyboardShortcutMap } from '@/hooks/useKeyboardShortcuts';
+import { useDarkMode } from '@/hooks/useDarkMode';
+import { adminShortcuts } from '@/config/shortcuts/admin';
+import { studentShortcuts } from '@/config/shortcuts/student';
+import { lecturerShortcuts } from '@/config/shortcuts/lecturer';
 
 interface NavSubItem {
     name: string;
@@ -29,33 +38,33 @@ interface AppLayoutProps extends PropsWithChildren {
 export default function AppLayout({ children, title, navItems = [] }: AppLayoutProps) {
     const { auth: authData, url } = usePage<SharedData>().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [darkMode, setDarkMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('kolabri_theme') === 'dark' ||
-                   localStorage.getItem('kolabri-dark') === 'true';
-        }
-        return false;
-    });
+    const { darkMode, toggleDarkMode } = useDarkMode();
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         return navItems
             .filter(item => item.active && item.subItems && item.subItems.length > 0)
             .map(item => item.name);
     });
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [helpOpen, setHelpOpen] = useState(false);
 
     const user = authData?.user;
     void title;
 
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-            document.body.style.backgroundColor = '#0a0a0f';
-            localStorage.setItem('kolabri_theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.body.style.backgroundColor = '#E8EDF8';
-            localStorage.setItem('kolabri_theme', 'light');
-        }
-    }, [darkMode]);
+    const shortcuts = useMemo(() => {
+        const role = user?.role;
+        if (role === 'admin') return adminShortcuts;
+        if (role === 'student') return studentShortcuts;
+        if (role === 'lecturer') return lecturerShortcuts;
+        return adminShortcuts;
+    }, [user?.role]);
+
+    useKeyboardShortcuts({
+        shortcuts,
+        searchOpen,
+        setSearchOpen,
+        helpOpen,
+        setHelpOpen,
+    });
 
     const toggleExpanded = (itemName: string) => {
         setExpandedItems(prev => 
@@ -81,26 +90,26 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         onClick={() => toggleExpanded(item.name)}
                         className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                             item.active
-                                ? 'text-[#88161c]'
-                                : 'text-[#4A4A4A] hover:text-[#88161c]'
+                                ? 'text-[var(--dm-accent)]'
+                                : 'text-[var(--dm-text)] hover:text-[var(--dm-accent)]'
                         }`}
                         style={{
                             background: item.active
-                                ? 'rgba(136,22,28,0.08)'
+                                ? 'var(--dm-accent-bg)'
                                 : 'transparent',
                             border: item.active
-                                ? '1px solid rgba(136,22,28,0.15)'
+                                ? `1px solid var(--dm-accent-border)`
                                 : '1px solid transparent',
                         }}
                     >
-                        <span className={item.active ? 'text-[#88161c]' : 'text-[#6B7280]'}>
+                        <span className={item.active ? 'text-[var(--dm-accent)]' : 'text-[var(--dm-text-secondary)]'}>
                             {item.icon}
                         </span>
                         <span className="flex-1 text-left">{item.name}</span>
                         <motion.svg 
                             animate={{ rotate: isExpanded ? 180 : 0 }}
                             transition={{ duration: 0.2 }}
-                            className="h-4 w-4 text-[#6B7280]" 
+                            className="h-4 w-4 text-[var(--dm-text-secondary)]" 
                             fill="none" 
                             viewBox="0 0 24 24" 
                             stroke="currentColor"
@@ -117,7 +126,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                             >
-                                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#88161c]/20 pl-4">
+                                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[var(--dm-accent)]/20 pl-4">
                                     {item.subItems!.map((subItem) => (
                                         <Link
                                             key={subItem.name}
@@ -125,8 +134,8 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                             onClick={isMobile ? () => setSidebarOpen(false) : undefined}
                                             className={`block rounded-lg px-3 py-2 text-sm transition-all ${
                                                 isSubItemActive(subItem.href)
-                                                    ? 'font-medium text-[#88161c]'
-                                                    : 'text-[#6B7280] hover:text-[#4A4A4A]'
+                                                    ? 'font-medium text-[var(--dm-accent)]'
+                                                    : 'text-[var(--dm-text-secondary)] hover:text-[var(--dm-text)]'
                                             }`}
                                         >
                                             {subItem.name}
@@ -147,38 +156,41 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                 onClick={isMobile ? () => setSidebarOpen(false) : undefined}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                     item.active
-                        ? 'text-[#88161c]'
-                        : 'text-[#4A4A4A] hover:text-[#88161c]'
+                        ? 'text-[var(--dm-accent)]'
+                        : 'text-[var(--dm-text)] hover:text-[var(--dm-accent)]'
                 }`}
                 style={{
                     background: item.active
-                        ? 'rgba(136,22,28,0.08)'
+                        ? 'var(--dm-accent-bg)'
                         : 'transparent',
                     border: item.active
-                        ? '1px solid rgba(136,22,28,0.15)'
+                        ? `1px solid var(--dm-accent-border)`
                         : '1px solid transparent',
                 }}
             >
-                <span className={item.active ? 'text-[#88161c]' : 'text-[#6B7280]'}>
+                <span className={item.active ? 'text-[var(--dm-accent)]' : 'text-[var(--dm-text-secondary)]'}>
                     {item.icon}
                 </span>
                 {item.name}
                 {item.active && !hasSubItems && (
-                    <span className="ml-auto h-2 w-2 rounded-full bg-[#88161c]" />
+                    <span className="ml-auto h-2 w-2 rounded-full bg-[var(--dm-accent)]" />
                 )}
             </Link>
         );
     };
 
     return (
+        <>
         <div 
             className="relative flex h-screen overflow-hidden"
             style={{
-                background: 'linear-gradient(135deg, #E8EDF8 0%, #EDF0F7 50%, #E8EDF8 100%)',
+                background: darkMode
+                    ? 'linear-gradient(135deg, #0a0a0f 0%, #0f0f16 50%, #0a0a0f 100%)'
+                    : 'linear-gradient(135deg, #E8EDF8 0%, #EDF0F7 50%, #E8EDF8 100%)',
             }}
         >
             {/* Decorative blobs */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className={`pointer-events-none absolute inset-0 overflow-hidden ${darkMode ? 'opacity-0' : ''}`}>
                 <OrganicBlob className="top-0 left-0" delay={0} color="rgba(136, 22, 28, 0.03)" size={400} />
                 <OrganicBlob className="bottom-0 right-0" delay={-5} color="rgba(136, 22, 28, 0.02)" size={300} />
             </div>
@@ -187,23 +199,23 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
             <aside 
                 className="hidden w-72 flex-shrink-0 lg:block"
                 style={{
-                    background: 'rgba(255, 255, 255, 0.6)',
+                    background: darkMode ? 'rgba(17, 17, 22, 0.95)' : 'rgba(255, 255, 255, 0.6)',
                     backdropFilter: 'blur(40px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                    borderRight: '1px solid rgba(255, 255, 255, 0.5)',
+                    borderRight: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(255, 255, 255, 0.5)',
                 }}
             >
                 <div className="flex h-full flex-col">
                     {/* Logo */}
                     <div 
                         className="flex h-20 items-center gap-3 px-6"
-                        style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.5)' }}
+                        style={{ borderBottom: `1px solid var(--dm-sidebar-divider)` }}
                     >
                         <div 
                             className="flex h-12 w-12 items-center justify-center rounded-2xl"
                             style={{
-                                background: 'rgba(136,22,28,0.08)',
-                                border: '1px solid rgba(136,22,28,0.12)',
+                                background: 'var(--dm-accent-bg)',
+                                border: '1px solid var(--dm-accent-border-light)',
                             }}
                         >
                             <img src="/LogoKolabri.webp" alt="Kolabri" className="h-8 w-8" />
@@ -211,7 +223,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         <div>
                             <span 
                                 className="text-xl font-bold"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                style={{ color: 'var(--dm-text)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                             >
                                 Kolabri
                             </span>
@@ -221,22 +233,45 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
 
                     {/* Navigation */}
                     <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-6">
-                        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--dm-text-secondary)]">
                             Menu
                         </p>
                         {user?.role === 'admin' ? <AdminNav /> : navItems.map((item) => renderNavItem(item, false))}
+
+                        {user?.role === 'admin' && (
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-[#6B7280] hover:text-[#88161c]"
+                                style={{
+                                    background: 'rgba(136,22,28,0.04)',
+                                    border: '1px solid rgba(136,22,28,0.08)',
+                                }}
+                            >
+                                <Search className="h-5 w-5" />
+                                <span className="flex-1 text-left">Cari...</span>
+                                <kbd
+                                    className="hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+                                    style={{
+                                        background: 'rgba(136,22,28,0.06)',
+                                        border: '1px solid rgba(136,22,28,0.1)',
+                                    }}
+                                >
+                                    ⌘K
+                                </kbd>
+                            </button>
+                        )}
                     </nav>
 
                     {/* User Info */}
                     <div 
                         className="p-4"
-                        style={{ borderTop: '1px solid rgba(255, 255, 255, 0.5)' }}
+                        style={{ borderTop: `1px solid var(--dm-sidebar-divider)` }}
                     >
                         <div 
                             className="flex items-center gap-3 rounded-2xl p-3"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.4)',
-                                border: '1px solid rgba(255, 255, 255, 0.5)',
+                                background: 'var(--dm-sidebar-user-bg)',
+                                border: `1px solid var(--dm-sidebar-divider)`,
                             }}
                         >
                             <div 
@@ -249,28 +284,26 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                 {user?.name?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="truncate font-semibold text-[#4A4A4A]">
+                                <p className="truncate font-semibold text-[var(--dm-text)]">
                                     {user?.name || 'User'}
                                 </p>
-                                <p className="truncate text-xs text-[#6B7280] capitalize">
+                                <p className="truncate text-xs text-[var(--dm-text-secondary)] capitalize">
                                     {user?.role || 'Tamu'}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => setDarkMode(!darkMode)}
-                                className="rounded-xl p-2 text-[#6B7280] hover:text-[#88161c] transition-colors"
-                                style={{ background: 'rgba(255, 255, 255, 0.5)' }}
-                                title={darkMode ? 'Mode terang' : 'Mode gelap'}
-                            >
-                                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                            </button>
+                            <NotificationCenter lightMode={!darkMode} />
+                            <DarkModeToggle
+                                darkMode={darkMode}
+                                onToggle={toggleDarkMode}
+                                className="rounded-xl p-2"
+                            />
                             <Link
                                 href={auth.logout.url()}
                                 method="post"
                                 as="button"
-                                className="rounded-xl p-2 text-[#6B7280] hover:text-[#88161c] transition-colors"
+                                className="rounded-xl p-2 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)] transition-colors"
                                 style={{
-                                    background: 'rgba(255, 255, 255, 0.5)',
+                                    background: 'var(--dm-surface-transparent)',
                                 }}
                                 title="Keluar"
                             >
@@ -300,24 +333,24 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
                             className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.9)',
+                                background: darkMode ? 'rgba(17, 17, 22, 0.98)' : 'rgba(255, 255, 255, 0.9)',
                                 backdropFilter: 'blur(40px) saturate(180%)',
                                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                                borderRight: '1px solid rgba(255, 255, 255, 0.5)',
+                                borderRight: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(255, 255, 255, 0.5)',
                             }}
                         >
                             <div className="flex h-full flex-col">
                                 {/* Logo */}
                                 <div 
                                     className="flex h-16 items-center justify-between px-4 sm:h-20 sm:px-6"
-                                    style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.5)' }}
+                                    style={{ borderBottom: `1px solid var(--dm-sidebar-divider)` }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3">
                                         <div 
                                             className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-12 sm:w-12"
                                             style={{
-                                                background: 'rgba(136,22,28,0.08)',
-                                                border: '1px solid rgba(136,22,28,0.12)',
+                                                background: 'var(--dm-accent-bg)',
+                                                border: '1px solid var(--dm-accent-border-light)',
                                             }}
                                         >
                                             <img src="/LogoKolabri.webp" alt="Kolabri" className="h-7 w-7 sm:h-8 sm:w-8" />
@@ -325,16 +358,16 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                         <div>
                                             <span 
                                                 className="text-lg font-bold sm:text-xl"
-                                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                                style={{ color: 'var(--dm-text)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                             >
                                                 Kolabri
                                             </span>
-                                            <p className="text-xs text-[#6B7280]">Platform Kolaborasi</p>
+                            <p className="text-xs text-[var(--dm-text-secondary)]">Platform Kolaborasi</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setSidebarOpen(false)}
-                                        className="rounded-lg p-2 text-[#6B7280] hover:text-[#88161c]"
+                                        className="rounded-lg p-2 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)]"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -342,7 +375,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
 
                                 {/* Navigation */}
                                 <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-6">
-                                    <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280] sm:mb-3">
+                                    <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--dm-text-secondary)] sm:mb-3">
                                         Menu
                                     </p>
                                     {user?.role === 'admin' ? (
@@ -350,18 +383,32 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                     ) : (
                                         navItems.map((item) => renderNavItem(item, true))
                                     )}
+
+                                    {user?.role === 'admin' && (
+                                        <button
+                                            onClick={() => { setSearchOpen(true); setSidebarOpen(false); }}
+                                            className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-[#6B7280] hover:text-[#88161c]"
+                                            style={{
+                                                background: 'rgba(136,22,28,0.04)',
+                                                border: '1px solid rgba(136,22,28,0.08)',
+                                            }}
+                                        >
+                                            <Search className="h-5 w-5" />
+                                            <span className="flex-1 text-left">Cari...</span>
+                                        </button>
+                                    )}
                                 </nav>
 
                                 {/* User Info */}
                                 <div 
                                     className="p-3 sm:p-4"
-                                    style={{ borderTop: '1px solid rgba(255, 255, 255, 0.5)' }}
+                                    style={{ borderTop: `1px solid var(--dm-sidebar-divider)` }}
                                 >
                                     <div 
                                         className="flex items-center gap-2 rounded-2xl p-2.5 sm:gap-3 sm:p-3"
                                         style={{
-                                            background: 'rgba(255, 255, 255, 0.4)',
-                                            border: '1px solid rgba(255, 255, 255, 0.5)',
+                                            background: 'var(--dm-sidebar-user-bg)',
+                                            border: `1px solid var(--dm-sidebar-divider)`,
                                         }}
                                     >
                                         <div 
@@ -374,10 +421,10 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                             {user?.name?.charAt(0).toUpperCase() || 'U'}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-semibold text-[#4A4A4A] sm:text-base">
+                                            <p className="truncate text-sm font-semibold text-[var(--dm-text)] sm:text-base">
                                                 {user?.name || 'User'}
                                             </p>
-                                            <p className="truncate text-xs text-[#6B7280] capitalize">
+                                            <p className="truncate text-xs text-[var(--dm-text-secondary)] capitalize">
                                                 {user?.role || 'Tamu'}
                                             </p>
                                         </div>
@@ -385,9 +432,9 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                             href={auth.logout.url()}
                                             method="post"
                                             as="button"
-                                            className="flex-shrink-0 rounded-xl p-1.5 text-[#6B7280] hover:text-[#88161c] sm:p-2"
+                                            className="flex-shrink-0 rounded-xl p-1.5 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)] sm:p-2"
                                             style={{
-                                                background: 'rgba(255, 255, 255, 0.5)',
+                                                background: 'var(--dm-surface-transparent)',
                                             }}
                                             title="Keluar"
                                         >
@@ -404,31 +451,37 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
             {/* Main Content */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8">
-                    <div className="mb-4 flex items-center justify-between lg:hidden">
+                <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 pb-6 sm:pb-8 lg:pb-12">
+                    <div className="mb-4 flex items-center gap-2 lg:hidden">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#4A4A4A] transition-all"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[var(--dm-text)] transition-all"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.6)',
-                                border: '1px solid rgba(255, 255, 255, 0.8)',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                background: 'var(--dm-surface-transparent)',
+                                border: `1px solid var(--dm-surface-transparent-strong)`,
+                                boxShadow: `0 2px 8px var(--dm-shadow)`,
                             }}
                         >
                             <Menu className="h-5 w-5" />
                             Menu
                         </button>
                         <button
-                            onClick={() => setDarkMode(!darkMode)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl transition-all"
+                            onClick={() => setSearchOpen(true)}
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#6B7280] transition-all"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.6)',
-                                border: '1px solid rgba(255, 255, 255, 0.8)',
+                                background: 'var(--dm-surface-transparent)',
+                                border: `1px solid var(--dm-surface-transparent-strong)`,
                             }}
-                            title={darkMode ? 'Mode terang' : 'Mode gelap'}
                         >
-                            {darkMode ? <Sun className="h-4 w-4 text-[#4A4A4A]" /> : <Moon className="h-4 w-4 text-[#4A4A4A]" />}
+                            <Search className="h-4 w-4" />
                         </button>
+                        <NotificationCenter lightMode={!darkMode} />
+                        <DarkModeToggle
+                            darkMode={darkMode}
+                            onToggle={toggleDarkMode}
+                            size="sm"
+                            className="h-9 w-9"
+                        />
                     </div>
 
                     <motion.div
@@ -441,5 +494,11 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                 </main>
             </div>
         </div>
+
+        {user?.role === 'admin' && (
+            <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+        )}
+        <KeyboardShortcutsHelpModal open={helpOpen} onClose={() => setHelpOpen(false)} shortcuts={shortcuts} />
+        </>
     );
 }

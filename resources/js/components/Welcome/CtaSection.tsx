@@ -1,8 +1,14 @@
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton, useReducedMotion } from './utils/helpers';
 
 type Props = { lightMode: boolean };
+
+const trustPoints = [
+    'Setup kurang dari 5 menit',
+    'Tidak perlu kartu kredit',
+    'Gratis untuk mahasiswa',
+];
 
 export default function CtaSection({ lightMode }: Props) {
     const prefersReducedMotion = useReducedMotion();
@@ -11,7 +17,6 @@ export default function CtaSection({ lightMode }: Props) {
         <>
             {/* ========== CTA SECTION ========== */}
             <section id="cta" className="relative py-32">
-                {/* Decorative CTA Background Glows */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
                     <motion.div
                         animate={
@@ -40,7 +45,6 @@ export default function CtaSection({ lightMode }: Props) {
                         transition={{ duration: 0.8 }}
                         className="text-center"
                     >
-                        {/* CTA Card */}
                         <LiquidGlassCard className="p-12 md:p-16" intensity="medium" lightMode={lightMode}>
                             <h2
                                 className="mb-6 text-4xl font-light tracking-tight md:text-5xl lg:text-6xl"
@@ -48,21 +52,38 @@ export default function CtaSection({ lightMode }: Props) {
                             >
                                 Siap mulai <span className="text-[#6B7280] italic">kolaborasi</span> yang lebih bermakna?
                             </h2>
-                            <p className="mx-auto mb-10 max-w-xl text-[#6B7280]">
-                                Dikembangkan sebagai proyek penelitian di Telkom University. Mulai tingkatkan kualitas pembelajaran kolaboratif di kelas Anda hari ini.
+                            <p className="mx-auto mb-8 max-w-xl text-[#6B7280]">
+                                Dikembangkan sebagai bagian dari penelitian akademik di Telkom University,
+                                Kolabri menghadirkan pendekatan berbasis riset untuk pembelajaran kolaboratif.
                             </p>
+
+                            {/* Trust signals */}
+                            <div className="mx-auto mb-10 flex flex-wrap items-center justify-center gap-4">
+                                {trustPoints.map((point, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.4, delay: 0.3 + idx * 0.1 }}
+                                        className="flex items-center gap-2 text-sm"
+                                        style={{ color: '#6B7280' }}
+                                    >
+                                        <CheckCircle2 className="h-4 w-4" style={{ color: '#88161c' }} />
+                                        <span>{point}</span>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Buttons */}
                             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                                 <PrimaryButton href="/register">
-                                    Mulai Sekarang
-                                    <ArrowRight className="h-4 w-4" />
+                                    Daftar Gratis <ArrowRight className="h-4 w-4" />
                                 </PrimaryButton>
                                 <SecondaryButton href="/login" lightMode={lightMode}>
                                     Masuk
                                 </SecondaryButton>
                             </div>
-                            <p className="mt-6 text-xs text-[#6B7280]">
-                                ✓ Setup kurang dari 5 menit &nbsp;·&nbsp; ✓ Dikembangkan di Telkom University &nbsp;·&nbsp; ✓ Untuk dosen & mahasiswa
-                            </p>
                         </LiquidGlassCard>
                     </motion.div>
                 </div>

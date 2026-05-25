@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -44,7 +46,11 @@ class AiChatController extends Controller
                     $activeChat = $this->normalizeChat($chatData);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Failed to fetch AI chats', ['error' => $e->getMessage()]);
+            $chats = [];
+            $activeChat = null;
+        } catch (RequestException $e) {
             Log::error('Failed to fetch AI chats', ['error' => $e->getMessage()]);
             $chats = [];
             $activeChat = null;
@@ -83,10 +89,7 @@ class AiChatController extends Controller
                 }
 
                 if (!empty($validated['first_message'])) {
-                    $messageResponse = $this->apiRequest()->post(
-                        $this->apiUrl() . "/api/ai-chats/{$chat['id']}/messages",
-                        ['content' => $validated['first_message']]
-                    );
+                    $messageResponse = $this->apiRequest()->post($this->apiUrl() . "/api/ai-chats/{$chat['id']}/messages", ['content' => $validated['first_message']]);
 
                     if (! $messageResponse->successful()) {
                         return redirect()->route('student.ai-chat.show', $chat['id'])
@@ -108,7 +111,15 @@ class AiChatController extends Controller
             }
 
             return back()->withErrors(['title' => $response->json('message', 'Gagal membuat chat')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('AI Chat creation failed', ['error' => $e->getMessage()]);
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Tidak dapat membuat chat'], 500);
+            }
+
+            return back()->withErrors(['title' => 'Tidak dapat membuat chat']);
+        } catch (RequestException $e) {
             Log::error('AI Chat creation failed', ['error' => $e->getMessage()]);
 
             if ($request->wantsJson()) {
@@ -144,7 +155,16 @@ class AiChatController extends Controller
                     'message' => 'Gagal memuat pesan chat',
                 ],
             ], $response->status());
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Fetch AI chat messages failed', ['error' => $e->getMessage(), 'chat_id' => $chatId]);
+
+            return response()->json([
+                'error' => [
+                    'code' => 'FETCH_MESSAGES_FAILED',
+                    'message' => 'Tidak dapat memuat pesan chat',
+                ],
+            ], 500);
+        } catch (RequestException $e) {
             Log::error('Fetch AI chat messages failed', ['error' => $e->getMessage(), 'chat_id' => $chatId]);
 
             return response()->json([
@@ -166,17 +186,17 @@ class AiChatController extends Controller
         ]);
 
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/ai-chats/{$chatId}/messages",
-                ['content' => $validated['content']]
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/ai-chats/{$chatId}/messages", ['content' => $validated['content']]);
 
             if ($response->successful()) {
                 return back();
             }
 
             return back()->withErrors(['content' => $response->json('message', 'Gagal mengirim pesan')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Send AI message failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['content' => 'Tidak dapat mengirim pesan']);
+        } catch (RequestException $e) {
             Log::error('Send AI message failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['content' => 'Tidak dapat mengirim pesan']);
         }
@@ -239,17 +259,17 @@ class AiChatController extends Controller
         ]);
 
         try {
-            $response = $this->apiRequest()->patch(
-                $this->apiUrl() . "/api/ai-chats/{$chatId}",
-                ['title' => $validated['title']]
-            );
+            $response = $this->apiRequest()->patch($this->apiUrl() . "/api/ai-chats/{$chatId}", ['title' => $validated['title']]);
 
             if ($response->successful()) {
                 return back()->with('success', 'Judul chat diperbarui!');
             }
 
             return back()->withErrors(['title' => $response->json('message', 'Gagal memperbarui judul')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Update AI chat failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['title' => 'Tidak dapat memperbarui chat']);
+        } catch (RequestException $e) {
             Log::error('Update AI chat failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['title' => 'Tidak dapat memperbarui chat']);
         }
@@ -269,7 +289,10 @@ class AiChatController extends Controller
             }
 
             return back()->withErrors(['chat' => $response->json('message', 'Gagal menghapus chat')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Delete AI chat failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['chat' => 'Tidak dapat menghapus chat']);
+        } catch (RequestException $e) {
             Log::error('Delete AI chat failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['chat' => 'Tidak dapat menghapus chat']);
         }

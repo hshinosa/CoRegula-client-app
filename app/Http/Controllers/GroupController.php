@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 
 class GroupController extends Controller
 {
@@ -23,7 +25,7 @@ class GroupController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $groups = $groupsResponse->successful() ? $groupsResponse->json('data', []) : [];
             $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('Failed to fetch groups', ['error' => $e->getMessage()]);
             $courseData = null;
             $groups = [];
@@ -56,7 +58,7 @@ class GroupController extends Controller
             $groups = $groupsResponse->successful() ? $groupsResponse->json('data', []) : [];
             $myGroup = $myGroupResponse->successful() ? $myGroupResponse->json('data') : null;
             $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('Failed to fetch student groups', ['error' => $e->getMessage()]);
             $courseData = null;
             $groups = [];
@@ -76,9 +78,25 @@ class GroupController extends Controller
         ]);
     }
 
-    /**
-     * Create New Group (Lecturer or Student)
-     */
+    public function showStudent(string $group)
+    {
+        try {
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/groups/{$group}");
+            $groupData = $response->successful() ? $response->json('data') : null;
+
+            if (!$groupData) {
+                abort(404, 'Group not found');
+            }
+
+            return Inertia::render('student/groups/show', [
+                'group' => $groupData,
+            ]);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to fetch group details', ['error' => $e->getMessage()]);
+            abort(500, 'Failed to load group details');
+        }
+    }
+
     public function store(Request $request, string $course)
     {
         $validated = $request->validate([
@@ -95,9 +113,9 @@ class GroupController extends Controller
             }
 
             return back()->withErrors(['name' => $response->json('message', 'Gagal membuat grup')]);
-        } catch (\Exception $e) {
-            Log::error('Group creation failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['name' => 'Tidak dapat membuat grup']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to create group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to create group']);
         }
     }
 
@@ -130,9 +148,9 @@ class GroupController extends Controller
             }
 
             return back()->withErrors(['join_code' => $response->json('message', 'Kode tidak valid')]);
-        } catch (\Exception $e) {
-            Log::error('Group join failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['join_code' => 'Tidak dapat bergabung dengan grup']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to delete group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to delete group']);
         }
     }
 
@@ -147,19 +165,16 @@ class GroupController extends Controller
         ]);
 
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/groups/{$group}/invite",
-                ['member_ids' => $validated['member_ids']]
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/invite", ['member_ids' => $validated['member_ids']]);
 
             if ($response->successful()) {
                 return back()->with('success', 'Anggota berhasil diundang!');
             }
 
             return back()->withErrors(['member_ids' => $response->json('message', 'Gagal mengundang anggota')]);
-        } catch (\Exception $e) {
-            Log::error('Invite members failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['member_ids' => 'Tidak dapat mengundang anggota']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to update group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to update group']);
         }
     }
 
@@ -174,19 +189,16 @@ class GroupController extends Controller
         ]);
 
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/courses/{$course}/groups/{$group}/members",
-                ['member_ids' => $validated['member_ids']]
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/courses/{$course}/groups/{$group}/members", ['member_ids' => $validated['member_ids']]);
 
             if ($response->successful()) {
                 return back()->with('success', 'Anggota berhasil ditambahkan!');
             }
 
             return back()->withErrors(['member_ids' => $response->json('message', 'Gagal menambahkan anggota')]);
-        } catch (\Exception $e) {
-            Log::error('Add members failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['member_ids' => 'Tidak dapat menambahkan anggota']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to join group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to join group']);
         }
     }
 
@@ -201,19 +213,16 @@ class GroupController extends Controller
         ]);
 
         try {
-            $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/groups/{$group}/chat-spaces",
-                $validated
-            );
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/chat-spaces", $validated);
 
             if ($response->successful()) {
                 return back()->with('success', 'Ruang chat berhasil dibuat!');
             }
 
             return back()->withErrors(['name' => $response->json('message', 'Gagal membuat ruang chat')]);
-        } catch (\Exception $e) {
-            Log::error('Create chat space failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['name' => 'Tidak dapat membuat ruang chat']);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('Failed to leave group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to leave group']);
         }
     }
 
@@ -223,9 +232,7 @@ class GroupController extends Controller
     public function destroy(string $course, string $group)
     {
         try {
-            $response = $this->apiRequest()->delete(
-                $this->apiUrl() . "/api/groups/{$group}"
-            );
+            $response = $this->apiRequest()->delete($this->apiUrl() . "/api/groups/{$group}");
 
             if ($response->successful()) {
                 return back()->with('success', 'Grup berhasil dihapus!');
@@ -239,7 +246,14 @@ class GroupController extends Controller
             ]);
 
             return back()->withErrors(['group' => $response->json('message', 'Gagal menghapus grup')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException $e) {
+            Log::error('Delete group exception', [
+                'course' => $course,
+                'group' => $group,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors(['group' => 'Tidak dapat menghapus grup']);
+        } catch (RequestException $e) {
             Log::error('Delete group exception', [
                 'course' => $course,
                 'group' => $group,

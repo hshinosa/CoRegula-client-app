@@ -1,16 +1,18 @@
-import AboutSection from './AboutSection';
-import CtaSection from './CtaSection';
-import DemoSection from './DemoSection';
+import { Suspense, lazy } from 'react';
 import FeaturesSection from './FeaturesSection';
-import FaqSection from './FaqSection';
 import FooterSection from './FooterSection';
 import HeroSection from './HeroSection';
-import HowItWorksSection from './HowItWorksSection';
 import NavBar from './NavBar';
 import ProgressTimeline from './ProgressTimeline';
 import StatsSection from './StatsSection';
 
-import UseCasesSection from './UseCasesSection';
+const HowItWorksSection = lazy(() => import('./HowItWorksSection'));
+const DemoSection = lazy(() => import('./DemoSection'));
+const UseCasesSection = lazy(() => import('./UseCasesSection'));
+const TestimonialsSection = lazy(() => import('./TestimonialsSection'));
+const AboutSection = lazy(() => import('./AboutSection'));
+const FaqSection = lazy(() => import('./FaqSection'));
+const CtaSection = lazy(() => import('./CtaSection'));
 
 type Props = {
     lightMode: boolean;
@@ -47,13 +49,15 @@ export default function LandingPageContent({ lightMode, darkMode, scrolled, menu
             <HeroSection lightMode={lightMode} />
             <StatsSection lightMode={lightMode} />
             <FeaturesSection lightMode={lightMode} />
-            <HowItWorksSection lightMode={lightMode} />
-            <DemoSection lightMode={lightMode} />
-            <UseCasesSection lightMode={lightMode} />
-            <AboutSection lightMode={lightMode} />
-
-            <FaqSection lightMode={lightMode} />
-            <CtaSection lightMode={lightMode} />
+            <Suspense fallback={<div className="h-96" />}>
+                <HowItWorksSection lightMode={lightMode} />
+                <DemoSection lightMode={lightMode} />
+                <UseCasesSection lightMode={lightMode} />
+                <TestimonialsSection lightMode={lightMode} />
+                <AboutSection lightMode={lightMode} />
+                <FaqSection lightMode={lightMode} />
+                <CtaSection lightMode={lightMode} />
+            </Suspense>
             <FooterSection lightMode={lightMode} />
         </div>
     );

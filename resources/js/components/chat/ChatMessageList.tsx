@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ChatDisplayMessage } from '@/types/chat';
+import { sanitizeText } from '@/utils/sanitize';
 
 export type ChatMessage = ChatDisplayMessage;
 
@@ -62,14 +63,14 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                         <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
                             {message.showName && !isOwn && (
                                 <span className="mb-1 text-xs font-medium text-gray-500">
-                                    {message.sender_name}
+                                    {sanitizeText(message.sender_name)}
                                 </span>
                             )}
 
                             {message.reply_to && (
                                 <div className="mb-1 rounded-lg border-l-2 border-[#88161c] bg-gray-100 px-2 py-1 text-xs text-gray-500">
-                                    <span className="font-medium">{message.reply_to.senderName}</span>
-                                    <p className="truncate">{message.reply_to.content}</p>
+                                    <span className="font-medium">{sanitizeText(message.reply_to.senderName)}</span>
+                                    <p className="truncate">{sanitizeText(message.reply_to.content)}</p>
                                 </div>
                             )}
 
@@ -83,7 +84,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                                 }`}
                                 style={{ border: isOwn ? 'none' : '1px solid rgba(255,255,255,0.5)' }}
                             >
-                                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                                <p className="whitespace-pre-wrap break-words">{sanitizeText(message.content)}</p>
 
                                 {message.attachments && message.attachments.length > 0 && (
                                     <div className="mt-2 space-y-1">

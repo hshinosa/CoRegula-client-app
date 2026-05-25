@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -21,7 +23,7 @@ class ReflectionController extends Controller
         try {
             $response = $this->apiRequest()->get($this->apiUrl() . '/api/reflections/me');
             $reflections = $response->successful() ? $response->json('data', []) : [];
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('Failed to fetch reflections', ['error' => $e->getMessage()]);
             $reflections = [];
         }
@@ -29,7 +31,7 @@ class ReflectionController extends Controller
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . '/api/courses/enrolled');
             $courses = $courseResponse->successful() ? $courseResponse->json('data', []) : [];
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('Failed to fetch enrolled courses', ['error' => $e->getMessage()]);
             $courses = [];
         }
@@ -58,7 +60,7 @@ class ReflectionController extends Controller
             }
 
             return back()->withErrors(['content' => $response->json('message', 'Failed to save reflection')]);
-        } catch (\Exception $e) {
+        } catch (ConnectionException | RequestException $e) {
             Log::error('Reflection creation failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['content' => 'Unable to save reflection']);
         }

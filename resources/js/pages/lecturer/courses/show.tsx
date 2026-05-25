@@ -13,14 +13,19 @@ import {
     UploadCloud,
     Users,
 } from 'lucide-react';
-import { ChangeEvent, CSSProperties, FormEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, CSSProperties, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { DashboardSkeleton } from '@/components/ui/skeletons';
 import { InputError } from '@/components/ui/input-error';
+import CourseDetailTabs, { TabId } from '@/components/lecturer/CourseDetailTabs';
+import AktivitasTab from '@/components/lecturer/AktivitasTab';
+import AttendanceTab from '@/components/lecturer/AttendanceTab';
+import MaterialsTab from '@/components/lecturer/MaterialsTab';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
-import { Course, KnowledgeBase, VectorStatus } from '@/types';
+import { ActivitySummary, Course, KnowledgeBase, StudentActivity, VectorStatus } from '@/types';
 
 const ACCEPTED_FILE_TYPES = [
     '.pdf',
@@ -127,8 +132,37 @@ interface Props {
 }
 
 export default function ShowCourse({ course }: Props) {
+    const [isLoading, setIsLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [activeTab, setActiveTab] = useState<TabId>('aktivitas');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [activityData, setActivityData] = useState<StudentActivity[]>([]);
+    const [activitySummary, setActivitySummary] = useState<ActivitySummary>({ total_students: 0, total_messages: 0, active_students: 0 });
+    const [activityLoading, setActivityLoading] = useState(false);
+
+    useEffect(() => {
+        setIsLoading(false);
+    }, []);
+
+    const fetchActivity = useCallback(async () => {
+        setActivityLoading(true);
+        try {
+            const res = await fetch(`/lecturer/courses/${course.id}/aktivitas`);
+            const data = await res.json();
+            setActivityData(data.data || []);
+            setActivitySummary(data.summary || { total_students: 0, total_messages: 0, active_students: 0 });
+        } catch {
+            setActivityData([]);
+        }
+        setActivityLoading(false);
+    }, [course.id]);
+
+    useEffect(() => {
+        if (activeTab === 'aktivitas' && activityData.length === 0) {
+            fetchActivity();
+        }
+    }, [activeTab, activityData.length, fetchActivity]);
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<{
         files: File[];
@@ -140,7 +174,7 @@ export default function ShowCourse({ course }: Props) {
         perform_ocr: false,
     });
 
-    const navItems = useLecturerNav('course-detail', { courseId: course.id });
+    const navItems = useLecturerNav('course-detail');
 
     const copyJoinCode = () => {
         navigator.clipboard.writeText(course.join_code);
@@ -233,6 +267,10 @@ export default function ShowCourse({ course }: Props) {
                 <OrganicBlob className="top-36 -right-16" delay={-5} color="rgba(136, 22, 28, 0.03)" size={240} />
 
                 <div className="relative space-y-6">
+                    {isLoading ? (
+                        <DashboardSkeleton />
+                    ) : (
+                    <>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
                             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -337,7 +375,33 @@ export default function ShowCourse({ course }: Props) {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.12 }}
+                        transition={{ delay: 0.10 }}
+                    >
+                        <CourseDetailTabs courseId={course.id} activeTab={activeTab} onTabChange={setActiveTab} />
+                    </motion.div>
+
+                    {activeTab === 'aktivitas' && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+                            <AktivitasTab students={activityData} summary={activitySummary} loading={activityLoading} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'attendance' && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+                            <AttendanceTab courseId={course.id} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'materials' && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+                            <MaterialsTab courseId={course.id} />
+                        </motion.div>
+                    )}
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.14 }}
                     >
                         <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -690,6 +754,8 @@ export default function ShowCourse({ course }: Props) {
                             </div>
                         </LiquidGlassCard>
                     </motion.div>
+                    </>
+                    )}
                 </div>
             </div>
         </AppLayout>

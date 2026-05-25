@@ -1,6 +1,7 @@
 import '../css/app.css';
 
 import { createInertiaApp, router } from '@inertiajs/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
@@ -10,6 +11,17 @@ import { refreshCsrfToken } from '@/lib/csrfRefresh';
 import axios from 'axios';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Kolabri';
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 1000 * 60 * 2,   // 2 minutes
+            gcTime: 1000 * 60 * 10,      // 10 minutes (formerly cacheTime)
+            retry: 2,
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 axios.defaults.withCredentials = true;
@@ -108,7 +120,9 @@ createInertiaApp({
 
         root.render(
             <ErrorBoundary>
-                <App {...props} />
+                <QueryClientProvider client={queryClient}>
+                    <App {...props} />
+                </QueryClientProvider>
                 <Toaster />
             </ErrorBoundary>,
         );

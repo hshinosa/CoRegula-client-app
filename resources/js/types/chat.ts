@@ -26,6 +26,12 @@ export interface ChatSocketMessage {
     replyTo?: ReplyTo;
     attachments?: FileAttachment[];
     mentions?: string[];
+    editedAt?: string | null;
+    isDeleted?: boolean;
+    deletedAt?: string | null;
+    isPinned?: boolean;
+    pinnedAt?: string | null;
+    pinnedBy?: string | null;
 }
 
 export interface ChatDisplayMessage {
@@ -47,4 +53,10 @@ export interface ChatDisplayMessage {
     showName?: boolean;
     showTime?: boolean;
     isGrouped?: boolean;
+    edited_at?: string | null;
+    is_deleted?: boolean;
+    deleted_at?: string | null;
+    is_pinned?: boolean;
+    pinned_at?: string | null;
+    pinned_by?: string | null;
 }

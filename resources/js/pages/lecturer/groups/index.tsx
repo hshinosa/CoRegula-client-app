@@ -99,7 +99,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
     const [selectedGroupJoinCode, setSelectedGroupJoinCode] = useState<string | null>(null);
     const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
 
-    const navItems = useLecturerNav('groups', { courseId: course.id });
+    const navItems = useLecturerNav('groups');
 
     const createForm = useForm({
         name: '',

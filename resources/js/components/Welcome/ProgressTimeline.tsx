@@ -13,7 +13,7 @@ export default function ProgressTimeline({ lightMode, activeSection }: Props) {
         { id: 'cara-kerja', label: 'Cara Kerja' },
         { id: 'demo', label: 'Demo' },
         { id: 'use-cases', label: 'Use Cases' },
-
+        { id: 'testimoni', label: 'Testimoni' },
         { id: 'faq', label: 'FAQ' },
         { id: 'tentang', label: 'Tentang' },
     ];

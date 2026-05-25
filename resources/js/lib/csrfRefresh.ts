@@ -3,7 +3,7 @@ import axios from 'axios';
 /**
  * Refresh CSRF token from server and update axios headers
  */
-export async function refreshCsrfToken(): Promise<void> {
+export async function refreshCsrfToken(): Promise<boolean> {
     try {
         const response = await axios.get('/csrf-token');
         const newToken = response.data.token;
@@ -14,10 +14,12 @@ export async function refreshCsrfToken(): Promise<void> {
                 metaTag.setAttribute('content', newToken);
             }
             axios.defaults.headers.common['X-CSRF-TOKEN'] = newToken;
+            return true;
         }
     } catch (error) {
         console.error('Failed to refresh CSRF token:', error);
     }
+    return false;
 }
 
 /**
@@ -28,10 +30,10 @@ export async function refreshCsrfToken(): Promise<void> {
 export function setupCsrfRefresh(intervalMinutes: number = 60): () => void {
     const intervalMs = intervalMinutes * 60 * 1000;
     
-    refreshCsrfToken();
+    void refreshCsrfToken();
     
     const intervalId = setInterval(() => {
-        refreshCsrfToken();
+        void refreshCsrfToken();
     }, intervalMs);
     
     return () => clearInterval(intervalId);

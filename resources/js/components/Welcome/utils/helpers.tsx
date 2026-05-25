@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { motion, useInView } from 'framer-motion';
-import { AlertTriangle, BarChart3, BookOpen, GraduationCap, LayoutDashboard, LineChart, MessageSquare, Users } from 'lucide-react';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
+import { AlertTriangle, BarChart3, BookOpen, ChevronDown, GraduationCap, LayoutDashboard, LineChart, MessageSquare, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 // Animated counter hook
@@ -404,11 +404,13 @@ export function OrganicBlob({
     delay = 0,
     color = 'rgba(99, 102, 241, 0.15)',
     size = 400,
+    style,
 }: {
     className?: string;
     delay?: number;
     color?: string;
     size?: number;
+    style?: React.CSSProperties;
 }) {
     const prefersReduced = useReducedMotion();
     return (
@@ -421,6 +423,7 @@ export function OrganicBlob({
                 willChange: 'transform',
                 transform: 'translateZ(0)',
                 WebkitTransform: 'translateZ(0)',
+                ...style,
             }}
             initial={{
                 scale: 0.8,
@@ -603,24 +606,33 @@ export function StepCard({
     number,
     title,
     description,
+    details,
     delay = 0,
     lightMode = false,
 }: {
     number: number;
     title: string;
     description: string;
+    details?: string;
     delay?: number;
     lightMode?: boolean;
 }) {
+    const [expanded, setExpanded] = useState(false);
+
     return (
         <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative"
+            className="relative cursor-pointer"
+            onClick={() => { if (details) setExpanded(!expanded); }}
         >
-            <LiquidGlassCard className="p-8" intensity="light" lightMode={lightMode}>
+            <LiquidGlassCard 
+                className="p-8 transition-all duration-300 hover:scale-[1.02]" 
+                intensity="light" 
+                lightMode={lightMode}
+            >
                 <div className="flex items-start gap-6">
                     {/* Number */}
                     <div className="flex-shrink-0">
@@ -639,13 +651,40 @@ export function StepCard({
                     </div>
 
                     <div className="flex-1">
-                        <h3
-                            className="mb-2 text-xl font-semibold"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                        >
-                            {title}
-                        </h3>
+                        <div className="flex items-center justify-between">
+                            <h3
+                                className="mb-2 text-xl font-semibold"
+                                style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            >
+                                {title}
+                            </h3>
+                            {details && (
+                                <motion.div
+                                    animate={{ rotate: expanded ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <ChevronDown className="h-5 w-5 text-[#88161c]" />
+                                </motion.div>
+                            )}
+                        </div>
                         <p className="text-sm leading-relaxed text-[#6B7280]">{description}</p>
+                        
+                        {/* Expandable details */}
+                        <AnimatePresence>
+                            {expanded && details && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="mt-4 pt-4 border-t border-[#88161c]/10">
+                                        <p className="text-sm leading-relaxed text-[#6B7280]">{details}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </LiquidGlassCard>

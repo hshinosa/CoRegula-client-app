@@ -1,6 +1,6 @@
 import { Head, usePage, Link } from '@inertiajs/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { useState, useEffect, useRef, FormEvent, useMemo, ChangeEvent, useCallback } from 'react';
+import { useState, useEffect, useRef, FormEvent, useMemo, ChangeEvent, useCallback, memo, type ReactNode } from 'react';
 import { MessageSquare, Send, Paperclip, X, CornerUpLeft, Users, Lock, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -16,6 +16,12 @@ import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup'
 import { uploadAttachments } from '@/lib/upload-attachments';
 import { useMessageWindow } from '@/features/chat/use-message-window';
 import { safeAttachmentUrl } from '@/lib/attachment-url';
+import { DropZoneOverlay } from '@/features/chat/DropZoneOverlay';
+import { normalizeDroppedFile, useDragDrop } from '@/features/chat/useDragDrop';
+import { focusFirstElement, trapFocusWithin } from '@/lib/focus-management';
+import { Toast } from '@/components/chat/Toast';
+import { ConnectionBanner } from '@/components/chat/ConnectionBanner';
+import { ChatSkeleton } from '@/components/ui/skeletons';
 import {
     createOptimisticMessage,
     markMessageFailed,
@@ -23,6 +29,15 @@ import {
     reconcileIncomingMessage,
     toSocketPayload,
 } from '@/features/chat/optimistic-message';
+import { MessageActions } from './room/components/MessageActions';
+import { MessageEditor } from './room/components/MessageEditor';
+import { SearchBar } from './room/components/SearchBar';
+import { SearchResults } from './room/components/SearchResults';
+import { PinnedMessages } from './room/components/PinnedMessages';
+import { useMessageSearch } from './room/hooks/useMessageSearch';
+import { usePinnedMessages } from './room/hooks/usePinnedMessages';
+import axios from 'axios';
+
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
 type FileAttachment = import('@/features/chat/optimistic-message').FileAttachment;
 type ReplyTo = import('@/features/chat/optimistic-message').ReplyTo;
@@ -145,6 +160,290 @@ const Avatar = ({
     );
 };
 
+const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const isImageFile = (type: string): boolean => type.startsWith('image/');
+
+const formatTime = (date: string) => {
+    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const isAIMessage = (message: DisplayMessage) => message.sender_type === 'ai';
+const isBotMessage = (message: DisplayMessage) => message.sender_type === 'bot';
+const isSystemMessage = (message: DisplayMessage) => message.sender_type === 'system';
+
+const getAvatarType = (message: DisplayMessage): 'user' | 'ai' | 'bot' | 'system' => {
+    if (isAIMessage(message)) return 'ai';
+    if (isBotMessage(message)) return 'bot';
+    if (isSystemMessage(message)) return 'system';
+    return 'user';
+};
+
+const getSenderDisplayName = (message: DisplayMessage): string => {
+    if (isAIMessage(message)) return 'Asisten AI';
+    if (isBotMessage(message)) return 'Bot Kolabri';
+    if (isSystemMessage(message)) return 'Kolabri';
+    return message.sender_name;
+};
+
+interface MessageItemProps {
+    message: ProcessedMessage;
+    ownMessage: boolean;
+    renderMessageContent: (content: string, mentions?: string[]) => ReactNode;
+    onReply: (message: DisplayMessage) => void;
+    onDelete: (messageId: string) => void;
+    onRetry: (message: DisplayMessage) => void;
+    onOpenImagePreview: (url: string, name: string) => void;
+    onDownloadAttachment: (url: string, name: string) => void;
+    onEdit: (messageId: string) => void;
+    onPin: (messageId: string) => void;
+    onUnpin: (messageId: string) => void;
+    onCopy: (content: string) => void;
+    canPin: boolean;
+    isPinned: boolean;
+    isEditing: boolean;
+    editingContent: string;
+    onSaveEdit: (content: string) => void;
+    onCancelEdit: () => void;
+    isSavingEdit: boolean;
+    isHighlighted: boolean;
+    canEdit: boolean;
+}
+
+const MessageItem = memo(function MessageItem({
+    message,
+    ownMessage,
+    renderMessageContent,
+    onReply,
+    onDelete,
+    onRetry,
+    onOpenImagePreview,
+    onDownloadAttachment,
+    onEdit,
+    onPin,
+    onUnpin,
+    onCopy,
+    canPin,
+    isPinned,
+    isEditing,
+    editingContent,
+    onSaveEdit,
+    onCancelEdit,
+    isSavingEdit,
+    isHighlighted,
+    canEdit,
+}: MessageItemProps) {
+    const isDeleted = message.is_deleted === true;
+
+    return (
+        <motion.div
+            id={`message-${message.id}`}
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ layout: { duration: 0.2 } }}
+            aria-label={`Pesan dari ${getSenderDisplayName(message)}`}
+            className={`group flex items-start gap-2 ${ownMessage ? 'flex-row-reverse' : 'flex-row'} ${message.isGrouped ? 'mt-0.5' : 'mt-3'} ${isHighlighted ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg -mx-2 px-2 py-1' : ''}`}
+        >
+            {!ownMessage && (
+                <div className="w-6 flex-shrink-0 pt-0.5 sm:w-8">
+                    {message.showAvatar && (
+                        <Avatar
+                            name={message.sender_name}
+                            type={getAvatarType(message)}
+                            className="h-6 w-6 sm:h-8 sm:w-8"
+                        />
+                    )}
+                </div>
+            )}
+
+            <div className={`group flex max-w-[85%] flex-col sm:max-w-[70%] ${ownMessage ? 'items-end' : 'items-start'}`}>
+                {!ownMessage && message.showName && (
+                    <span className="mb-1 ml-1 text-xs font-medium text-[#6B7280]">
+                        {getSenderDisplayName(message)}
+                    </span>
+                )}
+
+                {message.reply_to && (
+                    <div
+                        className={`mb-1 flex items-center gap-1 rounded-xl px-2 py-1 text-xs sm:px-3 sm:py-1.5 ${
+                            ownMessage ? 'text-white' : 'text-[#6B7280]'
+                        }`}
+                        style={{
+                            background: ownMessage ? 'rgba(136,22,28,0.3)' : 'rgba(107,114,128,0.15)',
+                        }}
+                    >
+                        <CornerUpLeft className="hidden h-3 w-3 flex-shrink-0 sm:block" />
+                        <span className="font-medium">{message.reply_to.senderName}:</span>
+                        <span className="max-w-[100px] truncate sm:max-w-[150px]">{message.reply_to.content}</span>
+                    </div>
+                )}
+
+                {message.attachments && message.attachments.length > 0 && (
+                    <div className="mb-1 flex flex-wrap gap-1.5 sm:gap-2">
+                        {message.attachments.map((attachment) => {
+                            const attachmentUrl = safeAttachmentUrl(attachment.url);
+
+                            return (
+                                <div key={attachment.id}>
+                                    {isImageFile(attachment.type) ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => onOpenImagePreview(attachmentUrl, attachment.name)}
+                                            className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[#88161c]"
+                                            aria-label={`Buka pratinjau gambar ${attachment.name}`}
+                                        >
+                                            <img
+                                                src={attachmentUrl}
+                                                alt={attachment.name}
+                                                className="max-h-32 max-w-[180px] rounded-xl object-cover transition-transform hover:scale-105 sm:max-h-48 sm:max-w-[250px]"
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                            />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => onDownloadAttachment(attachmentUrl, attachment.name)}
+                                            className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-colors sm:gap-2 sm:px-3 sm:py-2 ${
+                                                ownMessage ? 'text-white' : 'text-[#4A4A4A]'
+                                            }`}
+                                            aria-label={`Unduh file ${attachment.name}`}
+                                            style={{
+                                                background: ownMessage ? 'rgba(136,22,28,0.3)' : 'rgba(107,114,128,0.15)',
+                                            }}
+                                        >
+                                            <svg className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <div className="min-w-0 text-left">
+                                                <p className="max-w-[100px] truncate text-xs font-medium sm:max-w-none sm:text-sm">{attachment.name}</p>
+                                                <p className="text-xs opacity-70">{formatFileSize(attachment.size)}</p>
+                                            </div>
+                                            <svg className="h-3.5 w-3.5 flex-shrink-0 opacity-60 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {message.content && (
+                    <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button
+                                type="button"
+                                onClick={() => onReply(message)}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
+                                title="Balas"
+                                aria-label="Balas pesan"
+                            >
+                                <CornerUpLeft className="h-4 w-4" />
+                            </button>
+                            <MessageActions
+                                messageId={message.id}
+                                isOwn={ownMessage}
+                                isDeleted={isDeleted}
+                                isPinned={isPinned}
+                                canPin={canPin}
+                                canEdit={canEdit && !isDeleted}
+                                onEdit={() => onEdit(message.id)}
+                                onDelete={() => onDelete(message.id)}
+                                onPin={() => onPin(message.id)}
+                                onUnpin={() => onUnpin(message.id)}
+                                onCopy={() => onCopy(message.content)}
+                            />
+                        </div>
+
+                        <div
+                            className={`rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 ${
+                                ownMessage
+                                    ? 'text-white'
+                                    : isAIMessage(message) || isBotMessage(message)
+                                    ? 'text-[#4A4A4A]'
+                                    : isSystemMessage(message)
+                                    ? 'text-[#4A4A4A]'
+                                    : 'text-[#4A4A4A]'
+                            }`}
+                            style={{
+                                background: ownMessage
+                                    ? 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)'
+                                    : isAIMessage(message) || isBotMessage(message)
+                                    ? 'rgba(136,22,28,0.08)'
+                                    : isSystemMessage(message)
+                                    ? 'linear-gradient(135deg, rgba(136,22,28,0.12) 0%, rgba(136,22,28,0.06) 100%)'
+                                    : 'rgba(255,255,255,0.7)',
+                                border: ownMessage
+                                    ? '1px solid rgba(255,255,255,0.18)'
+                                    : isAIMessage(message) || isBotMessage(message)
+                                    ? '1px solid rgba(136,22,28,0.15)'
+                                    : isSystemMessage(message)
+                                    ? '1px solid rgba(136,22,28,0.2)'
+                                    : '1px solid rgba(255,255,255,0.5)',
+                            }}
+                        >
+                            <p className={`whitespace-pre-wrap text-sm ${isDeleted ? 'italic opacity-60' : ''}`}>
+                                {renderMessageContent(message.content, message.mentions)}
+                            </p>
+                            {message.edited_at && !isDeleted && (
+                                <p className="mt-0.5 text-[10px] opacity-50">
+                                    Diedit
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {isEditing && (
+                    <MessageEditor
+                        initialContent={editingContent}
+                        onSave={onSaveEdit}
+                        onCancel={onCancelEdit}
+                        isSaving={isSavingEdit}
+                    />
+                )}
+
+                {message.showTime && (
+                    <span className="mt-1 text-xs text-[#6B7280]">
+                        {formatTime(message.created_at)}
+                    </span>
+                )}
+
+                {ownMessage && (message.deliveryStatus === 'sending' || message.deliveryStatus === 'failed') && (
+                    <div className="mt-1 flex items-center gap-2 text-xs text-[#6B7280]">
+                        <span>
+                            {message.deliveryStatus === 'sending' ? 'Mengirim...' : 'Gagal mengirim'}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => onRetry(message)}
+                            className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#88161c]"
+                            style={{ background: '#88161c' }}
+                            aria-label="Coba lagi"
+                        >
+                            Coba lagi
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {ownMessage && <div className="w-6 flex-shrink-0 sm:w-8" />}
+        </motion.div>
+    );
+});
+
+MessageItem.displayName = 'MessageItem';
+
 // Style constants matching the design system
 const headingStyle = {
     color: '#4A4A4A',
@@ -164,14 +463,19 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         initialSessionClosed ? 'Sesi diskusi ini telah ditutup.' : null
     );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    const [isInitialMessagesLoading, setIsInitialMessagesLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch(console.error);
     }, []);
 
-    const { socketRef, isConnected, connectionError, typingUsers, onlineUsers, discussionQuality, showQualityFeedback } = useSocketRoom({
+    // Fallback: stop loading skeleton after 5s even if socket doesn't report back
+    useEffect(() => {
+        const timer = setTimeout(() => setIsInitialMessagesLoading(false), 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const { socketRef, isConnected, connectionError, connectionStatus, typingUsers, onlineUsers, discussionQuality, showQualityFeedback, hasMoreMessages, loadMoreMessages, emitEditMessage, emitDeleteMessage, emitPinMessage, emitUnpinMessage } = useSocketRoom({
         jwtToken,
         courseId: course.id,
         groupId: group.id,
@@ -181,6 +485,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             setSessionClosed(true);
             setSessionClosedAt((prev) => payload?.closedAt ?? prev ?? new Date().toISOString());
             setSessionClosedMessage(payload?.message || 'Sesi diskusi ini telah ditutup.');
+            setIsSummaryVisible(true);
         },
         onSessionReopened: () => {
             setSessionClosed(false);
@@ -189,14 +494,62 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         },
         onMessagesLoaded: (loadedMessages) => {
             setMessages(loadedMessages);
+            setIsInitialMessagesLoading(false);
+        },
+        onMessagesPageLoaded: (olderMessages) => {
+            isLoadingMoreRef.current = true;
+            const container = messagesContainerRef.current;
+            const previousScrollHeight = container?.scrollHeight ?? 0;
+            setMessages((prev) => [...olderMessages, ...prev]);
+            requestAnimationFrame(() => {
+                if (container) {
+                    container.scrollTop = container.scrollHeight - previousScrollHeight;
+                }
+                isLoadingMoreRef.current = false;
+            });
         },
         onMessageReceived: (_display, raw) => {
             setMessages((prev) => reconcileIncomingMessage(prev, raw));
         },
         onMessageDeleted: (messageId) => {
-            setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === messageId
+                        ? { ...msg, content: '[Pesan telah dihapus]', is_deleted: true, deleted_at: new Date().toISOString() }
+                        : msg
+                )
+            );
+        },
+        onMessageEdited: (messageId, newContent, editedAt) => {
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === messageId
+                        ? { ...msg, content: newContent, edited_at: editedAt }
+                        : msg
+                )
+            );
+        },
+        onMessagePinned: (pinnedMessage) => {
+            addPinnedMessage({
+                id: `pin-${pinnedMessage.messageId}`,
+                message_id: pinnedMessage.messageId,
+                conversation_id: pinnedMessage.conversationId,
+                pinned_by: '',
+                content: pinnedMessage.content,
+                sender_name: pinnedMessage.sender_name,
+                pinned_at: pinnedMessage.pinned_at,
+            });
+        },
+        onMessageUnpinned: (messageId) => {
+            removePinnedMessage(messageId);
         },
     });
+
+    useEffect(() => {
+        if (connectionError) {
+            setToastMessage({ message: connectionError, type: 'error' });
+        }
+    }, [connectionError]);
 
     const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
@@ -204,12 +557,45 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [isClosingSession, setIsClosingSession] = useState(false);
     const [closeSessionError, setCloseSessionError] = useState<string | null>(null);
     const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
+    const [toastMessage, setToastMessage] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null);
     const [initialSummary, setInitialSummary] = useState<import('@/features/chat/summary/types').ChatDiscussionSummary | null>(null);
+    const [isSummaryVisible, setIsSummaryVisible] = useState(false);
+
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [isEditingSaving, setIsEditingSaving] = useState(false);
+
+    const {
+        results: searchResults,
+        hasMore: searchHasMore,
+        isLoading: searchIsLoading,
+        totalResults: searchTotalResults,
+        isActive: searchIsActive,
+        search: performSearch,
+        loadMore: loadMoreSearch,
+        clear: clearSearch,
+        scrollToMessage: scrollToSearchResult,
+        highlightMessageId: searchHighlightId,
+    } = useMessageSearch({ conversationId: chatSpace.id });
+
+    const {
+        pinnedMessages,
+        pinMessage: pinMessageApi,
+        unpinMessage: unpinMessageApi,
+        refreshPinned,
+    } = usePinnedMessages({ conversationId: chatSpace.id, socketRef: socketRef as React.RefObject<{ emit: (event: string, data: unknown) => void } | null> });
+
+    const addPinnedMessage = useCallback((msg: import('./room/components/PinnedMessages').PinnedMessage) => {
+        refreshPinned();
+    }, [refreshPinned]);
+
+    const removePinnedMessage = useCallback((messageId: string) => {
+        refreshPinned();
+    }, [refreshPinned]);
 
     const { state: summaryState } = useChatSummary({
         courseId: course.id,
         chatSpaceId: chatSpace.id,
-        enabled: sessionClosed,
+        enabled: isSummaryVisible,
         initialSummary,
     });
 
@@ -230,6 +616,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         };
     }, []);
     const [isUploading, setIsUploading] = useState(false);
+    const { files: droppedFiles, isDragging, clearFiles, dragProps } = useDragDrop({
+        onValidationError: (message) => {
+            setToastMessage({ message, type: 'error' });
+        },
+    });
 
     const [showMentionList, setShowMentionList] = useState(false);
     const [mentionFilter, setMentionFilter] = useState('');
@@ -242,12 +633,20 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [showRightSidebar, setShowRightSidebar] = useState(false);
 
     const messagesContainerRef = useRef<HTMLDivElement>(null);
+    const isLoadingMoreRef = useRef(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const rightSidebarRef = useRef<HTMLElement>(null);
+    const imagePreviewDialogRef = useRef<HTMLDivElement>(null);
+    const reflectionModalRef = useRef<HTMLDivElement>(null);
+    const closeConfirmModalRef = useRef<HTMLDivElement>(null);
+    const lastTriggerRef = useRef<HTMLElement | null>(null);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeErrorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [qualityPanelExpanded, setQualityPanelExpanded] = useState(true);
+    const typingStartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const typingStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isTypingRef = useRef(false);
     const showCloseError = useCallback((message: string) => {
         setCloseSessionError(message);
         if (closeErrorTimeoutRef.current) {
@@ -258,6 +657,38 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             closeErrorTimeoutRef.current = null;
         }, 4000);
     }, []);
+
+    const rememberTrigger = useCallback((element: HTMLElement | null) => {
+        lastTriggerRef.current = element;
+    }, []);
+
+    const restoreFocusToTrigger = useCallback(() => {
+        const trigger = lastTriggerRef.current;
+
+        if (!trigger) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            if (trigger.isConnected) {
+                trigger.focus();
+            }
+        });
+    }, []);
+
+    const handleDialogKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLElement>, onClose?: () => void, canClose = true) => {
+            if (event.key === 'Escape' && canClose) {
+                event.preventDefault();
+                event.stopPropagation();
+                onClose?.();
+                return;
+            }
+
+            trapFocusWithin(event.currentTarget, event);
+        },
+        []
+    );
 
     // AI mention option
     const aiMentionOption = useMemo(
@@ -287,23 +718,61 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         }));
     }, [chatSpace.id, course.id, group.id, socketRef]);
 
+    const clearTypingDebounceTimers = useCallback(() => {
+        if (typingStartTimeoutRef.current) {
+            clearTimeout(typingStartTimeoutRef.current);
+            typingStartTimeoutRef.current = null;
+        }
+
+        if (typingStopTimeoutRef.current) {
+            clearTimeout(typingStopTimeoutRef.current);
+            typingStopTimeoutRef.current = null;
+        }
+    }, []);
+
+    const emitTypingState = useCallback((nextIsTyping: boolean) => {
+        const roomId = chatSpace.id;
+        socketRef.current?.emit('typing', { roomId, isTyping: nextIsTyping });
+    }, [chatSpace.id, socketRef]);
+
+    const scheduleStopTyping = useCallback(() => {
+        if (typingStopTimeoutRef.current) {
+            clearTimeout(typingStopTimeoutRef.current);
+        }
+
+        typingStopTimeoutRef.current = setTimeout(() => {
+            typingStopTimeoutRef.current = null;
+            if (!isTypingRef.current) {
+                return;
+            }
+
+            isTypingRef.current = false;
+            emitTypingState(false);
+        }, 1000);
+    }, [emitTypingState]);
+
+    const stopTypingNow = useCallback(() => {
+        clearTypingDebounceTimers();
+        if (!isTypingRef.current) {
+            return;
+        }
+
+        isTypingRef.current = false;
+        emitTypingState(false);
+    }, [clearTypingDebounceTimers, emitTypingState]);
+
+    useEffect(() => {
+        return () => {
+            clearTypingDebounceTimers();
+        };
+    }, [clearTypingDebounceTimers]);
+
     const handleSubmit = async (e: FormEvent) => {
         if (sessionClosed) return;
         e.preventDefault();
         if ((!newMessage.trim() && pendingFiles.length === 0) || !socketRef.current) return;
 
-        // Use chatSpaceId as roomId for consistency
-        const roomId = chatSpace.id;
-
-        // Clear typing status
-        if (isTyping) {
-            socketRef.current.emit('typing', { roomId, isTyping: false });
-            setIsTyping(false);
-        }
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-            typingTimeoutRef.current = null;
-        }
+        stopTypingNow();
 
         // Extract mentions
         const mentions = extractMentions(newMessage);
@@ -350,7 +819,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         setPendingFiles([]);
     };
 
-    const handleRetryMessage = (message: DisplayMessage) => {
+    const handleRetryMessage = useCallback((message: DisplayMessage) => {
         const retryId = message.clientId || message.id;
         setMessages((prev) => markMessageSending(prev, retryId));
 
@@ -363,7 +832,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         };
 
         emitChatMessage(retryMessage);
-    };
+    }, [emitChatMessage]);
     const filteredMembers = useMemo(() => {
         const filter = mentionFilter.toLowerCase();
         
@@ -431,6 +900,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
+        if (isLoadingMoreRef.current) return;
         const container = messagesContainerRef.current;
         if (container) {
             container.scrollTop = container.scrollHeight;
@@ -463,48 +933,50 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         };
     }, []);
 
-    const handleTyping = () => {
+    const handleTyping = useCallback(() => {
         if (sessionClosed) return;
-        if (!isTyping) {
-            setIsTyping(true);
-            const roomId = chatSpace.id;
-            socketRef.current?.emit('typing', { roomId, isTyping: true });
+
+        if (typingStartTimeoutRef.current) {
+            clearTimeout(typingStartTimeoutRef.current);
+            typingStartTimeoutRef.current = null;
         }
 
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
+        if (typingStopTimeoutRef.current) {
+            clearTimeout(typingStopTimeoutRef.current);
+            typingStopTimeoutRef.current = null;
         }
 
-        typingTimeoutRef.current = setTimeout(() => {
-            setIsTyping(false);
-            const roomId = chatSpace.id;
-            socketRef.current?.emit('typing', { roomId, isTyping: false });
-        }, 2000);
-    };
+        if (!isTypingRef.current) {
+            typingStartTimeoutRef.current = setTimeout(() => {
+                typingStartTimeoutRef.current = null;
+                if (isTypingRef.current) {
+                    return;
+                }
+
+                isTypingRef.current = true;
+                emitTypingState(true);
+            }, 300);
+        }
+
+        scheduleStopTyping();
+    }, [emitTypingState, scheduleStopTyping, sessionClosed]);
 
     // Stop typing when input loses focus
-    const handleInputBlur = () => {
-        if (isTyping) {
-            setIsTyping(false);
-            const roomId = chatSpace.id;
-            socketRef.current?.emit('typing', { roomId, isTyping: false });
-        }
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-            typingTimeoutRef.current = null;
-        }
+    const handleInputBlur = useCallback(() => {
+        stopTypingNow();
         // Delay hiding mention list to allow click on suggestions
         setTimeout(() => setShowMentionList(false), 200);
-    };
+    }, [stopTypingNow]);
 
     // Handle file selection
-    const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         if (sessionClosed) return;
         const files = e.target.files;
         if (!files) return;
 
-        const newFiles: PendingFile[] = Array.from(files).map((file) => {
-            const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const newFiles: PendingFile[] = Array.from(files).map((rawFile) => {
+            const file = normalizeDroppedFile(rawFile);
+            const id = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
             let preview: string | undefined;
             
             if (file.type.startsWith('image/')) {
@@ -516,10 +988,28 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
         setPendingFiles((prev) => [...prev, ...newFiles]);
         e.target.value = '';
-    };
+    }, [sessionClosed]);
+
+    useEffect(() => {
+        if (sessionClosed || droppedFiles.length === 0) return;
+
+        const newFiles: PendingFile[] = droppedFiles.map((file) => {
+            const id = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+            let preview: string | undefined;
+
+            if (file.type.startsWith('image/')) {
+                preview = URL.createObjectURL(file);
+            }
+
+            return { file, preview, id };
+        });
+
+        setPendingFiles((prev) => [...prev, ...newFiles]);
+        clearFiles();
+    }, [clearFiles, droppedFiles, sessionClosed]);
 
     // Remove pending file
-    const removePendingFile = (id: string) => {
+    const removePendingFile = useCallback((id: string) => {
         setPendingFiles((prev) => {
             const file = prev.find((f) => f.id === id);
             if (file?.preview) {
@@ -527,10 +1017,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             }
             return prev.filter((f) => f.id !== id);
         });
-    };
+    }, []);
 
     // Handle mention input
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setNewMessage(value);
         handleTyping();
@@ -551,7 +1041,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             }
         }
         setShowMentionList(false);
-    };
+    }, [handleTyping]);
 
     // Insert mention
     const insertMention = useCallback((member: { id: string; name: string; email: string; isAI?: boolean }) => {
@@ -609,52 +1099,43 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         return mentions;
     };
 
-    // Format file size
-    const formatFileSize = (bytes: number): string => {
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    };
-
-    // Check if file is an image
-    const isImageFile = (type: string): boolean => type.startsWith('image/');
-
     // Open image preview
-    const openImagePreview = (url: string, name: string) => {
+    const openImagePreview = useCallback((url: string, name: string) => {
         setPreviewImage({ url, name });
         setImageZoom(1);
-    };
+    }, []);
 
     // Close image preview
-    const closeImagePreview = () => {
+    const closeImagePreview = useCallback(() => {
         setPreviewImage(null);
         setImageZoom(1);
-    };
+        restoreFocusToTrigger();
+    }, [restoreFocusToTrigger]);
 
     // Zoom in
-    const zoomIn = () => {
+    const zoomIn = useCallback(() => {
         setImageZoom((prev) => Math.min(prev + 0.25, 3));
-    };
+    }, []);
 
     // Zoom out
-    const zoomOut = () => {
+    const zoomOut = useCallback(() => {
         setImageZoom((prev) => Math.max(prev - 0.25, 0.5));
-    };
+    }, []);
 
     // Reset zoom
-    const resetZoom = () => {
+    const resetZoom = useCallback(() => {
         setImageZoom(1);
-    };
+    }, []);
 
     // Download image
-    const downloadImage = (url: string, name: string) => {
+    const downloadImage = useCallback((url: string, name: string) => {
         const link = document.createElement('a');
         link.href = url;
         link.download = name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
+    }, []);
 
     // Handle keyboard for image preview
     useEffect(() => {
@@ -674,10 +1155,34 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [closeImagePreview, previewImage, resetZoom, zoomIn, zoomOut]);
+
+    useEffect(() => {
+        if (previewImage && imagePreviewDialogRef.current) {
+            focusFirstElement(imagePreviewDialogRef.current);
+        }
     }, [previewImage]);
 
+    useEffect(() => {
+        if (showReflectionModal && reflectionModalRef.current) {
+            focusFirstElement(reflectionModalRef.current);
+        }
+    }, [showReflectionModal]);
+
+    useEffect(() => {
+        if (showCloseConfirmModal && closeConfirmModalRef.current) {
+            focusFirstElement(closeConfirmModalRef.current);
+        }
+    }, [showCloseConfirmModal]);
+
+    useEffect(() => {
+        if (showRightSidebar && rightSidebarRef.current) {
+            focusFirstElement(rightSidebarRef.current);
+        }
+    }, [showRightSidebar]);
+
     // Render message content with highlighted mentions and basic markdown
-    const renderMessageContent = (content: string, mentions?: string[]) => {
+    const renderMessageContent = useCallback((content: string, mentions?: string[]) => {
         // Simple highlight for @mentions
         const parts = content.split(/(@\w+(?:\s\w+)*)/g);
         return (
@@ -701,7 +1206,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 })}
             </>
         );
-    };
+    }, [group.members]);
 
     // Duplicate handleSubmit removed in this patch to keep a single submission path (early block remains)
 
@@ -753,7 +1258,37 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         setShowCloseConfirmModal(true);
     }, [sessionClosed, isClosingSession]);
 
-    const handleReply = (message: DisplayMessage) => {
+    const closeRightSidebar = useCallback(() => {
+        setShowRightSidebar(false);
+        restoreFocusToTrigger();
+    }, [restoreFocusToTrigger]);
+
+    const openRightSidebar = useCallback((trigger: HTMLElement | null) => {
+        rememberTrigger(trigger);
+        setShowRightSidebar(true);
+    }, [rememberTrigger]);
+
+    const closeReflectionModal = useCallback(() => {
+        setShowReflectionModal(false);
+        restoreFocusToTrigger();
+    }, [restoreFocusToTrigger]);
+
+    const openReflectionModal = useCallback((trigger: HTMLElement | null) => {
+        rememberTrigger(trigger);
+        setShowReflectionModal(true);
+    }, [rememberTrigger]);
+
+    const closeCloseConfirmModal = useCallback(() => {
+        setShowCloseConfirmModal(false);
+        restoreFocusToTrigger();
+    }, [restoreFocusToTrigger]);
+
+    const openCloseConfirmModal = useCallback((trigger: HTMLElement | null) => {
+        rememberTrigger(trigger);
+        handleOpenCloseConfirmModal();
+    }, [handleOpenCloseConfirmModal, rememberTrigger]);
+
+    const handleReply = useCallback((message: DisplayMessage) => {
         setReplyingTo({
             messageId: message.id,
             senderId: message.sender_id,
@@ -761,17 +1296,124 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             content: message.content,
         });
         inputRef.current?.focus();
-    };
+    }, []);
 
-    const handleDelete = (messageId: string) => {
-        if (!socketRef.current) return;
-        const roomId = chatSpace.id;
-        socketRef.current.emit('delete_message', { roomId, messageId });
-    };
+    const handleDelete = useCallback(async (messageId: string) => {
+        const message = messages.find((m) => m.id === messageId);
+        if (!message) return;
 
-    const cancelReply = () => {
+        if (window.confirm('Hapus pesan ini? Tindakan tidak dapat dibatalkan.')) {
+            try {
+                await axios.delete(`/api/chat/messages/${messageId}`, {
+                    data: {
+                        conversation_id: chatSpace.id,
+                        content: message.content,
+                    },
+                });
+
+                emitDeleteMessage(messageId);
+
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === messageId
+                            ? { ...msg, content: '[Pesan telah dihapus]', is_deleted: true, deleted_at: new Date().toISOString() }
+                            : msg
+                    )
+                );
+
+                setToastMessage({ message: 'Pesan berhasil dihapus', type: 'success' });
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response?.data?.message) {
+                    setToastMessage({ message: error.response.data.message, type: 'error' });
+                } else {
+                    setToastMessage({ message: 'Gagal menghapus pesan', type: 'error' });
+                }
+            }
+        }
+    }, [messages, chatSpace.id, emitDeleteMessage]);
+
+    const handleEdit = useCallback((messageId: string) => {
+        setEditingMessageId(messageId);
+    }, []);
+
+    const handleSaveEdit = useCallback(async (newContent: string) => {
+        if (!editingMessageId) return;
+
+        const message = messages.find((m) => m.id === editingMessageId);
+        if (!message) return;
+
+        setIsEditingSaving(true);
+
+        try {
+            const response = await axios.patch(`/api/chat/messages/${editingMessageId}/edit`, {
+                content: newContent,
+                conversation_id: chatSpace.id,
+                old_content: message.content,
+            });
+
+            if (response.data.success) {
+                emitEditMessage(editingMessageId, newContent, response.data.data.edited_at);
+
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === editingMessageId
+                            ? { ...msg, content: newContent, edited_at: response.data.data.edited_at }
+                            : msg
+                    )
+                );
+
+                setEditingMessageId(null);
+                setToastMessage({ message: 'Pesan berhasil diedit', type: 'success' });
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
+                setToastMessage({ message: error.response.data.message, type: 'error' });
+            } else {
+                setToastMessage({ message: 'Gagal mengedit pesan', type: 'error' });
+            }
+        } finally {
+            setIsEditingSaving(false);
+        }
+    }, [editingMessageId, messages, chatSpace.id, emitEditMessage]);
+
+    const handleCancelEdit = useCallback(() => {
+        setEditingMessageId(null);
+    }, []);
+
+    const handlePin = useCallback(async (messageId: string) => {
+        const message = messages.find((m) => m.id === messageId);
+        if (!message) return;
+
+        try {
+            await pinMessageApi(messageId, message.content, message.sender_name);
+            setToastMessage({ message: 'Pesan berhasil disematkan', type: 'success' });
+        } catch (error) {
+            if (error instanceof Error) {
+                setToastMessage({ message: error.message, type: 'error' });
+            }
+        }
+    }, [messages, pinMessageApi]);
+
+    const handleUnpin = useCallback(async (messageId: string) => {
+        try {
+            await unpinMessageApi(messageId);
+            setToastMessage({ message: 'Sematan pesan berhasil dihapus', type: 'success' });
+        } catch (error) {
+            if (error instanceof Error) {
+                setToastMessage({ message: error.message, type: 'error' });
+            }
+        }
+    }, [unpinMessageApi]);
+
+    const handleCopyMessage = useCallback((content: string) => {
+        navigator.clipboard.writeText(content).then(() => {
+            setToastMessage({ message: 'Teks pesan disalin', type: 'success' });
+        });
+    }, []);
+
+    const cancelReply = useCallback(() => {
         setReplyingTo(null);
-    };
+    }, []);
 
     // Submit session reflection
     const handleSubmitReflection = async () => {
@@ -801,7 +1443,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             }
 
             setHasSubmittedReflection(true);
-            setShowReflectionModal(false);
+            closeReflectionModal();
             setReflectionContent('');
         } catch (error) {
             setReflectionError(error instanceof Error ? error.message : 'Terjadi kesalahan');
@@ -810,34 +1452,22 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         }
     };
 
-    const formatTime = (date: string) => {
-        return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const isOwnMessage = (message: DisplayMessage) => message.sender_id === auth.user?.id;
-    const isAIMessage = (message: DisplayMessage) => message.sender_type === 'ai';
-    const isBotMessage = (message: DisplayMessage) => message.sender_type === 'bot';
-    const isSystemMessage = (message: DisplayMessage) => message.sender_type === 'system';
-
-    const getAvatarType = (message: DisplayMessage): 'user' | 'ai' | 'bot' | 'system' => {
-        if (isAIMessage(message)) return 'ai';
-        if (isBotMessage(message)) return 'bot';
-        if (isSystemMessage(message)) return 'system';
-        return 'user';
-    };
-
-    const getSenderDisplayName = (message: DisplayMessage): string => {
-        if (isAIMessage(message)) return 'Asisten AI';
-        if (isBotMessage(message)) return 'Bot Kolabri';
-        if (isSystemMessage(message)) return 'Kolabri';
-        return message.sender_name;
-    };
+    const ownUserId = auth.user?.id;
+    const isOwnMessage = useCallback((message: DisplayMessage) => message.sender_id === ownUserId, [ownUserId]);
 
     // Injected helpers for sending messages exist in the early block; remove the duplicate here
 
     return (
         <AppLayout title={`${chatSpace.name} - ${group.name}`} navItems={navItems}>
             <Head title={`${chatSpace.name} - ${course.name}`} />
+            <ConnectionBanner status={connectionStatus} />
+            {toastMessage && (
+                <Toast
+                    message={toastMessage.message}
+                    type={toastMessage.type}
+                    onDismiss={() => setToastMessage(null)}
+                />
+            )}
 
             <div className="flex h-[calc(100vh-5rem)] min-h-0 gap-4 overflow-hidden sm:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)]">
                 {/* Main Chat Area */}
@@ -878,6 +1508,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 </div>
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-2">
+                                <SearchBar
+                                    onSearch={performSearch}
+                                    onClear={clearSearch}
+                                    isSearching={searchIsLoading}
+                                    resultCount={searchTotalResults}
+                                    isActive={searchIsActive}
+                                />
                                 {/* Online Users Avatars - compact */}
                                 {isConnected && onlineUsers.length > 0 && (
                                     <div className="flex -space-x-2">
@@ -908,7 +1545,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 {!sessionClosed && (
                                     <button
                                         type="button"
-                                        onClick={handleOpenCloseConfirmModal}
+                                        onClick={(event) => openCloseConfirmModal(event.currentTarget)}
                                         disabled={isClosingSession}
                                         className="hidden items-center gap-1.5 rounded-xl border border-white/50 px-3 py-2 text-xs font-medium text-[#4A4A4A] transition-colors hover:bg-white/50 disabled:opacity-50 sm:flex"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
@@ -919,15 +1556,57 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 )}
                                 {/* Mobile: Toggle right sidebar */}
                                 <button
-                                    onClick={() => setShowRightSidebar(!showRightSidebar)}
+                                    type="button"
+                                    onClick={(event) => {
+                                        if (showRightSidebar) {
+                                            closeRightSidebar();
+                                            return;
+                                        }
+
+                                        openRightSidebar(event.currentTarget);
+                                    }}
                                     className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50 lg:hidden"
                                     style={{ background: 'rgba(255,255,255,0.4)' }}
+                                    aria-label="Buka detail grup"
+                                    aria-expanded={showRightSidebar}
+                                    aria-haspopup="dialog"
                                 >
                                     <Users className="h-5 w-5" />
                                 </button>
                             </div>
                         </div>
+
                     </LiquidGlassCard>
+
+                    {isSummaryVisible && (
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
+                            <ChatSummaryCard state={summaryState} onOpenDetail={() => {}} />
+                        </motion.div>
+                    )}
+
+                    <div className="relative">
+<PinnedMessages
+                        pinnedMessages={pinnedMessages}
+                        onUnpin={handleUnpin}
+                        onMessageClick={scrollToSearchResult}
+                        canPin={auth.user?.role !== 'student'}
+                        canUnpin={auth.user?.role !== 'student'}
+                    />
+
+                        <AnimatePresence>
+                            {searchIsActive && (
+                                <SearchResults
+                                    results={searchResults}
+                                    hasMore={searchHasMore}
+                                    isLoading={searchIsLoading}
+                                    totalResults={searchTotalResults}
+                                    onResultClick={scrollToSearchResult}
+                                    onLoadMore={loadMoreSearch}
+                                    onClose={clearSearch}
+                                />
+                            )}
+                        </AnimatePresence>
+                    </div>
 
                     <AnimatePresence>
                         {closeSessionError && (
@@ -1001,17 +1680,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         )}
                     </AnimatePresence>
 
-                    {/* Closed Session Banner */}
-                    {sessionClosed && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-4"
-                        >
-                            <ChatSummaryCard state={summaryState} onOpenDetail={() => {}} />
-                        </motion.div>
-                    )}
-
                     {sessionClosed && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -1057,7 +1725,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     </div>
                                     {!hasSubmittedReflection && (
                                         <button
-                                            onClick={() => setShowReflectionModal(true)}
+                                            type="button"
+                                            onClick={(event) => openReflectionModal(event.currentTarget)}
                                             className="rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                                             style={{ 
                                                 background: 'linear-gradient(135deg, rgba(168,85,247,0.92) 0%, rgba(147,51,234,0.96) 100%)',
@@ -1091,14 +1760,34 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     )}
 
                     {/* Messages Container */}
-                    <LiquidGlassCard intensity="medium" className="min-h-0 flex-1 overflow-hidden p-4" lightMode={true}>
+                    <LiquidGlassCard intensity="medium" className="relative min-h-0 flex-1 overflow-hidden p-4" lightMode={true}>
+                        <DropZoneOverlay isDragging={isDragging && !sessionClosed} />
                         <div className="flex h-full flex-col">
-                            <div 
+                            <div
+                                {...dragProps}
                                 ref={messagesContainerRef}
-                                                    className={`scrollbar-stable min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 ${isScrolling ? 'is-scrolling' : ''}`}
+                                role="log"
+                                aria-live="polite"
+                                aria-label="Daftar pesan chat"
+                                className={`scrollbar-stable min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 ${isScrolling ? 'is-scrolling' : ''}`}
                             >
                                 <LayoutGroup>
                                     <div className="space-y-1">
+                                        {isInitialMessagesLoading && messages.length === 0 ? (
+                                            <ChatSkeleton messageCount={5} />
+                                        ) : (
+                                        <>
+                                        {hasMoreMessages && messages.length > 0 && (
+                                            <div className="mb-2 flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => loadMoreMessages(chatSpace.id, messages[0].id)}
+                                                    className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    Muat pesan lebih lama
+                                                </button>
+                                            </div>
+                                        )}
                                         {isVirtualized && (
                                             <div className="mb-2 flex justify-center">
                                                 <button
@@ -1112,211 +1801,37 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         )}
                                         <AnimatePresence initial={false}>
                                             {visibleMessages.map((message) => {
-                                                const ownMessage = isOwnMessage(message);
-                                                
+                                                const isOwner = isOwnMessage(message);
+                                                const isPinnedMsg = pinnedMessages.some((p) => p.message_id === message.id);
+                                                const editTimeLimit = new Date(message.created_at).getTime() > Date.now() - 24 * 60 * 60 * 1000;
+                                                const userRole = auth.user?.role;
+                                                const canPinMessages = userRole !== 'student';
+
                                                 return (
-                                                    <motion.div
+                                                    <MessageItem
                                                         key={message.id}
-                                                        layout
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ layout: { duration: 0.2 } }}
-                                                        className={`flex items-start gap-2 ${ownMessage ? 'flex-row-reverse' : 'flex-row'} ${message.isGrouped ? 'mt-0.5' : 'mt-3'}`}
-                                                    >
-                                                        {/* Avatar - show only on FIRST message of group (top), placeholder space otherwise */}
-                                                        {!ownMessage && (
-                                                            <div className="w-6 flex-shrink-0 pt-0.5 sm:w-8">
-                                                                {message.showAvatar && (
-                                                                    <Avatar 
-                                                                        name={message.sender_name} 
-                                                                        type={getAvatarType(message)}
-                                                                        className="h-6 w-6 sm:h-8 sm:w-8"
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        {/* Message Content */}
-                                                        <div className={`group flex max-w-[85%] flex-col sm:max-w-[70%] ${ownMessage ? 'items-end' : 'items-start'}`}>
-                                                            {/* Sender name - only on first message of group */}
-                                                            {!ownMessage && message.showName && (
-                                                                <span className="mb-1 ml-1 text-xs font-medium text-[#6B7280]">
-                                                                    {getSenderDisplayName(message)}
-                                                                </span>
-                                                            )}
-
-                                                            {/* Reply context - show what message this is replying to */}
-                                                            {message.reply_to && (
-                                                                <div 
-                                                                    className={`mb-1 flex items-center gap-1 rounded-xl px-2 py-1 text-xs sm:px-3 sm:py-1.5 ${
-                                                                        ownMessage 
-                                                                            ? 'text-white' 
-                                                                            : 'text-[#6B7280]'
-                                                                    }`}
-                                                                    style={{
-                                                                        background: ownMessage 
-                                                                            ? 'rgba(136,22,28,0.3)' 
-                                                                            : 'rgba(107,114,128,0.15)',
-                                                                    }}
-                                                                >
-                                                                    <CornerUpLeft className="hidden h-3 w-3 flex-shrink-0 sm:block" />
-                                                                    <span className="font-medium">{message.reply_to.senderName}:</span>
-                                                                    <span className="max-w-[100px] truncate sm:max-w-[150px]">{message.reply_to.content}</span>
-                                                                </div>
-                                                            )}
-
-                                                            {/* File Attachments */}
-                                                            {message.attachments && message.attachments.length > 0 && (
-                                                                <div className="mb-1 flex flex-wrap gap-1.5 sm:gap-2">
-                                                                    {message.attachments.map((attachment) => (
-                                                                        <div key={attachment.id}>
-                                                                            {isImageFile(attachment.type) ? (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => openImagePreview(safeAttachmentUrl(attachment.url), attachment.name)}
-                                                                                    className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[#88161c]"
-                                                                                >
-                                                                                    <img 
-                                                                                        src={safeAttachmentUrl(attachment.url)} 
-                                                                                        alt={attachment.name}
-                                                                                        className="max-h-32 max-w-[180px] rounded-xl object-cover transition-transform hover:scale-105 sm:max-h-48 sm:max-w-[250px]"
-                                                                                        loading="lazy"
-                                                                                        onError={(e) => {
-                                                                                            // Fallback if image fails to load
-                                                                                            (e.target as HTMLImageElement).style.display = 'none';
-                                                                                        }}
-                                                                                    />
-                                                                                </button>
-                                                                            ) : (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => downloadImage(safeAttachmentUrl(attachment.url), attachment.name)}
-                                                                                    className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-colors sm:gap-2 sm:px-3 sm:py-2 ${
-                                                                                        ownMessage
-                                                                                            ? 'text-white'
-                                                                                            : 'text-[#4A4A4A]'
-                                                                                    }`}
-                                                                                    style={{
-                                                                                        background: ownMessage
-                                                                                            ? 'rgba(136,22,28,0.3)'
-                                                                                            : 'rgba(107,114,128,0.15)',
-                                                                                    }}
-                                                                                >
-                                                                                    <svg className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                                    </svg>
-                                                                                    <div className="min-w-0 text-left">
-                                                                                        <p className="max-w-[100px] truncate text-xs font-medium sm:max-w-none sm:text-sm">{attachment.name}</p>
-                                                                                        <p className="text-xs opacity-70">{formatFileSize(attachment.size)}</p>
-                                                                                    </div>
-                                                                                    <svg className="h-3.5 w-3.5 flex-shrink-0 opacity-60 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                                    </svg>
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                            
-                                                            {/* Message bubble with action buttons */}
-                                                            {message.content && (
-                                                                <div className="flex items-center gap-1">
-                                                                    {/* Action buttons - show on left for own messages */}
-                                                                    {ownMessage && (
-                                                                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                                            <button
-                                                                                onClick={() => handleDelete(message.id)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-red-100 hover:text-red-600"
-                                                                                title="Hapus pesan"
-                                                                            >
-                                                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                                </svg>
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => handleReply(message)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
-                                                                                title="Balas"
-                                                                            >
-                                                                                <CornerUpLeft className="h-4 w-4" />
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div 
-                                                                        className={`rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 ${
-                                                                            ownMessage
-                                                                                ? 'text-white'
-                                                                                : isAIMessage(message) || isBotMessage(message)
-                                                                                ? 'text-[#4A4A4A]'
-                                                                                : isSystemMessage(message)
-                                                                                ? 'text-[#4A4A4A]'
-                                                                                : 'text-[#4A4A4A]'
-                                                                        }`}
-                                                                        style={{
-                                                                            background: ownMessage
-                                                                                ? 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)'
-                                                                                : isAIMessage(message) || isBotMessage(message)
-                                                                                ? 'rgba(136,22,28,0.08)'
-                                                                                : isSystemMessage(message)
-                                                                                ? 'linear-gradient(135deg, rgba(136,22,28,0.12) 0%, rgba(136,22,28,0.06) 100%)'
-                                                                                : 'rgba(255,255,255,0.7)',
-                                                                            border: ownMessage
-                                                                                ? '1px solid rgba(255,255,255,0.18)'
-                                                                                : isAIMessage(message) || isBotMessage(message)
-                                                                                ? '1px solid rgba(136,22,28,0.15)'
-                                                                                : isSystemMessage(message)
-                                                                                ? '1px solid rgba(136,22,28,0.2)'
-                                                                                : '1px solid rgba(255,255,255,0.5)',
-                                                                        }}
-                                                                    >
-                                                                        <p className="whitespace-pre-wrap text-sm">
-                                                                            {renderMessageContent(message.content, message.mentions)}
-                                                                        </p>
-                                                                    </div>
-
-                                                                    {/* Action buttons - show on right for others' messages */}
-                                                                    {!ownMessage && (
-                                                                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                                                            <button
-                                                                                onClick={() => handleReply(message)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
-                                                                                title="Balas"
-                                                                            >
-                                                                                <CornerUpLeft className="h-4 w-4" />
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
-                                                            {/* Time - only on last message of group */}
-                                                                    {message.showTime && (
-                                                                        <span className="mt-1 text-xs text-[#9CA3AF]">
-                                                                            {formatTime(message.created_at)}
-                                                                        </span>
-                                                                    )}
-                                                                    {ownMessage && (message.deliveryStatus === 'sending' || message.deliveryStatus === 'failed') && (
-                                                                        <div className="mt-1 flex items-center gap-2 text-xs text-[#6B7280]">
-                                                                            <span>
-                                                                                {message.deliveryStatus === 'sending' ? 'Mengirim...' : 'Gagal mengirim'}
-                                                                            </span>
-                                                                            <button
-                                                                                onClick={() => handleRetryMessage(message)}
-                                                                                className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#88161c]"
-                                                                                style={{ background: '#88161c' }}
-                                                                            >
-                                                                                Coba lagi
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                        </div>
-
-                                                        {/* Own message avatar placeholder for alignment */}
-                                                        {ownMessage && <div className="w-6 flex-shrink-0 sm:w-8" />}
-                                                    </motion.div>
+                                                        message={message}
+                                                        ownMessage={isOwner}
+                                                        renderMessageContent={renderMessageContent}
+                                                        onReply={handleReply}
+                                                        onDelete={handleDelete}
+                                                        onRetry={handleRetryMessage}
+                                                        onOpenImagePreview={openImagePreview}
+                                                        onDownloadAttachment={downloadImage}
+                                                        onEdit={handleEdit}
+                                                        onPin={handlePin}
+                                                        onUnpin={handleUnpin}
+                                                        onCopy={handleCopyMessage}
+                                                        canPin={canPinMessages}
+                                                        isPinned={isPinnedMsg}
+                                                        isEditing={editingMessageId === message.id}
+                                                        editingContent={message.content}
+                                                        onSaveEdit={handleSaveEdit}
+                                                        onCancelEdit={handleCancelEdit}
+                                                        isSavingEdit={isEditingSaving}
+                                                        isHighlighted={searchHighlightId === message.id}
+                                                        canEdit={isOwner && editTimeLimit}
+                                                    />
                                                 );
                                             })}
                                         </AnimatePresence>
@@ -1358,6 +1873,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
+                                        </>
+                                        )}
                                     </div>
                                 </LayoutGroup>
                             </div>
@@ -1384,8 +1901,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 </div>
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={cancelReply}
                                                 className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50"
+                                                aria-label="Tutup"
                                             >
                                                 <X className="h-4 w-4" />
                                             </button>
@@ -1414,8 +1933,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         <div className="relative h-16 w-16 overflow-hidden rounded-xl border border-white/50 sm:h-20 sm:w-20">
                                                             <img src={pf.preview} alt={pf.file.name} className="h-full w-full object-cover" loading="lazy" />
                                                             <button
+                                                                type="button"
                                                                 onClick={() => removePendingFile(pf.id)}
                                                                 className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
+                                                                aria-label="Tutup"
                                                             >
                                                                 <X className="h-3 w-3" />
                                                             </button>
@@ -1430,8 +1951,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                                 <p className="text-xs text-[#6B7280]">{formatFileSize(pf.file.size)}</p>
                                                             </div>
                                                             <button
+                                                                type="button"
                                                                 onClick={() => removePendingFile(pf.id)}
                                                                 className="ml-1 flex h-6 w-6 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-white/50"
+                                                                aria-label="Tutup"
                                                             >
                                                                 <X className="h-4 w-4" />
                                                             </button>
@@ -1450,12 +1973,16 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: 10 }}
+                                            role="menu"
+                                            aria-label="Saran mention"
                                             className="mb-2 max-h-32 overflow-y-auto rounded-xl border border-white/50 bg-white/90 shadow-lg backdrop-blur-sm sm:max-h-40"
                                         >
                                             {filteredMembers.map((member, index) => (
                                                 <button
                                                     key={member.id}
+                                                    type="button"
                                                     onClick={() => insertMention(member)}
+                                                    role="menuitem"
                                                     className={`flex w-full items-center gap-2 px-3 py-2 text-left transition-colors ${
                                                         index === selectedMentionIndex
                                                             ? 'bg-[rgba(136,22,28,0.08)]'
@@ -1512,6 +2039,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
                                         onChange={handleFileSelect}
                                         className="hidden"
+                                        aria-label="Lampirkan file"
                                     />
                                     
                                     {/* File upload button */}
@@ -1522,6 +2050,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-[#6B7280] transition-colors hover:border-[#88161c] hover:text-[#88161c] disabled:cursor-not-allowed disabled:opacity-50"
                                         style={{ background: 'rgba(255,255,255,0.5)' }}
                                         title={sessionClosed ? "Sesi telah ditutup" : "Lampirkan file"}
+                                        aria-label="Lampirkan file"
                                     >
                                         <Paperclip className="h-5 w-5" />
                                     </button>
@@ -1555,6 +2084,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             boxShadow: '0 8px 32px rgba(136,22,28,0.4)',
                                         }}
                                         title={sessionClosed ? "Sesi telah ditutup" : "Kirim pesan"}
+                                        aria-label="Kirim pesan"
                                     >
                                         {isUploading ? (
                                             <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -1569,7 +2099,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         )}
                                     </button>
                                 </form>
-                                <p className="mt-2 text-center text-xs text-[#9CA3AF]">
+                                <p className="mt-2 text-center text-xs text-[#6B7280]">
                                     Tips: Sebut <span className="font-medium text-[#88161c]">@ai</span> untuk bertanya kepada Asisten AI.
                                 </p>
                             </div>
@@ -1773,7 +2303,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
                                 Anggota
                             </h3>
-                            <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
+                            <span className="text-xs text-[#6B7280]">{group.members?.length || 0}</span>
                         </div>
                         <div className="space-y-2">
                             {group.members?.map((member) => {
@@ -1795,7 +2325,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             <p className="truncate text-sm font-medium text-[#4A4A4A]">
                                                 {member.name}
                                                 {member.id === auth.user?.id && (
-                                                    <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
+                                                    <span className="ml-1 text-xs text-[#6B7280]">(kamu)</span>
                                                 )}
                                             </p>
                                             <p className="truncate text-xs text-[#6B7280]">
@@ -1855,14 +2385,20 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 animate={{ opacity: 0.5 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.15 }}
-                                onClick={() => setShowRightSidebar(false)}
+                                onClick={closeRightSidebar}
                                 className="fixed inset-0 z-40 bg-black lg:hidden"
                             />
                             <motion.aside
+                                ref={rightSidebarRef}
                                 initial={{ x: 288 }}
                                 animate={{ x: 0 }}
                                 exit={{ x: 288 }}
                                 transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Detail grup"
+                                tabIndex={-1}
+                                onKeyDown={(event) => handleDialogKeyDown(event, closeRightSidebar)}
                                 className="fixed inset-y-0 right-0 z-50 w-72 overflow-y-auto border-l border-white/50 p-4 lg:hidden"
                                 style={{ 
                                     background: 'linear-gradient(135deg, #f5f0f0 0%, #e8e4f0 50%, #f0e8e8 100%)',
@@ -1872,9 +2408,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 <div className="mb-4 flex items-center justify-between">
                                     <h2 className="font-semibold text-[#4A4A4A]" style={headingStyle}>Detail</h2>
                                     <button
-                                        onClick={() => setShowRightSidebar(false)}
+                                        type="button"
+                                        onClick={closeRightSidebar}
                                         className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
+                                        aria-label="Tutup"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -2015,7 +2553,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
                                             Anggota
                                         </h3>
-                                        <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
+                                        <span className="text-xs text-[#6B7280]">{group.members?.length || 0}</span>
                                     </div>
                                     <div className="space-y-2">
                                         {group.members?.map((member) => {
@@ -2037,7 +2575,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         <p className="truncate text-sm font-medium text-[#4A4A4A]">
                                                             {member.name}
                                                             {member.id === auth.user?.id && (
-                                                                <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
+                                                                <span className="ml-1 text-xs text-[#6B7280]">(kamu)</span>
                                                             )}
                                                         </p>
                                                         <p className="truncate text-xs text-[#6B7280]">
@@ -2102,10 +2640,21 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4"
                         onClick={closeImagePreview}
                     >
+                        <div
+                            ref={imagePreviewDialogRef}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={`Pratinjau gambar ${previewImage.name}`}
+                            tabIndex={-1}
+                            onKeyDown={(event) => handleDialogKeyDown(event, closeImagePreview)}
+                            className="contents"
+                        >
                         {/* Close button */}
                         <button
+                            type="button"
                             onClick={closeImagePreview}
                             className="absolute right-2 top-2 rounded-full bg-white/10 p-1.5 text-white transition-colors hover:bg-white/20 sm:right-4 sm:top-4 sm:p-2"
+                            aria-label="Tutup"
                         >
                             <X className="h-5 w-5 sm:h-6 sm:w-6" />
                         </button>
@@ -2118,6 +2667,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         {/* Zoom controls */}
                         <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/10 px-2 py-1.5 backdrop-blur-sm sm:bottom-4 sm:gap-2 sm:px-4 sm:py-2">
                             <button
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); zoomOut(); }}
                                 disabled={imageZoom <= 0.5}
                                 className="rounded-full p-1.5 text-white transition-colors hover:bg-white/20 disabled:opacity-50 sm:p-2"
@@ -2129,6 +2679,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             </button>
                             
                             <button
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); resetZoom(); }}
                                 className="min-w-[50px] rounded-full px-2 py-0.5 text-xs font-medium text-white transition-colors hover:bg-white/20 sm:min-w-[60px] sm:px-3 sm:py-1 sm:text-sm"
                                 title="Reset zoom (0)"
@@ -2137,6 +2688,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             </button>
                             
                             <button
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); zoomIn(); }}
                                 disabled={imageZoom >= 3}
                                 className="rounded-full p-1.5 text-white transition-colors hover:bg-white/20 disabled:opacity-50 sm:p-2"
@@ -2150,6 +2702,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             <div className="mx-1 h-5 w-px bg-white/30 sm:mx-2 sm:h-6" />
 
                             <button
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); downloadImage(previewImage.url, previewImage.name); }}
                                 className="rounded-full p-1.5 text-white transition-colors hover:bg-white/20 sm:p-2"
                                 title="Unduh gambar"
@@ -2184,6 +2737,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5">+/-</span> zoom
                             <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5">0</span> reset
                         </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -2196,12 +2750,18 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                        onClick={() => !isSubmittingReflection && setShowReflectionModal(false)}
+                        onClick={() => !isSubmittingReflection && closeReflectionModal()}
                     >
                         <motion.div
+                            ref={reflectionModalRef}
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Refleksi sesi"
+                            tabIndex={-1}
+                            onKeyDown={(event) => handleDialogKeyDown(event, closeReflectionModal, !isSubmittingReflection)}
                             className="w-full max-w-lg rounded-2xl border border-white/50 p-6 shadow-xl"
                             style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}
                             onClick={(e) => e.stopPropagation()}
@@ -2261,7 +2821,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 <div className="mt-1 flex items-center justify-between">
                                     <p className={`text-xs ${
                                         reflectionContent.length < 50
-                                            ? 'text-[#9CA3AF]'
+                                            ? 'text-[#6B7280]'
                                             : 'text-green-600'
                                     }`}>
                                         {reflectionContent.length}/50 karakter minimum
@@ -2274,7 +2834,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                             <div className="flex items-center justify-end gap-3">
                                 <button
-                                    onClick={() => setShowReflectionModal(false)}
+                                    type="button"
+                                    onClick={closeReflectionModal}
                                     className="rounded-xl px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-white/50"
                                     disabled={isSubmittingReflection}
                                 >
@@ -2318,12 +2879,18 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                        onClick={() => !isClosingSession && setShowCloseConfirmModal(false)}
+                        onClick={() => !isClosingSession && closeCloseConfirmModal()}
                     >
                         <motion.div
+                            ref={closeConfirmModalRef}
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Konfirmasi tutup sesi diskusi"
+                            tabIndex={-1}
+                            onKeyDown={(event) => handleDialogKeyDown(event, closeCloseConfirmModal, !isClosingSession)}
                             className="w-full max-w-md rounded-2xl border border-white/50 p-6 shadow-xl"
                             style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}
                             onClick={(e) => e.stopPropagation()}
@@ -2349,7 +2916,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                             <div className="flex items-center justify-end gap-3">
                                 <button
-                                    onClick={() => setShowCloseConfirmModal(false)}
+                                    type="button"
+                                    onClick={closeCloseConfirmModal}
                                     className="rounded-xl px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-white/50"
                                     disabled={isClosingSession}
                                 >
