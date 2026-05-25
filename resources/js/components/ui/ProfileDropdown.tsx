@@ -52,25 +52,12 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
 
             {isOpen && (
                 <div
-                    className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg"
+                    className="absolute bottom-full right-0 z-50 mb-2 w-80 overflow-hidden rounded-xl border shadow-lg"
                     style={{
                         background: 'var(--dm-surface)',
                         borderColor: 'var(--dm-border)',
                     }}
                 >
-                    <div className="border-b p-4" style={{ borderColor: 'var(--dm-border)' }}>
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-lg font-semibold text-white">
-                                {initials}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate font-semibold text-[var(--dm-text)]">{displayName}</p>
-                                {user.email && <p className="truncate text-sm text-[var(--dm-text-secondary)]">{user.email}</p>}
-                                <p className="text-xs capitalize text-[var(--dm-text-secondary)]">{user.role}</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="p-3">
                         <div className="mb-2 flex items-center gap-2 px-2 text-sm font-semibold text-[var(--dm-text)]">
                             <Bell className="h-4 w-4" />
