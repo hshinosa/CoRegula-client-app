@@ -136,9 +136,9 @@ class DashboardController extends Controller
                 $stats['chatMessages'] = $data['chatMessages'] ?? 0;
             }
         } catch (ConnectionException $e) {
-            // Stats endpoint may not exist yet, continue with defaults
+            \Illuminate\Support\Facades\Log::warning('Student stats API error', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            // Stats endpoint may not exist yet, continue with defaults
+            \Illuminate\Support\Facades\Log::warning('Student stats API error', ['error' => $e->getMessage()]);
         }
 
         // Fetch recent activity
