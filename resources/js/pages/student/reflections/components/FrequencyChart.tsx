@@ -9,7 +9,7 @@ interface FrequencyChartProps {
 export function FrequencyChart({ data, period }: FrequencyChartProps) {
     if (data.length === 0) {
         return (
-            <div className="flex h-40 items-center justify-center text-sm text-[#6B7280]">
+            <div className="flex h-40 items-center justify-center text-sm text-brand-muted-dark">
                 Belum ada data frekuensi
             </div>
         );
@@ -26,7 +26,7 @@ export function FrequencyChart({ data, period }: FrequencyChartProps) {
 
     return (
         <div>
-            <p className="mb-3 text-xs text-[#6B7280]">{narrativeLabel}</p>
+            <p className="mb-3 text-xs text-brand-muted-dark">{narrativeLabel}</p>
             <div className="flex items-end justify-center gap-1" style={{ height: 160 }}>
                 {data.map((point, i) => (
                     <motion.div
@@ -36,7 +36,7 @@ export function FrequencyChart({ data, period }: FrequencyChartProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
                     >
-                        <span className="text-[10px] font-medium text-[#4A4A4A]">{point.count}</span>
+                        <span className="text-[10px] font-medium text-brand-dark">{point.count}</span>
                         <div
                             className="rounded-t-sm transition-all"
                             style={{
@@ -47,7 +47,7 @@ export function FrequencyChart({ data, period }: FrequencyChartProps) {
                             }}
                             title={`${point.label}: ${point.count} refleksi`}
                         />
-                        <span className="text-[9px] text-[#6B7280] truncate" style={{ maxWidth: barWidth + 8 }}>
+                        <span className="text-[9px] text-brand-muted-dark truncate" style={{ maxWidth: barWidth + 8 }}>
                             {formatLabel(point.label, period)}
                         </span>
                     </motion.div>

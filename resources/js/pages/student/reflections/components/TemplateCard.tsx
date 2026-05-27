@@ -24,8 +24,7 @@ export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCard
         >
             <div className="mb-2 flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-[#88161c]" />
-                    <h4 className="text-sm font-semibold text-[#4A4A4A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <FileText className="h-4 w-4 text-brand-primary" />
                         {template.title}
                     </h4>
                 </div>
@@ -44,7 +43,7 @@ export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCard
             </div>
 
             {template.description && (
-                <p className="mb-2 text-xs text-[#6B7280] line-clamp-2">{template.description}</p>
+                <p className="mb-2 text-xs text-brand-muted-dark line-clamp-2">{template.description}</p>
             )}
 
             {template.category && (
@@ -66,7 +65,7 @@ export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCard
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#4A4A4A] transition-colors hover:bg-white/80"
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-dark transition-colors hover:bg-white/80"
                         >
                             <Edit className="h-3 w-3" />
                             Edit

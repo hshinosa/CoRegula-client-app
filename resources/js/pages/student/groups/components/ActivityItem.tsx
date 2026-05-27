@@ -63,10 +63,10 @@ export function ActivityItem({ activity, index = 0, isLast = false }: ActivityIt
                         <p className="text-sm" style={{ color: '#4A4A4A' }}>
                             <span className="font-semibold">{activity.user.name}</span>
                             {' '}
-                            <span className="text-[#6B7280]">{activity.description}</span>
+                            <span className="text-brand-muted-dark">{activity.description}</span>
                         </p>
                         {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                            <p className="mt-1 text-xs text-[#6B7280]">
+                            <p className="mt-1 text-xs text-brand-muted-dark">
                                 {String(activity.metadata['detail'] ?? '')}
                             </p>
                         )}
@@ -83,7 +83,7 @@ export function ActivityItem({ activity, index = 0, isLast = false }: ActivityIt
                                 Baru
                             </span>
                         )}
-                        <div className="flex items-center gap-1 text-xs text-[#6B7280]">
+                        <div className="flex items-center gap-1 text-xs text-brand-muted-dark">
                             <Clock className="h-3 w-3" />
                             {formatRelativeTime(activity.created_at)}
                         </div>

@@ -43,10 +43,10 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
     const displayStats = stats ?? { enrolledCourses: 0, activeGroups: 0, reflections: 0, chatMessages: 0 };
 
     const statCards = [
-        { label: 'Mata Kuliah', value: displayStats.enrolledCourses, icon: BookOpen, color: '#88161c' },
-        { label: 'Grup Aktif', value: displayStats.activeGroups, icon: Users, color: '#4A4A4A' },
-        { label: 'Refleksi', value: displayStats.reflections, icon: Pencil, color: '#6B7280' },
-        { label: 'Pesan Obrolan', value: displayStats.chatMessages, icon: MessageSquare, color: '#88161c' },
+        { label: 'Mata Kuliah', value: displayStats.enrolledCourses, icon: BookOpen, color: 'rgb(var(--color-brand-primary))' },
+        { label: 'Grup Aktif', value: displayStats.activeGroups, icon: Users, color: 'rgb(var(--color-brand-dark))' },
+        { label: 'Refleksi', value: displayStats.reflections, icon: Pencil, color: 'rgb(var(--color-brand-muted))' },
+        { label: 'Pesan Obrolan', value: displayStats.chatMessages, icon: MessageSquare, color: 'rgb(var(--color-brand-primary))' },
     ];
 
     const quickActions = [
@@ -55,28 +55,28 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
             icon: Users,
             title: 'Gabung Mata Kuliah',
             desc: 'Gunakan kode gabung',
-            color: '#88161c',
+            color: 'rgb(var(--color-brand-primary))',
         },
         {
             href: student.courses.index.url(),
             icon: MessageSquare,
             title: 'Diskusi Grup',
             desc: 'Berkolaborasi sekarang',
-            color: '#4A4A4A',
+            color: 'rgb(var(--color-brand-dark))',
         },
         {
             href: student.reflections.index.url(),
             icon: Pencil,
             title: 'Tulis Refleksi',
             desc: 'Pantau pembelajaran Anda',
-            color: '#6B7280',
+            color: 'rgb(var(--color-brand-muted))',
         },
         {
             href: student.aiChat.index.url(),
             icon: Sparkles,
             title: 'Chat dengan AI',
             desc: 'Tanya apapun',
-            color: '#88161c',
+            color: 'rgb(var(--color-brand-primary))',
         },
     ];
 
@@ -96,10 +96,10 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <h1 className="text-2xl font-bold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                        <h1 className="text-2xl font-bold font-sans text-brand-dark">
                                             Selamat datang kembali, {auth.user?.name}!
                                         </h1>
-                                        <p className="mt-2 text-[#6B7280]">Pantau progres belajar Anda dan berkolaborasi dengan tim</p>
+                                        <p className="mt-2 text-brand-muted-dark">Pantau progres belajar Anda dan berkolaborasi dengan tim</p>
                                     </div>
                                     <div
                                         className="flex h-14 w-14 items-center justify-center rounded-2xl"
@@ -126,10 +126,9 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                                 <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <p className="text-sm text-[#6B7280]">{stat.label}</p>
+                                            <p className="text-sm text-brand-muted-dark">{stat.label}</p>
                                             <p
-                                                className="mt-2 text-3xl font-light"
-                                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                                className="mt-2 text-3xl font-light font-sans text-brand-dark"
                                             >
                                                 {stat.value}
                                             </p>
@@ -157,7 +156,7 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                             transition={{ delay: 0.4, duration: 0.5 }}
                         >
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                                <h2 className="mb-4 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
                                     Aksi Cepat
                                 </h2>
                                 <QuickActionsGrid actions={quickActions} />
@@ -170,7 +169,7 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                             transition={{ delay: 0.5, duration: 0.5 }}
                         >
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                                <h2 className="mb-4 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
                                     Aktivitas Terbaru
                                 </h2>
                                 <ActivityFeed activities={recentActivity} maxItems={5} />

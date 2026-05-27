@@ -6,7 +6,6 @@ import { router } from '@inertiajs/react';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 interface LeaveGroupButtonProps {
@@ -83,7 +82,7 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
                                 <h4 className="text-sm font-semibold" style={headingStyle}>
                                     Keluar dari Grup?
                                 </h4>
-                                <p className="mt-1 text-xs text-[#6B7280]">
+                                <p className="mt-1 text-xs text-brand-muted-dark">
                                     Anda akan kehilangan akses ke semua diskusi dan dokumen dalam grup ini.
                                 </p>
                                 <div className="mt-3 flex gap-2">

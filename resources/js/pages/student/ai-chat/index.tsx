@@ -619,7 +619,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                                                 style={{
                                                     background: message.role === 'user'
-                                                        ? 'linear-gradient(135deg, #88161c 0%, #a41219 100%)'
+                                                        ? 'linear-gradient(135deg, rgb(var(--color-brand-primary)) 0%, #a41219 100%)'
                                                         : 'rgba(136,22,28,0.08)',
                                                     border: message.role === 'user'
                                                         ? '1px solid rgba(255,255,255,0.18)'

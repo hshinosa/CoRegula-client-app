@@ -107,11 +107,11 @@ const Avatar = ({
     return (
         <div className={`flex items-center justify-center rounded-full ${bgColor} ${className}`}>
             {type === 'ai' || type === 'bot' ? (
-                <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
             ) : (
-                <span className="text-sm font-bold text-[#4A4A4A]">
+                <span className="text-sm font-bold text-brand-dark">
                     {name?.charAt(0)?.toUpperCase() || '?'}
                 </span>
             )}
@@ -121,8 +121,8 @@ const Avatar = ({
 
 // Style constants matching the design system
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
+    ,
 } as const;
 
 export default function StudentChatIndex({ course, group, goal, hasGoal, socketUrl }: Props) {
@@ -527,7 +527,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                         );
                         if (isMentioned) {
                             return (
-                                <span key={i} className="rounded bg-[rgba(136,22,28,0.12)] px-1 font-semibold text-[#88161c]">
+                                <span key={i} className="rounded bg-[rgba(136,22,28,0.12)] px-1 font-semibold text-brand-primary">
                                     {part}
                                 </span>
                             );
@@ -676,13 +676,13 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         border: '1px solid rgba(136,22,28,0.12)' 
                                     }}
                                 >
-                                    <MessageSquare className="h-5 w-5 text-[#88161c]" />
+                                    <MessageSquare className="h-5 w-5 text-brand-primary" />
                                 </div>
                                 <div className="min-w-0">
                                     <h2 className="truncate text-lg font-semibold" style={headingStyle}>
                                         {group.name}
                                     </h2>
-                                    <p className="truncate text-sm text-[#6B7280]">
+                                    <p className="truncate text-sm text-brand-muted-dark">
                                         {course.name} • Kanal
                                     </p>
                                 </div>
@@ -694,7 +694,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         {onlineUsers.slice(0, 2).map((user, index) => (
                                             <div
                                                 key={user.odId}
-                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-[#88161c]"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-brand-primary"
                                                 style={{ 
                                                     zIndex: 3 - index,
                                                     background: 'rgba(136,22,28,0.1)',
@@ -706,7 +706,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         ))}
                                         {onlineUsers.length > 2 && (
                                             <div 
-                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-medium text-[#6B7280]"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-medium text-brand-muted-dark"
                                                 style={{ background: 'rgba(107,114,128,0.15)' }}
                                             >
                                                 +{onlineUsers.length - 2}
@@ -717,7 +717,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                 {/* Mobile: Toggle right sidebar */}
                                 <button
                                     onClick={() => setShowRightSidebar(!showRightSidebar)}
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50 lg:hidden"
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50 lg:hidden"
                                     style={{ background: 'rgba(255,255,255,0.4)' }}
                                 >
                                     <Users className="h-5 w-5" />
@@ -750,10 +750,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-[#4A4A4A]" style={headingStyle}>
+                                                <p className="font-semibold text-brand-dark" style={headingStyle}>
                                                     Tetapkan tujuan pembelajaran Anda
                                                 </p>
-                                                <p className="mt-0.5 text-sm text-[#6B7280]">
+                                                <p className="mt-0.5 text-sm text-brand-muted-dark">
                                                     Bantu fokus diskusi dengan menetapkan tujuan SMART untuk sesi ini.
                                                 </p>
                                             </div>
@@ -773,7 +773,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             )}
                                             <button
                                                 onClick={() => setShowGoalBanner(false)}
-                                                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50"
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
                                                 style={{ background: 'rgba(255,255,255,0.4)' }}
                                             >
                                                 <X className="h-4 w-4" />
@@ -854,7 +854,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         <div className={`group flex max-w-[85%] flex-col sm:max-w-[70%] ${ownMessage ? 'items-end' : 'items-start'}`}>
                                                             {/* Sender name - only on first message of group */}
                                                             {!ownMessage && message.showName && (
-                                                                <span className="mb-1 ml-1 text-xs font-medium text-[#6B7280]">
+                                                                <span className="mb-1 ml-1 text-xs font-medium text-brand-muted-dark">
                                                                     {getSenderDisplayName(message)}
                                                                 </span>
                                                             )}
@@ -865,7 +865,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                     className={`mb-1 flex items-center gap-1 rounded-xl px-2 py-1 text-xs sm:px-3 sm:py-1.5 ${
                                                                         ownMessage 
                                                                             ? 'text-white' 
-                                                                            : 'text-[#6B7280]'
+                                                                            : 'text-brand-muted-dark'
                                                                     }`}
                                                                     style={{
                                                                         background: ownMessage 
@@ -888,7 +888,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => openImagePreview(safeAttachmentUrl(attachment.url), attachment.name)}
-                                                                                    className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[#88161c]"
+                                                                                    className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-brand-primary))]"
                                                                                 >
                                                                                     <img 
                                                                                         src={safeAttachmentUrl(attachment.url)} 
@@ -908,7 +908,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                                     className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-colors sm:gap-2 sm:px-3 sm:py-2 ${
                                                                                         ownMessage
                                                                                             ? 'text-white'
-                                                                                            : 'text-[#4A4A4A]'
+                                                                                            : 'text-brand-dark'
                                                                                     }`}
                                                                                     style={{
                                                                                         background: ownMessage
@@ -941,7 +941,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                                                             <button
                                                                                 onClick={() => handleDelete(message.id)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-red-100 hover:text-red-600"
+                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-red-100 hover:text-red-600"
                                                                                 title="Hapus pesan"
                                                                             >
                                                                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -950,7 +950,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => handleReply(message)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
+                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-primary"
                                                                                 title="Balas"
                                                                             >
                                                                                 <CornerUpLeft className="h-4 w-4" />
@@ -963,8 +963,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                             ownMessage
                                                                                 ? 'text-white'
                                                                                 : isAIMessage(message) || isBotMessage(message)
-                                                                                ? 'text-[#4A4A4A]'
-                                                                                : 'text-[#4A4A4A]'
+                                                                                ? 'text-brand-dark'
+                                                                                : 'text-brand-dark'
                                                                         }`}
                                                                         style={{
                                                                             background: ownMessage
@@ -985,11 +985,11 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                     </div>
 
                                                                     {ownMessage && (
-                                                                        <div className="mt-1 text-xs text-[#6B7280]">
+                                                                        <div className="mt-1 text-xs text-brand-muted-dark">
                                                                             {message.deliveryStatus === 'sending' ? (
                                                                                 <span>Mengirim...</span>
                                                                             ) : message.deliveryStatus === 'failed' ? (
-                                                                                <button onClick={() => handleRetryMessage(message)} className="text-[#88161c] hover:underline">Coba lagi</button>
+                                                                                <button onClick={() => handleRetryMessage(message)} className="text-brand-primary hover:underline">Coba lagi</button>
                                                                             ) : null}
                                                                         </div>
                                                                     )}
@@ -999,7 +999,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                                                             <button
                                                                                 onClick={() => handleReply(message)}
-                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
+                                                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-primary"
                                                                                 title="Balas"
                                                                             >
                                                                                 <CornerUpLeft className="h-4 w-4" />
@@ -1046,12 +1046,12 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         animate={{ scale: 1 }}
                                                         exit={{ scale: 0.8 }}
                                                     >
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '0ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '150ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '300ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '0ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '150ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '300ms' }} />
                                                     </motion.div>
                                                     <motion.span 
-                                                        className="text-xs text-[#6B7280]"
+                                                        className="text-xs text-brand-muted-dark"
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         exit={{ opacity: 0, x: -10 }}
@@ -1074,21 +1074,21 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-[#88161c] px-3 py-2"
+                                            className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-brand-primary px-3 py-2"
                                             style={{ background: 'rgba(136,22,28,0.06)' }}
                                         >
                                             <div className="flex items-center gap-2 overflow-hidden">
-                                                <CornerUpLeft className="hidden h-4 w-4 flex-shrink-0 text-[#88161c] sm:block" />
+                                                <CornerUpLeft className="hidden h-4 w-4 flex-shrink-0 text-brand-primary sm:block" />
                                                 <div className="min-w-0">
-                                                    <span className="text-xs font-medium text-[#88161c]">
+                                                    <span className="text-xs font-medium text-brand-primary">
                                                         Membalas {replyingTo.senderName}
                                                     </span>
-                                                    <p className="truncate text-xs text-[#6B7280]">{replyingTo.content}</p>
+                                                    <p className="truncate text-xs text-brand-muted-dark">{replyingTo.content}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={cancelReply}
-                                                className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50"
+                                                className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50"
                                             >
                                                 <X className="h-4 w-4" />
                                             </button>
@@ -1125,16 +1125,16 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         </div>
                                                     ) : (
                                                         <div className="relative flex items-center gap-1.5 rounded-xl border border-white/50 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2" style={{ background: 'rgba(255,255,255,0.5)' }}>
-                                                            <svg className="h-4 w-4 text-[#6B7280] sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <svg className="h-4 w-4 text-brand-muted-dark sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                             </svg>
                                                             <div className="max-w-[80px] sm:max-w-[100px]">
-                                                                <p className="truncate text-xs font-medium text-[#4A4A4A]">{pf.file.name}</p>
-                                                                <p className="text-xs text-[#6B7280]">{formatFileSize(pf.file.size)}</p>
+                                                                <p className="truncate text-xs font-medium text-brand-dark">{pf.file.name}</p>
+                                                                <p className="text-xs text-brand-muted-dark">{formatFileSize(pf.file.size)}</p>
                                                             </div>
                                                             <button
                                                                 onClick={() => removePendingFile(pf.id)}
-                                                                className="ml-1 flex h-6 w-6 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-white/50"
+                                                                className="ml-1 flex h-6 w-6 items-center justify-center rounded text-brand-muted-dark transition-colors hover:bg-white/50"
                                                             >
                                                                 <X className="h-4 w-4" />
                                                             </button>
@@ -1166,13 +1166,13 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                     }`}
                                                 >
                                                     <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8" style={{ background: 'rgba(136,22,28,0.08)' }}>
-                                                        <span className="text-xs font-bold text-[#88161c] sm:text-sm">
+                                                        <span className="text-xs font-bold text-brand-primary sm:text-sm">
                                                             {member.name.charAt(0).toUpperCase()}
                                                         </span>
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium text-[#4A4A4A]">{member.name}</p>
-                                                        <p className="hidden truncate text-xs text-[#6B7280] sm:block">{member.email}</p>
+                                                        <p className="truncate text-sm font-medium text-brand-dark">{member.name}</p>
+                                                        <p className="hidden truncate text-xs text-brand-muted-dark sm:block">{member.email}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -1196,7 +1196,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={!isConnected}
-                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-[#6B7280] transition-colors hover:border-[#88161c] hover:text-[#88161c] disabled:opacity-50"
+                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-brand-muted-dark transition-colors hover:border-brand-primary hover:text-brand-primary disabled:opacity-50"
                                         style={{ background: 'rgba(255,255,255,0.5)' }}
                                         title="Lampirkan file"
                                     >
@@ -1212,7 +1212,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             onBlur={handleInputBlur}
                                             onKeyDown={handleKeyDown}
                                             placeholder={replyingTo ? `Balas ${replyingTo.senderName}...` : "Ketik @ untuk menyebut..."}
-                                            className="h-11 w-full rounded-xl border border-white/50 bg-white/60 px-4 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] shadow-sm outline-none transition-all focus:border-[#88161c] focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] sm:text-base"
+                                            className="h-11 w-full rounded-xl border border-white/50 bg-white/60 px-4 text-sm text-brand-dark placeholder-[#9CA3AF] shadow-brand-sm outline-none transition-all focus:border-brand-primary focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] sm:text-base"
                                         />
                                     </div>
 
@@ -1239,7 +1239,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     </button>
                                 </form>
                                 <p className="mt-2 text-center text-xs text-[#9CA3AF]">
-                                    Tips: Sebut <span className="font-medium text-[#88161c]">@agent</span> untuk memberikan tugas atau merangkum diskusi.
+                                    Tips: Sebut <span className="font-medium text-brand-primary">@agent</span> untuk memberikan tugas atau merangkum diskusi.
                                 </p>
                             </div>
                         </div>
@@ -1256,15 +1256,15 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     className="flex h-8 w-8 items-center justify-center rounded-xl"
                                     style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                 >
-                                    <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
                                     Tujuan Saya
                                 </h3>
                             </div>
-                            <p className="text-sm text-[#4A4A4A]">
+                            <p className="text-sm text-brand-dark">
                                 {goal.content}
                             </p>
                         </LiquidGlassCard>
@@ -1286,7 +1286,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     Belum Ada Tujuan
                                 </h3>
                             </div>
-                            <p className="mb-3 text-xs text-[#6B7280]">
+                            <p className="mb-3 text-xs text-brand-muted-dark">
                                 Tetapkan tujuan untuk membantu fokus diskusi Anda.
                             </p>
                             {activeChatSpace && (
@@ -1307,7 +1307,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                     {/* Members Section */}
                     <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                 Anggota
                             </h3>
                             <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
@@ -1319,7 +1319,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     <div key={member.id} className="flex items-center gap-3">
                                         <div className="relative">
                                             <div 
-                                                className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-[#88161c]"
+                                                className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-brand-primary"
                                                 style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                             >
                                                 {member.name.charAt(0).toUpperCase()}
@@ -1329,13 +1329,13 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                            <p className="truncate text-sm font-medium text-brand-dark">
                                                 {member.name}
                                                 {member.id === auth.user?.id && (
                                                     <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
                                                 )}
                                             </p>
-                                            <p className="truncate text-xs text-[#6B7280]">
+                                            <p className="truncate text-xs text-brand-muted-dark">
                                                 {isOnline ? 'Aktif' : 'Tidak aktif'}
                                             </p>
                                         </div>
@@ -1347,7 +1347,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
                     {/* Shared Resources Section */}
                     <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
-                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                             Sumber Daya Bersama
                         </h3>
                         <div className="space-y-2">
@@ -1359,10 +1359,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     DOC
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                    <p className="truncate text-sm font-medium text-brand-dark">
                                         Panduan Mata Kuliah
                                     </p>
-                                    <p className="text-xs text-[#6B7280]">Dibagikan oleh dosen</p>
+                                    <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
@@ -1373,10 +1373,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                     PDF
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                    <p className="truncate text-sm font-medium text-brand-dark">
                                         Template Tugas
                                     </p>
-                                    <p className="text-xs text-[#6B7280]">Ditambahkan 2 jam lalu</p>
+                                    <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
                                 </div>
                             </div>
                         </div>
@@ -1407,10 +1407,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                             >
                                 {/* Close button */}
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="font-semibold text-[#4A4A4A]" style={headingStyle}>Detail</h2>
+                                    <h2 className="font-semibold text-brand-dark" style={headingStyle}>Detail</h2>
                                     <button
                                         onClick={() => setShowRightSidebar(false)}
-                                        className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50"
+                                        className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
                                     >
                                         <X className="h-5 w-5" />
@@ -1425,15 +1425,15 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 className="flex h-8 w-8 items-center justify-center rounded-xl"
                                                 style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                             >
-                                                <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
                                                 Tujuan Saya
                                             </h3>
                                         </div>
-                                        <p className="text-sm text-[#4A4A4A]">
+                                        <p className="text-sm text-brand-dark">
                                             {goal.content}
                                         </p>
                                     </LiquidGlassCard>
@@ -1455,7 +1455,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 Belum Ada Tujuan
                                             </h3>
                                         </div>
-                                        <p className="mb-3 text-xs text-[#6B7280]">
+                                        <p className="mb-3 text-xs text-brand-muted-dark">
                                             Tetapkan tujuan untuk membantu fokus diskusi Anda.
                                         </p>
                                         {activeChatSpace && (
@@ -1476,7 +1476,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                 {/* Members Section */}
                                 <div className="mb-6">
                                     <div className="mb-3 flex items-center justify-between">
-                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                             Anggota
                                         </h3>
                                         <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
@@ -1488,7 +1488,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 <div key={member.id} className="flex items-center gap-3">
                                                     <div className="relative">
                                                         <div 
-                                                            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-[#88161c]"
+                                                            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-brand-primary"
                                                             style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                                         >
                                                             {member.name.charAt(0).toUpperCase()}
@@ -1498,13 +1498,13 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         )}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                        <p className="truncate text-sm font-medium text-brand-dark">
                                                             {member.name}
                                                             {member.id === auth.user?.id && (
                                                                 <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
                                                             )}
                                                         </p>
-                                                        <p className="truncate text-xs text-[#6B7280]">
+                                                        <p className="truncate text-xs text-brand-muted-dark">
                                                             {isOnline ? 'Aktif' : 'Tidak aktif'}
                                                         </p>
                                                     </div>
@@ -1516,7 +1516,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
                                 {/* Shared Resources Section */}
                                 <div>
-                                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                         Sumber Daya Bersama
                                     </h3>
                                     <div className="space-y-2">
@@ -1528,10 +1528,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 DOC
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                <p className="truncate text-sm font-medium text-brand-dark">
                                                     Panduan Mata Kuliah
                                                 </p>
-                                                <p className="text-xs text-[#6B7280]">Dibagikan oleh dosen</p>
+                                                <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
@@ -1542,10 +1542,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                 PDF
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                <p className="truncate text-sm font-medium text-brand-dark">
                                                     Template Tugas
                                                 </p>
-                                                <p className="text-xs text-[#6B7280]">Ditambahkan 2 jam lalu</p>
+                                                <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
                                             </div>
                                         </div>
                                     </div>

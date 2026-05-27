@@ -70,8 +70,8 @@ export function BookmarkButton({
             disabled={isLoading}
             className={`rounded-lg p-1.5 transition-all ${
                 bookmarked
-                    ? 'bg-[#88161c]/10 text-[#88161c] hover:bg-[#88161c]/20'
-                    : 'text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#6B7280]'
+                    ? 'bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20'
+                    : 'text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-brand-muted-dark'
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={bookmarked ? 'Hapus bookmark' : 'Bookmark pesan ini'}
         >

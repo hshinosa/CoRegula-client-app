@@ -105,13 +105,13 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                         <LiquidGlassCard intensity="heavy" className="w-full max-w-lg" lightMode={true}>
                             <form onSubmit={handleSubmit} className="p-6">
                                 <div className="flex items-center justify-between mb-5">
-                                    <h2 className="text-lg font-semibold text-[#4A4A4A]">
+                                    <h2 className="text-lg font-semibold text-brand-dark">
                                         {editingTemplate ? 'Edit Template' : 'Buat Template Baru'}
                                     </h2>
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6]"
+                                        className="rounded-lg p-1.5 text-brand-muted-dark transition-colors hover:bg-[#F3F4F6]"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -119,7 +119,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1.5">
+                                        <label className="block text-sm font-medium text-brand-dark mb-1.5">
                                             Judul <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -129,7 +129,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                             placeholder="Contoh: Ringkasan Materi"
                                             className={`w-full rounded-xl border ${
                                                 errors.title ? 'border-red-300' : 'border-[#E5E7EB]'
-                                            } bg-white/80 px-4 py-2.5 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10`}
+                                            } bg-white/80 px-4 py-2.5 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10`}
                                         />
                                         {errors.title && (
                                             <p className="mt-1 text-xs text-red-500">{errors.title}</p>
@@ -137,7 +137,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1.5">
+                                        <label className="block text-sm font-medium text-brand-dark mb-1.5">
                                             Deskripsi
                                         </label>
                                         <input
@@ -147,7 +147,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                             placeholder="Deskripsi singkat tentang template ini"
                                             className={`w-full rounded-xl border ${
                                                 errors.description ? 'border-red-300' : 'border-[#E5E7EB]'
-                                            } bg-white/80 px-4 py-2.5 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10`}
+                                            } bg-white/80 px-4 py-2.5 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10`}
                                         />
                                         {errors.description && (
                                             <p className="mt-1 text-xs text-red-500">{errors.description}</p>
@@ -155,7 +155,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1.5">
+                                        <label className="block text-sm font-medium text-brand-dark mb-1.5">
                                             Kategori
                                         </label>
                                         <input
@@ -165,7 +165,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                             placeholder="Contoh: Akademik, Penelitian, Umum"
                                             className={`w-full rounded-xl border ${
                                                 errors.category ? 'border-red-300' : 'border-[#E5E7EB]'
-                                            } bg-white/80 px-4 py-2.5 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10`}
+                                            } bg-white/80 px-4 py-2.5 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10`}
                                         />
                                         {errors.category && (
                                             <p className="mt-1 text-xs text-red-500">{errors.category}</p>
@@ -173,7 +173,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1.5">
+                                        <label className="block text-sm font-medium text-brand-dark mb-1.5">
                                             Prompt <span className="text-red-500">*</span>
                                         </label>
                                         <textarea
@@ -183,7 +183,7 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                             rows={5}
                                             className={`w-full rounded-xl border ${
                                                 errors.prompt_body ? 'border-red-300' : 'border-[#E5E7EB]'
-                                            } bg-white/80 px-4 py-2.5 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10 resize-none`}
+                                            } bg-white/80 px-4 py-2.5 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10 resize-none`}
                                         />
                                         <div className="mt-1 flex items-center justify-between">
                                             {errors.prompt_body && (
@@ -200,14 +200,14 @@ export function TemplateManager({ isOpen, onClose, onSave, editingTemplate }: Te
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="flex-1 rounded-full border border-[#E5E7EB] bg-white/80 px-4 py-2.5 text-sm font-medium text-[#4A4A4A] transition-colors hover:bg-[#F3F4F6]"
+                                        className="flex-1 rounded-full border border-[#E5E7EB] bg-white/80 px-4 py-2.5 text-sm font-medium text-brand-dark transition-colors hover:bg-[#F3F4F6]"
                                     >
                                         Batal
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="flex-1 rounded-full bg-[#88161c] px-4 py-2.5 text-sm font-medium text-white shadow-[0_12px_28px_rgba(136,22,28,0.28)] transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+                                        className="flex-1 rounded-full bg-brand-primary px-4 py-2.5 text-sm font-medium text-white shadow-[0_12px_28px_rgba(136,22,28,0.28)] transition-transform hover:-translate-y-0.5 disabled:opacity-50"
                                     >
                                         {isSaving ? (
                                             <span className="flex items-center justify-center gap-2">

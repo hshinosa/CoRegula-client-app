@@ -6,10 +6,9 @@ import type { ActivityType } from '@/types';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const activityTypeFilters: { value: ActivityType | ''; label: string }[] = [
     { value: '', label: 'Semua' },

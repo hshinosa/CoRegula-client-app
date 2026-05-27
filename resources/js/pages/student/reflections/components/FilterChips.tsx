@@ -27,7 +27,7 @@ export function FilterChips({
     return (
         <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1 text-xs text-[#6B7280]">
+                <div className="flex items-center gap-1 text-xs text-brand-muted-dark">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>Dari:</span>
                 </div>
@@ -35,22 +35,22 @@ export function FilterChips({
                     type="date"
                     value={dateFrom}
                     onChange={(e) => onDateFromChange(e.target.value)}
-                    className="rounded-lg border-0 bg-white/60 px-2 py-1 text-xs text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
+                    className="rounded-lg border-0 bg-white/60 px-2 py-1 text-xs text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                 />
-                <div className="flex items-center gap-1 text-xs text-[#6B7280]">
+                <div className="flex items-center gap-1 text-xs text-brand-muted-dark">
                     <span>Sampai:</span>
                 </div>
                 <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => onDateToChange(e.target.value)}
-                    className="rounded-lg border-0 bg-white/60 px-2 py-1 text-xs text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
+                    className="rounded-lg border-0 bg-white/60 px-2 py-1 text-xs text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                 />
             </div>
 
             {availableTags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                    <Tag className="h-3.5 w-3.5 text-[#6B7280]" />
+                    <Tag className="h-3.5 w-3.5 text-brand-muted-dark" />
                     {availableTags.map((tag) => (
                         <motion.button
                             key={tag}
@@ -75,7 +75,7 @@ export function FilterChips({
                 <button
                     type="button"
                     onClick={onClearAll}
-                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-[#6B7280] transition-colors hover:bg-white/80 hover:text-[#4A4A4A]"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-brand-muted-dark transition-colors hover:bg-white/80 hover:text-brand-dark"
                 >
                     <X className="h-3 w-3" />
                     Hapus filter

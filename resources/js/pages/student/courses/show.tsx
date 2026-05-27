@@ -52,7 +52,7 @@ export default function StudentCourseShow({ course }: Props) {
                                     className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                     style={{ 
                                         background: 'rgba(136,22,28,0.10)', 
-                                        color: '#88161c',
+                                        color: 'rgb(var(--color-brand-primary))',
                                         border: '1px solid rgba(136,22,28,0.15)'
                                     }}
                                 >
@@ -60,13 +60,12 @@ export default function StudentCourseShow({ course }: Props) {
                                 </span>
                             </div>
                             <h2 
-                                className="mt-3 text-2xl font-bold"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                className="mt-3 text-2xl font-bold font-sans text-brand-dark"
                             >
                                 {course.name}
                             </h2>
                             {course.owner && (
-                                <p className="mt-2 text-sm" style={{ color: '#6B7280' }}>
+                                <p className="mt-2 text-sm text-brand-muted-dark">
                                     Dosen: {course.owner.name}
                                 </p>
                             )}
@@ -81,7 +80,7 @@ export default function StudentCourseShow({ course }: Props) {
                         >
                             <LiquidGlassCard intensity="medium" className="p-8 text-center" lightMode={true}>
                                 <MessageSquare className="mx-auto h-12 w-12 mb-3" style={{ color: '#9CA3AF' }} />
-                                <p className="text-sm" style={{ color: '#6B7280' }}>
+                                <p className="text-sm text-brand-muted-dark">
                                     Belum ada minggu pembelajaran tersedia
                                 </p>
                             </LiquidGlassCard>
@@ -102,8 +101,7 @@ export default function StudentCourseShow({ course }: Props) {
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex-1">
                                                     <h3 
-                                                        className="text-lg font-semibold"
-                                                        style={{ color: '#1F2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                                        className="text-lg font-semibold font-sans text-gray-800"
                                                     >
                                                         {group.name}
                                                     </h3>
@@ -122,7 +120,7 @@ export default function StudentCourseShow({ course }: Props) {
                                                                     }}
                                                                 />
                                                             </div>
-                                                            <span className="text-xs font-medium" style={{ color: '#6B7280' }}>
+                                                            <span className="text-xs font-medium text-brand-muted-dark">
                                                                 {progress.completed}/{progress.total} sesi
                                                             </span>
                                                         </div>
@@ -174,12 +172,11 @@ export default function StudentCourseShow({ course }: Props) {
                                                                         )}
                                                                         <div className="flex-1 min-w-0">
                                                                             <p 
-                                                                                className="text-sm font-medium truncate"
-                                                                                style={{ color: '#1F2937' }}
+                                                                                className="text-sm font-medium truncate text-gray-800"
                                                                             >
                                                                                 {chatSpace.name}
                                                                             </p>
-                                                                            <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
+                                                                            <p className="text-xs mt-0.5 text-brand-muted-dark">
                                                                                 {hasParticipated 
                                                                                     ? `${chatSpace.messages_count ?? 0} pesan`
                                                                                     : 'Belum berpartisipasi'

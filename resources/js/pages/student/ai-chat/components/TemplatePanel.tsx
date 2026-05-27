@@ -183,8 +183,8 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                             <LiquidGlassCard intensity="heavy" className="flex h-full flex-col rounded-l-2xl" lightMode={true}>
                                 <div className="flex items-center justify-between border-b border-[#E5E7EB]/50 p-4">
                                     <div className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-[#88161c]" />
-                                        <h2 className="text-base font-semibold text-[#4A4A4A]">Template Prompt</h2>
+                                        <FileText className="h-5 w-5 text-brand-primary" />
+                                        <h2 className="text-base font-semibold text-brand-dark">Template Prompt</h2>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -192,14 +192,14 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                                                 setEditingTemplate(null);
                                                 setShowManager(true);
                                             }}
-                                            className="flex items-center gap-1.5 rounded-lg bg-[#88161c]/10 px-3 py-1.5 text-xs font-medium text-[#88161c] transition-colors hover:bg-[#88161c]/20"
+                                            className="flex items-center gap-1.5 rounded-lg bg-brand-primary/10 px-3 py-1.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/20"
                                         >
                                             <Plus className="h-3.5 w-3.5" />
                                             Baru
                                         </button>
                                         <button
                                             onClick={onClose}
-                                            className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6]"
+                                            className="rounded-lg p-1.5 text-brand-muted-dark transition-colors hover:bg-[#F3F4F6]"
                                         >
                                             <X className="h-5 w-5" />
                                         </button>
@@ -214,7 +214,7 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             placeholder="Cari template..."
-                                            className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2 pl-10 pr-4 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10"
+                                            className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2 pl-10 pr-4 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
                                         />
                                     </div>
 
@@ -224,8 +224,8 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                                                 onClick={() => setSelectedCategory(null)}
                                                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                                                     selectedCategory === null
-                                                        ? 'bg-[#88161c] text-white'
-                                                        : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                                                        ? 'bg-brand-primary text-white'
+                                                        : 'bg-[#F3F4F6] text-brand-muted-dark hover:bg-[#E5E7EB]'
                                                 }`}
                                             >
                                                 Semua
@@ -236,8 +236,8 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                                                     onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
                                                     className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                                                         selectedCategory === cat
-                                                            ? 'bg-[#88161c] text-white'
-                                                            : 'bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                                                            ? 'bg-brand-primary text-white'
+                                                            : 'bg-[#F3F4F6] text-brand-muted-dark hover:bg-[#E5E7EB]'
                                                     }`}
                                                 >
                                                     {cat}
@@ -250,12 +250,12 @@ export function TemplatePanel({ isOpen, onClose, onSelectTemplate, onTemplateCre
                                 <div className="flex-1 overflow-y-auto p-4">
                                     {isLoading ? (
                                         <div className="flex items-center justify-center py-12">
-                                            <Loader2 className="h-6 w-6 text-[#88161c] animate-spin" />
+                                            <Loader2 className="h-6 w-6 text-brand-primary animate-spin" />
                                         </div>
                                     ) : filteredTemplates.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-12 text-center">
                                             <FileText className="h-12 w-12 text-[#E5E7EB]" />
-                                            <p className="mt-4 text-sm font-medium text-[#4A4A4A]">
+                                            <p className="mt-4 text-sm font-medium text-brand-dark">
                                                 {searchQuery || selectedCategory ? 'Template tidak ditemukan' : 'Belum ada template'}
                                             </p>
                                             <p className="mt-1 text-xs text-[#9CA3AF]">

@@ -64,12 +64,11 @@ export default function StudentCoursesIndex() {
                     <div className="flex items-center justify-between">
                         <div>
                             <h2
-                                className="text-2xl font-bold"
-                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                className="text-2xl font-bold font-sans text-brand-dark"
                             >
                                 Mata Kuliah Saya
                             </h2>
-                            <p className="mt-1 text-sm text-[#6B7280]">
+                            <p className="mt-1 text-sm text-brand-muted-dark">
                                 {meta.total > 0
                                     ? `${meta.total} mata kuliah ditemukan`
                                     : 'Mata kuliah dan kelompok yang Anda ikuti'
@@ -117,7 +116,7 @@ export default function StudentCoursesIndex() {
                         </p>
                         <button
                             onClick={() => refetch()}
-                            className="mt-2 text-sm font-medium text-[#88161c] hover:underline"
+                            className="mt-2 text-sm font-medium text-brand-primary hover:underline"
                         >
                             Coba Lagi
                         </button>
@@ -160,7 +159,7 @@ export default function StudentCoursesIndex() {
                                                     className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                                     style={{
                                                         background: 'rgba(136,22,28,0.08)',
-                                                        color: '#88161c',
+                                                        color: 'rgb(var(--color-brand-primary))',
                                                         border: '1px solid rgba(136,22,28,0.15)',
                                                     }}
                                                 >
@@ -171,17 +170,16 @@ export default function StudentCoursesIndex() {
                                                 )}
                                             </div>
                                             <h3
-                                                className="text-lg font-semibold"
-                                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                                className="text-lg font-semibold font-sans text-brand-dark"
                                             >
                                                 {course.name}
                                             </h3>
-                                            <p className="mt-2 text-sm text-[#6B7280]">
+                                            <p className="mt-2 text-sm text-brand-muted-dark">
                                                 {course.owner?.name || course.ownerName || 'Dosen Tidak Diketahui'}
                                             </p>
                                             {course.progress && (
                                                 <div className="mt-3">
-                                                    <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                                                    <div className="flex items-center justify-between text-xs text-brand-muted-dark">
                                                         <span>Progres</span>
                                                         <span>{course.progress.percentage}%</span>
                                                     </div>
@@ -201,8 +199,7 @@ export default function StudentCoursesIndex() {
                                                 </div>
                                             )}
                                             <div
-                                                className="mt-4 flex items-center text-sm font-medium"
-                                                style={{ color: '#88161c' }}
+                                                className="mt-4 flex items-center text-sm font-medium text-brand-primary"
                                             >
                                                 Lihat Mata Kuliah
                                                 <svg
@@ -231,7 +228,7 @@ export default function StudentCoursesIndex() {
                         >
                             Sebelumnya
                         </SecondaryButton>
-                        <span className="px-4 text-sm text-[#6B7280]">
+                        <span className="px-4 text-sm text-brand-muted-dark">
                             Halaman {meta.current_page} dari {meta.last_page}
                         </span>
                         <SecondaryButton
@@ -272,19 +269,18 @@ export default function StudentCoursesIndex() {
                             >
                                 <div className="flex items-center justify-between">
                                     <h3
-                                        className="text-lg font-semibold"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                        className="text-lg font-semibold font-sans text-brand-dark"
                                     >
                                         Gabung Mata Kuliah
                                     </h3>
                                     <button
                                         onClick={() => setShowJoinModal(false)}
-                                        className="rounded-lg p-2 text-[#6B7280] hover:text-[#4A4A4A] hover:bg-black/5 transition-colors"
+                                        className="rounded-lg p-2 text-brand-muted-dark hover:text-brand-dark hover:bg-black/5 transition-colors"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
                                 </div>
-                                <p className="mt-2 text-sm text-[#6B7280]">
+                                <p className="mt-2 text-sm text-brand-muted-dark">
                                     Masukkan kode gabung yang diberikan oleh dosen Anda
                                 </p>
                                 <form onSubmit={handleJoin} className="mt-6 space-y-4">
@@ -294,8 +290,7 @@ export default function StudentCoursesIndex() {
                                             value={data.join_code}
                                             onChange={(e) => setData('join_code', e.target.value)}
                                             placeholder="Masukkan kode gabung"
-                                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#4A4A4A] focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10"
-                                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-sans text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                             autoFocus
                                         />
                                         <InputError message={errors.join_code} className="mt-1.5" />
@@ -304,8 +299,7 @@ export default function StudentCoursesIndex() {
                                         <button
                                             type="button"
                                             onClick={() => setShowJoinModal(false)}
-                                            className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-[#4A4A4A] transition-colors hover:bg-slate-50"
-                                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                            className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium font-sans text-brand-dark transition-colors hover:bg-slate-50"
                                         >
                                             Batal
                                         </button>
@@ -331,8 +325,8 @@ function StatusBadge({ status }: { status: string }) {
     const config = {
         aktif: { label: 'Berjalan', bg: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: 'rgba(59,130,246,0.2)' },
         selesai: { label: 'Selesai', bg: 'rgba(16,185,129,0.1)', color: '#10B981', border: 'rgba(16,185,129,0.2)' },
-        belum_mulai: { label: 'Belum Mulai', bg: 'rgba(156,163,175,0.1)', color: '#6B7280', border: 'rgba(156,163,175,0.2)' },
-    }[status] || { label: status, bg: 'rgba(156,163,175,0.1)', color: '#6B7280', border: 'rgba(156,163,175,0.2)' };
+        belum_mulai: { label: 'Belum Mulai', bg: 'rgba(156,163,175,0.1)', color: 'rgb(var(--color-brand-muted-dark))', border: 'rgba(156,163,175,0.2)' },
+    }[status] || { label: status, bg: 'rgba(156,163,175,0.1)', color: 'rgb(var(--color-brand-muted-dark))', border: 'rgba(156,163,175,0.2)' };
 
     return (
         <span

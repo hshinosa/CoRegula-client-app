@@ -144,15 +144,15 @@ const Avatar = ({
     return (
         <div className={`flex items-center justify-center rounded-full ${bgColor} ${className}`}>
             {type === 'ai' || type === 'bot' ? (
-                <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
             ) : type === 'system' ? (
-                <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
             ) : (
-                <span className="text-sm font-bold text-[#4A4A4A]">
+                <span className="text-sm font-bold text-brand-dark">
                     {name?.charAt(0)?.toUpperCase() || '?'}
                 </span>
             )}
@@ -264,7 +264,7 @@ const MessageItem = memo(function MessageItem({
 
             <div className={`group flex max-w-[85%] flex-col sm:max-w-[70%] ${ownMessage ? 'items-end' : 'items-start'}`}>
                 {!ownMessage && message.showName && (
-                    <span className="mb-1 ml-1 text-xs font-medium text-[#6B7280]">
+                    <span className="mb-1 ml-1 text-xs font-medium text-brand-muted-dark">
                         {getSenderDisplayName(message)}
                     </span>
                 )}
@@ -272,7 +272,7 @@ const MessageItem = memo(function MessageItem({
                 {message.reply_to && (
                     <div
                         className={`mb-1 flex items-center gap-1 rounded-xl px-2 py-1 text-xs sm:px-3 sm:py-1.5 ${
-                            ownMessage ? 'text-white' : 'text-[#6B7280]'
+                            ownMessage ? 'text-white' : 'text-brand-muted-dark'
                         }`}
                         style={{
                             background: ownMessage ? 'rgba(136,22,28,0.3)' : 'rgba(107,114,128,0.15)',
@@ -295,7 +295,7 @@ const MessageItem = memo(function MessageItem({
                                         <button
                                             type="button"
                                             onClick={() => onOpenImagePreview(attachmentUrl, attachment.name)}
-                                            className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[#88161c]"
+                                            className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-brand-primary))]"
                                             aria-label={`Buka pratinjau gambar ${attachment.name}`}
                                         >
                                             <img
@@ -313,7 +313,7 @@ const MessageItem = memo(function MessageItem({
                                             type="button"
                                             onClick={() => onDownloadAttachment(attachmentUrl, attachment.name)}
                                             className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-colors sm:gap-2 sm:px-3 sm:py-2 ${
-                                                ownMessage ? 'text-white' : 'text-[#4A4A4A]'
+                                                ownMessage ? 'text-white' : 'text-brand-dark'
                                             }`}
                                             aria-label={`Unduh file ${attachment.name}`}
                                             style={{
@@ -344,7 +344,7 @@ const MessageItem = memo(function MessageItem({
                             <button
                                 type="button"
                                 onClick={() => onReply(message)}
-                                className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#88161c]"
+                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-primary"
                                 title="Balas"
                                 aria-label="Balas pesan"
                             >
@@ -370,10 +370,10 @@ const MessageItem = memo(function MessageItem({
                                 ownMessage
                                     ? 'text-white'
                                     : isAIMessage(message) || isBotMessage(message)
-                                    ? 'text-[#4A4A4A]'
+                                    ? 'text-brand-dark'
                                     : isSystemMessage(message)
-                                    ? 'text-[#4A4A4A]'
-                                    : 'text-[#4A4A4A]'
+                                    ? 'text-brand-dark'
+                                    : 'text-brand-dark'
                             }`}
                             style={{
                                 background: ownMessage
@@ -414,21 +414,21 @@ const MessageItem = memo(function MessageItem({
                 )}
 
                 {message.showTime && (
-                    <span className="mt-1 text-xs text-[#6B7280]">
+                    <span className="mt-1 text-xs text-brand-muted-dark">
                         {formatTime(message.created_at)}
                     </span>
                 )}
 
                 {ownMessage && (message.deliveryStatus === 'sending' || message.deliveryStatus === 'failed') && (
-                    <div className="mt-1 flex items-center gap-2 text-xs text-[#6B7280]">
+                    <div className="mt-1 flex items-center gap-2 text-xs text-brand-muted-dark">
                         <span>
                             {message.deliveryStatus === 'sending' ? 'Mengirim...' : 'Gagal mengirim'}
                         </span>
                         <button
                             type="button"
                             onClick={() => onRetry(message)}
-                            className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#88161c]"
-                            style={{ background: '#88161c' }}
+                            className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-brand-primary"
+                            style={{ background: 'rgb(var(--color-brand-primary))' }}
                             aria-label="Coba lagi"
                         >
                             Coba lagi
@@ -446,8 +446,8 @@ MessageItem.displayName = 'MessageItem';
 
 // Style constants matching the design system
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
+    ,
 } as const;
 
 export default function StudentChatRoom({ course, group, chatSpace, socketUrl }: Props) {
@@ -1196,7 +1196,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         );
                         if (isMentioned) {
                             return (
-                                <span key={i} className="rounded bg-[rgba(136,22,28,0.12)] px-1 font-semibold text-[#88161c]">
+                                <span key={i} className="rounded bg-[rgba(136,22,28,0.12)] px-1 font-semibold text-brand-primary">
                                     {part}
                                 </span>
                             );
@@ -1483,13 +1483,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         border: '1px solid rgba(136,22,28,0.12)' 
                                     }}
                                 >
-                                    <MessageSquare className="h-5 w-5 text-[#88161c]" />
+                                    <MessageSquare className="h-5 w-5 text-brand-primary" />
                                 </div>
                                 <div className="min-w-0">
                                     <h2 className="truncate text-lg font-semibold" style={headingStyle}>
                                         {group.name}
                                     </h2>
-                                    <p className="truncate text-sm text-[#6B7280]">
+                                    <p className="truncate text-sm text-brand-muted-dark">
                                         {course.name} • Diskusi
                                     </p>
                                     {sessionClosed && (
@@ -1497,7 +1497,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
                                             style={{ 
                                                 background: 'rgba(107,114,128,0.15)', 
-                                                color: '#6B7280',
+                                                color: 'rgb(var(--color-brand-muted-dark))',
                                                 border: '1px solid rgba(107,114,128,0.2)',
                                             }}
                                         >
@@ -1521,7 +1521,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         {onlineUsers.slice(0, 2).map((user, index) => (
                                             <div
                                                 key={user.odId}
-                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-[#88161c]"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-brand-primary"
                                                 style={{ 
                                                     zIndex: 3 - index,
                                                     background: 'rgba(136,22,28,0.1)',
@@ -1533,7 +1533,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         ))}
                                         {onlineUsers.length > 2 && (
                                             <div 
-                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-medium text-[#6B7280]"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-medium text-brand-muted-dark"
                                                 style={{ background: 'rgba(107,114,128,0.15)' }}
                                             >
                                                 +{onlineUsers.length - 2}
@@ -1547,7 +1547,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         type="button"
                                         onClick={(event) => openCloseConfirmModal(event.currentTarget)}
                                         disabled={isClosingSession}
-                                        className="hidden items-center gap-1.5 rounded-xl border border-white/50 px-3 py-2 text-xs font-medium text-[#4A4A4A] transition-colors hover:bg-white/50 disabled:opacity-50 sm:flex"
+                                        className="hidden items-center gap-1.5 rounded-xl border border-white/50 px-3 py-2 text-xs font-medium text-brand-dark transition-colors hover:bg-white/50 disabled:opacity-50 sm:flex"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
                                     >
                                         <Lock className="h-3.5 w-3.5" />
@@ -1565,7 +1565,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                                         openRightSidebar(event.currentTarget);
                                     }}
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50 lg:hidden"
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50 lg:hidden"
                                     style={{ background: 'rgba(255,255,255,0.4)' }}
                                     aria-label="Buka detail grup"
                                     aria-expanded={showRightSidebar}
@@ -1647,10 +1647,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-[#4A4A4A]" style={headingStyle}>
+                                                <p className="font-semibold text-brand-dark" style={headingStyle}>
                                                     Tetapkan tujuan pembelajaran Anda
                                                 </p>
-                                                <p className="mt-0.5 text-sm text-[#6B7280]">
+                                                <p className="mt-0.5 text-sm text-brand-muted-dark">
                                                     Bantu fokus diskusi dengan menetapkan tujuan SMART untuk sesi ini.
                                                 </p>
                                             </div>
@@ -1668,7 +1668,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             </Link>
                                             <button
                                                 onClick={() => setShowGoalBanner(false)}
-                                                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50"
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
                                                 style={{ background: 'rgba(255,255,255,0.4)' }}
                                             >
                                                 <X className="h-4 w-4" />
@@ -1858,12 +1858,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         animate={{ scale: 1 }}
                                                         exit={{ scale: 0.8 }}
                                                     >
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '0ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '150ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '300ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '0ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '150ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '300ms' }} />
                                                     </motion.div>
                                                     <motion.span 
-                                                        className="text-xs text-[#6B7280]"
+                                                        className="text-xs text-brand-muted-dark"
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         exit={{ opacity: 0, x: -10 }}
@@ -1888,22 +1888,22 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-[#88161c] px-3 py-2"
+                                            className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-brand-primary px-3 py-2"
                                             style={{ background: 'rgba(136,22,28,0.06)' }}
                                         >
                                             <div className="flex items-center gap-2 overflow-hidden">
-                                                <CornerUpLeft className="hidden h-4 w-4 flex-shrink-0 text-[#88161c] sm:block" />
+                                                <CornerUpLeft className="hidden h-4 w-4 flex-shrink-0 text-brand-primary sm:block" />
                                                 <div className="min-w-0">
-                                                    <span className="text-xs font-medium text-[#88161c]">
+                                                    <span className="text-xs font-medium text-brand-primary">
                                                         Membalas {replyingTo.senderName}
                                                     </span>
-                                                    <p className="truncate text-xs text-[#6B7280]">{replyingTo.content}</p>
+                                                    <p className="truncate text-xs text-brand-muted-dark">{replyingTo.content}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={cancelReply}
-                                                className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50"
+                                                className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50"
                                                 aria-label="Tutup"
                                             >
                                                 <X className="h-4 w-4" />
@@ -1943,17 +1943,17 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         </div>
                                                     ) : (
                                                         <div className="relative flex items-center gap-1.5 rounded-xl border border-white/50 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2" style={{ background: 'rgba(255,255,255,0.5)' }}>
-                                                            <svg className="h-4 w-4 text-[#6B7280] sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <svg className="h-4 w-4 text-brand-muted-dark sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                             </svg>
                                                             <div className="max-w-[80px] sm:max-w-[100px]">
-                                                                <p className="truncate text-xs font-medium text-[#4A4A4A]">{pf.file.name}</p>
-                                                                <p className="text-xs text-[#6B7280]">{formatFileSize(pf.file.size)}</p>
+                                                                <p className="truncate text-xs font-medium text-brand-dark">{pf.file.name}</p>
+                                                                <p className="text-xs text-brand-muted-dark">{formatFileSize(pf.file.size)}</p>
                                                             </div>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removePendingFile(pf.id)}
-                                                                className="ml-1 flex h-6 w-6 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-white/50"
+                                                                className="ml-1 flex h-6 w-6 items-center justify-center rounded text-brand-muted-dark transition-colors hover:bg-white/50"
                                                                 aria-label="Tutup"
                                                             >
                                                                 <X className="h-4 w-4" />
@@ -1993,7 +1993,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         // AI Avatar
                                                         <div 
                                                             className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
-                                                            style={{ background: 'linear-gradient(135deg, #88161c 0%, #a41219 100%)', border: '1px solid rgba(255,255,255,0.2)' }}
+                                                            style={{ background: 'linear-gradient(135deg, rgb(var(--color-brand-primary)) 0%, #a41219 100%)', border: '1px solid rgba(255,255,255,0.2)' }}
                                                         >
                                                             <svg className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -2005,21 +2005,21 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                             className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
                                                             style={{ background: 'rgba(136,22,28,0.08)' }}
                                                         >
-                                                            <span className="text-xs font-bold text-[#88161c] sm:text-sm">
+                                                            <span className="text-xs font-bold text-brand-primary sm:text-sm">
                                                                 {member.name.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
                                                     )}
                                                     <div className="min-w-0 flex-1">
-                                                        <p className={`truncate text-sm font-medium ${'isAI' in member && member.isAI ? 'text-[#88161c]' : 'text-[#4A4A4A]'}`}>
+                                                        <p className={`truncate text-sm font-medium ${'isAI' in member && member.isAI ? 'text-brand-primary' : 'text-brand-dark'}`}>
                                                             {'isAI' in member && member.isAI ? '@AI' : member.name}
                                                         </p>
-                                                        <p className="hidden truncate text-xs text-[#6B7280] sm:block">{member.email}</p>
+                                                        <p className="hidden truncate text-xs text-brand-muted-dark sm:block">{member.email}</p>
                                                     </div>
                                                     {'isAI' in member && member.isAI && (
                                                         <span 
                                                             className="hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline-block"
-                                                            style={{ background: 'rgba(136,22,28,0.1)', color: '#88161c' }}
+                                                            style={{ background: 'rgba(136,22,28,0.1)', color: 'rgb(var(--color-brand-primary))' }}
                                                         >
                                                             Asisten
                                                         </span>
@@ -2047,7 +2047,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={!isConnected || sessionClosed}
-                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-[#6B7280] transition-colors hover:border-[#88161c] hover:text-[#88161c] disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-brand-muted-dark transition-colors hover:border-brand-primary hover:text-brand-primary disabled:cursor-not-allowed disabled:opacity-50"
                                         style={{ background: 'rgba(255,255,255,0.5)' }}
                                         title={sessionClosed ? "Sesi telah ditutup" : "Lampirkan file"}
                                         aria-label="Lampirkan file"
@@ -2071,7 +2071,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                     : "Ketik @ untuk menyebut..."
                                             }
                                             disabled={sessionClosed}
-                                            className="h-11 w-full rounded-xl border border-white/50 bg-white/60 px-4 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] shadow-sm outline-none transition-all focus:border-[#88161c] focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] disabled:cursor-not-allowed sm:text-base"
+                                            className="h-11 w-full rounded-xl border border-white/50 bg-white/60 px-4 text-sm text-brand-dark placeholder-[#9CA3AF] shadow-brand-sm outline-none transition-all focus:border-brand-primary focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] disabled:cursor-not-allowed sm:text-base"
                                         />
                                     </div>
 
@@ -2099,8 +2099,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         )}
                                     </button>
                                 </form>
-                                <p className="mt-2 text-center text-xs text-[#6B7280]">
-                                    Tips: Sebut <span className="font-medium text-[#88161c]">@ai</span> untuk bertanya kepada Asisten AI.
+                                <p className="mt-2 text-center text-xs text-brand-muted-dark">
+                                    Tips: Sebut <span className="font-medium text-brand-primary">@ai</span> untuk bertanya kepada Asisten AI.
                                 </p>
                             </div>
                         </div>
@@ -2130,14 +2130,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 >
                                     <div className="mb-3 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <BarChart3 className="h-4 w-4 text-[#88161c]" />
-                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                            <BarChart3 className="h-4 w-4 text-brand-primary" />
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                                 Kualitas Diskusi
                                             </h3>
                                         </div>
                                         <button
                                             onClick={() => setQualityPanelExpanded(!qualityPanelExpanded)}
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-white/50"
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50"
                                         >
                                             <svg className={`h-4 w-4 transition-transform ${qualityPanelExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -2179,7 +2179,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                       ? 'Terus Tingkatkan'
                                                       : 'Perlu Perhatian'}
                                             </p>
-                                            <p className="text-xs text-[#6B7280]">HOT: {discussionQuality.hotPercentage.toFixed(1)}%</p>
+                                            <p className="text-xs text-brand-muted-dark">HOT: {discussionQuality.hotPercentage.toFixed(1)}%</p>
                                         </div>
                                     </div>
 
@@ -2193,7 +2193,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 className="overflow-hidden"
                                             >
                                                 <div className="space-y-2 border-t border-white/50 pt-3">
-                                                    <p className="text-xs font-medium text-[#4A4A4A]">Tipe Keterlibatan:</p>
+                                                    <p className="text-xs font-medium text-brand-dark">Tipe Keterlibatan:</p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {Object.entries(discussionQuality.engagementTypes).map(([type, count]) => (
                                                             <span
@@ -2226,7 +2226,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         className="mt-2 rounded-xl p-3"
                                                         style={{ background: 'rgba(255,255,255,0.5)' }}
                                                     >
-                                                        <p className="text-xs text-[#6B7280]">
+                                                        <p className="text-xs text-brand-muted-dark">
                                                             {discussionQuality.qualityScore >= 70
                                                                 ? '✨ Luar biasa! Diskusi menunjukkan pemikiran tingkat tinggi.'
                                                                 : discussionQuality.qualityScore >= 40
@@ -2251,15 +2251,15 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     className="flex h-8 w-8 items-center justify-center rounded-xl"
                                     style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                 >
-                                    <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
                                     Tujuan Saya
                                 </h3>
                             </div>
-                            <p className="text-sm text-[#4A4A4A]">
+                            <p className="text-sm text-brand-dark">
                                 {goal.content}
                             </p>
                         </LiquidGlassCard>
@@ -2281,7 +2281,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     Belum Ada Tujuan
                                 </h3>
                             </div>
-                            <p className="mb-3 text-xs text-[#6B7280]">
+                            <p className="mb-3 text-xs text-brand-muted-dark">
                                 Tetapkan tujuan untuk membantu fokus diskusi Anda.
                             </p>
                             <Link
@@ -2300,10 +2300,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     {/* Members Section */}
                     <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                 Anggota
                             </h3>
-                            <span className="text-xs text-[#6B7280]">{group.members?.length || 0}</span>
+                            <span className="text-xs text-brand-muted-dark">{group.members?.length || 0}</span>
                         </div>
                         <div className="space-y-2">
                             {group.members?.map((member) => {
@@ -2312,7 +2312,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     <div key={member.id} className="flex items-center gap-3">
                                         <div className="relative">
                                             <div 
-                                                className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-[#88161c]"
+                                                className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-brand-primary"
                                                 style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                             >
                                                 {member.name.charAt(0).toUpperCase()}
@@ -2322,13 +2322,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                            <p className="truncate text-sm font-medium text-brand-dark">
                                                 {member.name}
                                                 {member.id === auth.user?.id && (
-                                                    <span className="ml-1 text-xs text-[#6B7280]">(kamu)</span>
+                                                    <span className="ml-1 text-xs text-brand-muted-dark">(kamu)</span>
                                                 )}
                                             </p>
-                                            <p className="truncate text-xs text-[#6B7280]">
+                                            <p className="truncate text-xs text-brand-muted-dark">
                                                 {isOnline ? 'Aktif' : 'Tidak aktif'}
                                             </p>
                                         </div>
@@ -2340,7 +2340,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                     {/* Shared Resources Section */}
                     <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
-                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                             Sumber Daya Bersama
                         </h3>
                         <div className="space-y-2">
@@ -2352,10 +2352,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     DOC
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                    <p className="truncate text-sm font-medium text-brand-dark">
                                         Panduan Mata Kuliah
                                     </p>
-                                    <p className="text-xs text-[#6B7280]">Dibagikan oleh dosen</p>
+                                    <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
@@ -2366,10 +2366,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     PDF
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                    <p className="truncate text-sm font-medium text-brand-dark">
                                         Template Tugas
                                     </p>
-                                    <p className="text-xs text-[#6B7280]">Ditambahkan 2 jam lalu</p>
+                                    <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
                                 </div>
                             </div>
                         </div>
@@ -2406,11 +2406,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             >
                                 {/* Close button */}
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="font-semibold text-[#4A4A4A]" style={headingStyle}>Detail</h2>
+                                    <h2 className="font-semibold text-brand-dark" style={headingStyle}>Detail</h2>
                                     <button
                                         type="button"
                                         onClick={closeRightSidebar}
-                                        className="flex h-10 w-10 items-center justify-center rounded-xl text-[#6B7280] transition-colors hover:bg-white/50"
+                                        className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
                                         aria-label="Tutup"
                                     >
@@ -2432,8 +2432,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         lightMode={true}
                                     >
                                         <div className="mb-2 flex items-center gap-2">
-                                            <BarChart3 className="h-4 w-4 text-[#88161c]" />
-                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                            <BarChart3 className="h-4 w-4 text-brand-primary" />
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                                 Kualitas Diskusi
                                             </h3>
                                         </div>
@@ -2464,7 +2464,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                           ? 'Terus Tingkatkan'
                                                           : 'Perlu Perhatian'}
                                                 </p>
-                                                <p className="text-xs text-[#6B7280]">HOT: {discussionQuality.hotPercentage.toFixed(1)}%</p>
+                                                <p className="text-xs text-brand-muted-dark">HOT: {discussionQuality.hotPercentage.toFixed(1)}%</p>
                                             </div>
                                         </div>
                                         <div className="mt-2 flex flex-wrap gap-1">
@@ -2501,15 +2501,15 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 className="flex h-8 w-8 items-center justify-center rounded-xl"
                                                 style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                             >
-                                                <svg className="h-4 w-4 text-[#88161c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg className="h-4 w-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-primary">
                                                 Tujuan Saya
                                             </h3>
                                         </div>
-                                        <p className="text-sm text-[#4A4A4A]">
+                                        <p className="text-sm text-brand-dark">
                                             {goal.content}
                                         </p>
                                     </LiquidGlassCard>
@@ -2531,7 +2531,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 Belum Ada Tujuan
                                             </h3>
                                         </div>
-                                        <p className="mb-3 text-xs text-[#6B7280]">
+                                        <p className="mb-3 text-xs text-brand-muted-dark">
                                             Tetapkan tujuan untuk membantu fokus diskusi Anda.
                                         </p>
                                         <Link
@@ -2550,10 +2550,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 {/* Members Section */}
                                 <div className="mb-6">
                                     <div className="mb-3 flex items-center justify-between">
-                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                             Anggota
                                         </h3>
-                                        <span className="text-xs text-[#6B7280]">{group.members?.length || 0}</span>
+                                        <span className="text-xs text-brand-muted-dark">{group.members?.length || 0}</span>
                                     </div>
                                     <div className="space-y-2">
                                         {group.members?.map((member) => {
@@ -2562,7 +2562,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 <div key={member.id} className="flex items-center gap-3">
                                                     <div className="relative">
                                                         <div 
-                                                            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-[#88161c]"
+                                                            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-brand-primary"
                                                             style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                                         >
                                                             {member.name.charAt(0).toUpperCase()}
@@ -2572,13 +2572,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         )}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                        <p className="truncate text-sm font-medium text-brand-dark">
                                                             {member.name}
                                                             {member.id === auth.user?.id && (
-                                                                <span className="ml-1 text-xs text-[#6B7280]">(kamu)</span>
+                                                                <span className="ml-1 text-xs text-brand-muted-dark">(kamu)</span>
                                                             )}
                                                         </p>
-                                                        <p className="truncate text-xs text-[#6B7280]">
+                                                        <p className="truncate text-xs text-brand-muted-dark">
                                                             {isOnline ? 'Aktif' : 'Tidak aktif'}
                                                         </p>
                                                     </div>
@@ -2590,7 +2590,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                                 {/* Shared Resources Section */}
                                 <div>
-                                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                         Sumber Daya Bersama
                                     </h3>
                                     <div className="space-y-2">
@@ -2602,10 +2602,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 DOC
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                <p className="truncate text-sm font-medium text-brand-dark">
                                                     Panduan Mata Kuliah
                                                 </p>
-                                                <p className="text-xs text-[#6B7280]">Dibagikan oleh dosen</p>
+                                                <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
@@ -2616,10 +2616,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                 PDF
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-[#4A4A4A]">
+                                                <p className="truncate text-sm font-medium text-brand-dark">
                                                     Template Tugas
                                                 </p>
-                                                <p className="text-xs text-[#6B7280]">Ditambahkan 2 jam lalu</p>
+                                                <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
                                             </div>
                                         </div>
                                     </div>
@@ -2776,19 +2776,19 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-[#4A4A4A]" style={headingStyle}>
+                                    <h3 className="text-lg font-semibold text-brand-dark" style={headingStyle}>
                                         Refleksi Sesi
                                     </h3>
-                                    <p className="text-sm text-[#6B7280]">
+                                    <p className="text-sm text-brand-muted-dark">
                                         {chatSpace.name}
                                     </p>
                                 </div>
                             </div>
 
-                            <p className="mb-2 text-sm text-[#6B7280]">
+                            <p className="mb-2 text-sm text-brand-muted-dark">
                                 {sessionClosedMessage || 'Sesi diskusi ini telah ditutup oleh dosen.'}
                             </p>
-                            <p className="mb-4 text-sm text-[#6B7280]">
+                            <p className="mb-4 text-sm text-brand-muted-dark">
                                 Silakan refleksikan pembelajaran Anda selama sesi ini:
                             </p>
 
@@ -2797,17 +2797,17 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     className="mb-4 rounded-xl p-3"
                                     style={{ background: 'rgba(136,22,28,0.06)', border: '1px solid rgba(136,22,28,0.12)' }}
                                 >
-                                    <p className="text-xs font-medium text-[#88161c]">
+                                    <p className="text-xs font-medium text-brand-primary">
                                         Tujuan pembelajaran Anda:
                                     </p>
-                                    <p className="mt-1 text-sm text-[#4A4A4A]">
+                                    <p className="mt-1 text-sm text-brand-dark">
                                         {goal.content}
                                     </p>
                                 </div>
                             )}
 
                             <div className="mb-4">
-                                <label className="mb-2 block text-sm font-medium text-[#4A4A4A]">
+                                <label className="mb-2 block text-sm font-medium text-brand-dark">
                                     Refleksi Anda <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
@@ -2815,13 +2815,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     onChange={(e) => setReflectionContent(e.target.value)}
                                     placeholder="Bagaimana pembelajaran Anda selama sesi ini? Apa yang sudah dipahami? Apa yang masih perlu dipelajari?"
                                     rows={5}
-                                    className="w-full resize-none rounded-xl border border-white/50 bg-white/60 px-4 py-3 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] outline-none transition-all focus:border-[#88161c] focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] disabled:cursor-not-allowed"
+                                    className="w-full resize-none rounded-xl border border-white/50 bg-white/60 px-4 py-3 text-sm text-brand-dark placeholder-[#9CA3AF] outline-none transition-all focus:border-brand-primary focus:ring-2 focus:ring-[rgba(136,22,28,0.1)] disabled:cursor-not-allowed"
                                     disabled={isSubmittingReflection}
                                 />
                                 <div className="mt-1 flex items-center justify-between">
                                     <p className={`text-xs ${
                                         reflectionContent.length < 50
-                                            ? 'text-[#6B7280]'
+                                            ? 'text-brand-muted-dark'
                                             : 'text-green-600'
                                     }`}>
                                         {reflectionContent.length}/50 karakter minimum
@@ -2836,7 +2836,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 <button
                                     type="button"
                                     onClick={closeReflectionModal}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-white/50"
+                                    className="rounded-xl px-4 py-2 text-sm font-medium text-brand-muted-dark transition-colors hover:bg-white/50"
                                     disabled={isSubmittingReflection}
                                 >
                                     Nanti
@@ -2903,14 +2903,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     <AlertTriangle className="h-5 w-5 text-amber-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-[#4A4A4A]" style={headingStyle}>
+                                    <h3 className="text-lg font-semibold text-brand-dark" style={headingStyle}>
                                         Tutup Sesi Diskusi?
                                     </h3>
                                 </div>
                             </div>
 
-                            <p className="mb-6 text-sm text-[#6B7280]">
-                                Anda akan menutup sesi diskusi <span className="font-medium text-[#4A4A4A]">"{chatSpace.name}"</span>. 
+                            <p className="mb-6 text-sm text-brand-muted-dark">
+                                Anda akan menutup sesi diskusi <span className="font-medium text-brand-dark">"{chatSpace.name}"</span>. 
                                 Setelah ditutup, anggota grup tidak dapat mengirim pesan lagi sampai dosen membuka kembali sesi ini.
                             </p>
 
@@ -2918,7 +2918,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 <button
                                     type="button"
                                     onClick={closeCloseConfirmModal}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-white/50"
+                                    className="rounded-xl px-4 py-2 text-sm font-medium text-brand-muted-dark transition-colors hover:bg-white/50"
                                     disabled={isClosingSession}
                                 >
                                     Batal

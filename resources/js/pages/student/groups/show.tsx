@@ -15,13 +15,6 @@ import type { GroupMemberRole, GroupSettings as GroupSettingsType, UpdateGroupSe
 
 type TabId = 'members' | 'activity' | 'settings';
 
-const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-} as const;
-
-const bodyTextClass = 'text-sm text-[#6B7280]';
-
 interface GroupData {
     id: string;
     name: string;
@@ -109,7 +102,7 @@ export default function StudentGroupShow({ group }: Props) {
                             <div className="flex-1">
                                 <button
                                     onClick={() => router.visit(`/student/courses/${group.course_id}/groups`)}
-                                    className="mb-3 flex items-center gap-1.5 text-xs text-[#6B7280] transition-colors hover:text-[#4A4A4A]"
+                                    className="mb-3 flex items-center gap-1.5 text-xs text-brand-muted-dark transition-colors hover:text-brand-dark"
                                 >
                                     <ArrowLeft className="h-3.5 w-3.5" />
                                     Kembali ke Daftar Grup
@@ -119,7 +112,7 @@ export default function StudentGroupShow({ group }: Props) {
                                         className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                         style={{
                                             background: 'rgba(136,22,28,0.08)',
-                                            color: '#88161c',
+                                            color: 'rgb(var(--color-brand-primary))',
                                             border: '1px solid rgba(136,22,28,0.15)',
                                         }}
                                     >
@@ -135,10 +128,10 @@ export default function StudentGroupShow({ group }: Props) {
                                                         ? 'rgba(37,99,235,0.1)'
                                                         : 'rgba(107,114,128,0.1)',
                                                 color: group.current_user_role === 'owner'
-                                                    ? '#88161c'
+                                                    ? 'rgb(var(--color-brand-primary))'
                                                     : group.current_user_role === 'admin'
                                                         ? '#2563EB'
-                                                        : '#6B7280',
+                                                        : 'rgb(var(--color-brand-muted-dark))',
                                             }}
                                         >
                                             {group.current_user_role === 'owner' ? 'Pemilik' :
@@ -147,30 +140,29 @@ export default function StudentGroupShow({ group }: Props) {
                                     )}
                                 </div>
                                 <h2
-                                    className="mt-3 text-2xl font-bold"
-                                    style={headingStyle}
+                                    className="mt-3 text-2xl font-bold font-sans text-brand-dark"
                                 >
                                     {group.name}
                                 </h2>
                                 {group.description && (
-                                    <p className={`mt-1 ${bodyTextClass}`}>
+                                    <p className="mt-1 text-sm text-brand-muted-dark">
                                         {group.description}
                                     </p>
                                 )}
                                 <div className="mt-3 flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-[#6B7280]" />
-                                        <span className="text-sm text-[#6B7280]">
+                                        <Users className="h-4 w-4 text-brand-muted-dark" />
+                                        <span className="text-sm text-brand-muted-dark">
                                             {group.members_count ?? 0} anggota
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[#6B7280]">Kode:</span>
+                                        <span className="text-xs text-[rgb(var(--color-brand-muted-dark))]">Kode:</span>
                                         <code
                                             className="rounded px-2 py-0.5 font-mono text-xs"
                                             style={{
                                                 background: 'rgba(136,22,28,0.08)',
-                                                color: '#88161c',
+                                                color: 'rgb(var(--color-brand-primary))',
                                             }}
                                         >
                                             {group.join_code}
@@ -208,7 +200,7 @@ export default function StudentGroupShow({ group }: Props) {
                                     className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
                                     style={{
                                         background: isActive ? 'white' : 'transparent',
-                                        color: isActive ? '#88161c' : '#6B7280',
+                                        color: isActive ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
                                         boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                                     }}
                                 >
@@ -244,7 +236,7 @@ export default function StudentGroupShow({ group }: Props) {
                         {activeTab === 'settings' && (
                             isLoadingSettings ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="h-8 w-8 animate-spin text-[#88161c]" />
+                                    <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--color-brand-primary))]" />
                                 </div>
                             ) : settings ? (
                                 <div className="space-y-8">
@@ -258,8 +250,7 @@ export default function StudentGroupShow({ group }: Props) {
                                         style={{ borderColor: 'rgba(0,0,0,0.06)' }}
                                     >
                                         <h3
-                                            className="mb-4 text-lg font-semibold"
-                                            style={headingStyle}
+                                            className="mb-4 text-lg font-semibold font-sans text-brand-dark"
                                         >
                                             Keluar dari Grup
                                         </h3>
@@ -272,7 +263,7 @@ export default function StudentGroupShow({ group }: Props) {
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-12">
                                     <Settings className="mb-3 h-12 w-12 text-gray-300" />
-                                    <p className={bodyTextClass}>Gagal memuat pengaturan</p>
+                                    <p className="text-sm text-brand-muted-dark">Gagal memuat pengaturan</p>
                                 </div>
                             )
                         )}

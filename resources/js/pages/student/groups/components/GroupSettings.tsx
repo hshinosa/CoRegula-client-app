@@ -6,10 +6,9 @@ import type { GroupSettings as GroupSettingsType, UpdateGroupSettingsData } from
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const accessPolicyOptions = [
     { value: 'open', label: 'Terbuka', desc: 'Siapa saja dapat bergabung' },
@@ -127,11 +126,11 @@ export function GroupSettingsForm({ settings, isAdmin, onSave }: GroupSettingsFo
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition-colors focus:border-[#88161c] focus:outline-none"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition-colors focus:border-brand-primary focus:outline-none"
                     maxLength={100}
                 />
                 {errors.name && <InputError message={errors.name} />}
-                <p className="text-xs text-[#6B7280]">{name.length}/100 karakter</p>
+                <p className="text-xs text-brand-muted-dark">{name.length}/100 karakter</p>
             </div>
 
             <div className="space-y-2">
@@ -141,13 +140,13 @@ export function GroupSettingsForm({ settings, isAdmin, onSave }: GroupSettingsFo
                 <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition-colors focus:border-[#88161c] focus:outline-none"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition-colors focus:border-brand-primary focus:outline-none"
                     rows={3}
                     maxLength={500}
                     placeholder="Deskripsi grup (opsional)"
                 />
                 {errors.description && <InputError message={errors.description} />}
-                <p className="text-xs text-[#6B7280]">{description.length}/500 karakter</p>
+                <p className="text-xs text-brand-muted-dark">{description.length}/500 karakter</p>
             </div>
 
             <div className="space-y-2">
@@ -174,13 +173,13 @@ export function GroupSettingsForm({ settings, isAdmin, onSave }: GroupSettingsFo
                                 value={option.value}
                                 checked={accessPolicy === option.value}
                                 onChange={() => handlePolicyChange(option.value)}
-                                className="h-4 w-4 text-[#88161c] focus:ring-[#88161c]"
+                                className="h-4 w-4 text-brand-primary focus:ring-brand-primary"
                             />
                             <div>
                                 <p className="text-sm font-medium" style={{ color: '#4A4A4A' }}>
                                     {option.label}
                                 </p>
-                                <p className="text-xs text-[#6B7280]">{option.desc}</p>
+                                <p className="text-xs text-brand-muted-dark">{option.desc}</p>
                             </div>
                         </label>
                     ))}

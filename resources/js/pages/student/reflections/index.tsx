@@ -24,23 +24,16 @@ interface Props {
     courses: Course[];
 }
 
-const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-} as const;
-
-const bodyTextClass = 'text-sm text-[#6B7280]';
-
 function ReflectionBadge({ label, tone }: { label: string; tone: 'session' | 'weekly' }) {
     const styles = tone === 'session'
         ? {
             background: 'rgba(136,22,28,0.08)',
-            color: '#88161c',
+            color: 'rgb(var(--color-brand-primary))',
             border: '1px solid rgba(136,22,28,0.15)',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
-            color: '#4A4A4A',
+            color: 'rgb(var(--color-brand-dark))',
             border: '1px solid rgba(74,74,74,0.15)',
         };
 
@@ -69,23 +62,23 @@ function SectionHeader({
         ? {
             background: 'rgba(136,22,28,0.08)',
             border: '1px solid rgba(136,22,28,0.12)',
-            color: '#88161c',
+            color: 'rgb(var(--color-brand-primary))',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
             border: '1px solid rgba(74,74,74,0.12)',
-            color: '#4A4A4A',
+            color: 'rgb(var(--color-brand-dark))',
         };
 
     const badgeStyles = tone === 'session'
         ? {
             background: 'rgba(136,22,28,0.08)',
-            color: '#88161c',
+            color: 'rgb(var(--color-brand-primary))',
             border: '1px solid rgba(136,22,28,0.15)',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
-            color: '#4A4A4A',
+            color: 'rgb(var(--color-brand-dark))',
             border: '1px solid rgba(74,74,74,0.15)',
         };
 
@@ -97,7 +90,7 @@ function SectionHeader({
             >
                 {icon}
             </div>
-            <h3 className="text-base font-semibold" style={headingStyle}>
+            <h3 className="text-base font-semibold font-sans text-brand-dark">
                 {title}
             </h3>
             <span
@@ -335,10 +328,10 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                 <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h2 className="text-2xl font-bold" style={headingStyle}>
+                            <h2 className="text-2xl font-bold font-sans text-brand-dark">
                                 Refleksi Saya
                             </h2>
-                            <p className={`mt-1 ${bodyTextClass}`}>
+                            <p className="mt-1 text-sm text-brand-muted-dark">
                                 Lacak perjalanan pembelajaran Anda melalui refleksi sesi dan mingguan.
                             </p>
                         </div>
@@ -349,7 +342,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
                                 style={{
                                     background: activeTab === 'templates' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'templates' ? '#88161c' : '#6B7280',
+                                    color: activeTab === 'templates' ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
                                 }}
                             >
                                 <LayoutGrid className="h-4 w-4" />
@@ -361,7 +354,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
                                 style={{
                                     background: activeTab === 'analytics' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'analytics' ? '#88161c' : '#6B7280',
+                                    color: activeTab === 'analytics' ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
                                 }}
                             >
                                 <BarChart3 className="h-4 w-4" />
@@ -433,13 +426,13 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
+                                        <Lightbulb className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                     </div>
                                     <div>
-                                        <p className="text-base font-semibold" style={headingStyle}>
+                                        <p className="text-base font-semibold font-sans text-brand-dark">
                                             Tentang Refleksi
                                         </p>
-                                        <p className={`mt-2 leading-6 ${bodyTextClass}`}>
+                                        <p className="mt-2 leading-6 text-sm text-brand-muted-dark">
                                             Refleksi reguler membantu Anda mengkonsolidasikan pembelajaran dan melacak kemajuan. Di sini Anda
                                             akan melihat <strong>refleksi sesi</strong> yang dibuat saat sesi diskusi ditutup dan
                                             <strong> refleksi mingguan</strong> yang Anda buat sendiri.
@@ -463,12 +456,12 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Pencil className="h-7 w-7" style={{ color: '#88161c' }} />
+                                        <Pencil className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                     </div>
-                                    <h3 className="text-lg font-semibold" style={headingStyle}>
+                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                         Tidak ada refleksi yang cocok
                                     </h3>
-                                    <p className={`mt-2 max-w-sm ${bodyTextClass}`}>
+                                    <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
                                         Coba ubah kata kunci pencarian atau filter yang digunakan.
                                     </p>
                                     <SecondaryButton onClick={clearFilters} className="mt-4">
@@ -490,12 +483,12 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Pencil className="h-7 w-7" style={{ color: '#88161c' }} />
+                                        <Pencil className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                     </div>
-                                    <h3 className="text-lg font-semibold" style={headingStyle}>
+                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                         Belum Ada Refleksi
                                     </h3>
-                                    <p className={`mt-2 max-w-sm ${bodyTextClass}`}>
+                                    <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
                                         Mulai perjalanan refleksi Anda dengan menulis refleksi pertama.
                                     </p>
                                     <PrimaryButton onClick={() => setShowCreateModal(true)} className="mt-4">
@@ -509,7 +502,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 {sessionReflections.length > 0 && (
                                     <div>
                                         <SectionHeader
-                                            icon={<MessageSquare className="h-5 w-5" style={{ color: '#88161c' }} />}
+                                            icon={<MessageSquare className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />}
                                             title="Refleksi Sesi"
                                             count={sessionReflections.length}
                                             tone="session"
@@ -530,10 +523,10 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                             <div className="flex items-center gap-3">
                                                                 <ReflectionBadge label="Sesi" tone="session" />
                                                                 <div>
-                                                                    <p className="font-semibold" style={headingStyle}>
+                                                                    <p className="font-semibold font-sans text-brand-dark">
                                                                         {searchQuery ? highlightText(reflection.chatSpace?.name || 'Sesi Diskusi', searchQuery) : (reflection.chatSpace?.name || 'Sesi Diskusi')}
                                                                     </p>
-                                                                    <p className="mt-1 text-sm text-[#6B7280]">
+                                                                    <p className="mt-1 text-sm text-brand-muted-dark">
                                                                         {formatDate(createdAtFor(reflection))}
                                                                     </p>
                                                                 </div>
@@ -547,7 +540,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                     </div>
                                                                 )}
                                                                 <motion.div animate={{ rotate: expandedReflection === reflection.id ? 180 : 0 }}>
-                                                                    <ChevronDown className="h-5 w-5 text-[#6B7280]" />
+                                                                    <ChevronDown className="h-5 w-5 text-brand-muted-dark" />
                                                                 </motion.div>
                                                             </div>
                                                         </div>
@@ -561,7 +554,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                     className="overflow-hidden"
                                                                 >
                                                                     <div className="border-t border-white/30 px-5 pb-5 pt-4">
-                                                                        <p className="whitespace-pre-wrap text-sm leading-6 text-[#4A4A4A]">
+                                                                        <p className="whitespace-pre-wrap text-sm leading-6 text-brand-dark">
                                                                             {searchQuery ? highlightText(reflection.content, searchQuery) : reflection.content}
                                                                         </p>
                                                                         {reflection.ai_feedback && (
@@ -573,18 +566,18 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 }}
                                                                             >
                                                                                 <div className="mb-2 flex items-center gap-2">
-                                                                                    <Lightbulb className="h-4 w-4" style={{ color: '#88161c' }} />
-                                                                                    <span className="text-sm font-semibold" style={headingStyle}>
+                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                                                    <span className="text-sm font-semibold font-sans text-brand-dark">
                                                                                         Umpan Balik AI
                                                                                     </span>
                                                                                 </div>
-                                                                                <p className="text-sm leading-6 text-[#6B7280]">
+                                                                                <p className="text-sm leading-6 text-brand-muted-dark">
                                                                                     {reflection.ai_feedback}
                                                                                 </p>
                                                                             </div>
                                                                         )}
                                                                         <div className="mt-4">
-                                                                            <p className="mb-1.5 text-xs font-medium text-[#4A4A4A]">Tag</p>
+                                                                            <p className="mb-1.5 text-xs font-medium text-brand-dark">Tag</p>
                                                                             <TagInput
                                                                                 tags={reflectionTags[reflection.id] ?? []}
                                                                                 onChange={(tags) => saveTagsForReflection(reflection.id, tags)}
@@ -605,7 +598,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 {weeklyReflections.length > 0 && (
                                     <div>
                                         <SectionHeader
-                                            icon={<BookOpen className="h-5 w-5" style={{ color: '#4A4A4A' }} />}
+                                            icon={<BookOpen className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-dark))' }} />}
                                             title="Refleksi Mingguan"
                                             count={weeklyReflections.length}
                                             tone="weekly"
@@ -626,10 +619,10 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                             <div className="flex items-center gap-3">
                                                                 <ReflectionBadge label="Mingguan" tone="weekly" />
                                                                 <div>
-                                                                    <p className="font-semibold" style={headingStyle}>
+                                                                    <p className="font-semibold font-sans text-brand-dark">
                                                                         {searchQuery ? highlightText(reflection.course?.name || 'Kelas Tidak Diketahui', searchQuery) : (reflection.course?.name || 'Kelas Tidak Diketahui')}
                                                                     </p>
-                                                                    <p className="mt-1 text-sm text-[#6B7280]">
+                                                                    <p className="mt-1 text-sm text-brand-muted-dark">
                                                                         {formatDate(createdAtFor(reflection))}
                                                                     </p>
                                                                 </div>
@@ -643,7 +636,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                     </div>
                                                                 )}
                                                                 <motion.div animate={{ rotate: expandedReflection === reflection.id ? 180 : 0 }}>
-                                                                    <ChevronDown className="h-5 w-5 text-[#6B7280]" />
+                                                                    <ChevronDown className="h-5 w-5 text-brand-muted-dark" />
                                                                 </motion.div>
                                                             </div>
                                                         </div>
@@ -657,7 +650,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                     className="overflow-hidden"
                                                                 >
                                                                     <div className="border-t border-white/30 px-5 pb-5 pt-4">
-                                                                        <p className="whitespace-pre-wrap text-sm leading-6 text-[#4A4A4A]">
+                                                                        <p className="whitespace-pre-wrap text-sm leading-6 text-brand-dark">
                                                                             {searchQuery ? highlightText(reflection.content, searchQuery) : reflection.content}
                                                                         </p>
                                                                         {reflection.ai_feedback && (
@@ -669,18 +662,18 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 }}
                                                                             >
                                                                                 <div className="mb-2 flex items-center gap-2">
-                                                                                    <Lightbulb className="h-4 w-4" style={{ color: '#88161c' }} />
-                                                                                    <span className="text-sm font-semibold" style={headingStyle}>
+                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                                                    <span className="text-sm font-semibold font-sans text-brand-dark">
                                                                                         Umpan Balik AI
                                                                                     </span>
                                                                                 </div>
-                                                                                <p className="text-sm leading-6 text-[#6B7280]">
+                                                                                <p className="text-sm leading-6 text-brand-muted-dark">
                                                                                     {reflection.ai_feedback}
                                                                                 </p>
                                                                             </div>
                                                                         )}
                                                                         <div className="mt-4">
-                                                                            <p className="mb-1.5 text-xs font-medium text-[#4A4A4A]">Tag</p>
+                                                                            <p className="mb-1.5 text-xs font-medium text-brand-dark">Tag</p>
                                                                             <TagInput
                                                                                 tags={reflectionTags[reflection.id] ?? []}
                                                                                 onChange={(tags) => saveTagsForReflection(reflection.id, tags)}
@@ -724,17 +717,17 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <div className="flex items-center justify-between gap-4">
                                         <div>
-                                            <h3 className="text-lg font-semibold" style={headingStyle}>
+                                            <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                                 Refleksi Mingguan Baru
                                             </h3>
-                                            <p className={`mt-1 ${bodyTextClass}`}>
+                                            <p className="mt-1 text-sm text-brand-muted-dark">
                                                 Refleksikan pengalaman pembelajaran mingguan Anda.
                                             </p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setShowCreateModal(false)}
-                                            className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#4A4A4A]"
+                                            className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
                                         >
                                             <X className="h-5 w-5" />
                                         </button>
@@ -749,7 +742,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 id="course_id"
                                                 value={data.course_id}
                                                 onChange={(e) => setData('course_id', e.target.value)}
-                                                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
+                                                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[rgb(var(--color-brand-primary))]/30"
                                             >
                                                 <option value="">Pilih kelas</option>
                                                 {safeCourses.map((course) => (
@@ -769,12 +762,12 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 id="content"
                                                 value={data.content}
                                                 onChange={(e) => setData('content', e.target.value)}
-                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
+                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[rgb(var(--color-brand-primary))]/30"
                                                 placeholder="Apa yang Anda pelajari hari ini? Tantangan apa yang Anda hadapi? Bagaimana Anda mengatasinya?"
                                                 rows={5}
                                             />
                                             <InputError message={errors.content} />
-                                            <p className="mt-2 text-xs text-[#6B7280]">
+                                            <p className="mt-2 text-xs text-brand-muted-dark">
                                                 {data.content.length}/1000 karakter
                                             </p>
                                         </div>
@@ -794,10 +787,10 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 border: '1px solid rgba(255,255,255,0.5)',
                                             }}
                                         >
-                                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#4A4A4A]">
+                                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-dark">
                                                 Prompt refleksi mingguan
                                             </p>
-                                            <ul className="space-y-1 text-xs leading-5 text-[#6B7280]">
+                                            <ul className="space-y-1 text-xs leading-5 text-brand-muted-dark">
                                                 <li>• Apa pencapaian pembelajaran terbesar minggu ini?</li>
                                                 <li>• Tantangan apa yang dihadapi dan bagaimana mengatasinya?</li>
                                                 <li>• Apa yang akan dilakukan berbeda minggu depan?</li>

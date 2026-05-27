@@ -58,10 +58,9 @@ export function TemplateModal({ template, onSave, onClose }: TemplateModalProps)
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-[#4A4A4A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                         {template ? 'Edit Template' : 'Buat Template Baru'}
                     </h3>
-                    <button type="button" onClick={onClose} className="text-[#6B7280] hover:text-[#4A4A4A]">
+                    <button type="button" onClick={onClose} className="text-brand-muted-dark hover:text-brand-dark">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
@@ -72,38 +71,35 @@ export function TemplateModal({ template, onSave, onClose }: TemplateModalProps)
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-[#4A4A4A]">Judul *</label>
+                        <label className="mb-1 block text-xs font-medium text-brand-dark">Judul *</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             maxLength={200}
-                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                             placeholder="Judul template"
                         />
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-[#4A4A4A]">Deskripsi</label>
+                        <label className="mb-1 block text-xs font-medium text-brand-dark">Deskripsi</label>
                         <input
                             type="text"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             maxLength={500}
-                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                             placeholder="Deskripsi singkat (opsional)"
                         />
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-[#4A4A4A]">Kategori</label>
+                        <label className="mb-1 block text-xs font-medium text-brand-dark">Kategori</label>
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            className="w-full rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                         >
                             <option value="">Pilih kategori</option>
                             {CATEGORIES.map((cat) => (
@@ -113,14 +109,13 @@ export function TemplateModal({ template, onSave, onClose }: TemplateModalProps)
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-[#4A4A4A]">Konten Template *</label>
+                        <label className="mb-1 block text-xs font-medium text-brand-dark">Konten Template *</label>
                         <textarea
                             value={contentTemplate}
                             onChange={(e) => setContentTemplate(e.target.value)}
                             maxLength={10000}
                             rows={8}
-                            className="w-full resize-none rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-[#4A4A4A] ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            className="w-full resize-none rounded-lg border-0 bg-white/60 px-3 py-2 text-sm text-brand-dark ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                             placeholder="Tulis kerangka refleksi di sini..."
                         />
                     </div>
@@ -129,7 +124,7 @@ export function TemplateModal({ template, onSave, onClose }: TemplateModalProps)
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded-lg px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-white/80"
+                            className="rounded-lg px-4 py-2 text-sm font-medium text-brand-muted-dark transition-colors hover:bg-white/80"
                         >
                             Batal
                         </button>

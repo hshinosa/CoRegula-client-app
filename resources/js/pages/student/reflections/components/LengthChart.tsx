@@ -9,7 +9,7 @@ interface LengthChartProps {
 export function LengthChart({ data, period }: LengthChartProps) {
     if (data.length === 0) {
         return (
-            <div className="flex h-40 items-center justify-center text-sm text-[#6B7280]">
+            <div className="flex h-40 items-center justify-center text-sm text-brand-muted-dark">
                 Belum ada data panjang refleksi
             </div>
         );
@@ -38,7 +38,7 @@ export function LengthChart({ data, period }: LengthChartProps) {
 
     return (
         <div>
-            <p className="mb-3 text-xs text-[#6B7280]">{narrativeLabel}</p>
+            <p className="mb-3 text-xs text-brand-muted-dark">{narrativeLabel}</p>
             <motion.svg
                 viewBox={`0 0 ${width} ${height}`}
                 className="w-full"
@@ -96,7 +96,7 @@ export function LengthChart({ data, period }: LengthChartProps) {
                 />
             </motion.svg>
 
-            <div className="mt-1 flex justify-between text-[9px] text-[#6B7280]">
+            <div className="mt-1 flex justify-between text-[9px] text-brand-muted-dark">
                 {data.length > 0 && <span>{formatLabel(data[0].label, period)}</span>}
                 {data.length > 2 && <span>{formatLabel(data[Math.floor(data.length / 2)].label, period)}</span>}
                 {data.length > 1 && <span>{formatLabel(data[data.length - 1].label, period)}</span>}

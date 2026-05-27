@@ -6,10 +6,9 @@ import type { GroupMemberRole } from '@/types';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const roleFilters: { value: GroupMemberRole | ''; label: string }[] = [
     { value: '', label: 'Semua' },
@@ -66,7 +65,7 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
                         placeholder="Cari anggota berdasarkan nama atau email..."
                         value={query}
                         onChange={(e) => handleSearch(e.target.value)}
-                        className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm transition-colors focus:border-[#88161c] focus:outline-none"
+                        className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm transition-colors focus:border-brand-primary focus:outline-none"
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -74,7 +73,7 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
                     <select
                         value={roleFilter}
                         onChange={(e) => handleRoleFilter(e.target.value as GroupMemberRole | '')}
-                        className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-[#88161c] focus:outline-none"
+                        className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-brand-primary focus:outline-none"
                     >
                         {roleFilters.map((filter) => (
                             <option key={filter.value} value={filter.value}>
@@ -86,11 +85,11 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
             </div>
 
             <div className="flex items-center justify-between">
-                <span className="text-xs text-[#6B7280]">
+                <span className="text-xs text-brand-muted-dark">
                     {meta.total} anggota ditemukan
                 </span>
                 {isFetching && !isLoading && (
-                    <span className="text-xs text-[#88161c]">Memperbarui...</span>
+                    <span className="text-xs text-brand-primary">Memperbarui...</span>
                 )}
             </div>
 
@@ -148,7 +147,7 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
                     >
                         Sebelumnya
                     </button>
-                    <span className="text-xs text-[#6B7280]">
+                    <span className="text-xs text-brand-muted-dark">
                         Halaman {page} dari {meta.last_page}
                     </span>
                     <button

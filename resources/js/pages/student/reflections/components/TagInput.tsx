@@ -76,7 +76,7 @@ export function TagInput({ tags, onChange, maxTags = 10, reflectionId }: TagInpu
     return (
         <div ref={containerRef} className="relative">
             <div
-                className="flex flex-wrap items-center gap-1.5 rounded-lg bg-white/60 px-3 py-2 ring-1 ring-inset ring-white/50 focus-within:ring-2 focus-within:ring-[#88161c]/30"
+                className="flex flex-wrap items-center gap-1.5 rounded-lg bg-white/60 px-3 py-2 ring-1 ring-inset ring-white/50 focus-within:ring-2 focus-within:ring-brand-primary/30"
                 onClick={() => inputRef.current?.focus()}
                 role="presentation"
             >
@@ -99,7 +99,7 @@ export function TagInput({ tags, onChange, maxTags = 10, reflectionId }: TagInpu
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
-                                className="text-[#88161c]/60 hover:text-[#88161c]"
+                                className="text-brand-primary/60 hover:text-brand-primary"
                             >
                                 <X className="h-3 w-3" />
                             </button>
@@ -116,13 +116,12 @@ export function TagInput({ tags, onChange, maxTags = 10, reflectionId }: TagInpu
                         onKeyDown={handleKeyDown}
                         onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                         placeholder={tags.length === 0 ? 'Tambah tag...' : ''}
-                        className="min-w-[80px] flex-1 border-0 bg-transparent p-0 text-xs text-[#4A4A4A] placeholder:text-[#9ca3af] focus:outline-none focus:ring-0"
-                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        className="min-w-[80px] flex-1 border-0 bg-transparent p-0 text-xs text-brand-dark placeholder:text-[#9ca3af] focus:outline-none focus:ring-0"
                     />
                 )}
             </div>
 
-            <span className="mt-1 block text-[10px] text-[#6B7280]">
+            <span className="mt-1 block text-[10px] text-brand-muted-dark">
                 {tags.length}/{maxTags} tag
             </span>
 
@@ -139,9 +138,9 @@ export function TagInput({ tags, onChange, maxTags = 10, reflectionId }: TagInpu
                                 key={suggestion}
                                 type="button"
                                 onClick={() => addTag(suggestion)}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#4A4A4A] transition-colors hover:bg-[#88161c]/5"
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-brand-dark transition-colors hover:bg-brand-primary/5"
                             >
-                                <Plus className="h-3 w-3 text-[#6B7280]" />
+                                <Plus className="h-3 w-3 text-brand-muted-dark" />
                                 {suggestion}
                             </button>
                         ))}

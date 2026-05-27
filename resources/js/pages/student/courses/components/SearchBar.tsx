@@ -59,13 +59,12 @@ export function SearchBar({ value, onChange, placeholder = 'Cari mata kuliah...'
                 value={localValue}
                 onChange={handleChange}
                 placeholder={placeholder}
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-10 text-sm text-[#4A4A4A] shadow-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-10 text-sm text-brand-dark shadow-brand-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
             />
             {localValue && (
                 <button
                     onClick={handleClear}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#9CA3AF] transition-colors hover:text-[#4A4A4A]"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#9CA3AF] transition-colors hover:text-brand-dark"
                     type="button"
                 >
                     <X className="h-4 w-4" />

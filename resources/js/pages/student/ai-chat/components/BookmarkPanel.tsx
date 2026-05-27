@@ -96,15 +96,15 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                         <LiquidGlassCard intensity="heavy" className="flex h-full flex-col rounded-l-2xl" lightMode={true}>
                             <div className="flex items-center justify-between border-b border-[#E5E7EB]/50 p-4">
                                 <div className="flex items-center gap-2">
-                                    <Bookmark className="h-5 w-5 text-[#88161c]" />
-                                    <h2 className="text-base font-semibold text-[#4A4A4A]">Bookmark</h2>
-                                    <span className="rounded-full bg-[#88161c]/10 px-2 py-0.5 text-xs font-medium text-[#88161c]">
+                                    <Bookmark className="h-5 w-5 text-brand-primary" />
+                                    <h2 className="text-base font-semibold text-brand-dark">Bookmark</h2>
+                                    <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-xs font-medium text-brand-primary">
                                         {bookmarks.length}
                                     </span>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#4A4A4A]"
+                                    className="rounded-lg p-1.5 text-brand-muted-dark transition-colors hover:bg-[#F3F4F6] hover:text-brand-dark"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
@@ -113,12 +113,12 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                             <div className="flex-1 overflow-y-auto p-4">
                                 {isLoading ? (
                                     <div className="flex items-center justify-center py-12">
-                                        <Loader2 className="h-6 w-6 text-[#88161c] animate-spin" />
+                                        <Loader2 className="h-6 w-6 text-brand-primary animate-spin" />
                                     </div>
                                 ) : bookmarks.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
                                         <Bookmark className="h-12 w-12 text-[#E5E7EB]" />
-                                        <p className="mt-4 text-sm font-medium text-[#4A4A4A]">Belum ada bookmark</p>
+                                        <p className="mt-4 text-sm font-medium text-brand-dark">Belum ada bookmark</p>
                                         <p className="mt-1 text-xs text-[#9CA3AF]">
                                             Bookmark pesan penting dengan menekan ikon bookmark
                                         </p>
@@ -132,7 +132,7 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -10 }}
-                                                className="group rounded-xl border border-[#E5E7EB]/50 bg-white/50 p-3 transition-all hover:border-[#88161c]/20 hover:bg-white/80"
+                                                className="group rounded-xl border border-[#E5E7EB]/50 bg-white/50 p-3 transition-all hover:border-brand-primary/20 hover:bg-white/80"
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex-1 min-w-0">
@@ -140,7 +140,7 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                                                             {formatDate(bookmark.created_at)}
                                                         </p>
                                                         {bookmark.note && (
-                                                            <p className="mt-1 text-sm text-[#4A4A4A] line-clamp-2">
+                                                            <p className="mt-1 text-sm text-brand-dark line-clamp-2">
                                                                 {bookmark.note}
                                                             </p>
                                                         )}
@@ -152,7 +152,7 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                                                         {bookmark.conversation_id && (
                                                             <button
                                                                 onClick={() => onNavigateToMessage(bookmark.conversation_id!, bookmark.message_id)}
-                                                                className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#88161c]"
+                                                                className="rounded-lg p-1.5 text-brand-muted-dark transition-colors hover:bg-[#F3F4F6] hover:text-brand-primary"
                                                                 title="Lihat pesan"
                                                             >
                                                                 <ExternalLink className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ export function BookmarkPanel({ isOpen, onClose, onNavigateToMessage, onBookmark
                                                         <button
                                                             onClick={() => handleDelete(bookmark.id)}
                                                             disabled={deletingId === bookmark.id}
-                                                            className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-red-50 hover:text-red-600"
+                                                            className="rounded-lg p-1.5 text-brand-muted-dark transition-colors hover:bg-red-50 hover:text-red-600"
                                                             title="Hapus bookmark"
                                                         >
                                                             {deletingId === bookmark.id ? (

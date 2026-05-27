@@ -47,8 +47,7 @@ export function AnalyticsPanel({ className = '' }: AnalyticsPanelProps) {
         <div className={`space-y-5 ${className}`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-[#88161c]" />
-                    <h3 className="text-lg font-semibold text-[#4A4A4A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <BarChart3 className="h-5 w-5 text-brand-primary" />
                         Analitik Refleksi
                     </h3>
                 </div>
@@ -72,12 +71,12 @@ export function AnalyticsPanel({ className = '' }: AnalyticsPanelProps) {
 
             {loading ? (
                 <div className="flex items-center justify-center py-12">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#88161c] border-t-transparent" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
                 </div>
             ) : !analytics ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <BarChart3 className="mb-2 h-8 w-8 text-[#6B7280]" />
-                    <p className="text-sm text-[#6B7280]">Gagal memuat analitik</p>
+                    <BarChart3 className="mb-2 h-8 w-8 text-brand-muted-dark" />
+                    <p className="text-sm text-brand-muted-dark">Gagal memuat analitik</p>
                 </div>
             ) : (
                 <>
@@ -158,7 +157,7 @@ export function AnalyticsPanel({ className = '' }: AnalyticsPanelProps) {
                                 backdropFilter: 'blur(8px)',
                             }}
                         >
-                            <p className="mb-2 text-xs font-medium text-[#4A4A4A]">Tag Terpopuler</p>
+                            <p className="mb-2 text-xs font-medium text-brand-dark">Tag Terpopuler</p>
                             <div className="flex flex-wrap gap-2">
                                 {analytics.topTags.map((tag: TagCount) => (
                                     <span
@@ -206,17 +205,16 @@ function MetricCard({
                 backdropFilter: 'blur(8px)',
             }}
         >
-            <div className="mb-1 flex items-center gap-1.5 text-[#6B7280]">
+            <div className="mb-1 flex items-center gap-1.5 text-brand-muted-dark">
                 {icon}
                 <span className="text-[10px] font-medium">{label}</span>
             </div>
             <p
-                className={`font-bold ${isText ? 'text-sm' : 'text-xl'} text-[#4A4A4A]`}
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                className={`font-bold ${isText ? 'text-sm' : 'text-xl'} text-brand-dark`}
             >
                 {value}{unit ? ` ${unit}` : ''}
             </p>
-            <p className="mt-0.5 text-[10px] text-[#6B7280]">{narrative}</p>
+            <p className="mt-0.5 text-[10px] text-brand-muted-dark">{narrative}</p>
         </div>
     );
 }

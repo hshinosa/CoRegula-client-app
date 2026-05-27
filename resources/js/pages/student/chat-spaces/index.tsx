@@ -430,7 +430,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                             value={data.name}
                                             onChange={(e) => setData('name', e.target.value)}
                                             placeholder="Contoh: Diskusi Bab 3"
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                             required
                                         />
                                         {errors.name && (
@@ -447,7 +447,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                             onChange={(e) => setData('description', e.target.value)}
                                             placeholder="Jelaskan topik yang akan dibahas..."
                                             rows={3}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                         />
                                     </div>
 

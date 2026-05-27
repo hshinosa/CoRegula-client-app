@@ -36,20 +36,19 @@ export function StreakIndicator({ streak }: StreakIndicatorProps) {
             </motion.div>
 
             <div className="text-center">
-                <p className="text-sm font-semibold text-[#4A4A4A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {streak.current > 0 ? `${streak.current} Hari Beruntun` : 'Mulai Streak!'}
                 </p>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-brand-muted-dark">
                     {streak.hasReflectionToday ? 'Sudah menulis hari ini' : 'Belum menulis hari ini'}
                 </p>
             </div>
 
             <div className="flex gap-4">
-                <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+                <div className="flex items-center gap-1.5 text-xs text-brand-muted-dark">
                     <TrendingUp className="h-3.5 w-3.5" />
                     <span>Terbaik: {streak.longest} hari</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+                <div className="flex items-center gap-1.5 text-xs text-brand-muted-dark">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>Sekarang: {streak.current} hari</span>
                 </div>

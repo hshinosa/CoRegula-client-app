@@ -109,10 +109,10 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                         if (results.length > 0) setIsOpen(true);
                     }}
                     placeholder={bookmarkedOnly ? "Cari bookmark..." : "Cari percakapan..."}
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2.5 pl-10 pr-10 text-sm text-[#4A4A4A] placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-[#88161c]/30 focus:outline-none focus:ring-2 focus:ring-[#88161c]/10"
+                    className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2.5 pl-10 pr-10 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
                 />
                 {isLoading && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#88161c] animate-spin" />
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-primary animate-spin" />
                 )}
                 {query && !isLoading && (
                     <button
@@ -121,7 +121,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                             setResults([]);
                             setIsOpen(false);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] hover:text-[#4A4A4A] transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] hover:text-brand-dark transition-colors"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -144,17 +144,17 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                                 className="flex w-full flex-col gap-1 border-b border-[#F3F4F6] px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[#F9FAFB]"
                             >
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-[#4A4A4A]">
+                                    <span className="text-sm font-medium text-brand-dark">
                                         {highlightMatch(result.title, query)}
                                     </span>
                                     {result.match_type === 'bookmark' && (
-                                        <span className="rounded-full bg-[#88161c]/10 px-2 py-0.5 text-[10px] font-medium text-[#88161c]">
+                                        <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-[10px] font-medium text-brand-primary">
                                             Bookmark
                                         </span>
                                     )}
                                 </div>
                                 {result.snippet && (
-                                    <p className="text-xs text-[#6B7280] line-clamp-2">
+                                    <p className="text-xs text-brand-muted-dark line-clamp-2">
                                         {highlightMatch(result.snippet, query)}
                                     </p>
                                 )}
@@ -180,7 +180,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                         transition={{ duration: 0.15 }}
                         className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-[#E5E7EB] bg-white/95 p-4 text-center shadow-lg backdrop-blur-md"
                     >
-                        <p className="text-sm text-[#6B7280]">Tidak ada percakapan yang cocok</p>
+                        <p className="text-sm text-brand-muted-dark">Tidak ada percakapan yang cocok</p>
                         <p className="mt-1 text-xs text-[#9CA3AF]">Coba kata kunci lain atau hapus filter</p>
                     </motion.div>
                 )}

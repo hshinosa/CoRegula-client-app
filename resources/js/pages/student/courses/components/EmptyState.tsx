@@ -36,19 +36,17 @@ export function EmptyState({ hasFilters, onResetFilters, onJoinCourse }: EmptySt
                     </div>
                     <h3
                         className="text-lg font-semibold"
-                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         Tidak ada mata kuliah yang cocok
                     </h3>
-                    <p className="mt-1.5 max-w-sm text-sm text-[#6B7280]">
+                    <p className="mt-1.5 max-w-sm text-sm text-brand-muted-dark">
                         Coba kata kunci lain atau hapus filter
                     </p>
                     {onResetFilters && (
                         <div className="mt-5">
                             <button
                                 onClick={onResetFilters}
-                                className="rounded-xl px-4 py-2 text-sm font-medium text-[#88161c] transition-colors hover:bg-[#88161c]/5"
-                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                className="rounded-xl px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary/5"
                             >
                                 Hapus Semua Filter
                             </button>
@@ -85,11 +83,10 @@ export function EmptyState({ hasFilters, onResetFilters, onJoinCourse }: EmptySt
                 </div>
                 <h3
                     className="text-lg font-semibold"
-                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                     Belum ada mata kuliah
                 </h3>
-                <p className="mt-1.5 max-w-sm text-sm text-[#6B7280]">
+                <p className="mt-1.5 max-w-sm text-sm text-brand-muted-dark">
                     Gabung mata kuliah menggunakan kode dari dosen Anda untuk memulai pembelajaran kolaboratif
                 </p>
                 {onJoinCourse && (

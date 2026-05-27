@@ -4,7 +4,6 @@ import type { GroupMember, GroupMemberRole } from '@/types';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 const roleConfig: Record<GroupMemberRole, { icon: typeof Crown; label: string; color: string; bg: string }> = {
@@ -74,7 +73,7 @@ export function MemberCard({ member, index = 0, currentUserId, isOwner, onRoleCh
                         <span className="text-xs text-gray-400">(Anda)</span>
                     )}
                 </div>
-                <p className="truncate text-xs text-[#6B7280]">{member.user.email}</p>
+                <p className="truncate text-xs text-brand-muted-dark">{member.user.email}</p>
             </div>
 
             <div
@@ -89,7 +88,7 @@ export function MemberCard({ member, index = 0, currentUserId, isOwner, onRoleCh
                 <div className="flex items-center gap-1">
                     {onRoleChange && (
                         <select
-                            className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs focus:border-[#88161c] focus:outline-none"
+                            className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs focus:border-brand-primary focus:outline-none"
                             value={member.role}
                             onChange={(e) => onRoleChange(member.id, e.target.value as GroupMemberRole)}
                         >

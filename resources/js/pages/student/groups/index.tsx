@@ -35,13 +35,6 @@ interface Props {
     students: User[];
 }
 
-const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-} as const;
-
-const bodyTextClass = 'text-sm text-[#6B7280]';
-
 export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
@@ -133,7 +126,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                             style={{
                                 background: 'rgba(136,22,28,0.08)',
-                                color: '#88161c',
+                                color: 'rgb(var(--color-brand-primary))',
                                 border: '1px solid rgba(136,22,28,0.15)',
                             }}
                         >
@@ -141,12 +134,11 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                         </span>
                     </div>
                     <h2
-                        className="mt-3 text-2xl font-bold"
-                        style={headingStyle}
+                        className="mt-3 text-2xl font-bold font-sans text-brand-dark"
                     >
                         Cari atau Buat Grup
                     </h2>
-                    <p className={`mt-1 ${bodyTextClass}`}>
+                    <p className="mt-1 text-sm text-brand-muted-dark">
                         Bergabung dengan grup yang sudah ada atau buat grup baru untuk {course.name}
                     </p>
                 </LiquidGlassCard>
@@ -166,22 +158,21 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <Check className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <Check className="h-6 w-6 text-brand-primary" />
                                 </div>
                                 <div className="flex-1">
                                     <h3
-                                        className="text-lg font-semibold"
-                                        style={headingStyle}
+                                        className="text-lg font-semibold font-sans text-brand-dark"
                                     >
                                         Anda sudah bergabung dengan grup
                                     </h3>
-                                    <p className={bodyTextClass}>
+                                    <p className="text-sm text-brand-muted-dark">
                                         <span className="font-medium">{myGroup.name}</span> • Kode:{' '}
                                         <code
                                             className="rounded px-1.5 py-0.5 font-mono text-xs"
                                             style={{
                                                 background: 'rgba(136,22,28,0.08)',
-                                                color: '#88161c',
+                                                color: 'rgb(var(--color-brand-primary))',
                                             }}
                                         >
                                             {myGroup.joinCode}
@@ -191,20 +182,15 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                 <div className="flex items-center gap-2">
                                     <a
                                         href={`/student/groups/${myGroup.id}`}
-                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-                                        style={{
-                                            background: '#88161c',
-                                            color: 'white',
-                                        }}
+                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors bg-brand-primary text-white"
                                     >
                                         Buka Grup
                                     </a>
                                     <a
                                         href={student.courses.show.url({ course: course.id })}
-                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+                                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors text-brand-primary"
                                         style={{
                                             background: 'rgba(136,22,28,0.08)',
-                                            color: '#88161c',
                                             border: '1px solid rgba(136,22,28,0.15)',
                                         }}
                                     >
@@ -249,16 +235,15 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     border: '1px solid rgba(136,22,28,0.12)',
                                 }}
                             >
-                                <KeyRound className="h-7 w-7" style={{ color: '#88161c' }} />
+                                <KeyRound className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                             </div>
                             <div>
                                 <h3
-                                    className="text-lg font-semibold"
-                                    style={headingStyle}
+                                    className="text-lg font-semibold font-sans text-brand-dark"
                                 >
                                     Gabung dengan Kode
                                 </h3>
-                                <p className={`mt-1 ${bodyTextClass}`}>
+                                <p className="mt-1 text-sm text-brand-muted-dark">
                                     Masukkan kode grup yang diberikan oleh teman atau dosen
                                 </p>
                             </div>
@@ -289,16 +274,15 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     border: '1px solid rgba(74,74,74,0.12)',
                                 }}
                             >
-                                <Plus className="h-7 w-7" style={{ color: '#4A4A4A' }} />
+                                <Plus className="h-7 w-7 text-brand-dark" />
                             </div>
                             <div>
                                 <h3
-                                    className="text-lg font-semibold"
-                                    style={headingStyle}
+                                    className="text-lg font-semibold font-sans text-brand-dark"
                                 >
                                     Buat Grup Baru
                                 </h3>
-                                <p className={`mt-1 ${bodyTextClass}`}>
+                                <p className="mt-1 text-sm text-brand-muted-dark">
                                     Buat grup baru dan ajak teman Anda untuk bergabung
                                 </p>
                             </div>
@@ -315,8 +299,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                         className="space-y-4"
                     >
                         <h3
-                            className="text-lg font-semibold"
-                            style={headingStyle}
+                            className="text-lg font-semibold font-sans text-brand-dark"
                         >
                             Grup yang Tersedia ({groups.length})
                         </h3>
@@ -331,10 +314,9 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
                                         <div className="flex items-center gap-3">
                                             <div
-                                                className="flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold"
+                                                className="flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-brand-primary"
                                                 style={{
                                                     background: 'rgba(136,22,28,0.08)',
-                                                    color: '#88161c',
                                                     border: '1px solid rgba(136,22,28,0.12)',
                                                 }}
                                             >
@@ -342,12 +324,11 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             </div>
                                             <div className="flex-1">
                                                 <h4
-                                                    className="font-medium"
-                                                    style={{ color: '#4A4A4A' }}
+                                                    className="font-medium text-brand-dark"
                                                 >
                                                     {group.name}
                                                 </h4>
-                                                <p className="text-xs text-[#6B7280]">
+                                                <p className="text-xs text-brand-muted-dark">
                                                     {group.members?.length || 0} anggota
                                                 </p>
                                             </div>
@@ -361,7 +342,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                                         style={{
                                                             borderColor: 'rgba(255,255,255,0.8)',
                                                             background: 'rgba(136,22,28,0.08)',
-                                                            color: '#88161c',
+                                                            color: 'rgb(var(--color-brand-primary))',
                                                         }}
                                                         title={member.name}
                                                     >
@@ -374,7 +355,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                                         style={{
                                                             borderColor: 'rgba(255,255,255,0.8)',
                                                             background: 'rgba(74,74,74,0.08)',
-                                                            color: '#4A4A4A',
+                                                            color: 'rgb(var(--color-brand-dark))',
                                                         }}
                                                     >
                                                         +{group.members.length - 5}
@@ -408,15 +389,14 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     border: '1px solid rgba(136,22,28,0.12)',
                                 }}
                             >
-                                <Users className="h-8 w-8" style={{ color: '#88161c' }} />
+                                <Users className="h-8 w-8" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                             </div>
                             <h3
-                                className="text-lg font-semibold"
-                                style={headingStyle}
+                                className="text-lg font-semibold font-sans text-brand-dark"
                             >
                                 Belum ada grup
                             </h3>
-                            <p className={`mt-2 max-w-sm ${bodyTextClass}`}>
+                            <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
                                 Jadilah yang pertama! Buat grup baru atau masukkan kode dari teman.
                             </p>
                             <div className="mt-6">
@@ -451,19 +431,18 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                             <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
                                 <div className="flex items-center justify-between">
                                     <h3
-                                        className="text-lg font-semibold"
-                                        style={headingStyle}
+                                        className="text-lg font-semibold font-sans text-brand-dark"
                                     >
                                         Buat Grup Baru
                                     </h3>
                                     <button
                                         onClick={() => setShowCreateModal(false)}
-                                        className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#4A4A4A]"
+                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
                                 </div>
-                                <p className={`mt-2 ${bodyTextClass}`}>
+                                <p className="mt-2 text-sm text-brand-muted-dark">
                                     Kode unik akan dibuat otomatis untuk teman bergabung
                                 </p>
                                 <form onSubmit={handleCreateGroup} className="mt-6 space-y-4">
@@ -476,7 +455,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             type="text"
                                             value={createForm.data.name}
                                             onChange={(e) => createForm.setData('name', e.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Kelompok A"
                                             autoFocus
                                         />
@@ -523,19 +502,18 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                             <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
                                 <div className="flex items-center justify-between">
                                     <h3
-                                        className="text-lg font-semibold"
-                                        style={headingStyle}
+                                        className="text-lg font-semibold font-sans text-brand-dark"
                                     >
                                         Gabung dengan Kode
                                     </h3>
                                     <button
                                         onClick={() => setShowJoinModal(false)}
-                                        className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#4A4A4A]"
+                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
                                 </div>
-                                <p className={`mt-2 ${bodyTextClass}`}>
+                                <p className="mt-2 text-sm text-brand-muted-dark">
                                     Masukkan kode grup 6 karakter yang diberikan kepada Anda
                                 </p>
                                 <form onSubmit={handleJoinGroup} className="mt-6 space-y-4">
@@ -548,7 +526,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             type="text"
                                             value={joinForm.data.join_code}
                                             onChange={(e) => joinForm.setData('join_code', e.target.value.toUpperCase())}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-center font-mono text-xl tracking-widest text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-center font-mono text-xl tracking-widest font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                             placeholder="XXXXXX"
                                             maxLength={6}
                                             autoFocus

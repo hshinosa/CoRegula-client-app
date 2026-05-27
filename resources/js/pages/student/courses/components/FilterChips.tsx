@@ -32,11 +32,10 @@ export function FilterChips({ activeStatus, onToggleStatus, filterCounts, isFetc
                             inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium
                             transition-all duration-200 disabled:opacity-60
                             ${isActive
-                                ? 'bg-[#88161c] text-white shadow-md shadow-[#88161c]/20'
-                                : 'bg-white text-[#6B7280] border border-slate-200 hover:border-[#88161c]/30 hover:text-[#4A4A4A]'
+                                ? 'bg-brand-primary text-white shadow-md shadow-[#88161c]/20'
+                                : 'bg-white text-brand-muted-dark border border-slate-200 hover:border-brand-primary/30 hover:text-brand-dark'
                             }
                         `}
-                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         {label}
                         <span
