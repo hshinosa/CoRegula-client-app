@@ -273,16 +273,12 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             }}
                         >
                             <div 
-                                className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-bold text-white text-sm shadow-sm"
+                                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-bold text-white text-sm shadow-sm"
                                 style={{
                                     background: 'linear-gradient(135deg, #88161c 0%, #a41219 100%)',
                                 }}
                             >
                                 {user?.name?.charAt(0).toUpperCase() || 'U'}
-                                <div 
-                                    className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-400"
-                                    style={{ borderColor: 'var(--dm-surface-solid)' }}
-                                />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="truncate text-sm font-semibold text-[var(--dm-text)] leading-tight">
