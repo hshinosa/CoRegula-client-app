@@ -221,7 +221,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         <div>
                             <span 
                                 className="text-xl font-bold"
-                                style={{ color: 'var(--dm-text)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                style={{ color: 'var(--dm-text)',  }}
                             >
                                 Kolabri
                             </span>
@@ -276,7 +276,6 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                 className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white"
                                 style={{
                                     background: 'linear-gradient(135deg, #88161c 0%, #a41219 100%)',
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 }}
                             >
                                 {user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -345,7 +344,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                         <div>
                                             <span 
                                                 className="text-lg font-bold sm:text-xl"
-                                                style={{ color: 'var(--dm-text)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                                style={{ color: 'var(--dm-text)',  }}
                                             >
                                                 Kolabri
                                             </span>
@@ -402,7 +401,6 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                             className="flex h-9 w-9 items-center justify-center rounded-full text-base font-bold text-white sm:h-11 sm:w-11 sm:text-lg"
                                             style={{
                                                 background: 'linear-gradient(135deg, #88161c 0%, #a41219 100%)',
-                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                                             }}
                                         >
                                             {user?.name?.charAt(0).toUpperCase() || 'U'}

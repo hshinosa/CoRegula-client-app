@@ -313,7 +313,7 @@ function DateRangeModal({
                             type="date"
                             value={value.startDate}
                             onChange={(event) => onChange({ ...value, preset: 'custom', startDate: event.target.value })}
-                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
+                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
                         />
                     </div>
                     <div>
@@ -322,7 +322,7 @@ function DateRangeModal({
                             type="date"
                             value={value.endDate}
                             onChange={(event) => onChange({ ...value, preset: 'custom', endDate: event.target.value })}
-                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
+                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
                         />
                     </div>
                 </div>
@@ -334,7 +334,7 @@ function DateRangeModal({
                     <button
                         type="button"
                         onClick={onApply}
-                        className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+                        className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-primary px-4 py-2.5 text-sm font-medium text-white shadow-brand-sm transition hover:opacity-90"
                     >
                         Apply range
                     </button>
