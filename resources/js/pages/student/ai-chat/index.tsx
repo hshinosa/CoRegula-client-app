@@ -32,8 +32,7 @@ interface Props {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
 const bodyTextClass = 'text-sm text-[#4B5563]';
@@ -555,7 +554,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                     <button
                         type="button"
                         onClick={() => setTemplatePanelOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-[#4A4A4A] shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-[#88161c]"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
                         title="Template prompt"
                     >
                         <FileText className="h-4.5 w-4.5" />
@@ -564,7 +563,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                     <button
                         type="button"
                         onClick={() => setBookmarkPanelOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-[#4A4A4A] shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-[#88161c]"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
                         title="Bookmark"
                     >
                         <Bookmark className="h-4.5 w-4.5" />
@@ -573,7 +572,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-[#4A4A4A] shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-[#88161c]"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
                         title="Buka riwayat chat"
                     >
                         <Menu className="h-4.5 w-4.5" />
@@ -591,9 +590,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                 className="mx-auto flex w-full max-w-2xl flex-col items-center"
                             >
                                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(136,22,28,0.14)] bg-[rgba(136,22,28,0.07)] shadow-[0_14px_32px_rgba(136,22,28,0.08)]">
-                                    <Sparkles className="h-6 w-6 text-[#88161c]" />
+                                    <Sparkles className="h-6 w-6 text-brand-primary" />
                                 </div>
-                                <h2 className="text-center text-2xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-3xl" style={headingStyle}>
+                                <h2 className="text-center text-2xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-3xl font-sans text-brand-dark">
                                     Apa yang sedang kamu kerjakan, {userFirstName}?
                                 </h2>
                                 <p className="mt-3 max-w-lg text-center text-sm leading-6 text-[#5B6473]">
@@ -614,7 +613,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             id={`message-${message.id}`}
-                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''} ${highlightedMessageId === message.id ? 'ring-2 ring-[#88161c]/30 rounded-2xl bg-[#88161c]/5 -mx-2 px-2 py-1 transition-all duration-500' : ''}`}
+                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''} ${highlightedMessageId === message.id ? 'ring-2 ring-brand-primary/30 rounded-2xl bg-brand-primary/5 -mx-2 px-2 py-1 transition-all duration-500' : ''}`}
                                         >
                                             <div
                                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
@@ -632,7 +631,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                         {authData.user?.name?.charAt(0).toUpperCase() || 'U'}
                                                     </span>
                                                 ) : (
-                                                        <Sparkles className="h-3.5 w-3.5" style={{ color: '#88161c' }} />
+                                                        <Sparkles className="h-3.5 w-3.5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                                 )}
                                             </div>
                                             <div
@@ -648,7 +647,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 }}
                                             >
                                                 {message.role === 'assistant' ? (
-                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[#88161c] [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
+                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
                                                         <ReactMarkdown>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
                                                     </div>
                                                 ) : (
@@ -656,7 +655,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                         {message.content}
                                                     </p>
                                                 )}
-                                                <p className={`mt-1 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-[#6B7280]'}`}>
+                                                <p className={`mt-1 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-brand-muted-dark'}`}>
                                                     {formatTime(message.created_at)}
                                                 </p>
                                                 {message.role === 'assistant' && activeChat && (
@@ -675,22 +674,22 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     {!isLoadingMessages && isStreaming && (
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2.5">
                                             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                <Sparkles className="h-3.5 w-3.5" style={{ color: '#88161c' }} />
+                                                <Sparkles className="h-3.5 w-3.5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                             </div>
                                             <div className="max-w-[84%] rounded-[24px] px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.82)', boxShadow: '0 12px 26px rgba(148,163,184,0.10)' }}>
                                                 {displayedStreamingContent ? (
-                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[#88161c] [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
+                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
                                                         <ReactMarkdown>{sanitizeHtml(formatAiOutput(displayedStreamingContent))}</ReactMarkdown>
                                                     </div>
                                                 ) : (
                                                     <div className="flex gap-1 py-1">
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '0ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '150ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: '300ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '0ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '150ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '300ms' }} />
                                                     </div>
                                                 )}
                                                 {displayedStreamingContent ? null : (
-                                                    <p className="mt-1 text-xs text-[#6B7280]">AI sedang memproses…</p>
+                                                    <p className="mt-1 text-xs text-brand-muted-dark">AI sedang memproses…</p>
                                                 )}
                                             </div>
                                         </motion.div>
@@ -736,7 +735,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                 {(inputError || titleForm.errors.title || pageErrors.content || pageErrors.title || pageErrors.chat || (pageProps.flash?.success && showFlash)) && (
                                     <div className="mb-3 space-y-2 px-1">
                                         {pageProps.flash?.success && showFlash && (
-                                            <div className="rounded-2xl border px-3 py-2 text-sm font-medium text-[#88161c] transition-opacity" style={{ background: 'rgba(136,22,28,0.06)', borderColor: 'rgba(136,22,28,0.14)' }}>
+                                            <div className="rounded-2xl border px-3 py-2 text-sm font-medium text-brand-primary transition-opacity" style={{ background: 'rgba(136,22,28,0.06)', borderColor: 'rgba(136,22,28,0.14)' }}>
                                                 {pageProps.flash.success}
                                             </div>
                                         )}
@@ -756,7 +755,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 onClick={() => prefillPrompt(item.prompt)}
                                                 className="rounded-full px-3 py-1.5 text-xs font-medium shadow-[0_8px_22px_rgba(148,163,184,0.08)] transition-colors hover:bg-[rgba(136,22,28,0.10)] sm:text-sm"
                                                 style={{
-                                                    color: '#88161c',
+                                                    color: 'rgb(var(--color-brand-primary))',
                                                     background: 'rgba(136,22,28,0.08)',
                                                     border: '1px solid rgba(136,22,28,0.14)',
                                                 }}
@@ -771,7 +770,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         <button
                                             type="button"
                                             onClick={handleNewChat}
-                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-[#6B7280] transition-colors hover:bg-[#f3f4f6] hover:text-[#88161c]"
+                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-brand-muted-dark transition-colors hover:bg-[#f3f4f6] hover:text-brand-primary"
                                             title="Chat baru"
                                         >
                                             <Plus className="h-4.5 w-4.5" />
@@ -779,7 +778,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         <button
                                             type="button"
                                             onClick={() => setTemplatePanelOpen(true)}
-                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-[#6B7280] transition-colors hover:bg-[#f3f4f6] hover:text-[#88161c]"
+                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-brand-muted-dark transition-colors hover:bg-[#f3f4f6] hover:text-brand-primary"
                                             title="Pilih template"
                                         >
                                             <FileText className="h-4.5 w-4.5" />
@@ -848,15 +847,15 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                             <LiquidGlassCard intensity="light" className="flex h-full flex-col p-3.5 lg:p-4" lightMode={true}>
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">Percakapan</p>
-                                        <h3 className="mt-1 text-base font-semibold" style={headingStyle}>
+                                        <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">Percakapan</p>
+                                        <h3 className="mt-1 text-base font-semibold font-sans text-brand-dark">
                                             Riwayat AI
                                         </h3>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setSidebarOpen(false)}
-                                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#6B7280] transition-colors hover:text-[#88161c]"
+                                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-brand-muted-dark transition-colors hover:text-brand-primary"
                                         title="Tutup sidebar"
                                     >
                                         <X className="h-4.5 w-4.5" />
@@ -879,10 +878,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     {safeChats.length === 0 ? (
                                         <div className="rounded-2xl border px-4 py-6 text-center" style={{ borderColor: 'rgba(136,22,28,0.10)', background: 'rgba(255,255,255,0.55)' }}>
                                             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                <MessageSquare className="h-5 w-5" style={{ color: '#88161c' }} />
+                                                <MessageSquare className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                             </div>
-                                            <p className="text-sm font-medium text-[#4A4A4A]">Belum ada percakapan</p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">Mulai chat baru untuk bertanya kepada AI.</p>
+                                            <p className="text-sm font-medium text-brand-dark">Belum ada percakapan</p>
+                                            <p className="mt-1 text-xs text-brand-muted-dark">Mulai chat baru untuk bertanya kepada AI.</p>
                                         </div>
                                     ) : (
                                         safeChats.map((chat) => (
@@ -893,7 +892,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             >
                                                 <Link href={student.aiChat.show.url({ chat: chat.id })} className="flex items-start gap-3 pr-16" onClick={() => setSidebarOpen(false)}>
                                                     <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                        <MessageSquare className="h-4 w-4" style={{ color: '#88161c' }} />
+                                                        <MessageSquare className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         {editingChatId === chat.id ? (
@@ -919,18 +918,18 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                                             handleCancelRename();
                                                                         }
                                                                     }}
-                                                                    className="w-full rounded-xl border border-[rgba(136,22,28,0.16)] bg-white/90 px-3 py-2 text-sm font-medium text-[#4A4A4A] outline-none"
+                                                                    className="w-full rounded-xl border border-[rgba(136,22,28,0.16)] bg-white/90 px-3 py-2 text-sm font-medium text-brand-dark outline-none"
                                                                 />
                                                                 {titleForm.errors.title && (
                                                                     <p className="text-xs font-medium text-red-600">{titleForm.errors.title}</p>
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <p className={`truncate text-sm font-medium ${activeChat?.id === chat.id ? 'text-[#88161c]' : 'text-[#4A4A4A]'}`}>
+                                                            <p className={`truncate text-sm font-medium ${activeChat?.id === chat.id ? 'text-brand-primary' : 'text-brand-dark'}`}>
                                                                 {chat.title || 'Chat Baru'}
                                                             </p>
                                                         )}
-                                                        <p className="mt-1 text-xs text-[#6B7280]">{formatDate(chat.updated_at)}</p>
+                                                        <p className="mt-1 text-xs text-brand-muted-dark">{formatDate(chat.updated_at)}</p>
                                                     </div>
                                                 </Link>
                                                 <div className="absolute right-2 top-2 flex items-center gap-1 opacity-100 lg:opacity-0 lg:transition-opacity lg:group-hover:opacity-100">
@@ -946,7 +945,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                             <button
                                                                 type="button"
                                                                 onClick={handleCancelRename}
-                                                                className="rounded-lg p-1 text-[#6B7280] transition-colors hover:bg-white/80 hover:text-[#88161c]"
+                                                                className="rounded-lg p-1 text-brand-muted-dark transition-colors hover:bg-white/80 hover:text-brand-primary"
                                                             >
                                                                 <X className="h-4 w-4" />
                                                             </button>
@@ -956,13 +955,13 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleStartRename(chat)}
-                                                                className="rounded-lg p-1 text-[#6B7280] transition-colors hover:bg-white/80 hover:text-[#88161c]"
+                                                                className="rounded-lg p-1 text-brand-muted-dark transition-colors hover:bg-white/80 hover:text-brand-primary"
                                                             >
                                                                 <Pencil className="h-4 w-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => setShowDeleteModal(chat.id)}
-                                                                className="rounded-lg p-1 text-[#6B7280] transition-colors hover:bg-white/80 hover:text-[#88161c]"
+                                                                className="rounded-lg p-1 text-brand-muted-dark transition-colors hover:bg-white/80 hover:text-brand-primary"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </button>
@@ -1007,10 +1006,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     >
                                         <Trash2 className="h-5 w-5 text-red-600" />
                                     </div>
-                                    <h3 className="text-base font-semibold" style={headingStyle}>
+                                    <h3 className="text-base font-semibold font-sans text-brand-dark">
                                         Hapus Percakapan?
                                     </h3>
-                                    <p className={`mt-2 ${bodyTextClass}`}>
+                                    <p className="mt-2 text-sm text-brand-muted-dark">
                                         Percakapan ini akan dihapus secara permanen dan tidak dapat dikembalikan.
                                     </p>
                                     <div className="mt-5 flex gap-2.5">

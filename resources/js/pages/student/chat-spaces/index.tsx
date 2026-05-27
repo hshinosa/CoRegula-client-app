@@ -91,11 +91,10 @@ interface Props {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -249,10 +248,10 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                 <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold" style={headingStyle}>
+                            <h1 className="text-2xl font-bold font-sans text-brand-dark">
                                 Sesi Diskusi
                             </h1>
-                            <p className={`mt-1 ${bodyTextClass}`}>
+                            <p className="mt-1 text-sm text-brand-muted-dark">
                                 {course.name} • Grup: {group.name}
                             </p>
                         </div>
@@ -293,7 +292,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                         />
 
                         {activeFilterCount > 0 && (
-                            <p className="text-xs text-[#6B7280]">
+                            <p className="text-xs text-brand-muted-dark">
                                 {activeFilterCount} filter aktif • {filteredSpaces.length} ruang ditemukan
                             </p>
                         )}
@@ -367,13 +366,13 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <Lightbulb className="h-5 w-5" style={{ color: '#88161c' }} />
+                                    <Lightbulb className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
                                 </div>
                                 <div>
-                                    <p className="text-base font-semibold" style={headingStyle}>
+                                    <p className="text-base font-semibold font-sans text-brand-dark">
                                         Tips: Gunakan Sesi Terpisah
                                     </p>
-                                    <p className={`mt-2 leading-6 ${bodyTextClass}`}>
+                                    <p className="mt-2 leading-6 text-sm text-brand-muted-dark">
                                         Buat sesi diskusi terpisah untuk topik berbeda agar diskusi lebih terfokus.
                                         Setiap sesi memiliki tujuan pembelajaran sendiri.
                                     </p>
@@ -405,17 +404,17 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                             <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
+                                        <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                             Buat Sesi Diskusi Baru
                                         </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
+                                        <p className="mt-1 text-sm text-brand-muted-dark">
                                             Buat sesi diskusi baru untuk topik tertentu.
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateModal(false)}
-                                        className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/50 hover:text-[#4A4A4A]"
+                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -423,15 +422,15 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
 
                                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                                            Nama Sesi <span style={{ color: '#88161c' }}>*</span>
+                                        <label className="block text-sm font-medium text-brand-dark">
+                                            Nama Sesi <span style={{ color: 'rgb(var(--color-brand-primary))' }}>*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={data.name}
                                             onChange={(e) => setData('name', e.target.value)}
                                             placeholder="Contoh: Diskusi Bab 3"
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                             required
                                         />
                                         {errors.name && (
@@ -440,7 +439,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-[#4A4A4A]">
+                                        <label className="block text-sm font-medium text-brand-dark">
                                             Deskripsi (Opsional)
                                         </label>
                                         <textarea
@@ -448,7 +447,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                             onChange={(e) => setData('description', e.target.value)}
                                             placeholder="Jelaskan topik yang akan dibahas..."
                                             rows={3}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                         />
                                     </div>
 
