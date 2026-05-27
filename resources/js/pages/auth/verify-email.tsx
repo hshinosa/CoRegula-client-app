@@ -46,28 +46,16 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                 <LiquidGlassCard intensity="medium" lightMode={lightMode} className="w-full p-8 sm:p-10 transition-colors duration-500">
                     <div className="mb-6 text-center">
                         <div
-                            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-                            style={{
-                                background: lightMode ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.2)',
-                            }}
+                            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/8 dark:bg-blue-500/20"
                         >
-                            <Mail
-                                size={28}
-                                style={{ color: '#3b82f6' }}
-                            />
+                            <Mail size={28} className="text-blue-500" />
                         </div>
-                        <h1
-                            className="text-2xl font-bold tracking-tight transition-colors duration-500"
-                            style={{ color: lightMode ? '#4A4A4A' : '#f8fafc' }}
-                        >
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Verifikasi Email Anda
                         </h1>
-                        <p
-                            className="mt-1.5 text-sm transition-colors duration-500"
-                            style={{ color: lightMode ? '#6B7280' : '#94a3b8' }}
-                        >
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             Kami telah mengirim email verifikasi ke{' '}
-                            <strong style={{ color: lightMode ? '#4A4A4A' : '#f8fafc' }}>
+                            <strong className="text-brand-dark dark:text-slate-50">
                                 {email || 'email Anda'}
                             </strong>
                         </p>
@@ -106,7 +94,7 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                         }}
                     >
                         <p className="mb-2 font-medium">Langkah selanjutnya:</p>
-                        <ol className="list-inside list-decimal space-y-1" style={{ color: lightMode ? '#64748b' : '#94a3b8' }}>
+                        <ol className="list-inside list-decimal space-y-1 text-slate-500 dark:text-slate-400">
                             <li>Buka kotak masuk email Anda</li>
                             <li>Cari email dari Kolabri (periksa folder spam jika tidak ada)</li>
                             <li>Klik tombol verifikasi di dalam email</li>
@@ -131,14 +119,8 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                         </PrimaryButton>
                     </form>
 
-                    <p
-                        className="mt-6 text-center text-sm transition-colors"
-                        style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
-                    >
-                        <Link
-                            href="/login"
-                            className="font-medium text-[#88161c] hover:underline"
-                        >
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                        <Link href="/login" className="font-medium text-brand-primary hover:underline">
                             Kembali ke Masuk
                         </Link>
                     </p>
