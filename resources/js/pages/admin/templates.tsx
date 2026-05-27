@@ -69,11 +69,11 @@ interface PageProps {
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary';
 
 function formatDate(date?: string | null) {
     if (!date) return '-';
@@ -336,15 +336,15 @@ background: 'var(--dm-accent-bg)',
                     <div className="grid gap-4 md:grid-cols-3">
                         <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                             <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Templates</p>
-                            <p className="mt-3 text-3xl font-semibold text-[#4A4A4A]">{items.length}</p>
+                            <p className="mt-3 text-3xl font-semibold text-brand-dark">{items.length}</p>
                         </LiquidGlassCard>
                         <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                             <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Default Groups</p>
-                            <p className="mt-3 text-3xl font-semibold text-[#4A4A4A]">{totalGroups}</p>
+                            <p className="mt-3 text-3xl font-semibold text-brand-dark">{totalGroups}</p>
                         </LiquidGlassCard>
                         <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                             <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Available Owners</p>
-                            <p className="mt-3 text-3xl font-semibold text-[#4A4A4A]">{lecturers.length}</p>
+                            <p className="mt-3 text-3xl font-semibold text-brand-dark">{lecturers.length}</p>
                         </LiquidGlassCard>
                     </div>
                 </motion.div>
@@ -361,7 +361,7 @@ background: 'var(--dm-accent-bg)',
                                     <div className="space-y-4">
                                         <div className="flex items-start justify-between gap-3">
                                             <div>
-                                                <p className="text-lg font-semibold text-[#4A4A4A]">{template.name}</p>
+                                                <p className="text-lg font-semibold text-brand-dark">{template.name}</p>
                                                 <p className="mt-1 text-sm text-slate-500">{template.description?.trim() || 'No description provided.'}</p>
                                             </div>
                                             <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
@@ -371,15 +371,15 @@ background: 'var(--dm-accent-bg)',
 
                                         <div className="space-y-2 text-sm text-slate-600">
                                             <div className="flex items-center gap-2">
-                                                <FolderArchive className="h-4 w-4 text-[#88161c]" />
+                                                <FolderArchive className="h-4 w-4 text-brand-primary" />
                                                 <span>{template.namePattern}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <User2 className="h-4 w-4 text-[#88161c]" />
+                                                <User2 className="h-4 w-4 text-brand-primary" />
                                                 <span>{template.createdBy?.name ?? 'Unknown creator'}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <CalendarDays className="h-4 w-4 text-[#88161c]" />
+                                                <CalendarDays className="h-4 w-4 text-brand-primary" />
                                                 <span>{formatDate(template.createdAt ?? template.created_at)}</span>
                                             </div>
                                         </div>
@@ -429,30 +429,30 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={(event) => void handleCreateTemplate(event)} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Template Name</label>
+                            <label className="block text-sm font-medium text-brand-dark">Template Name</label>
                             <input type="text" value={templateForm.name} onChange={(event) => setTemplateForm((prev) => ({ ...prev, name: event.target.value }))} className={inputClassName} />
                             <InputError message={templateErrors.name} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Name Pattern</label>
+                            <label className="block text-sm font-medium text-brand-dark">Name Pattern</label>
                             <input type="text" value={templateForm.namePattern} onChange={(event) => setTemplateForm((prev) => ({ ...prev, namePattern: event.target.value }))} className={inputClassName} placeholder="{semester} - {subject}" />
                             <InputError message={templateErrors.namePattern} />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description</label>
                         <input type="text" value={templateForm.description} onChange={(event) => setTemplateForm((prev) => ({ ...prev, description: event.target.value }))} className={inputClassName} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description Template</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description Template</label>
                         <textarea value={templateForm.descriptionTemplate} onChange={(event) => setTemplateForm((prev) => ({ ...prev, descriptionTemplate: event.target.value }))} className={`${inputClassName} min-h-28 resize-none`} />
                     </div>
 
                     <div className="space-y-3">
                         <div className="flex items-center justify-between gap-3">
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Default Groups</label>
+                            <label className="block text-sm font-medium text-brand-dark">Default Groups</label>
                             <SecondaryButton onClick={handleAddTemplateGroup} className="px-3 py-2 text-sm">Add Group</SecondaryButton>
                         </div>
                         {templateForm.defaultGroups.map((group, index) => (
@@ -481,7 +481,7 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={(event) => void handleCreateCourse(event)} className="space-y-5">
                     <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-                        <p className="text-sm font-semibold text-[#4A4A4A]">{selectedTemplate?.name}</p>
+                        <p className="text-sm font-semibold text-brand-dark">{selectedTemplate?.name}</p>
                         <p className="mt-2 text-xs text-slate-500">Pattern: {selectedTemplate?.namePattern}</p>
                         <p className="mt-1 text-xs text-slate-500">Description Template: {selectedTemplate?.descriptionTemplate || '-'}</p>
                         <p className="mt-1 text-xs text-slate-500">Groups: {selectedTemplate?.defaultGroups?.map((group) => group.name).join(', ') || '-'}</p>
@@ -489,12 +489,12 @@ background: 'var(--dm-accent-bg)',
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Course Code</label>
+                            <label className="block text-sm font-medium text-brand-dark">Course Code</label>
                             <input type="text" value={createCourseForm.code} onChange={(event) => setCreateCourseForm((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))} className={inputClassName} />
                             <InputError message={createCourseErrors.code} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Owner</label>
+                            <label className="block text-sm font-medium text-brand-dark">Owner</label>
                             <select value={createCourseForm.ownerId} onChange={(event) => setCreateCourseForm((prev) => ({ ...prev, ownerId: event.target.value }))} className={inputClassName}>
                                 <option value="">Select lecturer</option>
                                 {lecturers.map((lecturer) => (
@@ -506,13 +506,13 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Name</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Name</label>
                         <input type="text" value={createCourseForm.name} onChange={(event) => setCreateCourseForm((prev) => ({ ...prev, name: event.target.value }))} className={inputClassName} />
                         <InputError message={createCourseErrors.name} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Description</label>
                         <textarea value={createCourseForm.description} onChange={(event) => setCreateCourseForm((prev) => ({ ...prev, description: event.target.value }))} className={`${inputClassName} min-h-28 resize-none`} />
                         <InputError message={createCourseErrors.description} />
                     </div>

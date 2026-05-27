@@ -113,7 +113,7 @@ const DASHBOARD_RANGE_STORAGE_KEY = 'kolabri_admin_dashboard_range';
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    
 } as const;
 
 const roleBadgeStyles: Record<UserRole, string> = {
@@ -298,31 +298,31 @@ function DateRangeModal({
             <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-[#4A4A4A]">Custom date range</h3>
-                        <p className="mt-1 text-sm text-[#6B7280]">Select a start and end date for dashboard stats, charts, and AI usage.</p>
+                        <h3 className="text-lg font-semibold text-brand-dark">Custom date range</h3>
+                        <p className="mt-1 text-sm text-brand-muted-dark">Select a start and end date for dashboard stats, charts, and AI usage.</p>
                     </div>
-                    <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition hover:bg-black/5 hover:text-[#4A4A4A]">
+                    <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition hover:bg-black/5 hover:text-brand-dark">
                         ×
                     </button>
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Start date</label>
+                        <label className="text-sm font-medium text-brand-dark">Start date</label>
                         <input
                             type="date"
                             value={value.startDate}
                             onChange={(event) => onChange({ ...value, preset: 'custom', startDate: event.target.value })}
-                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">End date</label>
+                        <label className="text-sm font-medium text-brand-dark">End date</label>
                         <input
                             type="date"
                             value={value.endDate}
                             onChange={(event) => onChange({ ...value, preset: 'custom', endDate: event.target.value })}
-                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                            className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary"
                         />
                     </div>
                 </div>
@@ -334,7 +334,7 @@ function DateRangeModal({
                     <button
                         type="button"
                         onClick={onApply}
-                        className="inline-flex flex-1 items-center justify-center rounded-full bg-[#88161c] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+                        className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
                     >
                         Apply range
                     </button>
@@ -351,7 +351,7 @@ function UserGrowthChart({ data, isLoading }: { data: Array<{ label: string; cou
 
     if (data.length === 0) {
         return (
-            <div className="flex h-[260px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/30 text-sm text-[#6B7280]">
+            <div className="flex h-[260px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/30 text-sm text-brand-muted-dark">
                 No data available
             </div>
         );
@@ -397,7 +397,7 @@ function MessageActivityChart({ data, isLoading }: { data: Array<{ label: string
 
     if (data.length === 0) {
         return (
-            <div className="flex h-[260px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/30 text-sm text-[#6B7280]">
+            <div className="flex h-[260px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/30 text-sm text-brand-muted-dark">
                 No data available
             </div>
         );
@@ -452,7 +452,7 @@ function StatCard({
             <div className="flex h-full flex-col justify-between gap-5">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <p className="text-sm font-medium text-[#6B7280]">{title}</p>
+                        <p className="text-sm font-medium text-brand-muted-dark">{title}</p>
                         <h2 className="mt-3 text-3xl font-bold tracking-tight" style={headingStyle}>
                             {value}
                         </h2>
@@ -469,7 +469,7 @@ function StatCard({
                     <p className="text-sm font-medium" style={{ color: accent.text }}>
                         {helper}
                     </p>
-                    <p className="text-sm leading-6 text-[#6B7280]">{subtext}</p>
+                    <p className="text-sm leading-6 text-brand-muted-dark">{subtext}</p>
                 </div>
             </div>
         </LiquidGlassCard>
@@ -738,7 +738,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                         <h1 className="text-2xl font-bold" style={headingStyle}>
                                             Welcome back, {auth.user?.name}!
                                         </h1>
-                                         <p className="mt-1 text-sm text-[#6B7280]">Platform overview for administration, learning activity, and AI governance.</p>
+                                         <p className="mt-1 text-sm text-brand-muted-dark">Platform overview for administration, learning activity, and AI governance.</p>
                                          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-3 py-1.5 text-xs font-medium text-slate-600">
                                              <span className={`h-2.5 w-2.5 rounded-full ${isSocketConnected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                              {isSocketConnected ? 'WebSocket connected' : 'WebSocket disconnected'}
@@ -749,19 +749,19 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                 <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
                                         <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Most Active Course</p>
-                                        <p className="mt-2 text-sm font-semibold text-[#4A4A4A]">
+                                        <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveCourse?.name ?? 'No data yet'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
                                         <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Most Active User</p>
-                                        <p className="mt-2 text-sm font-semibold text-[#4A4A4A]">
+                                        <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveUser?.name ?? 'No data yet'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
                                         <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Course Messages</p>
-                                        <p className="mt-2 text-sm font-semibold text-[#4A4A4A]">
+                                        <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveCourse
                                                 ? `${formatNumber(safeStats.engagement.mostActiveCourse.messageCount)} messages`
                                                 : 'No messages yet'}
@@ -769,7 +769,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
                                         <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">User Messages</p>
-                                        <p className="mt-2 text-sm font-semibold text-[#4A4A4A]">
+                                        <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveUser
                                                 ? `${formatNumber(safeStats.engagement.mostActiveUser.messageCount)} messages`
                                                 : 'No messages yet'}
@@ -783,12 +783,12 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
                                             <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Date Range</p>
-                                            <p className="mt-2 text-sm font-semibold text-[#4A4A4A]">{getPresetLabel(dateRange.preset)}</p>
+                                            <p className="mt-2 text-sm font-semibold text-brand-dark">{getPresetLabel(dateRange.preset)}</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setIsRangeModalOpen(true)}
-                                            className="rounded-full border border-[#88161c]/15 bg-[#88161c]/8 px-3 py-2 text-xs font-medium text-[#88161c] transition hover:bg-[#88161c]/12"
+                                            className="rounded-full border border-brand-primary/15 bg-brand-primary/8 px-3 py-2 text-xs font-medium text-brand-primary transition hover:bg-brand-primary/12"
                                         >
                                             Change range
                                         </button>
@@ -802,7 +802,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                                 key={preset}
                                                 type="button"
                                                 onClick={() => setDateRange(createPresetRange(preset))}
-                                                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${dateRange.preset === preset ? 'bg-[#88161c] text-white' : 'border border-slate-200 bg-white text-slate-600 hover:border-[#88161c]/30'}`}
+                                                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${dateRange.preset === preset ? 'bg-brand-primary text-white' : 'border border-slate-200 bg-white text-slate-600 hover:border-brand-primary/30'}`}
                                             >
                                                 {getPresetLabel(preset)}
                                             </button>
@@ -870,7 +870,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     User Growth ({getPresetLabel(dateRange.preset)})
                                 </h3>
-                            <p className="mt-2 text-sm text-[#6B7280]">New users per day.</p>
+                            <p className="mt-2 text-sm text-brand-muted-dark">New users per day.</p>
                             <div className="mt-4">
                                 <UserGrowthChart data={userGrowthData} isLoading={isStatsLoading} />
                             </div>
@@ -886,7 +886,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     Message Activity ({getPresetLabel(dateRange.preset)})
                                 </h3>
-                            <p className="mt-2 text-sm text-[#6B7280]">Messages per day.</p>
+                            <p className="mt-2 text-sm text-brand-muted-dark">Messages per day.</p>
                             <div className="mt-4">
                                 <MessageActivityChart data={messageActivityData} isLoading={isStatsLoading} />
                             </div>
@@ -903,7 +903,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                         <h3 className="text-lg font-semibold" style={headingStyle}>
                             AI Token Usage (Last 30 Days)
                         </h3>
-                        <p className="mt-2 text-sm text-[#6B7280]">Monthly AI usage trend across all tracked requests.</p>
+                        <p className="mt-2 text-sm text-brand-muted-dark">Monthly AI usage trend across all tracked requests.</p>
                         <div className="mt-4">
                             <MessageActivityChart data={usageChartData} isLoading={isStatsLoading} />
                         </div>
@@ -919,14 +919,14 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-[#88161c]/10 bg-[#88161c]/5 px-3 py-1 text-xs font-medium text-[#88161c]">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-brand-primary/10 bg-brand-primary/5 px-3 py-1 text-xs font-medium text-brand-primary">
                                         <BrainCircuit className="h-3.5 w-3.5" />
                                         Engagement snapshot
                                     </div>
                                     <h2 className="mt-4 text-xl font-semibold" style={headingStyle}>
                                         Learning quality highlights
                                     </h2>
-                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">
+                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-dark">
                                         This section summarizes the signals behind the scorecards so admins can quickly understand whether activity is growing in a healthy way.
                                     </p>
                                 </div>
@@ -934,17 +934,17 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
 
                             <div className="mt-6 grid gap-4 md:grid-cols-2">
                                 <div className="rounded-3xl border border-white/60 bg-white/35 p-5">
-                                    <p className="text-sm font-medium text-[#6B7280]">AI-assisted discussions</p>
+                                    <p className="text-sm font-medium text-brand-muted-dark">AI-assisted discussions</p>
                                     <p className="mt-3 text-3xl font-bold" style={headingStyle}>
                                         {formatNumber(safeStats.discussions.aiInteractions)}
                                     </p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6B7280]">
+                                    <p className="mt-2 text-sm leading-6 text-brand-muted-dark">
                                         AI responses are contributing to classroom discussions and can be used as a quick signal for adoption of guided collaboration.
                                     </p>
                                 </div>
 
                                 <div className="rounded-3xl border border-white/60 bg-white/35 p-5">
-                                    <p className="text-sm font-medium text-[#6B7280]">HOT thinking rate</p>
+                                    <p className="text-sm font-medium text-brand-muted-dark">HOT thinking rate</p>
                                     <p className="mt-3 text-3xl font-bold" style={headingStyle}>
                                         {formatNumber(safeStats.engagement.hotThinkingPercentage, {
                                             minimumFractionDigits: 1,
@@ -952,7 +952,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                         })}
                                         %
                                     </p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6B7280]">
+                                    <p className="mt-2 text-sm leading-6 text-brand-muted-dark">
                                         Higher-order thinking coverage helps show whether discussions are moving beyond simple exchange into deeper analysis.
                                     </p>
                                 </div>
@@ -971,16 +971,16 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                     <h2 className="text-xl font-semibold" style={headingStyle}>
                                         Recent activity
                                     </h2>
-                                    <p className="mt-2 text-sm text-[#6B7280]">Latest 10 events from users, courses, discussions, and AI configuration.</p>
+                                    <p className="mt-2 text-sm text-brand-muted-dark">Latest 10 events from users, courses, discussions, and AI configuration.</p>
                                 </div>
-                                <a href="/admin/audit-log" className="text-sm font-medium text-[#88161c] transition hover:opacity-80">
+                                <a href="/admin/audit-log" className="text-sm font-medium text-brand-primary transition hover:opacity-80">
                                     View Audit Log
                                 </a>
                             </div>
 
                             <div className="mt-6 space-y-4">
                                 {dashboardActivities.length === 0 ? (
-                                    <div className="rounded-3xl border border-dashed border-slate-200 bg-white/30 px-5 py-8 text-center text-sm text-[#6B7280]">
+                                    <div className="rounded-3xl border border-dashed border-slate-200 bg-white/30 px-5 py-8 text-center text-sm text-brand-muted-dark">
                                         Activity feed is empty right now. New admin and learning events will appear here.
                                     </div>
                                 ) : (
@@ -1006,7 +1006,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
 
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex flex-wrap items-center gap-2">
-                                                            <p className="text-sm font-semibold text-[#4A4A4A]">
+                                                            <p className="text-sm font-semibold text-brand-dark">
                                                                 {activity.actor?.name ?? 'System'}
                                                             </p>
                                                             {activity.actor?.role ? (
@@ -1017,7 +1017,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                                                 </span>
                                                             ) : null}
                                                         </div>
-                                                        <p className="mt-2 text-sm leading-6 text-[#6B7280]">{activity.description}</p>
+                                                        <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{activity.description}</p>
                                                         <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-[#9CA3AF]">
                                                             {formatRelativeTime(activity.timestamp)}
                                                         </p>

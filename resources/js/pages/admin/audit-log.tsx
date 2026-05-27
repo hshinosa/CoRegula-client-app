@@ -57,11 +57,10 @@ type PageProps = {
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2';
 
 function formatDateTime(value: string) {
     const date = new Date(value);
@@ -96,25 +95,25 @@ function ChangesModal({
             <div className="w-full max-w-5xl rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-[#4A4A4A]">Audit Changes</h3>
+                        <h3 className="text-lg font-semibold text-brand-dark">Audit Changes</h3>
                         <p className="mt-1 text-sm text-slate-500">
                             {log.action} · {log.entityType} · {log.entityId}
                         </p>
                     </div>
-                    <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition hover:bg-black/5 hover:text-[#4A4A4A]">
+                    <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition hover:bg-black/5 hover:text-brand-dark">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
                 <div className="mt-6 grid gap-4 lg:grid-cols-2">
                     <div>
-                        <p className="text-sm font-semibold text-[#4A4A4A]">Before</p>
+                        <p className="text-sm font-semibold text-brand-dark">Before</p>
                         <pre className="mt-2 max-h-[420px] overflow-auto rounded-2xl border border-slate-200 bg-slate-950/95 p-4 text-xs text-slate-100">
                             {stringifyChanges(log.changes?.before)}
                         </pre>
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-[#4A4A4A]">After</p>
+                        <p className="text-sm font-semibold text-brand-dark">After</p>
                         <pre className="mt-2 max-h-[420px] overflow-auto rounded-2xl border border-slate-200 bg-slate-950/95 p-4 text-xs text-slate-100">
                             {stringifyChanges(log.changes?.after)}
                         </pre>
@@ -253,7 +252,7 @@ background: 'var(--dm-accent-bg)',
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
                                         Audit Log
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">
+                                    <p className="mt-2 text-brand-muted-dark">
                                         Review every admin action across users, courses, and AI settings with timestamps and change snapshots.
                                     </p>
                                 </div>
@@ -271,7 +270,7 @@ background: 'var(--dm-accent-bg)',
                     <LiquidGlassCard intensity="light" className="space-y-5 p-5 sm:p-6" lightMode={true}>
                         <div className="grid gap-3 lg:grid-cols-4">
                             <div>
-                                <label className="text-sm font-medium text-[#4A4A4A]">Action</label>
+                                <label className="text-sm font-medium text-brand-dark">Action</label>
                                 <select
                                     value={filterState.action}
                                     onChange={(event) => setFilterState((prev) => ({ ...prev, action: event.target.value }))}
@@ -291,7 +290,7 @@ background: 'var(--dm-accent-bg)',
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-[#4A4A4A]">Entity</label>
+                                <label className="text-sm font-medium text-brand-dark">Entity</label>
                                 <select
                                     value={filterState.entityType}
                                     onChange={(event) => setFilterState((prev) => ({ ...prev, entityType: event.target.value }))}
@@ -305,7 +304,7 @@ background: 'var(--dm-accent-bg)',
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-[#4A4A4A]">User ID</label>
+                                <label className="text-sm font-medium text-brand-dark">User ID</label>
                                 <div className="relative mt-1.5">
                                     <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -313,14 +312,14 @@ background: 'var(--dm-accent-bg)',
                                         value={searchUser}
                                         onChange={(event) => setSearchUser(event.target.value)}
                                         placeholder="Search by user id"
-                                        className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                                        className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-brand-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                     />
                                 </div>
                             </div>
 
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">Start date</label>
+                                    <label className="text-sm font-medium text-brand-dark">Start date</label>
                                     <input
                                         type="date"
                                         value={filterState.startDate}
@@ -329,7 +328,7 @@ background: 'var(--dm-accent-bg)',
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">End date</label>
+                                    <label className="text-sm font-medium text-brand-dark">End date</label>
                                     <input
                                         type="date"
                                         value={filterState.endDate}
@@ -373,7 +372,7 @@ background: 'var(--dm-accent-bg)',
                                 <tbody className="divide-y divide-white/70">
                                     {auditLogs.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-4 py-16 text-center text-sm text-[#6B7280]">
+                                            <td colSpan={6} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
                                                 No audit logs found for the selected filters.
                                             </td>
                                         </tr>
@@ -383,14 +382,14 @@ background: 'var(--dm-accent-bg)',
                                                 <td className="px-4 py-3 text-sm text-slate-600">{formatDateTime(log.createdAt)}</td>
                                                 <td className="px-4 py-3 text-sm text-slate-600">
                                                     <div>
-                                                        <p className="font-medium text-[#4A4A4A]">{log.user?.name ?? '-'}</p>
+                                                        <p className="font-medium text-brand-dark">{log.user?.name ?? '-'}</p>
                                                         <p className="text-xs text-slate-500">{log.user?.email ?? log.userId}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm font-medium text-[#88161c]">{log.action}</td>
+                                                <td className="px-4 py-3 text-sm font-medium text-brand-primary">{log.action}</td>
                                                 <td className="px-4 py-3 text-sm text-slate-600">
                                                     <div>
-                                                        <p className="font-medium text-[#4A4A4A]">{log.entityType}</p>
+                                                        <p className="font-medium text-brand-dark">{log.entityType}</p>
                                                         <p className="text-xs text-slate-500">{log.entityId}</p>
                                                     </div>
                                                 </td>
@@ -401,7 +400,7 @@ background: 'var(--dm-accent-bg)',
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectedLog(log)}
-                                                        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-[#88161c]/35"
+                                                        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-brand-primary/35"
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                         View Changes

@@ -82,11 +82,11 @@ const roleConfig: Record<UserRole, { label: string; className: string }> = {
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20';
 
 const buttonSpinner = <Loader2 className="h-4 w-4 animate-spin" />;
 
@@ -176,12 +176,12 @@ function FormModal({
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
                                 </h3>
-                                <p className="mt-1 text-sm text-[#6B7280]">{description}</p>
+                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-black/5 hover:text-[#4A4A4A]"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -224,11 +224,11 @@ function UserCard({
                                 type="checkbox"
                                 checked={selected}
                                 onChange={() => onToggleSelect(user.id)}
-                                className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                             />
                             Select user
                         </label>
-                        <p className="text-sm font-semibold text-[#4A4A4A]">{user.name}</p>
+                        <p className="text-sm font-semibold text-brand-dark">{user.name}</p>
                         <p className="mt-1 truncate text-xs text-slate-600">{user.email}</p>
                     </div>
                     <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusBadgeClassName}`}>
@@ -247,14 +247,14 @@ function UserCard({
                     <button
                         type="button"
                         onClick={() => onEdit(user)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Edit
                     </button>
                     <button
                         type="button"
                         onClick={() => onResetPassword(user)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Reset
                     </button>
@@ -793,7 +793,7 @@ background: 'var(--dm-accent-bg)',
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
                                         User Management
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">
+                                    <p className="mt-2 text-brand-muted-dark">
                                         Kelola akun pengguna, peran, dan kredensial akses platform.
                                     </p>
                                 </div>
@@ -822,7 +822,7 @@ background: 'var(--dm-accent-bg)',
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">Search</label>
+                                    <label className="text-sm font-medium text-brand-dark">Search</label>
                                     <div className="relative mt-1.5">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                         <input
@@ -830,17 +830,17 @@ background: 'var(--dm-accent-bg)',
                                             value={searchInput}
                                             onChange={(event) => setSearchInput(event.target.value)}
                                             placeholder="Search by name or email"
-                                            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                                            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">Role</label>
+                                    <label className="text-sm font-medium text-brand-dark">Role</label>
                                     <select
                                         value={roleFilter}
                                         onChange={(event) => handleRoleFilterChange(event.target.value as FilterRole)}
-                                        className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                                        className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                     >
                                         <option value="all">All</option>
                                         <option value="student">Student</option>
@@ -862,8 +862,8 @@ background: 'var(--dm-accent-bg)',
                         </div>
 
                         {selectedUsersCount > 0 && (
-                            <div className="flex flex-col gap-3 rounded-2xl border border-[#88161c]/15 bg-[#88161c]/5 p-4 lg:flex-row lg:items-center lg:justify-between">
-                                <p className="text-sm font-medium text-[#4A4A4A]">{selectedUsersCount} users selected</p>
+                            <div className="flex flex-col gap-3 rounded-2xl border border-brand-primary/15 bg-brand-primary/5 p-4 lg:flex-row lg:items-center lg:justify-between">
+                                <p className="text-sm font-medium text-brand-dark">{selectedUsersCount} users selected</p>
 
                                 <div className="flex flex-wrap items-center gap-2">
                                     <button
@@ -898,16 +898,16 @@ background: 'var(--dm-accent-bg)',
                         )}
 
                         <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-                            <p className="text-sm text-[#6B7280]">
+                            <p className="text-sm text-brand-muted-dark">
                                 Showing {start}-{end} of {total} users
                             </p>
 
                             <div className="flex items-center gap-2">
-                                <label className="text-sm text-[#6B7280]">Items per page</label>
+                                <label className="text-sm text-brand-muted-dark">Items per page</label>
                                 <select
                                     value={limit}
                                     onChange={(event) => handleLimitChange(Number(event.target.value))}
-                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-[#88161c] focus:outline-none"
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-brand-primary focus:outline-none"
                                 >
                                     {[10, 20, 50].map((size) => (
                                         <option key={size} value={size}>
@@ -935,7 +935,7 @@ background: 'var(--dm-accent-bg)',
                                                     checked={allUsersSelected}
                                                     onChange={toggleSelectAllUsers}
                                                     aria-label="Select all users"
-                                                    className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                                    className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                 />
                                             </th>
                                             <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Name</th>
@@ -948,7 +948,7 @@ background: 'var(--dm-accent-bg)',
                                     <tbody className="divide-y divide-white/70">
                                         {userList.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-4 py-16 text-center text-sm text-[#6B7280]">
+                                                <td colSpan={6} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
                                                     No users found. Try changing search or filters.
                                                 </td>
                                             </tr>
@@ -961,10 +961,10 @@ background: 'var(--dm-accent-bg)',
                                                             checked={selectedUserIds.has(user.id)}
                                                             onChange={() => toggleUserSelection(user.id)}
                                                             aria-label={`Select ${user.name}`}
-                                                            className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                                            className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                         />
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm font-medium text-[#4A4A4A]">{user.name}</td>
+                                                    <td className="px-4 py-3 text-sm font-medium text-brand-dark">{user.name}</td>
                                                     <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
                                                     <td className="px-4 py-3">
                                                         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${roleConfig[user.role].className}`}>
@@ -977,7 +977,7 @@ background: 'var(--dm-accent-bg)',
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setOpenActionsFor((prev) => (prev === user.id ? null : user.id))}
-                                                                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:text-[#88161c]"
+                                                                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:text-brand-primary"
                                                             >
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </button>
@@ -1030,7 +1030,7 @@ background: 'var(--dm-accent-bg)',
 
                             <div className="block space-y-4 md:hidden">
                                 {userList.length === 0 ? (
-                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-12 text-center text-sm text-[#6B7280]">
+                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-12 text-center text-sm text-brand-muted-dark">
                                         No users found. Try changing search or filters.
                                     </div>
                                 ) : (
@@ -1070,8 +1070,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <div className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            CSV File <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            CSV File <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="file"
@@ -1083,7 +1083,7 @@ background: 'var(--dm-accent-bg)',
 
                     <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 p-4 text-sm text-slate-600">
                         <div>
-                            <p className="font-medium text-[#4A4A4A]">Sample template</p>
+                            <p className="font-medium text-brand-dark">Sample template</p>
                             <p className="mt-1">Gunakan template CSV agar format kolom sesuai.</p>
                         </div>
                         <SecondaryButton onClick={handleDownloadUserTemplate} className="px-4 py-2 text-sm">
@@ -1101,7 +1101,7 @@ background: 'var(--dm-accent-bg)',
                     {importPreview.length > 0 && (
                         <div className="space-y-3">
                             <div>
-                                <h4 className="text-sm font-semibold text-[#4A4A4A]">Preview (first 5 rows)</h4>
+                                <h4 className="text-sm font-semibold text-brand-dark">Preview (first 5 rows)</h4>
                                 <p className="mt-1 text-xs text-slate-500">Data di bawah ini di-parse langsung dari file yang dipilih.</p>
                             </div>
 
@@ -1156,8 +1156,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={handleCreateUser} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Name <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Name <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1170,8 +1170,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Email <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Email <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="email"
@@ -1184,8 +1184,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Password <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Password <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="password"
@@ -1199,7 +1199,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Role</label>
+                        <label className="block text-sm font-medium text-brand-dark">Role</label>
                         <select
                             value={createForm.data.role}
                             onChange={(event) => createForm.setData('role', event.target.value as UserRole)}
@@ -1238,8 +1238,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={handleEditUser} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Name <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Name <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1251,8 +1251,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Email <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Email <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="email"
@@ -1264,7 +1264,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Role</label>
+                        <label className="block text-sm font-medium text-brand-dark">Role</label>
                         <select
                             value={editForm.data.role}
                             onChange={(event) => editForm.setData('role', event.target.value as UserRole)}
@@ -1325,8 +1325,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={handleResetPassword} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            New Password <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            New Password <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="password"

@@ -67,11 +67,10 @@ interface ApiErrorResponse {
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2';
 
 const buttonSpinner = <Loader2 className="h-4 w-4 animate-spin" />;
 
@@ -169,12 +168,12 @@ function FormModal({
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
                                 </h3>
-                                <p className="mt-1 text-sm text-[#6B7280]">{description}</p>
+                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-black/5 hover:text-[#4A4A4A]"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -194,7 +193,7 @@ function ToggleSwitch({ checked, disabled, onChange }: { checked: boolean; disab
             disabled={disabled}
             onClick={onChange}
             className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
-                checked ? 'bg-[#88161c]' : 'bg-slate-300'
+                checked ? 'bg-brand-primary' : 'bg-slate-300'
             } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
         >
             <span
@@ -273,7 +272,7 @@ function ProviderCard({
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#4A4A4A]">{provider.displayName}</p>
+                        <p className="text-sm font-semibold text-brand-dark">{provider.displayName}</p>
                         <p className="mt-1 truncate text-xs text-slate-600">{provider.name}</p>
                     </div>
                     <span
@@ -289,18 +288,18 @@ function ProviderCard({
 
                 <div className="space-y-1.5 text-xs text-slate-600">
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Model:</span> {getProviderModel(provider)}
+                        <span className="font-medium text-brand-dark">Model:</span> {getProviderModel(provider)}
                     </p>
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Base URL:</span> {provider.baseUrl || '-'}
+                        <span className="font-medium text-brand-dark">Base URL:</span> {provider.baseUrl || '-'}
                     </p>
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Updated:</span> {formatDate(provider.updatedAt)}
+                        <span className="font-medium text-brand-dark">Updated:</span> {formatDate(provider.updatedAt)}
                     </p>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                    <span className="text-xs font-medium text-[#4A4A4A]">Set Active</span>
+                    <span className="text-xs font-medium text-brand-dark">Set Active</span>
                     <div className="flex items-center gap-2">
                         <ToggleSwitch
                             checked={provider.isActive}
@@ -315,14 +314,14 @@ function ProviderCard({
                     <button
                         type="button"
                         onClick={() => onTest(provider)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Test
                     </button>
                     <button
                         type="button"
                         onClick={() => onEdit(provider)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Edit
                     </button>
@@ -678,7 +677,7 @@ background: 'var(--dm-accent-bg)',
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
                                         AI Settings
                                     </h1>
-                                    <p className="mt-2 max-w-2xl text-[#6B7280]">
+                                    <p className="mt-2 max-w-2xl text-brand-muted-dark">
                                         Kelola provider AI untuk kebutuhan admin tanpa ubah code. API key tetap disimpan aman,
                                         hanya ditampilkan dalam bentuk masked, dan satu provider aktif bisa dipilih langsung dari tabel.
                                     </p>
@@ -693,18 +692,18 @@ background: 'var(--dm-accent-bg)',
 
                         <div className="mt-5 grid gap-4 md:grid-cols-3">
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-[#6B7280]">Total Providers</p>
-                                <p className="mt-2 text-2xl font-semibold text-[#4A4A4A]">{providerList.length}</p>
+                                <p className="text-sm text-brand-muted-dark">Total Providers</p>
+                                <p className="mt-2 text-2xl font-semibold text-brand-dark">{providerList.length}</p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-[#6B7280]">Active Provider</p>
-                                <p className="mt-2 text-lg font-semibold text-[#4A4A4A]">
+                                <p className="text-sm text-brand-muted-dark">Active Provider</p>
+                                <p className="mt-2 text-lg font-semibold text-brand-dark">
                                     {activeProvider ? activeProvider.displayName : 'Belum ada'}
                                 </p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-[#6B7280]">Security</p>
-                                <p className="mt-2 text-sm font-medium text-[#4A4A4A]">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
+                                <p className="text-sm text-brand-muted-dark">Security</p>
+                                <p className="mt-2 text-sm font-medium text-brand-dark">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
                             </div>
                         </div>
                     </LiquidGlassCard>
@@ -716,21 +715,21 @@ background: 'var(--dm-accent-bg)',
                     ) : (
                     <LiquidGlassCard intensity="medium" className="overflow-hidden p-0" lightMode={true}>
                         <div className="border-b border-black/5 px-6 py-4">
-                            <h2 className="text-lg font-semibold text-[#4A4A4A]">Provider List</h2>
-                            <p className="mt-1 text-sm text-[#6B7280]">Aktifkan satu provider yang akan dipakai sistem, test koneksi kapan pun, lalu update konfigurasi via modal.</p>
+                            <h2 className="text-lg font-semibold text-brand-dark">Provider List</h2>
+                            <p className="mt-1 text-sm text-brand-muted-dark">Aktifkan satu provider yang akan dipakai sistem, test koneksi kapan pun, lalu update konfigurasi via modal.</p>
                         </div>
 
                         {providerList.length === 0 ? (
                             <div className="px-6 py-12 text-center">
-                                <Server className="mx-auto h-10 w-10 text-[#88161c]/70" />
-                                <h3 className="mt-4 text-lg font-semibold text-[#4A4A4A]">Belum ada provider</h3>
-                                <p className="mt-2 text-sm text-[#6B7280]">Tambahkan provider pertama untuk mulai mengelola AI Settings.</p>
+                                <Server className="mx-auto h-10 w-10 text-brand-primary/70" />
+                                <h3 className="mt-4 text-lg font-semibold text-brand-dark">Belum ada provider</h3>
+                                <p className="mt-2 text-sm text-brand-muted-dark">Tambahkan provider pertama untuk mulai mengelola AI Settings.</p>
                             </div>
                         ) : (
                             <>
                                 <div className="hidden overflow-x-auto md:block">
                                     <table className="min-w-full divide-y divide-black/5 text-sm">
-                                        <thead className="bg-white/60 text-left text-[#6B7280]">
+                                        <thead className="bg-white/60 text-left text-brand-muted-dark">
                                             <tr>
                                                 <th className="px-6 py-4 font-medium">Name</th>
                                                 <th className="px-6 py-4 font-medium">Status</th>
@@ -742,15 +741,15 @@ background: 'var(--dm-accent-bg)',
                                         </thead>
                                         <tbody className="divide-y divide-black/5 bg-white/30">
                                             {providerList.map((provider) => (
-                                                <tr key={provider.id} className={provider.isActive ? 'bg-[#88161c]/[0.03]' : ''}>
+                                                <tr key={provider.id} className={provider.isActive ? 'bg-brand-primary/[0.03]' : ''}>
                                                     <td className="px-6 py-4 align-top">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="rounded-xl border border-[#88161c]/10 bg-[#88161c]/5 p-2 text-[#88161c]">
+                                                            <div className="rounded-xl border border-brand-primary/10 bg-brand-primary/5 p-2 text-brand-primary">
                                                                 <Server className="h-4 w-4" />
                                                             </div>
                                                             <div>
-                                                                <p className="font-semibold text-[#4A4A4A]">{provider.displayName}</p>
-                                                                <p className="text-xs text-[#6B7280]">{provider.name}</p>
+                                                                <p className="font-semibold text-brand-dark">{provider.displayName}</p>
+                                                                <p className="text-xs text-brand-muted-dark">{provider.name}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -773,14 +772,14 @@ background: 'var(--dm-accent-bg)',
                                                             {activatingId === provider.id && buttonSpinner}
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 align-top text-[#4A4A4A]">{provider.baseUrl || '-'}</td>
-                                                    <td className="px-6 py-4 align-top font-mono text-xs text-[#6B7280]">{provider.apiKeyMasked}</td>
-                                                    <td className="px-6 py-4 align-top text-[#6B7280]">{formatDate(provider.updatedAt)}</td>
+                                                    <td className="px-6 py-4 align-top text-brand-dark">{provider.baseUrl || '-'}</td>
+                                                    <td className="px-6 py-4 align-top font-mono text-xs text-brand-muted-dark">{provider.apiKeyMasked}</td>
+                                                    <td className="px-6 py-4 align-top text-brand-muted-dark">{formatDate(provider.updatedAt)}</td>
                                                     <td className="relative px-6 py-4 align-top text-right">
                                                         <button
                                                             type="button"
                                                             onClick={() => setOpenActionsFor(openActionsFor === provider.id ? null : provider.id)}
-                                                            className="rounded-lg p-2 text-[#6B7280] transition hover:bg-black/5 hover:text-[#4A4A4A]"
+                                                            className="rounded-lg p-2 text-brand-muted-dark transition hover:bg-black/5 hover:text-brand-dark"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
@@ -790,7 +789,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openEdit(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[#4A4A4A] transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
                                                                 >
                                                                     <UserPen className="h-4 w-4" />
                                                                     Edit
@@ -798,7 +797,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openTest(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[#4A4A4A] transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
                                                                 >
                                                                     <TestTube2 className="h-4 w-4" />
                                                                     Test Connection
@@ -806,7 +805,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleActivateProvider(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[#4A4A4A] transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
                                                                 >
                                                                     <Power className="h-4 w-4" />
                                                                     Set Active
@@ -853,20 +852,20 @@ background: 'var(--dm-accent-bg)',
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <h2 className="text-lg font-semibold text-[#4A4A4A]">Fallback Order</h2>
-                                <p className="mt-1 text-sm text-[#6B7280]">
+                                <h2 className="text-lg font-semibold text-brand-dark">Fallback Order</h2>
+                                <p className="mt-1 text-sm text-brand-muted-dark">
                                     Urutan ini menentukan provider cadangan saat provider utama gagal. Pindahkan provider ke atas atau bawah untuk mengatur chain 1st → 2nd → 3rd.
                                 </p>
                             </div>
-                            {savingFallbackOrder ? <Loader2 className="h-5 w-5 animate-spin text-[#88161c]" /> : null}
+                            {savingFallbackOrder ? <Loader2 className="h-5 w-5 animate-spin text-brand-primary" /> : null}
                         </div>
 
                         <div className="mt-5 space-y-3">
                             {fallbackProviders.map((provider, index) => (
                                 <div key={provider.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
                                     <div>
-                                        <p className="font-medium text-[#4A4A4A]">{index + 1}. {provider.displayName}</p>
-                                        <p className="text-xs text-[#6B7280]">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
+                                        <p className="font-medium text-brand-dark">{index + 1}. {provider.displayName}</p>
+                                        <p className="text-xs text-brand-muted-dark">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -902,7 +901,7 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={handleCreateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="text-sm font-medium text-[#4A4A4A]">Provider Name</label>
+                            <label className="text-sm font-medium text-brand-dark">Provider Name</label>
                             <input
                                 value={createForm.name}
                                 onChange={(event) => setCreateForm((prev) => ({ ...prev, name: event.target.value }))}
@@ -912,7 +911,7 @@ background: 'var(--dm-accent-bg)',
                             <InputError message={createErrors.name} className="mt-2" />
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-[#4A4A4A]">Display Name</label>
+                            <label className="text-sm font-medium text-brand-dark">Display Name</label>
                             <input
                                 value={createForm.displayName}
                                 onChange={(event) => setCreateForm((prev) => ({ ...prev, displayName: event.target.value }))}
@@ -924,7 +923,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">API Key</label>
+                        <label className="text-sm font-medium text-brand-dark">API Key</label>
                         <div className="relative">
                             <input
                                 type={showCreateApiKey ? 'text' : 'password'}
@@ -936,7 +935,7 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowCreateApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark"
                             >
                                 {showCreateApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -945,7 +944,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Base URL</label>
+                        <label className="text-sm font-medium text-brand-dark">Base URL</label>
                         <input
                             value={createForm.baseUrl}
                             onChange={(event) => setCreateForm((prev) => ({ ...prev, baseUrl: event.target.value }))}
@@ -956,7 +955,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Config (JSON)</label>
+                        <label className="text-sm font-medium text-brand-dark">Config (JSON)</label>
                         <textarea
                             value={createForm.config}
                             onChange={(event) => setCreateForm((prev) => ({ ...prev, config: event.target.value }))}
@@ -986,11 +985,11 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={handleUpdateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="text-sm font-medium text-[#4A4A4A]">Provider Name</label>
+                            <label className="text-sm font-medium text-brand-dark">Provider Name</label>
                             <input value={editForm.name} disabled className={`${inputClassName} cursor-not-allowed bg-slate-100 text-slate-500`} />
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-[#4A4A4A]">Display Name</label>
+                            <label className="text-sm font-medium text-brand-dark">Display Name</label>
                             <input
                                 value={editForm.displayName}
                                 onChange={(event) => setEditForm((prev) => ({ ...prev, displayName: event.target.value }))}
@@ -1001,7 +1000,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">New API Key</label>
+                        <label className="text-sm font-medium text-brand-dark">New API Key</label>
                         <div className="relative">
                             <input
                                 type={showEditApiKey ? 'text' : 'password'}
@@ -1013,17 +1012,17 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowEditApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark"
                             >
                                 {showEditApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                         </div>
-                        <p className="mt-2 text-xs text-[#6B7280]">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
+                        <p className="mt-2 text-xs text-brand-muted-dark">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
                         <InputError message={editErrors.apiKey} className="mt-2" />
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Base URL</label>
+                        <label className="text-sm font-medium text-brand-dark">Base URL</label>
                         <input
                             value={editForm.baseUrl}
                             onChange={(event) => setEditForm((prev) => ({ ...prev, baseUrl: event.target.value }))}
@@ -1034,7 +1033,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Config (JSON)</label>
+                        <label className="text-sm font-medium text-brand-dark">Config (JSON)</label>
                         <textarea
                             value={editForm.config}
                             onChange={(event) => setEditForm((prev) => ({ ...prev, config: event.target.value }))}
@@ -1099,12 +1098,12 @@ background: 'var(--dm-accent-bg)',
                 maxWidth="max-w-xl"
             >
                 <div className="space-y-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#4A4A4A]">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-brand-dark">
                         Provider: <strong>{selectedProvider?.displayName}</strong>
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Test Prompt</label>
+                        <label className="text-sm font-medium text-brand-dark">Test Prompt</label>
                         <textarea
                             value={testPrompt}
                             onChange={(event) => setTestPrompt(event.target.value)}
@@ -1129,7 +1128,7 @@ background: 'var(--dm-accent-bg)',
                                 <CheckCircle2 className="h-5 w-5" />
                                 <p className="font-semibold">Test berhasil</p>
                             </div>
-                            <div className="mt-3 space-y-2 text-sm text-[#4A4A4A]">
+                            <div className="mt-3 space-y-2 text-sm text-brand-dark">
                                 <p>
                                     <strong>Status:</strong> {testResult.status}
                                 </p>
@@ -1141,7 +1140,7 @@ background: 'var(--dm-accent-bg)',
                                 </p>
                                 <div>
                                     <strong>Response:</strong>
-                                    <div className="mt-2 rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-[#4A4A4A]">
+                                    <div className="mt-2 rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-brand-dark">
                                         {testResult.response}
                                     </div>
                                 </div>

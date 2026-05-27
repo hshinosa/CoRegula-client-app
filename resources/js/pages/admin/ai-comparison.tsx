@@ -25,11 +25,11 @@ const availableModels = [
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary';
 
 export default function AdminAiComparisonPage() {
     const [prompt, setPrompt] = useState('Explain the benefits of fallback AI providers for an education platform.');
@@ -101,12 +101,12 @@ export default function AdminAiComparisonPage() {
             <div className="space-y-6">
                 <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                     <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#88161c]/15 bg-[#88161c]/8">
-                            <Scale className="h-6 w-6 text-[#88161c]" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-brand-primary/15 bg-brand-primary/8">
+                            <Scale className="h-6 w-6 text-brand-primary" />
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold" style={headingStyle}>AI Comparison Tool</h1>
-                            <p className="mt-2 max-w-3xl text-sm text-[#6B7280]">
+                            <p className="mt-2 max-w-3xl text-sm text-brand-muted-dark">
                                 Kirim prompt yang sama ke beberapa model sekaligus, lalu bandingkan response, token, biaya, dan latency secara side-by-side.
                             </p>
                         </div>
@@ -115,7 +115,7 @@ export default function AdminAiComparisonPage() {
 
                 <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                     <div>
-                        <label className="text-sm font-medium text-[#4A4A4A]">Prompt</label>
+                        <label className="text-sm font-medium text-brand-dark">Prompt</label>
                         <textarea
                             value={prompt}
                             onChange={(event) => setPrompt(event.target.value)}
@@ -125,15 +125,15 @@ export default function AdminAiComparisonPage() {
                     </div>
 
                     <div className="mt-6">
-                        <p className="text-sm font-medium text-[#4A4A4A]">Available Models</p>
+                        <p className="text-sm font-medium text-brand-dark">Available Models</p>
                         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                             {availableModels.map((model) => {
                                 const checked = selectedModels.includes(model.value);
 
                                 return (
-                                    <label key={model.value} className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 ${checked ? 'border-[#88161c]/30 bg-[#88161c]/5' : 'border-slate-200 bg-white/70'}`}>
+                                    <label key={model.value} className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 ${checked ? 'border-brand-primary/30 bg-brand-primary/5' : 'border-slate-200 bg-white/70'}`}>
                                         <input type="checkbox" checked={checked} onChange={() => toggleModel(model.value)} />
-                                        <span className="text-sm font-medium text-[#4A4A4A]">{model.label}</span>
+                                        <span className="text-sm font-medium text-brand-dark">{model.label}</span>
                                     </label>
                                 );
                             })}
@@ -155,23 +155,23 @@ export default function AdminAiComparisonPage() {
                 <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <h2 className="text-lg font-semibold text-[#4A4A4A]">Results</h2>
-                            <p className="mt-1 text-sm text-[#6B7280]">Comparison ID: {comparisonId ?? '-'}</p>
+                            <h2 className="text-lg font-semibold text-brand-dark">Results</h2>
+                            <p className="mt-1 text-sm text-brand-muted-dark">Comparison ID: {comparisonId ?? '-'}</p>
                         </div>
-                        <div className="text-right text-sm text-[#6B7280]">
+                        <div className="text-right text-sm text-brand-muted-dark">
                             <p>Total cost</p>
-                            <p className="font-semibold text-[#4A4A4A]">${totalCost.toFixed(4)}</p>
+                            <p className="font-semibold text-brand-dark">${totalCost.toFixed(4)}</p>
                         </div>
                     </div>
 
                     {results.length === 0 ? (
-                        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-white/40 px-5 py-10 text-center text-sm text-[#6B7280]">
+                        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-white/40 px-5 py-10 text-center text-sm text-brand-muted-dark">
                             Jalankan comparison untuk melihat hasil per model.
                         </div>
                     ) : (
                         <div className="mt-6 overflow-x-auto">
                             <table className="min-w-full divide-y divide-black/5 text-sm">
-                                <thead className="bg-white/60 text-left text-[#6B7280]">
+                                <thead className="bg-white/60 text-left text-brand-muted-dark">
                                     <tr>
                                         <th className="px-4 py-3 font-medium">Model</th>
                                         <th className="px-4 py-3 font-medium">Response</th>
@@ -184,13 +184,13 @@ export default function AdminAiComparisonPage() {
                                     {results.map((result) => (
                                         <tr key={`${result.provider}-${result.model}`}>
                                             <td className="px-4 py-4 align-top">
-                                                <p className="font-semibold text-[#4A4A4A]">{result.model}</p>
-                                                <p className="text-xs text-[#6B7280]">{result.provider}</p>
+                                                <p className="font-semibold text-brand-dark">{result.model}</p>
+                                                <p className="text-xs text-brand-muted-dark">{result.provider}</p>
                                             </td>
-                                            <td className="max-w-xl px-4 py-4 align-top text-[#4A4A4A]">{result.response}</td>
-                                            <td className="px-4 py-4 align-top text-[#4A4A4A]">{result.tokens.toLocaleString('id-ID')}</td>
-                                            <td className="px-4 py-4 align-top text-[#4A4A4A]">${result.cost.toFixed(4)}</td>
-                                            <td className="px-4 py-4 align-top text-[#4A4A4A]">{(result.latencyMs / 1000).toFixed(2)}s</td>
+                                            <td className="max-w-xl px-4 py-4 align-top text-brand-dark">{result.response}</td>
+                                            <td className="px-4 py-4 align-top text-brand-dark">{result.tokens.toLocaleString('id-ID')}</td>
+                                            <td className="px-4 py-4 align-top text-brand-dark">${result.cost.toFixed(4)}</td>
+                                            <td className="px-4 py-4 align-top text-brand-dark">{(result.latencyMs / 1000).toFixed(2)}s</td>
                                         </tr>
                                     ))}
                                 </tbody>

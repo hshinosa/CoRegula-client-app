@@ -158,11 +158,11 @@ interface CreateFromTemplateFormData {
 
 const headingStyle = {
     color: 'var(--dm-text-heading)',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20';
 
 const buttonSpinner = <Loader2 className="h-4 w-4 animate-spin" />;
 
@@ -284,12 +284,12 @@ function FormModal({
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
                                 </h3>
-                                <p className="mt-1 text-sm text-[#6B7280]">{description}</p>
+                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-black/5 hover:text-[#4A4A4A]"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -333,12 +333,12 @@ function CourseCard({
                                 type="checkbox"
                                 checked={selected}
                                 onChange={() => onToggleSelect(course.id)}
-                                className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                             />
                             Select course
                         </label>
-                        <p className="text-sm font-semibold text-[#88161c]">{course.code}</p>
-                        <p className="mt-1 text-sm font-medium text-[#4A4A4A]">{course.name}</p>
+                        <p className="text-sm font-semibold text-brand-primary">{course.code}</p>
+                        <p className="mt-1 text-sm font-medium text-brand-dark">{course.name}</p>
                     </div>
                     <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusBadgeClassName}`}>
                         {statusLabel}
@@ -347,13 +347,13 @@ function CourseCard({
 
                 <div className="space-y-1.5 text-xs text-slate-600">
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Owner:</span> {getCourseOwnerName(course)}
+                        <span className="font-medium text-brand-dark">Owner:</span> {getCourseOwnerName(course)}
                     </p>
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Groups:</span> {groupCount}
+                        <span className="font-medium text-brand-dark">Groups:</span> {groupCount}
                     </p>
                     <p>
-                        <span className="font-medium text-[#4A4A4A]">Created:</span> {formatDate(getCreatedAt(course))}
+                        <span className="font-medium text-brand-dark">Created:</span> {formatDate(getCreatedAt(course))}
                     </p>
                 </div>
 
@@ -361,14 +361,14 @@ function CourseCard({
                     <button
                         type="button"
                         onClick={() => onDetails(course)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Details
                     </button>
                     <button
                         type="button"
                         onClick={() => onEdit(course)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-[#88161c]/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
                     >
                         Edit
                     </button>
@@ -1222,7 +1222,7 @@ background: 'var(--dm-accent-bg)',
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
                                         Master Data Management
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">
+                                    <p className="mt-2 text-brand-muted-dark">
                                         Kelola course aktif, course yang diarsipkan, dan template course untuk kebutuhan administrasi.
                                     </p>
                                 </div>
@@ -1261,7 +1261,7 @@ background: 'var(--dm-accent-bg)',
                         <div className="flex flex-wrap gap-3 border-b border-white/60 pb-4">
                             <button
                                 type="button"
-                                className="inline-flex items-center gap-2 rounded-full border border-[#88161c]/15 bg-[#88161c]/10 px-4 py-2 text-sm font-medium text-[#88161c]"
+                                className="inline-flex items-center gap-2 rounded-full border border-brand-primary/15 bg-brand-primary/10 px-4 py-2 text-sm font-medium text-brand-primary"
                             >
                                 <BookOpen className="h-4 w-4" />
                                 Active Courses
@@ -1271,7 +1271,7 @@ background: 'var(--dm-accent-bg)',
                                 onClick={() => router.visit('/admin/master-data?tab=archived', { preserveScroll: true })}
                                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${
                                     isArchivedView
-                                        ? 'border-[#88161c]/15 bg-[#88161c]/10 text-[#88161c]'
+                                        ? 'border-brand-primary/15 bg-brand-primary/10 text-brand-primary'
                                         : 'border-slate-200 bg-white/70 text-slate-600'
                                 }`}
                             >
@@ -1299,7 +1299,7 @@ background: 'var(--dm-accent-bg)',
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">Search</label>
+                                    <label className="text-sm font-medium text-brand-dark">Search</label>
                                     <div className="relative mt-1.5">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                         <input
@@ -1307,17 +1307,17 @@ background: 'var(--dm-accent-bg)',
                                             value={searchInput}
                                             onChange={(event) => setSearchInput(event.target.value)}
                                             placeholder="Search by code or course name"
-                                            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                                            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium text-[#4A4A4A]">Owner</label>
+                                    <label className="text-sm font-medium text-brand-dark">Owner</label>
                                     <select
                                         value={ownerFilter}
                                         onChange={(event) => handleOwnerFilterChange(event.target.value)}
-                                        className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20"
+                                        className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                     >
                                         <option value="all">All Lecturers</option>
                                         {lecturers.map((lecturer) => (
@@ -1341,14 +1341,14 @@ background: 'var(--dm-accent-bg)',
                         </div>
 
                         <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-                            <p className="text-sm text-[#6B7280]">Showing {start}-{end} of {total} {isArchivedView ? 'archived courses' : 'courses'}</p>
+                            <p className="text-sm text-brand-muted-dark">Showing {start}-{end} of {total} {isArchivedView ? 'archived courses' : 'courses'}</p>
 
                             <div className="flex items-center gap-2">
-                                <label className="text-sm text-[#6B7280]">Items per page</label>
+                                <label className="text-sm text-brand-muted-dark">Items per page</label>
                                 <select
                                     value={limit}
                                     onChange={(event) => handleLimitChange(Number(event.target.value))}
-                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-[#88161c] focus:outline-none"
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-brand-primary focus:outline-none"
                                 >
                                     {[10, 20, 50].map((size) => (
                                         <option key={size} value={size}>
@@ -1360,8 +1360,8 @@ background: 'var(--dm-accent-bg)',
                         </div>
 
                         {!isArchivedView && selectedCoursesCount > 0 && (
-                            <div className="flex flex-col gap-3 rounded-2xl border border-[#88161c]/15 bg-[#88161c]/5 p-4 lg:flex-row lg:items-center lg:justify-between">
-                                <p className="text-sm font-medium text-[#4A4A4A]">{selectedCoursesCount} courses selected</p>
+                            <div className="flex flex-col gap-3 rounded-2xl border border-brand-primary/15 bg-brand-primary/5 p-4 lg:flex-row lg:items-center lg:justify-between">
+                                <p className="text-sm font-medium text-brand-dark">{selectedCoursesCount} courses selected</p>
 
                                 <div className="flex flex-wrap items-center gap-2">
                                     <button
@@ -1410,7 +1410,7 @@ background: 'var(--dm-accent-bg)',
                                                         checked={allCoursesSelected}
                                                         onChange={toggleSelectAllCourses}
                                                         aria-label="Select all courses"
-                                                        className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                                        className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                     />
                                                 </th>
                                             )}
@@ -1426,7 +1426,7 @@ background: 'var(--dm-accent-bg)',
                                     <tbody className="divide-y divide-white/70">
                                         {courseList.length === 0 ? (
                                             <tr>
-                                                <td colSpan={isArchivedView ? 7 : 8} className="px-4 py-16 text-center text-sm text-[#6B7280]">
+                                                <td colSpan={isArchivedView ? 7 : 8} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
                                                     {isArchivedView ? 'No archived courses found.' : 'No courses found. Try changing search or filters.'}
                                                 </td>
                                             </tr>
@@ -1440,12 +1440,12 @@ background: 'var(--dm-accent-bg)',
                                                                 checked={selectedCourseIds.has(course.id)}
                                                                 onChange={() => toggleCourseSelection(course.id)}
                                                                 aria-label={`Select ${course.name}`}
-                                                                className="h-4 w-4 rounded border-slate-300 text-[#88161c] focus:ring-[#88161c]/30"
+                                                                className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                             />
                                                         </td>
                                                     )}
-                                                    <td className="px-4 py-3 text-sm font-semibold text-[#88161c]">{course.code}</td>
-                                                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">
+                                                    <td className="px-4 py-3 text-sm font-semibold text-brand-primary">{course.code}</td>
+                                                    <td className="px-4 py-3 text-sm text-brand-dark">
                                                         <div>
                                                             <div className="flex items-center gap-2">
                                                                 <p className="font-medium">{course.name}</p>
@@ -1469,7 +1469,7 @@ background: 'var(--dm-accent-bg)',
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setOpenActionsFor((prev) => (prev === course.id ? null : course.id))}
-                                                                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:text-[#88161c]"
+                                                                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:text-brand-primary"
                                                             >
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </button>
@@ -1573,7 +1573,7 @@ background: 'var(--dm-accent-bg)',
 
                             <div className="block space-y-4 md:hidden">
                                 {courseList.length === 0 ? (
-                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-12 text-center text-sm text-[#6B7280]">
+                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-12 text-center text-sm text-brand-muted-dark">
                                         {isArchivedView ? 'No archived courses found.' : 'No courses found. Try changing search or filters.'}
                                     </div>
                                 ) : (
@@ -1596,7 +1596,7 @@ background: 'var(--dm-accent-bg)',
                             <div className="mt-6 rounded-2xl border border-white/70 bg-white/45 p-4">
                                 <div className="mb-4 flex items-center justify-between gap-3">
                                     <div>
-                                        <h3 className="text-base font-semibold text-[#4A4A4A]">Template Library</h3>
+                                        <h3 className="text-base font-semibold text-brand-dark">Template Library</h3>
                                         <p className="mt-1 text-sm text-slate-500">Simpan struktur course tanpa konten, lalu buat course baru lebih cepat.</p>
                                     </div>
                                     <SecondaryButton onClick={() => void router.visit('/admin/templates')} className="px-4 py-2 text-sm">
@@ -1619,7 +1619,7 @@ background: 'var(--dm-accent-bg)',
                                             <div key={template.id} className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div>
-                                                        <p className="text-sm font-semibold text-[#4A4A4A]">{template.name}</p>
+                                                        <p className="text-sm font-semibold text-brand-dark">{template.name}</p>
                                                         <p className="mt-1 text-xs text-slate-500">{template.description?.trim() || 'No description provided.'}</p>
                                                     </div>
                                                     <button
@@ -1669,8 +1669,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <div className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            CSV File <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            CSV File <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="file"
@@ -1682,7 +1682,7 @@ background: 'var(--dm-accent-bg)',
 
                     <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 p-4 text-sm text-slate-600">
                         <div>
-                            <p className="font-medium text-[#4A4A4A]">Sample template</p>
+                            <p className="font-medium text-brand-dark">Sample template</p>
                             <p className="mt-1">Gunakan template CSV ini agar struktur import sesuai dengan backend.</p>
                         </div>
                         <SecondaryButton onClick={handleDownloadCourseTemplate} className="px-4 py-2 text-sm">
@@ -1700,7 +1700,7 @@ background: 'var(--dm-accent-bg)',
                     {importPreview.length > 0 && (
                         <div className="space-y-3">
                             <div>
-                                <h4 className="text-sm font-semibold text-[#4A4A4A]">Preview (first 5 rows)</h4>
+                                <h4 className="text-sm font-semibold text-brand-dark">Preview (first 5 rows)</h4>
                                 <p className="mt-1 text-xs text-slate-500">Preview ini membantu cek code, name, description, dan owner_id sebelum upload.</p>
                             </div>
 
@@ -1756,8 +1756,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={(event) => void handleCreateCourse(event)} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Code <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Code <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1770,8 +1770,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Name <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Name <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1784,7 +1784,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description</label>
                         <textarea
                             value={createForm.description}
                             onChange={(event) => setCreateForm((prev) => ({ ...prev, description: event.target.value }))}
@@ -1795,8 +1795,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Owner <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Owner <span className="text-brand-primary">*</span>
                         </label>
                         <select
                             value={createForm.ownerId}
@@ -1839,8 +1839,8 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={(event) => void handleEditCourse(event)} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Code <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Code <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1852,8 +1852,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Name <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Name <span className="text-brand-primary">*</span>
                         </label>
                         <input
                             type="text"
@@ -1865,7 +1865,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description</label>
                         <textarea
                             value={editForm.description}
                             onChange={(event) => setEditForm((prev) => ({ ...prev, description: event.target.value }))}
@@ -1875,8 +1875,8 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">
-                            Owner <span className="text-[#88161c]">*</span>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Owner <span className="text-brand-primary">*</span>
                         </label>
                         <select
                             value={editForm.ownerId}
@@ -2040,16 +2040,16 @@ background: 'var(--dm-accent-bg)',
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Course Code</p>
-                                <p className="mt-2 text-base font-semibold text-[#88161c]">{detailCourse.code}</p>
+                                <p className="mt-2 text-base font-semibold text-brand-primary">{detailCourse.code}</p>
                             </div>
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Owner</p>
-                                <p className="mt-2 text-base font-semibold text-[#4A4A4A]">{getCourseOwnerName(detailCourse)}</p>
+                                <p className="mt-2 text-base font-semibold text-brand-dark">{getCourseOwnerName(detailCourse)}</p>
                                 <p className="mt-1 text-sm text-slate-500">{detailCourse.owner?.email ?? 'No email info'}</p>
                             </div>
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 md:col-span-2">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Course Name</p>
-                                <p className="mt-2 text-base font-semibold text-[#4A4A4A]">{detailCourse.name}</p>
+                                <p className="mt-2 text-base font-semibold text-brand-dark">{detailCourse.name}</p>
                                 <p className="mt-3 text-sm leading-6 text-slate-600">
                                     {detailCourse.description?.trim() || 'No description provided for this course.'}
                                 </p>
@@ -2059,22 +2059,22 @@ background: 'var(--dm-accent-bg)',
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Groups</p>
-                                <p className="mt-2 text-2xl font-semibold text-[#4A4A4A]">{getGroupCount(detailCourse)}</p>
+                                <p className="mt-2 text-2xl font-semibold text-brand-dark">{getGroupCount(detailCourse)}</p>
                             </div>
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Students</p>
-                                <p className="mt-2 text-2xl font-semibold text-[#4A4A4A]">{getStudentCount(detailCourse)}</p>
+                                <p className="mt-2 text-2xl font-semibold text-brand-dark">{getStudentCount(detailCourse)}</p>
                             </div>
                             <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                 <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Created</p>
-                                <p className="mt-2 text-base font-semibold text-[#4A4A4A]">{formatDate(getCreatedAt(detailCourse))}</p>
+                                <p className="mt-2 text-base font-semibold text-brand-dark">{formatDate(getCreatedAt(detailCourse))}</p>
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <h4 className="text-base font-semibold text-[#4A4A4A]">Groups List</h4>
+                                    <h4 className="text-base font-semibold text-brand-dark">Groups List</h4>
                                     <p className="mt-1 text-sm text-slate-500">Daftar group yang berada di bawah course ini.</p>
                                 </div>
                             </div>
@@ -2089,7 +2089,7 @@ background: 'var(--dm-accent-bg)',
                                         <div key={group.id} className="rounded-2xl border border-slate-200 bg-white/80 p-4">
                                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                                 <div>
-                                                    <p className="text-sm font-semibold text-[#4A4A4A]">{group.name}</p>
+                                                    <p className="text-sm font-semibold text-brand-dark">{group.name}</p>
                                                     <p className="mt-1 text-xs text-slate-500">Group ID: {group.id}</p>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2 text-xs text-slate-600">
@@ -2122,7 +2122,7 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={handleCloneCourse} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Name</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Name</label>
                         <input
                             type="text"
                             value={cloneForm.name}
@@ -2134,7 +2134,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Code</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Code</label>
                         <input
                             type="text"
                             value={cloneForm.code}
@@ -2173,7 +2173,7 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={(event) => void handleSaveTemplate(event)} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Template Name</label>
+                            <label className="block text-sm font-medium text-brand-dark">Template Name</label>
                             <input
                                 type="text"
                                 value={templateForm.name}
@@ -2183,7 +2183,7 @@ background: 'var(--dm-accent-bg)',
                             <InputError message={templateErrors.name} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Name Pattern</label>
+                            <label className="block text-sm font-medium text-brand-dark">Name Pattern</label>
                             <input
                                 type="text"
                                 value={templateForm.namePattern}
@@ -2197,7 +2197,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description</label>
                         <input
                             type="text"
                             value={templateForm.description}
@@ -2207,7 +2207,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Description Template</label>
+                        <label className="block text-sm font-medium text-brand-dark">Description Template</label>
                         <textarea
                             value={templateForm.descriptionTemplate}
                             onChange={(event) => setTemplateForm((prev) => ({ ...prev, descriptionTemplate: event.target.value }))}
@@ -2217,7 +2217,7 @@ background: 'var(--dm-accent-bg)',
 
                     <div className="space-y-3">
                         <div className="flex items-center justify-between gap-3">
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Default Groups</label>
+                            <label className="block text-sm font-medium text-brand-dark">Default Groups</label>
                             <SecondaryButton onClick={handleAddTemplateGroup} className="px-3 py-2 text-sm">
                                 Add Group
                             </SecondaryButton>
@@ -2280,7 +2280,7 @@ background: 'var(--dm-accent-bg)',
             >
                 <form onSubmit={(event) => void handleCreateCourseFromTemplate(event)} className="space-y-5">
                     <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-                        <p className="text-sm font-semibold text-[#4A4A4A]">{selectedTemplate?.name}</p>
+                        <p className="text-sm font-semibold text-brand-dark">{selectedTemplate?.name}</p>
                         <p className="mt-2 text-xs text-slate-500">Pattern: {selectedTemplate?.namePattern}</p>
                         <p className="mt-1 text-xs text-slate-500">
                             Groups: {selectedTemplate?.defaultGroups?.map((group) => group.name).join(', ') || '-'}
@@ -2289,7 +2289,7 @@ background: 'var(--dm-accent-bg)',
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Course Code</label>
+                            <label className="block text-sm font-medium text-brand-dark">Course Code</label>
                             <input
                                 type="text"
                                 value={createFromTemplateForm.code}
@@ -2301,7 +2301,7 @@ background: 'var(--dm-accent-bg)',
                             <InputError message={createFromTemplateErrors.code} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#4A4A4A]">Owner</label>
+                            <label className="block text-sm font-medium text-brand-dark">Owner</label>
                             <select
                                 value={createFromTemplateForm.ownerId}
                                 onChange={(event) => setCreateFromTemplateForm((prev) => ({ ...prev, ownerId: event.target.value }))}
@@ -2319,7 +2319,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Name</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Name</label>
                         <input
                             type="text"
                             value={createFromTemplateForm.name}
@@ -2330,7 +2330,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A]">Course Description</label>
+                        <label className="block text-sm font-medium text-brand-dark">Course Description</label>
                         <textarea
                             value={createFromTemplateForm.description}
                             onChange={(event) => setCreateFromTemplateForm((prev) => ({ ...prev, description: event.target.value }))}
