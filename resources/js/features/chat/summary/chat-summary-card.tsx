@@ -12,11 +12,11 @@ export function ChatSummaryCard({ state, onOpenDetail }: ChatSummaryCardProps) {
     const [showInlineDetail, setShowInlineDetail] = useState(false);
 
     if (state.status === 'loading') {
-        return <div className="rounded-2xl border border-[rgba(255,255,255,0.45)] bg-white/70 p-4 text-sm text-[#6B7280]">Sedang memuat ringkasan diskusi...</div>;
+        return <div className="rounded-2xl border border-[rgba(255,255,255,0.45)] bg-white/70 p-4 text-sm text-brand-muted-dark">Sedang memuat ringkasan diskusi...</div>;
     }
 
     if (state.status === 'empty') {
-        return <div className="rounded-2xl border border-dashed border-[rgba(107,114,128,0.25)] bg-white/60 p-4 text-sm text-[#6B7280]">Ringkasan diskusi belum tersedia untuk room ini.</div>;
+        return <div className="rounded-2xl border border-dashed border-[rgba(107,114,128,0.25)] bg-white/60 p-4 text-sm text-brand-muted-dark">Ringkasan diskusi belum tersedia untuk room ini.</div>;
     }
 
     if (state.status === 'error') {
@@ -24,11 +24,11 @@ export function ChatSummaryCard({ state, onOpenDetail }: ChatSummaryCardProps) {
     }
 
     return (
-        <div className="space-y-3 rounded-2xl border border-[rgba(255,255,255,0.45)] bg-white/75 p-4 shadow-sm">
+        <div className="space-y-3 rounded-2xl border border-[rgba(255,255,255,0.45)] bg-white/75 p-4 shadow-brand-sm">
             <div className="space-y-2">
-                <p className="text-sm font-semibold text-[#4A4A4A]">Ringkasan diskusi</p>
-                <p className="text-sm leading-6 text-[#4A4A4A]">{state.summary.headline}</p>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-[#6B7280]">
+                <p className="text-sm font-semibold text-brand-dark">Ringkasan diskusi</p>
+                <p className="text-sm leading-6 text-brand-dark">{state.summary.headline}</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-brand-muted-dark">
                     {state.summary.keyPoints.slice(0, 3).map((point) => (
                         <li key={point}>{point}</li>
                     ))}
@@ -38,7 +38,7 @@ export function ChatSummaryCard({ state, onOpenDetail }: ChatSummaryCardProps) {
             <div className="flex flex-wrap gap-2">
                 <button
                     type="button"
-                    className="rounded-lg bg-[#88161c] px-3 py-2 text-sm font-medium text-white"
+                    className="rounded-lg bg-brand-primary px-3 py-2 text-sm font-medium text-white"
                     onClick={() => {
                         setShowInlineDetail((prev) => !prev);
                         onOpenDetail();
