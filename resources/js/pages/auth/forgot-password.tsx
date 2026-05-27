@@ -53,26 +53,14 @@ export default function ForgotPassword() {
                 <LiquidGlassCard intensity="medium" lightMode={lightMode} className="w-full p-8 sm:p-10 transition-colors duration-500">
                     <div className="mb-6 text-center">
                         <div
-                            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-                            style={{
-                                background: lightMode ? 'rgba(136,22,28,0.08)' : 'rgba(136,22,28,0.2)',
-                            }}
+                            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary/8 dark:bg-brand-primary/20"
                         >
-                            <Mail
-                                size={28}
-                                style={{ color: '#88161c' }}
-                            />
+                            <Mail size={28} className="text-brand-primary" />
                         </div>
-                        <h1
-                            className="text-2xl font-bold tracking-tight transition-colors duration-500"
-                            style={{ color: lightMode ? '#4A4A4A' : '#f8fafc' }}
-                        >
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Lupa Kata Sandi?
                         </h1>
-                        <p
-                            className="mt-1.5 text-sm transition-colors duration-500"
-                            style={{ color: lightMode ? '#6B7280' : '#94a3b8' }}
-                        >
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             {emailSent
                                 ? 'Silakan periksa kotak masuk email Anda'
                                 : 'Masukkan email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi'}
@@ -110,8 +98,7 @@ export default function ForgotPassword() {
                             <div>
                                 <label
                                     htmlFor="email"
-                                    className="block text-sm font-medium transition-colors duration-500"
-                                    style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                    className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                                 >
                                     Alamat Email
                                 </label>
@@ -120,7 +107,7 @@ export default function ForgotPassword() {
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    className="mt-2 w-full rounded-xl border px-4 py-3 shadow-sm transition-colors focus:border-[#88161c] focus:ring focus:ring-[#88161c] focus:ring-opacity-50"
+                                    className="mt-2 w-full rounded-xl border px-4 py-3 shadow-brand-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                     style={inputStyles}
                                     placeholder="anda@contoh.com"
                                     autoComplete="email"
@@ -147,13 +134,10 @@ export default function ForgotPassword() {
                         </form>
                     )}
 
-                    <p
-                        className="mt-6 text-center text-sm transition-colors"
-                        style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
-                    >
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         <Link
                             href="/login"
-                            className="inline-flex items-center gap-1 font-medium text-[#88161c] hover:underline"
+                            className="inline-flex items-center gap-1 font-medium text-brand-primary hover:underline"
                         >
                             <ArrowLeft size={14} />
                             Kembali ke Masuk

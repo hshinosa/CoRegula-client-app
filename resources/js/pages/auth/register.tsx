@@ -50,16 +50,10 @@ export default function Register() {
             >
                 <LiquidGlassCard intensity="medium" lightMode={lightMode} className="w-full p-8 sm:p-10 transition-colors duration-500">
                     <div className="mb-5 text-center">
-                        <h1
-                            className="text-2xl font-bold tracking-tight transition-colors duration-500"
-                            style={{ color: lightMode ? '#4A4A4A' : '#f8fafc' }}
-                        >
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Buat Akun
                         </h1>
-                        <p
-                            className="mt-1.5 text-sm transition-colors duration-500"
-                            style={{ color: lightMode ? '#6B7280' : '#94a3b8' }}
-                        >
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             Bergabunglah dengan Kolabri untuk memulai pembelajaran kolaboratif
                         </p>
                     </div>
@@ -68,8 +62,7 @@ export default function Register() {
                         <div>
                             <label 
                                 htmlFor="name" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                             >
                                 Nama Lengkap
                             </label>
@@ -78,7 +71,7 @@ export default function Register() {
                                 type="text"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-sm transition-colors focus:border-[#88161c] focus:ring focus:ring-[#88161c] focus:ring-opacity-50"
+                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-brand-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                 style={inputStyles}
                                 placeholder="Nama Anda"
                                 autoComplete="name"
@@ -90,8 +83,7 @@ export default function Register() {
                         <div>
                             <label 
                                 htmlFor="email" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                             >
                                 Alamat Email
                             </label>
@@ -100,7 +92,7 @@ export default function Register() {
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-sm transition-colors focus:border-[#88161c] focus:ring focus:ring-[#88161c] focus:ring-opacity-50"
+                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-brand-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                 style={inputStyles}
                                 placeholder="anda@contoh.com"
                                 autoComplete="email"
@@ -111,8 +103,7 @@ export default function Register() {
                         <div>
                             <label 
                                 htmlFor="role" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                             >
                                 Saya adalah...
                             </label>
@@ -129,7 +120,7 @@ export default function Register() {
                                     <span
                                         className={`w-full rounded-lg border-2 px-3 py-2 text-center text-sm font-medium transition-all duration-300 ${
                                             data.role === 'student'
-                                                ? 'border-[#88161c] bg-[rgba(136,22,28,0.05)] text-[#88161c]'
+                                                ? 'border-brand-primary bg-brand-primary/5 text-brand-primary'
                                                 : lightMode
                                                     ? 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                                                     : 'border-[rgba(255,255,255,0.1)] bg-[rgba(30,41,59,0.5)] text-slate-300 hover:border-[rgba(255,255,255,0.2)]'
@@ -150,7 +141,7 @@ export default function Register() {
                                     <span
                                         className={`w-full rounded-lg border-2 px-3 py-2 text-center text-sm font-medium transition-all duration-300 ${
                                             data.role === 'lecturer'
-                                                ? 'border-[#88161c] bg-[rgba(136,22,28,0.05)] text-[#88161c]'
+                                                ? 'border-brand-primary bg-brand-primary/5 text-brand-primary'
                                                 : lightMode
                                                     ? 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                                                     : 'border-[rgba(255,255,255,0.1)] bg-[rgba(30,41,59,0.5)] text-slate-300 hover:border-[rgba(255,255,255,0.2)]'
@@ -166,8 +157,7 @@ export default function Register() {
                         <div>
                             <label 
                                 htmlFor="password" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                             >
                                 Kata Sandi
                             </label>
@@ -187,8 +177,7 @@ export default function Register() {
                         <div>
                             <label 
                                 htmlFor="password_confirmation" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
+                                className="block text-sm font-medium text-brand-dark dark:text-slate-200"
                             >
                                 Konfirmasi Kata Sandi
                             </label>
@@ -216,15 +205,14 @@ export default function Register() {
                                     />
                                 </div>
                                 <span
-                                    className="text-sm leading-relaxed transition-colors"
-                                    style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
+                                    className="text-sm leading-relaxed text-slate-500 dark:text-slate-400"
                                 >
                                     Saya menyetujui{' '}
-                                    <Link href="/terms" className="font-medium text-[#88161c] hover:underline">
+                                    <Link href="/terms" className="font-medium text-brand-primary hover:underline">
                                         Syarat & Ketentuan
                                     </Link>
                                     {' '}dan{' '}
-                                    <Link href="/privacy" className="font-medium text-[#88161c] hover:underline">
+                                    <Link href="/privacy" className="font-medium text-brand-primary hover:underline">
                                         Kebijakan Privasi
                                     </Link>
                                     {' '}Kolabri
@@ -250,12 +238,9 @@ export default function Register() {
                         </div>
                     </form>
 
-                    <p
-                        className="mt-5 text-center text-sm transition-colors"
-                        style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
-                    >
+                    <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
                         Sudah punya akun?{' '}
-                        <Link href="/login" className="font-medium text-[#88161c] hover:underline">
+                        <Link href="/login" className="font-medium text-brand-primary hover:underline">
                             Masuk
                         </Link>
                     </p>

@@ -15,13 +15,18 @@ export default function GuestLayout({ children }: PropsWithChildren) {
             localStorage.getItem('kolabri_theme') === 'dark' ||
             localStorage.getItem('kolabri-dark') === 'true';
         setDarkMode(isDark);
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        }
     }, []);
 
     useEffect(() => {
         if (darkMode) {
+            document.documentElement.classList.add('dark');
             document.body.style.backgroundColor = '#0a0a0f';
             localStorage.setItem('kolabri_theme', 'dark');
         } else {
+            document.documentElement.classList.remove('dark');
             document.body.style.backgroundColor = '#E8EDF8';
             localStorage.setItem('kolabri_theme', 'light');
         }
@@ -33,13 +38,12 @@ export default function GuestLayout({ children }: PropsWithChildren) {
     return (
         <ThemeContext.Provider value={{ lightMode }}>
             <div
-                className="relative flex min-h-screen overflow-hidden transition-colors duration-500"
+                className="relative flex min-h-screen overflow-hidden font-sans transition-colors duration-500"
                 style={{
                     background: t(
                         'linear-gradient(135deg, #E8EDF8 0%, #EDF0F7 50%, #E8EDF8 100%)',
                         '#0a0a0f',
                     ),
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}
             >
                 {/* Theme toggle */}

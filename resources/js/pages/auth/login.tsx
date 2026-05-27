@@ -86,16 +86,10 @@ export default function Login() {
             >
                 <LiquidGlassCard intensity="medium" lightMode={lightMode} className="w-full p-8 sm:p-10 transition-colors duration-500">
                     <div className="mb-6 text-center">
-                        <h1
-                            className="text-2xl font-bold tracking-tight transition-colors duration-500"
-                            style={{ color: lightMode ? '#4A4A4A' : '#f8fafc' }}
-                        >
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Selamat Datang Kembali
                         </h1>
-                        <p
-                            className="mt-1.5 text-sm transition-colors duration-500"
-                            style={{ color: lightMode ? '#6B7280' : '#94a3b8' }}
-                        >
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             Masuk untuk melanjutkan perjalanan belajar Anda
                         </p>
                     </div>
@@ -132,11 +126,7 @@ export default function Login() {
                         )}
 
                         <div>
-                            <label 
-                                htmlFor="email" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
-                            >
+                            <label htmlFor="email" className="block text-sm font-medium text-brand-dark dark:text-slate-200">
                                 Alamat Email
                             </label>
                             <input
@@ -144,7 +134,7 @@ export default function Login() {
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-sm transition-colors focus:border-[#88161c] focus:ring focus:ring-[#88161c] focus:ring-opacity-50"
+                                className="mt-2 w-full rounded-xl border px-4 py-3 shadow-brand-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                 style={{
                                     backgroundColor: lightMode ? '#ffffff' : 'rgba(30, 41, 59, 0.6)',
                                     borderColor: lightMode ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
@@ -158,11 +148,7 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label 
-                                htmlFor="password" 
-                                className="block text-sm font-medium transition-colors duration-500"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e2e8f0' }}
-                            >
+                            <label htmlFor="password" className="block text-sm font-medium text-brand-dark dark:text-slate-200">
                                 Kata Sandi
                             </label>
                             <PasswordInput
@@ -186,19 +172,12 @@ export default function Login() {
                                     onChange={(e) => setData('remember', e.target.checked)}
                                     lightMode={lightMode}
                                 />
-                                <span
-                                    className="ml-2 text-sm transition-colors"
-                                    style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
-                                >
+                                <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">
                                     Ingat saya
                                 </span>
                             </label>
 
-                            <Link
-                                href="/forgot-password"
-                                className="text-sm font-semibold transition-colors hover:text-[#88161c]"
-                                style={{ color: lightMode ? '#88161c' : '#f8fafc' }}
-                            >
+                            <Link href="/forgot-password" className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark dark:text-slate-50 dark:hover:text-slate-200">
                                 Lupa kata sandi?
                             </Link>
                         </div>
@@ -245,19 +224,14 @@ export default function Login() {
                     )}
 
                     <div className="my-5 flex items-center gap-3">
-                        <div className="h-px flex-1" style={{ background: lightMode ? '#e2e8f0' : 'rgba(255,255,255,0.1)' }} />
-                        <span className="text-xs" style={{ color: lightMode ? '#94a3b8' : '#64748b' }}>atau</span>
-                        <div className="h-px flex-1" style={{ background: lightMode ? '#e2e8f0' : 'rgba(255,255,255,0.1)' }} />
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                        <span className="text-xs text-slate-400 dark:text-slate-500">atau</span>
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                     </div>
 
                     <a
                         href="/auth/google"
-                        className="flex w-full items-center justify-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition-all hover:shadow-md"
-                        style={{
-                            backgroundColor: lightMode ? '#ffffff' : 'rgba(30, 41, 59, 0.6)',
-                            borderColor: lightMode ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
-                            color: lightMode ? '#4A4A4A' : '#f8fafc',
-                        }}
+                        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-brand-dark shadow-brand-sm transition-all hover:shadow-brand dark:border-white/10 dark:bg-slate-800/60 dark:text-slate-50"
                     >
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -268,12 +242,9 @@ export default function Login() {
                         Masuk dengan Google
                     </a>
 
-                    <p
-                        className="mt-6 text-center text-sm transition-colors"
-                        style={{ color: lightMode ? '#64748b' : '#94a3b8' }}
-                    >
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         Belum punya akun?{' '}
-                        <Link href="/register" className="font-medium text-[#88161c] hover:underline">
+                        <Link href="/register" className="font-medium text-brand-primary hover:underline">
                             Daftar Sekarang
                         </Link>
                     </p>
