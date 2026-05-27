@@ -32,7 +32,7 @@ interface Props {
 }
 
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
+    color: 'var(--color-brand-dark)',
 } as const;
 
 const bodyTextClass = 'text-sm text-[#4B5563]';
@@ -619,7 +619,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                                                 style={{
                                                     background: message.role === 'user'
-                                                        ? 'linear-gradient(135deg, rgb(var(--color-brand-primary)) 0%, #a41219 100%)'
+                                                        ? 'linear-gradient(135deg, var(--color-brand-primary) 0%, #a41219 100%)'
                                                         : 'rgba(136,22,28,0.08)',
                                                     border: message.role === 'user'
                                                         ? '1px solid rgba(255,255,255,0.18)'
@@ -631,7 +631,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                         {authData.user?.name?.charAt(0).toUpperCase() || 'U'}
                                                     </span>
                                                 ) : (
-                                                        <Sparkles className="h-3.5 w-3.5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                        <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--color-brand-primary)' }} />
                                                 )}
                                             </div>
                                             <div
@@ -674,7 +674,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     {!isLoadingMessages && isStreaming && (
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2.5">
                                             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                <Sparkles className="h-3.5 w-3.5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--color-brand-primary)' }} />
                                             </div>
                                             <div className="max-w-[84%] rounded-[24px] px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.82)', boxShadow: '0 12px 26px rgba(148,163,184,0.10)' }}>
                                                 {displayedStreamingContent ? (
@@ -755,7 +755,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 onClick={() => prefillPrompt(item.prompt)}
                                                 className="rounded-full px-3 py-1.5 text-xs font-medium shadow-[0_8px_22px_rgba(148,163,184,0.08)] transition-colors hover:bg-[rgba(136,22,28,0.10)] sm:text-sm"
                                                 style={{
-                                                    color: 'rgb(var(--color-brand-primary))',
+                                                    color: 'var(--color-brand-primary)',
                                                     background: 'rgba(136,22,28,0.08)',
                                                     border: '1px solid rgba(136,22,28,0.14)',
                                                 }}
@@ -878,7 +878,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     {safeChats.length === 0 ? (
                                         <div className="rounded-2xl border px-4 py-6 text-center" style={{ borderColor: 'rgba(136,22,28,0.10)', background: 'rgba(255,255,255,0.55)' }}>
                                             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                <MessageSquare className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                <MessageSquare className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
                                             </div>
                                             <p className="text-sm font-medium text-brand-dark">Belum ada percakapan</p>
                                             <p className="mt-1 text-xs text-brand-muted-dark">Mulai chat baru untuk bertanya kepada AI.</p>
@@ -892,7 +892,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             >
                                                 <Link href={student.aiChat.show.url({ chat: chat.id })} className="flex items-start gap-3 pr-16" onClick={() => setSidebarOpen(false)}>
                                                     <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
-                                                        <MessageSquare className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                        <MessageSquare className="h-4 w-4" style={{ color: 'var(--color-brand-primary)' }} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         {editingChatId === chat.id ? (

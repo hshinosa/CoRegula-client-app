@@ -128,12 +128,12 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)' 
                                     }}
                                 >
-                                    <AlertTriangle className="h-8 w-8" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                    <AlertTriangle className="h-8 w-8" style={{ color: 'var(--color-brand-primary)' }} />
                                 </div>
                             </div>
                             <h3 
                                 className="text-xl font-semibold"
-                                style={{ color: 'rgb(var(--color-brand-dark))' }}
+                                style={{ color: 'var(--color-brand-dark)' }}
                             >
                                 Belum Ada Grup yang Ditugaskan
                             </h3>
@@ -178,12 +178,12 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)' 
                                     }}
                                 >
-                                    <AlertTriangle className="h-8 w-8" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                    <AlertTriangle className="h-8 w-8" style={{ color: 'var(--color-brand-primary)' }} />
                                 </div>
                             </div>
                             <h3 
                                 className="text-xl font-semibold"
-                                style={{ color: 'rgb(var(--color-brand-dark))' }}
+                                style={{ color: 'var(--color-brand-dark)' }}
                             >
                                 Chat Space Tidak Ditemukan
                             </h3>
@@ -228,7 +228,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                             style={{ 
                                 background: 'rgba(255,255,255,0.6)', 
                                 border: '1px solid rgba(255,255,255,0.8)',
-                                color: 'rgb(var(--color-brand-muted-dark))'
+                                color: 'var(--color-brand-muted-dark)'
                             }}
                         >
                             <ArrowLeft className="h-4 w-4" />
@@ -236,12 +236,12 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                         </Link>
                         <h2 
                             className="text-2xl font-bold"
-                            style={{ color: 'rgb(var(--color-brand-dark))' }}
+                            style={{ color: 'var(--color-brand-dark)' }}
                         >
                             Tetapkan Tujuan Pembelajaran Anda
                         </h2>
                         <p className="mt-1 text-sm text-brand-muted-dark">
-                            Untuk chat space: <span className="font-medium" style={{ color: 'rgb(var(--color-brand-dark))' }}>{chatSpace.name}</span>
+                            Untuk chat space: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{chatSpace.name}</span>
                         </p>
                     </motion.div>
 
@@ -260,9 +260,9 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)' 
                                     }}
                                 >
-                                    <Info className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                    <Info className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
                                 </div>
-                                <div className="text-sm" style={{ color: 'rgb(var(--color-brand-dark))' }}>
+                                <div className="text-sm" style={{ color: 'var(--color-brand-dark)' }}>
                                     <p className="font-medium">Apa yang membuat tujuan pembelajaran yang baik?</p>
                                     <ul className="mt-2 list-inside list-disc space-y-1 text-brand-muted-dark">
                                         <li>Mulai dengan kata kerja aksi dari Taksonomi Bloom</li>
@@ -284,7 +284,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <h3 
                                 className="text-lg font-semibold"
-                                style={{ color: 'rgb(var(--color-brand-dark))' }}
+                                style={{ color: 'var(--color-brand-dark)' }}
                             >
                                 Pilih Kata Kerja Aksi
                             </h3>
@@ -334,14 +334,14 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                 <div>
                                     <div className="flex items-center justify-between">
                                         <InputLabel htmlFor="content" required>
-                                            <span style={{ color: 'rgb(var(--color-brand-dark))' }}>Tujuan Pembelajaran Anda</span>
+                                            <span style={{ color: 'var(--color-brand-dark)' }}>Tujuan Pembelajaran Anda</span>
                                         </InputLabel>
                                         {detectedLevel && (
                                             <span 
                                                 className="rounded-lg px-2.5 py-1 text-xs font-medium border"
                                                 style={{
                                                     background: 'rgba(136,22,28,0.10)',
-                                                    color: 'rgb(var(--color-brand-primary))',
+                                                    color: 'var(--color-brand-primary)',
                                                     borderColor: 'rgba(136,22,28,0.15)'
                                                 }}
                                             >
@@ -372,26 +372,26 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                     }}
                                 >
                                     <div className="mb-3 flex items-center gap-2">
-                                        <Lightbulb className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                        <Lightbulb className="h-4 w-4" style={{ color: 'var(--color-brand-primary)' }} />
                                         <p 
                                             className="text-sm font-medium"
-                                            style={{ color: 'rgb(var(--color-brand-dark))' }}
+                                            style={{ color: 'var(--color-brand-dark)' }}
                                         >
                                             Contoh Tujuan:
                                         </p>
                                     </div>
                                     <ul className="space-y-2 text-sm text-brand-muted-dark">
                                         <li className="flex items-start gap-2">
-                                            <span style={{ color: 'rgb(var(--color-brand-primary))' }}>•</span>
-                                            <span>"<strong style={{ color: 'rgb(var(--color-brand-dark))' }}>Membandingkan</strong> berbagai algoritma pengurutan dan menjelaskan kompleksitas waktunya"</span>
+                                            <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Membandingkan</strong> berbagai algoritma pengurutan dan menjelaskan kompleksitas waktunya"</span>
                                         </li>
                                         <li className="flex items-start gap-2">
-                                            <span style={{ color: 'rgb(var(--color-brand-primary))' }}>•</span>
-                                            <span>"<strong style={{ color: 'rgb(var(--color-brand-dark))' }}>Merancang</strong> RESTful API untuk aplikasi blog dengan autentikasi yang tepat"</span>
+                                            <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Merancang</strong> RESTful API untuk aplikasi blog dengan autentikasi yang tepat"</span>
                                         </li>
                                         <li className="flex items-start gap-2">
-                                            <span style={{ color: 'rgb(var(--color-brand-primary))' }}>•</span>
-                                            <span>"<strong style={{ color: 'rgb(var(--color-brand-dark))' }}>Mengevaluasi</strong> kelebihan dan kekurangan SQL vs NoSQL untuk proyek kami"</span>
+                                            <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Mengevaluasi</strong> kelebihan dan kekurangan SQL vs NoSQL untuk proyek kami"</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -404,7 +404,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                             background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%)',
                                             backdropFilter: 'blur(16px) saturate(180%)',
                                             border: '1px solid rgba(255,255,255,0.5)',
-                                            color: 'rgb(var(--color-brand-dark))'
+                                            color: 'var(--color-brand-dark)'
                                         }}
                                     >
                                         Batal

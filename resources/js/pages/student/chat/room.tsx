@@ -295,7 +295,7 @@ const MessageItem = memo(function MessageItem({
                                         <button
                                             type="button"
                                             onClick={() => onOpenImagePreview(attachmentUrl, attachment.name)}
-                                            className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-brand-primary))]"
+                                            className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]"
                                             aria-label={`Buka pratinjau gambar ${attachment.name}`}
                                         >
                                             <img
@@ -428,7 +428,7 @@ const MessageItem = memo(function MessageItem({
                             type="button"
                             onClick={() => onRetry(message)}
                             className="rounded px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-brand-primary"
-                            style={{ background: 'rgb(var(--color-brand-primary))' }}
+                            style={{ background: 'var(--color-brand-primary)' }}
                             aria-label="Coba lagi"
                         >
                             Coba lagi
@@ -446,8 +446,7 @@ MessageItem.displayName = 'MessageItem';
 
 // Style constants matching the design system
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
-    ,
+    color: 'var(--color-brand-dark)',
 } as const;
 
 export default function StudentChatRoom({ course, group, chatSpace, socketUrl }: Props) {
@@ -1497,7 +1496,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
                                             style={{ 
                                                 background: 'rgba(107,114,128,0.15)', 
-                                                color: 'rgb(var(--color-brand-muted-dark))',
+                                                color: 'var(--color-brand-muted-dark)',
                                                 border: '1px solid rgba(107,114,128,0.2)',
                                             }}
                                         >
@@ -1858,9 +1857,9 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         animate={{ scale: 1 }}
                                                         exit={{ scale: 0.8 }}
                                                     >
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '0ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '150ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '300ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '0ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '150ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '300ms' }} />
                                                     </motion.div>
                                                     <motion.span 
                                                         className="text-xs text-brand-muted-dark"
@@ -1993,7 +1992,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         // AI Avatar
                                                         <div 
                                                             className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
-                                                            style={{ background: 'linear-gradient(135deg, rgb(var(--color-brand-primary)) 0%, #a41219 100%)', border: '1px solid rgba(255,255,255,0.2)' }}
+                                                            style={{ background: 'linear-gradient(135deg, var(--color-brand-primary) 0%, #a41219 100%)', border: '1px solid rgba(255,255,255,0.2)' }}
                                                         >
                                                             <svg className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -2019,7 +2018,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                     {'isAI' in member && member.isAI && (
                                                         <span 
                                                             className="hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline-block"
-                                                            style={{ background: 'rgba(136,22,28,0.1)', color: 'rgb(var(--color-brand-primary))' }}
+                                                            style={{ background: 'rgba(136,22,28,0.1)', color: 'var(--color-brand-primary)' }}
                                                         >
                                                             Asisten
                                                         </span>

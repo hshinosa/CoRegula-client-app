@@ -28,12 +28,12 @@ function ReflectionBadge({ label, tone }: { label: string; tone: 'session' | 'we
     const styles = tone === 'session'
         ? {
             background: 'rgba(136,22,28,0.08)',
-            color: 'rgb(var(--color-brand-primary))',
+            color: 'var(--color-brand-primary)',
             border: '1px solid rgba(136,22,28,0.15)',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
-            color: 'rgb(var(--color-brand-dark))',
+            color: 'var(--color-brand-dark)',
             border: '1px solid rgba(74,74,74,0.15)',
         };
 
@@ -62,23 +62,23 @@ function SectionHeader({
         ? {
             background: 'rgba(136,22,28,0.08)',
             border: '1px solid rgba(136,22,28,0.12)',
-            color: 'rgb(var(--color-brand-primary))',
+            color: 'var(--color-brand-primary)',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
             border: '1px solid rgba(74,74,74,0.12)',
-            color: 'rgb(var(--color-brand-dark))',
+            color: 'var(--color-brand-dark)',
         };
 
     const badgeStyles = tone === 'session'
         ? {
             background: 'rgba(136,22,28,0.08)',
-            color: 'rgb(var(--color-brand-primary))',
+            color: 'var(--color-brand-primary)',
             border: '1px solid rgba(136,22,28,0.15)',
         }
         : {
             background: 'rgba(74,74,74,0.08)',
-            color: 'rgb(var(--color-brand-dark))',
+            color: 'var(--color-brand-dark)',
             border: '1px solid rgba(74,74,74,0.15)',
         };
 
@@ -342,7 +342,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
                                 style={{
                                     background: activeTab === 'templates' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'templates' ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
+                                    color: activeTab === 'templates' ? 'var(--color-brand-primary)' : 'var(--color-brand-muted-dark)',
                                 }}
                             >
                                 <LayoutGrid className="h-4 w-4" />
@@ -354,7 +354,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
                                 style={{
                                     background: activeTab === 'analytics' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'analytics' ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
+                                    color: activeTab === 'analytics' ? 'var(--color-brand-primary)' : 'var(--color-brand-muted-dark)',
                                 }}
                             >
                                 <BarChart3 className="h-4 w-4" />
@@ -426,7 +426,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Lightbulb className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                        <Lightbulb className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
                                     </div>
                                     <div>
                                         <p className="text-base font-semibold font-sans text-brand-dark">
@@ -456,7 +456,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Pencil className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                        <Pencil className="h-7 w-7" style={{ color: 'var(--color-brand-primary)' }} />
                                     </div>
                                     <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                         Tidak ada refleksi yang cocok
@@ -483,7 +483,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <Pencil className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                        <Pencil className="h-7 w-7" style={{ color: 'var(--color-brand-primary)' }} />
                                     </div>
                                     <h3 className="text-lg font-semibold font-sans text-brand-dark">
                                         Belum Ada Refleksi
@@ -502,7 +502,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 {sessionReflections.length > 0 && (
                                     <div>
                                         <SectionHeader
-                                            icon={<MessageSquare className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />}
+                                            icon={<MessageSquare className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />}
                                             title="Refleksi Sesi"
                                             count={sessionReflections.length}
                                             tone="session"
@@ -566,7 +566,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 }}
                                                                             >
                                                                                 <div className="mb-2 flex items-center gap-2">
-                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'var(--color-brand-primary)' }} />
                                                                                     <span className="text-sm font-semibold font-sans text-brand-dark">
                                                                                         Umpan Balik AI
                                                                                     </span>
@@ -598,7 +598,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 {weeklyReflections.length > 0 && (
                                     <div>
                                         <SectionHeader
-                                            icon={<BookOpen className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-dark))' }} />}
+                                            icon={<BookOpen className="h-5 w-5" style={{ color: 'var(--color-brand-dark)' }} />}
                                             title="Refleksi Mingguan"
                                             count={weeklyReflections.length}
                                             tone="weekly"
@@ -662,7 +662,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 }}
                                                                             >
                                                                                 <div className="mb-2 flex items-center gap-2">
-                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                                                                    <Lightbulb className="h-4 w-4" style={{ color: 'var(--color-brand-primary)' }} />
                                                                                     <span className="text-sm font-semibold font-sans text-brand-dark">
                                                                                         Umpan Balik AI
                                                                                     </span>
@@ -742,7 +742,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 id="course_id"
                                                 value={data.course_id}
                                                 onChange={(e) => setData('course_id', e.target.value)}
-                                                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[rgb(var(--color-brand-primary))]/30"
+                                                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-[var(--color-brand-primary)]/30"
                                             >
                                                 <option value="">Pilih kelas</option>
                                                 {safeCourses.map((course) => (
@@ -762,7 +762,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 id="content"
                                                 value={data.content}
                                                 onChange={(e) => setData('content', e.target.value)}
-                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[rgb(var(--color-brand-primary))]/30"
+                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[var(--color-brand-primary)]/30"
                                                 placeholder="Apa yang Anda pelajari hari ini? Tantangan apa yang Anda hadapi? Bagaimana Anda mengatasinya?"
                                                 rows={5}
                                             />

@@ -126,7 +126,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                             style={{
                                 background: 'rgba(136,22,28,0.08)',
-                                color: 'rgb(var(--color-brand-primary))',
+                                color: 'var(--color-brand-primary)',
                                 border: '1px solid rgba(136,22,28,0.15)',
                             }}
                         >
@@ -172,7 +172,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             className="rounded px-1.5 py-0.5 font-mono text-xs"
                                             style={{
                                                 background: 'rgba(136,22,28,0.08)',
-                                                color: 'rgb(var(--color-brand-primary))',
+                                                color: 'var(--color-brand-primary)',
                                             }}
                                         >
                                             {myGroup.joinCode}
@@ -235,7 +235,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     border: '1px solid rgba(136,22,28,0.12)',
                                 }}
                             >
-                                <KeyRound className="h-7 w-7" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                <KeyRound className="h-7 w-7" style={{ color: 'var(--color-brand-primary)' }} />
                             </div>
                             <div>
                                 <h3
@@ -342,7 +342,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                                         style={{
                                                             borderColor: 'rgba(255,255,255,0.8)',
                                                             background: 'rgba(136,22,28,0.08)',
-                                                            color: 'rgb(var(--color-brand-primary))',
+                                                            color: 'var(--color-brand-primary)',
                                                         }}
                                                         title={member.name}
                                                     >
@@ -355,7 +355,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                                         style={{
                                                             borderColor: 'rgba(255,255,255,0.8)',
                                                             background: 'rgba(74,74,74,0.08)',
-                                                            color: 'rgb(var(--color-brand-dark))',
+                                                            color: 'var(--color-brand-dark)',
                                                         }}
                                                     >
                                                         +{group.members.length - 5}
@@ -389,7 +389,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                     border: '1px solid rgba(136,22,28,0.12)',
                                 }}
                             >
-                                <Users className="h-8 w-8" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                <Users className="h-8 w-8" style={{ color: 'var(--color-brand-primary)' }} />
                             </div>
                             <h3
                                 className="text-lg font-semibold font-sans text-brand-dark"

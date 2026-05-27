@@ -121,8 +121,7 @@ const Avatar = ({
 
 // Style constants matching the design system
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
-    ,
+    color: 'var(--color-brand-dark)',
 } as const;
 
 export default function StudentChatIndex({ course, group, goal, hasGoal, socketUrl }: Props) {
@@ -888,7 +887,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => openImagePreview(safeAttachmentUrl(attachment.url), attachment.name)}
-                                                                                    className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(var(--color-brand-primary))]"
+                                                                                    className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]"
                                                                                 >
                                                                                     <img 
                                                                                         src={safeAttachmentUrl(attachment.url)} 
@@ -1046,9 +1045,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         animate={{ scale: 1 }}
                                                         exit={{ scale: 0.8 }}
                                                     >
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '0ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '150ms' }} />
-                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[rgb(var(--color-brand-muted-dark))]" style={{ animationDelay: '300ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '0ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '150ms' }} />
+                                                        <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--color-brand-muted-dark)]" style={{ animationDelay: '300ms' }} />
                                                     </motion.div>
                                                     <motion.span 
                                                         className="text-xs text-brand-muted-dark"

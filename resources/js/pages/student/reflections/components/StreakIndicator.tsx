@@ -36,6 +36,7 @@ export function StreakIndicator({ streak }: StreakIndicatorProps) {
             </motion.div>
 
             <div className="text-center">
+                <p className="text-lg font-semibold text-brand-dark dark:text-gray-100">
                     {streak.current > 0 ? `${streak.current} Hari Beruntun` : 'Mulai Streak!'}
                 </p>
                 <p className="text-xs text-brand-muted-dark">

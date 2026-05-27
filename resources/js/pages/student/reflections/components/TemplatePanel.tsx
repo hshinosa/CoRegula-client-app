@@ -91,6 +91,7 @@ export function TemplatePanel({ onSelect, maxPersonalTemplates = 30 }: TemplateP
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-brand-dark dark:text-gray-100">
                     Template Refleksi
                 </h3>
                 <button

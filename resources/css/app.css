@@ -148,6 +148,11 @@ html {
     --dm-sidebar-bg: #111116;
     --dm-sidebar-divider: rgba(255, 255, 255, 0.08);
     --dm-sidebar-user-bg: rgba(255, 255, 255, 0.06);
+
+    /* Brand color dark mode overrides — makes text-brand-dark / text-brand-muted-dark auto-switch */
+    --color-brand-dark: #F3F4F6;
+    --color-brand-muted: #9CA3AF;
+    --color-brand-muted-dark: #D1D5DB;
 }
 
 /* Custom Utility Classes */

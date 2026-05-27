@@ -48,20 +48,20 @@ interface Props {
 }
 
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
+    color: 'var(--color-brand-dark)',
 } as const;
 
 const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
-    color: 'rgb(var(--color-brand-primary))',
+    color: 'var(--color-brand-primary)',
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
 const neutralChipStyle = {
     background: 'rgba(74,74,74,0.08)',
-    color: 'rgb(var(--color-brand-dark))',
+    color: 'var(--color-brand-dark)',
     border: '1px solid rgba(74,74,74,0.12)',
 } as const;
 

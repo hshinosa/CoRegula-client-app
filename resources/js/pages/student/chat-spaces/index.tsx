@@ -91,7 +91,7 @@ interface Props {
 }
 
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
+                                color: 'var(--color-brand-dark)',
 } as const;
 
 const bodyTextClass = 'text-sm text-brand-muted-dark';
@@ -366,7 +366,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <Lightbulb className="h-5 w-5" style={{ color: 'rgb(var(--color-brand-primary))' }} />
+                                    <Lightbulb className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
                                 </div>
                                 <div>
                                     <p className="text-base font-semibold font-sans text-brand-dark">
@@ -423,7 +423,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-brand-dark">
-                                            Nama Sesi <span style={{ color: 'rgb(var(--color-brand-primary))' }}>*</span>
+                                            Nama Sesi <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
                                         </label>
                                         <input
                                             type="text"

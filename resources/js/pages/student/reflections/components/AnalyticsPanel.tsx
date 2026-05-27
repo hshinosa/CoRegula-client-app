@@ -48,6 +48,7 @@ export function AnalyticsPanel({ className = '' }: AnalyticsPanelProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-brand-primary" />
+                    <h3 className="text-lg font-semibold text-brand-dark dark:text-gray-100">
                         Analitik Refleksi
                     </h3>
                 </div>

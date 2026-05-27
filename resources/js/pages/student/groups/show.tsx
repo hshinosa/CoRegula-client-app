@@ -112,7 +112,7 @@ export default function StudentGroupShow({ group }: Props) {
                                         className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                         style={{
                                             background: 'rgba(136,22,28,0.08)',
-                                            color: 'rgb(var(--color-brand-primary))',
+                                            color: 'var(--color-brand-primary)',
                                             border: '1px solid rgba(136,22,28,0.15)',
                                         }}
                                     >
@@ -128,10 +128,10 @@ export default function StudentGroupShow({ group }: Props) {
                                                         ? 'rgba(37,99,235,0.1)'
                                                         : 'rgba(107,114,128,0.1)',
                                                 color: group.current_user_role === 'owner'
-                                                    ? 'rgb(var(--color-brand-primary))'
+                                                    ? 'var(--color-brand-primary)'
                                                     : group.current_user_role === 'admin'
                                                         ? '#2563EB'
-                                                        : 'rgb(var(--color-brand-muted-dark))',
+                                                        : 'var(--color-brand-muted-dark)',
                                             }}
                                         >
                                             {group.current_user_role === 'owner' ? 'Pemilik' :
@@ -157,12 +157,12 @@ export default function StudentGroupShow({ group }: Props) {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[rgb(var(--color-brand-muted-dark))]">Kode:</span>
+                                        <span className="text-xs text-[var(--color-brand-muted-dark)]">Kode:</span>
                                         <code
                                             className="rounded px-2 py-0.5 font-mono text-xs"
                                             style={{
                                                 background: 'rgba(136,22,28,0.08)',
-                                                color: 'rgb(var(--color-brand-primary))',
+                                                color: 'var(--color-brand-primary)',
                                             }}
                                         >
                                             {group.join_code}
@@ -200,7 +200,7 @@ export default function StudentGroupShow({ group }: Props) {
                                     className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
                                     style={{
                                         background: isActive ? 'white' : 'transparent',
-                                        color: isActive ? 'rgb(var(--color-brand-primary))' : 'rgb(var(--color-brand-muted-dark))',
+                                        color: isActive ? 'var(--color-brand-primary)' : 'var(--color-brand-muted-dark)',
                                         boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                                     }}
                                 >
@@ -236,7 +236,7 @@ export default function StudentGroupShow({ group }: Props) {
                         {activeTab === 'settings' && (
                             isLoadingSettings ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--color-brand-primary))]" />
+                                    <Loader2 className="h-8 w-8 animate-spin text-[var(--color-brand-primary)]" />
                                 </div>
                             ) : settings ? (
                                 <div className="space-y-8">

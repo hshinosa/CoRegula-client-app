@@ -61,7 +61,7 @@ interface Props {
     chartData: ChartData;
 }
 
-const COLORS = ['rgb(var(--color-brand-primary))', 'rgb(var(--color-brand-dark))', 'rgb(var(--color-brand-muted))', '#92400e', '#166534', '#7c3aed', '#0369a1', '#be123c', '#854d0e', '#15803d', '#6d28d9', '#0e7490'];
+const COLORS = ['var(--color-brand-primary)', 'var(--color-brand-dark)', 'var(--color-brand-muted)', '#92400e', '#166534', '#7c3aed', '#0369a1', '#be123c', '#854d0e', '#15803d', '#6d28d9', '#0e7490'];
 
 export default function LecturerDashboard({ stats, recentActivity, chartData }: Props) {
     const { auth } = usePage<SharedData>().props;

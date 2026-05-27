@@ -48,11 +48,11 @@ interface Props {
     socketUrl?: string;
 }
 
-const headingStyle = { color: 'rgb(var(--color-brand-dark))' } as const;
+const headingStyle = { color: 'var(--color-brand-dark)' } as const;
 const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const TREND_METRICS: MetricOption[] = [
-    { value: 'quality_score', label: 'Skor Kualitas', color: 'rgb(var(--color-brand-primary))' },
+    { value: 'quality_score', label: 'Skor Kualitas', color: 'var(--color-brand-primary)' },
     { value: 'hot_percentage', label: 'HOT %', color: '#334155' },
     { value: 'engagement', label: 'Engagement', color: '#166534' },
     { value: 'lexical_variety', label: 'Lexical Variety', color: '#92400e' },

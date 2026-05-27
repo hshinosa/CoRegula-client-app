@@ -119,6 +119,7 @@ export default function StudentBreakdownList({
             <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-brand-muted-dark" />
+                    <h3 className="text-sm font-semibold text-brand-dark dark:text-gray-100">
                         Breakdown per Mahasiswa
                     </h3>
                     <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs text-brand-muted-dark">{meta.total}</span>

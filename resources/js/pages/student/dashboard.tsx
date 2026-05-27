@@ -43,10 +43,10 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
     const displayStats = stats ?? { enrolledCourses: 0, activeGroups: 0, reflections: 0, chatMessages: 0 };
 
     const statCards = [
-        { label: 'Mata Kuliah', value: displayStats.enrolledCourses, icon: BookOpen, color: 'rgb(var(--color-brand-primary))' },
-        { label: 'Grup Aktif', value: displayStats.activeGroups, icon: Users, color: 'rgb(var(--color-brand-dark))' },
-        { label: 'Refleksi', value: displayStats.reflections, icon: Pencil, color: 'rgb(var(--color-brand-muted))' },
-        { label: 'Pesan Obrolan', value: displayStats.chatMessages, icon: MessageSquare, color: 'rgb(var(--color-brand-primary))' },
+        { label: 'Mata Kuliah', value: displayStats.enrolledCourses, icon: BookOpen, color: 'var(--color-brand-primary)' },
+        { label: 'Grup Aktif', value: displayStats.activeGroups, icon: Users, color: 'var(--color-brand-dark)' },
+        { label: 'Refleksi', value: displayStats.reflections, icon: Pencil, color: 'var(--color-brand-muted)' },
+        { label: 'Pesan Obrolan', value: displayStats.chatMessages, icon: MessageSquare, color: 'var(--color-brand-primary)' },
     ];
 
     const quickActions = [
@@ -55,28 +55,28 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
             icon: Users,
             title: 'Gabung Mata Kuliah',
             desc: 'Gunakan kode gabung',
-            color: 'rgb(var(--color-brand-primary))',
+            color: 'var(--color-brand-primary)',
         },
         {
             href: student.courses.index.url(),
             icon: MessageSquare,
             title: 'Diskusi Grup',
             desc: 'Berkolaborasi sekarang',
-            color: 'rgb(var(--color-brand-dark))',
+            color: 'var(--color-brand-dark)',
         },
         {
             href: student.reflections.index.url(),
             icon: Pencil,
             title: 'Tulis Refleksi',
             desc: 'Pantau pembelajaran Anda',
-            color: 'rgb(var(--color-brand-muted))',
+            color: 'var(--color-brand-muted)',
         },
         {
             href: student.aiChat.index.url(),
             icon: Sparkles,
             title: 'Chat dengan AI',
             desc: 'Tanya apapun',
-            color: 'rgb(var(--color-brand-primary))',
+            color: 'var(--color-brand-primary)',
         },
     ];
 

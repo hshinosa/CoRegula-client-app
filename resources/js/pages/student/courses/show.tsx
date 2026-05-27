@@ -52,7 +52,7 @@ export default function StudentCourseShow({ course }: Props) {
                                     className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                     style={{ 
                                         background: 'rgba(136,22,28,0.10)', 
-                                        color: 'rgb(var(--color-brand-primary))',
+                                        color: 'var(--color-brand-primary)',
                                         border: '1px solid rgba(136,22,28,0.15)'
                                     }}
                                 >

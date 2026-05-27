@@ -25,6 +25,7 @@ export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCard
             <div className="mb-2 flex items-start justify-between">
                 <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-brand-primary" />
+                    <h4 className="text-sm font-semibold text-brand-dark dark:text-gray-100">
                         {template.title}
                     </h4>
                 </div>

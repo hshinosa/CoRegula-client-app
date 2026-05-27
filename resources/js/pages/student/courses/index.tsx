@@ -159,7 +159,7 @@ export default function StudentCoursesIndex() {
                                                     className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                                     style={{
                                                         background: 'rgba(136,22,28,0.08)',
-                                                        color: 'rgb(var(--color-brand-primary))',
+                                                        color: 'var(--color-brand-primary)',
                                                         border: '1px solid rgba(136,22,28,0.15)',
                                                     }}
                                                 >
@@ -325,8 +325,8 @@ function StatusBadge({ status }: { status: string }) {
     const config = {
         aktif: { label: 'Berjalan', bg: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: 'rgba(59,130,246,0.2)' },
         selesai: { label: 'Selesai', bg: 'rgba(16,185,129,0.1)', color: '#10B981', border: 'rgba(16,185,129,0.2)' },
-        belum_mulai: { label: 'Belum Mulai', bg: 'rgba(156,163,175,0.1)', color: 'rgb(var(--color-brand-muted-dark))', border: 'rgba(156,163,175,0.2)' },
-    }[status] || { label: status, bg: 'rgba(156,163,175,0.1)', color: 'rgb(var(--color-brand-muted-dark))', border: 'rgba(156,163,175,0.2)' };
+        belum_mulai: { label: 'Belum Mulai', bg: 'rgba(156,163,175,0.1)', color: 'var(--color-brand-muted-dark)', border: 'rgba(156,163,175,0.2)' },
+    }[status] || { label: status, bg: 'rgba(156,163,175,0.1)', color: 'var(--color-brand-muted-dark)', border: 'rgba(156,163,175,0.2)' };
 
     return (
         <span

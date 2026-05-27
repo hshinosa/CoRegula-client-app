@@ -34,7 +34,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 
 const headingStyle = {
-    color: 'rgb(var(--color-brand-dark))',
+    color: 'var(--color-brand-dark)',
 } as const;
 
 const inputClassName =

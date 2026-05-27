@@ -58,6 +58,7 @@ export function TemplateModal({ template, onSave, onClose }: TemplateModalProps)
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-brand-dark dark:text-gray-100">
                         {template ? 'Edit Template' : 'Buat Template Baru'}
                     </h3>
                     <button type="button" onClick={onClose} className="text-brand-muted-dark hover:text-brand-dark">
