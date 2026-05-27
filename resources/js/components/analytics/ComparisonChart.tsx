@@ -75,7 +75,7 @@ export default function ComparisonChart({
                     height,
                 }}
             >
-                <p className="text-sm text-[#6B7280]">Pilih kelas untuk perbandingan</p>
+                <p className="text-sm text-brand-muted-dark">Pilih kelas untuk perbandingan</p>
             </div>
         );
     }
@@ -91,7 +91,6 @@ export default function ComparisonChart({
             {title && (
                 <h3
                     className="mb-3 text-sm font-semibold"
-                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                     {title}
                 </h3>
@@ -140,7 +139,6 @@ export default function ComparisonChart({
                             border: '1px solid rgba(0,0,0,0.1)',
                             borderRadius: '12px',
                             fontSize: 12,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                         }}
                     />
                     {activeItems.map((item, i) => (

@@ -28,7 +28,6 @@ export default function LandingPageContent({ lightMode, darkMode, scrolled, menu
         <div
             className="min-h-screen antialiased"
             style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 background: lightMode ? 'linear-gradient(135deg, #EDE8F4 0%, #E8EDF8 35%, #EDF0F7 65%, #F0EBF5 100%)' : '#0a0a0f',
                 color: lightMode ? '#4A4A4A' : '#e5e7eb',
                 scrollBehavior: 'smooth',

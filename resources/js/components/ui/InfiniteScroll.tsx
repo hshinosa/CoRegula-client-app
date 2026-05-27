@@ -60,8 +60,8 @@ export function InfiniteScroll({
 
             {isLoading && (
                 <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#88161c]" />
-                    <span className="ml-2 text-sm text-[#6B7280]">Memuat data...</span>
+                    <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
+                    <span className="ml-2 text-sm text-brand-muted-dark">Memuat data...</span>
                 </div>
             )}
 
@@ -70,7 +70,7 @@ export function InfiniteScroll({
                     <button
                         type="button"
                         onClick={onLoadMore}
-                        className="inline-flex items-center gap-2 rounded-lg border border-[#88161c]/20 bg-white px-6 py-2.5 text-sm font-medium text-[#88161c] transition-colors hover:bg-[#88161c]/5"
+                        className="inline-flex items-center gap-2 rounded-lg border border-brand-primary/20 bg-white px-6 py-2.5 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary/5"
                     >
                         Load more
                     </button>
@@ -82,7 +82,7 @@ export function InfiniteScroll({
             )}
 
             {!hasMore && !isLoading && (
-                <p className="py-4 text-center text-sm text-[#6B7280]">
+                <p className="py-4 text-center text-sm text-brand-muted-dark">
                     Semua data sudah dimuat
                 </p>
             )}

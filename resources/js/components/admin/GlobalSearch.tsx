@@ -325,9 +325,9 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                 style={{ borderBottom: '1px solid rgba(136,22,28,0.08)' }}
                             >
                                 {isLoading ? (
-                                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[#88161c]" />
+                                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-brand-primary" />
                                 ) : (
-                                    <Search className="h-5 w-5 shrink-0 text-[#6B7280]" />
+                                    <Search className="h-5 w-5 shrink-0 text-brand-muted-dark" />
                                 )}
                                 <input
                                     ref={inputRef}
@@ -335,11 +335,10 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
                                     placeholder="Cari users, kursus, atau halaman..."
-                                    className="flex-1 bg-transparent text-sm text-[#4A4A4A] placeholder-[#9CA3AF] outline-none"
-                                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    className="flex-1 bg-transparent text-sm text-brand-dark placeholder-[#9CA3AF] outline-none"
                                 />
                                 <kbd
-                                    className="hidden sm:inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-[#6B7280]"
+                                    className="hidden sm:inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-brand-muted-dark"
                                     style={{
                                         background: 'rgba(136,22,28,0.06)',
                                         border: '1px solid rgba(136,22,28,0.1)',
@@ -349,7 +348,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                 </kbd>
                                 <button
                                     onClick={onClose}
-                                    className="rounded-lg p-1 text-[#6B7280] hover:text-[#4A4A4A] hover:bg-black/5 transition-colors lg:hidden"
+                                    className="rounded-lg p-1 text-brand-muted-dark hover:text-brand-dark hover:bg-black/5 transition-colors lg:hidden"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>
@@ -362,10 +361,10 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                 {debouncedQuery.trim().length < 2 && !isLoading && (
                                     <div className="px-4 py-8 text-center">
                                         <Search className="mx-auto mb-3 h-8 w-8 text-[#D1D5DB]" />
-                                        <p className="text-sm font-medium text-[#4A4A4A]">
+                                        <p className="text-sm font-medium text-brand-dark">
                                             Ketik untuk mulai mencari
                                         </p>
-                                        <p className="mt-1 text-xs text-[#6B7280]">
+                                        <p className="mt-1 text-xs text-brand-muted-dark">
                                             Cari users, kursus, atau halaman admin
                                         </p>
                                     </div>
@@ -373,8 +372,8 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
 
                                 {isLoading && debouncedQuery.trim().length >= 2 && (
                                     <div className="px-4 py-6 text-center">
-                                        <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-[#88161c]" />
-                                        <p className="text-xs text-[#6B7280]">Mencari...</p>
+                                        <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-brand-primary" />
+                                        <p className="text-xs text-brand-muted-dark">Mencari...</p>
                                     </div>
                                 )}
 
@@ -383,10 +382,10 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                     results.length === 0 && (
                                         <div className="px-4 py-8 text-center">
                                             <Search className="mx-auto mb-3 h-8 w-8 text-[#D1D5DB]" />
-                                            <p className="text-sm font-medium text-[#4A4A4A]">
+                                            <p className="text-sm font-medium text-brand-dark">
                                                 Tidak ada hasil ditemukan
                                             </p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">
+                                            <p className="mt-1 text-xs text-brand-muted-dark">
                                                 Coba kata kunci lain
                                             </p>
                                         </div>
@@ -504,7 +503,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                     >
                                         ↑↓
                                     </kbd>
-                                    <span className="text-[10px] text-[#6B7280]">navigasi</span>
+                                    <span className="text-[10px] text-brand-muted-dark">navigasi</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <kbd
@@ -517,7 +516,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                     >
                                         ↵
                                     </kbd>
-                                    <span className="text-[10px] text-[#6B7280]">pilih</span>
+                                    <span className="text-[10px] text-brand-muted-dark">pilih</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <kbd
@@ -530,7 +529,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                                     >
                                         esc
                                     </kbd>
-                                    <span className="text-[10px] text-[#6B7280]">tutup</span>
+                                    <span className="text-[10px] text-brand-muted-dark">tutup</span>
                                 </div>
                             </div>
                         </motion.div>

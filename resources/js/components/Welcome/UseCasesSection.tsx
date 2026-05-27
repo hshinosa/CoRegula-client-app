@@ -54,16 +54,15 @@ export default function UseCasesSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">
                             Skenario Penggunaan
                         </span>
                         <h2
                             className="text-3xl font-light tracking-tight md:text-5xl lg:text-6xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
-                            Cocok untuk <span className="text-[#6B7280] italic">berbagai mata kuliah</span>
+                            Cocok untuk <span className="text-brand-muted-dark italic">berbagai mata kuliah</span>
                         </h2>
-                        <p className="mx-auto mt-4 max-w-xl text-base text-[#6B7280]">
+                        <p className="mx-auto mt-4 max-w-xl text-base text-brand-muted-dark">
                             Kolabri dirancang fleksibel dan dapat digunakan di berbagai konteks pembelajaran berbasis diskusi kelompok.
                         </p>
                     </motion.div>
@@ -84,10 +83,10 @@ export default function UseCasesSection({ lightMode }: Props) {
                                             className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl"
                                             style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                         >
-                                            <div className="text-[#88161c]">{item.icon}</div>
+                                            <div className="text-brand-primary">{item.icon}</div>
                                         </div>
                                         <span
-                                            className="rounded-full px-3 py-1 text-xs font-medium text-[#88161c]"
+                                            className="rounded-full px-3 py-1 text-xs font-medium text-brand-primary"
                                             style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                         >
                                             {item.tag}
@@ -95,11 +94,10 @@ export default function UseCasesSection({ lightMode }: Props) {
                                     </div>
                                     <h3
                                         className="mb-3 text-lg font-semibold"
-                                        style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
                                         {item.title}
                                     </h3>
-                                    <p className="flex-1 text-sm leading-relaxed text-[#6B7280]">{item.desc}</p>
+                                    <p className="flex-1 text-sm leading-relaxed text-brand-muted-dark">{item.desc}</p>
                                     <div
                                         className="mt-6 rounded-xl px-4 py-3 text-sm font-medium"
                                         style={{ background: 'rgba(136,22,28,0.06)', color: '#88161c', border: '1px solid rgba(136,22,28,0.12)' }}

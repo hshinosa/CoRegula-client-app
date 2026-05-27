@@ -40,18 +40,17 @@ export default function FooterSection({ lightMode }: Props) {
                                 <img src="/LogoKolabri.webp" alt="Kolabri" className="h-10 w-auto" loading="lazy" />
                                 <span
                                     className="text-lg font-semibold"
-                                    style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                 >
                                     Kolabri
                                 </span>
                             </a>
-                            <p className="max-w-[240px] text-xs leading-relaxed text-[#6B7280]">
+                            <p className="max-w-[240px] text-xs leading-relaxed text-brand-muted-dark">
                                 Platform pembelajaran kolaboratif berbasis data untuk pendidikan tinggi.
                             </p>
                         </div>
 
                         {/* Divider - mobile only */}
-                        <div className="h-px w-full bg-[#4A4A4A]/10 md:hidden" />
+                        <div className="h-px w-full bg-brand-dark/10 md:hidden" />
 
                         {/* Links */}
                         <div className="flex flex-wrap gap-x-8 gap-y-2">
@@ -80,10 +79,10 @@ export default function FooterSection({ lightMode }: Props) {
                         </div>
 
                         {/* Divider - mobile only */}
-                        <div className="h-px w-full bg-[#4A4A4A]/10 md:hidden" />
+                        <div className="h-px w-full bg-brand-dark/10 md:hidden" />
 
                         {/* Copyright */}
-                        <p className="text-sm text-[#6B7280]">&copy; {new Date().getFullYear()} Kolabri. Hak cipta dilindungi.</p>
+                        <p className="text-sm text-brand-muted-dark">&copy; {new Date().getFullYear()} Kolabri. Hak cipta dilindungi.</p>
                     </div>
                 </div>
             </footer>

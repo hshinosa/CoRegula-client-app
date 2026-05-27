@@ -92,7 +92,7 @@ export function SpaceCard({ space, courseId, getChatSpaceUrl, index = 0 }: Space
                             </h3>
 
                             {space.description && (
-                                <p className="mt-0.5 text-xs text-[#6B7280] line-clamp-2">
+                                <p className="mt-0.5 text-xs text-brand-muted-dark line-clamp-2">
                                     {space.description}
                                 </p>
                             )}
@@ -106,7 +106,7 @@ export function SpaceCard({ space, courseId, getChatSpaceUrl, index = 0 }: Space
                             </div>
 
                             {dateLabel && (
-                                <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">
+                                <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-brand-muted-dark">
                                     {dateLabel}
                                 </p>
                             )}

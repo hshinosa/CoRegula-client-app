@@ -150,19 +150,18 @@ export default function TestimonialsSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">
                             Testimoni
                         </span>
                         <h2
                             className="text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
                             style={{
                                 color: lightMode ? '#4A4A4A' : '#e5e7eb',
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                             }}
                         >
-                            Apa kata <span className="text-[#6B7280] italic">mereka</span>
+                            Apa kata <span className="text-brand-muted-dark italic">mereka</span>
                         </h2>
-                        <p className="mx-auto mt-4 max-w-xl text-base text-[#6B7280]">
+                        <p className="mx-auto mt-4 max-w-xl text-base text-brand-muted-dark">
                             Pengalaman nyata dari pengguna Kolabri di lingkungan akademik
                         </p>
                     </motion.div>
@@ -206,7 +205,6 @@ export default function TestimonialsSection({ lightMode }: Props) {
                                             className="mb-8 text-lg leading-relaxed md:text-xl"
                                             style={{
                                                 color: lightMode ? '#4A4A4A' : '#d1d5db',
-                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                                             }}
                                         >
                                             &ldquo;{current.quote}&rdquo;
@@ -243,12 +241,11 @@ export default function TestimonialsSection({ lightMode }: Props) {
                                                     className="font-semibold"
                                                     style={{
                                                         color: lightMode ? '#4A4A4A' : '#e5e7eb',
-                                                        fontFamily: "'Plus Jakarta Sans', sans-serif",
                                                     }}
                                                 >
                                                     {current.name}
                                                 </p>
-                                                <p className="text-sm text-[#6B7280]">
+                                                <p className="text-sm text-brand-muted-dark">
                                                     {current.role}
                                                 </p>
                                                 <p className="text-xs text-[#9ca3af]">

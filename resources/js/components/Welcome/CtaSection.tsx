@@ -48,11 +48,10 @@ export default function CtaSection({ lightMode }: Props) {
                         <LiquidGlassCard className="p-12 md:p-16" intensity="medium" lightMode={lightMode}>
                             <h2
                                 className="mb-6 text-4xl font-light tracking-tight md:text-5xl lg:text-6xl"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                             >
-                                Siap mulai <span className="text-[#6B7280] italic">kolaborasi</span> yang lebih bermakna?
+                                Siap mulai <span className="text-brand-muted-dark italic">kolaborasi</span> yang lebih bermakna?
                             </h2>
-                            <p className="mx-auto mb-8 max-w-xl text-[#6B7280]">
+                            <p className="mx-auto mb-8 max-w-xl text-brand-muted-dark">
                                 Dikembangkan sebagai bagian dari penelitian akademik di Telkom University,
                                 Kolabri menghadirkan pendekatan berbasis riset untuk pembelajaran kolaboratif.
                             </p>

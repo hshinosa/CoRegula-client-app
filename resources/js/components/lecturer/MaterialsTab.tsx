@@ -3,8 +3,7 @@ import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { BookOpen, Download, Eye, FileText, FolderPlus, GripVertical, Plus, Trash2, Upload } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-const headingStyle = { color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 const glassPanelStyle = { background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' } as const;
 
 const formatFileSize = (bytes?: number) => {
@@ -134,7 +133,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
             <span className="text-lg">{FILE_ICONS[material.file_type || ''] || '📄'}</span>
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium" style={{ color: '#4A4A4A' }}>{material.title}</p>
-                <div className="mt-0.5 flex items-center gap-3 text-xs text-[#6B7280]">
+                <div className="mt-0.5 flex items-center gap-3 text-xs text-brand-muted-dark">
                     <span>{material.file_name}</span>
                     <span>{formatFileSize(material.file_size)}</span>
                     <span className="flex items-center gap-1">
@@ -158,7 +157,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#88161c] border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
             </div>
         );
     }
@@ -210,9 +209,9 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                             value={newModule.title}
                             onChange={(e) => setNewModule({ title: e.target.value })}
                             placeholder="Nama modul (contoh: Minggu 1 - Pendahuluan)"
-                            className="flex-1 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30"
+                            className="flex-1 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30"
                         />
-                        <button type="submit" className="rounded-xl bg-[#88161c] px-5 py-2.5 text-sm font-medium text-white">
+                        <button type="submit" className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-medium text-white">
                             Simpan
                         </button>
                         <button type="button" onClick={() => setShowModuleForm(false)} className="rounded-xl px-4 py-2.5 text-sm font-medium" style={glassPanelStyle}>
@@ -232,7 +231,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                                 required
                                 value={uploadForm.title}
                                 onChange={(e) => setUploadForm((p) => ({ ...p, title: e.target.value }))}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30"
                             />
                         </div>
                         <div>
@@ -240,7 +239,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                             <select
                                 value={uploadForm.module_id}
                                 onChange={(e) => setUploadForm((p) => ({ ...p, module_id: e.target.value }))}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30"
                             >
                                 <option value="">Tidak Bermodul</option>
                                 {modules.map((m) => (
@@ -255,7 +254,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                                 value={uploadForm.description}
                                 onChange={(e) => setUploadForm((p) => ({ ...p, description: e.target.value }))}
                                 placeholder="Opsional"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30"
                             />
                         </div>
                         <div className="sm:col-span-2">
@@ -265,11 +264,11 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                                 type="file"
                                 required
                                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-[#88161c]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#88161c]"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-brand-primary/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-primary"
                             />
                         </div>
                         <div className="flex gap-2 sm:col-span-2">
-                            <button type="submit" disabled={uploading} className="rounded-xl bg-[#88161c] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50">
+                            <button type="submit" disabled={uploading} className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50">
                                 {uploading ? 'Mengunggah...' : 'Upload'}
                             </button>
                             <button type="button" onClick={() => setShowUploadForm(false)} className="rounded-xl px-5 py-2.5 text-sm font-medium" style={glassPanelStyle}>
@@ -291,7 +290,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                             <FolderPlus className="h-5 w-5" style={{ color: '#88161c' }} />
                             <div className="text-left">
                                 <h4 className="text-sm font-semibold" style={headingStyle}>{module.title}</h4>
-                                <p className="text-xs text-[#6B7280]">{module.materials?.length || 0} materi</p>
+                                <p className="text-xs text-brand-muted-dark">{module.materials?.length || 0} materi</p>
                             </div>
                         </button>
                         <button
@@ -316,7 +315,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                     <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5" style={{ color: '#6B7280' }} />
                         <h4 className="text-sm font-semibold" style={headingStyle}>Tidak Bermodul</h4>
-                        <span className="text-xs text-[#6B7280]">{unassigned.length} materi</span>
+                        <span className="text-xs text-brand-muted-dark">{unassigned.length} materi</span>
                     </div>
                     <div className="mt-4 space-y-2">
                         {unassigned.map(renderMaterial)}
@@ -326,7 +325,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
 
             {totalMaterials === 0 && (
                 <div className="flex flex-col items-center justify-center rounded-[28px] py-16" style={glassPanelStyle}>
-                    <BookOpen className="h-10 w-10 text-[#6B7280] opacity-40" />
+                    <BookOpen className="h-10 w-10 text-brand-muted-dark opacity-40" />
                     <p className={`mt-3 ${bodyTextClass}`}>Belum ada materi. Upload materi atau buat modul untuk memulai.</p>
                 </div>
             )}

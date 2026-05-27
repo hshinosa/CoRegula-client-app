@@ -55,14 +55,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 backdropFilter: 'blur(8px)',
             }}
         >
-            <p className="mb-1.5 text-xs font-medium text-[#6B7280]">{label}</p>
+            <p className="mb-1.5 text-xs font-medium text-brand-muted-dark">{label}</p>
             {payload.map((entry: any, index: number) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
                     <span
                         className="inline-block h-2.5 w-2.5 rounded-full"
                         style={{ background: entry.color }}
                     />
-                    <span className="text-[#4A4A4A]">{entry.name}:</span>
+                    <span className="text-brand-dark">{entry.name}:</span>
                     <span className="font-semibold text-[#1F2937]">
                         {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
                     </span>
@@ -130,7 +130,7 @@ export default function InteractiveTrendChart({
                     height,
                 }}
             >
-                <p className="text-sm text-[#6B7280]">Belum ada data trend</p>
+                <p className="text-sm text-brand-muted-dark">Belum ada data trend</p>
             </div>
         );
     }
@@ -150,7 +150,6 @@ export default function InteractiveTrendChart({
                     {title && (
                         <h3
                             className="text-sm font-semibold"
-                            style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
                             {title}
                         </h3>

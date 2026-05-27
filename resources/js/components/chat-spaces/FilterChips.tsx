@@ -113,7 +113,7 @@ export function FilterChips({
                     exit={{ opacity: 0, scale: 0.9 }}
                     type="button"
                     onClick={onClearAll}
-                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-[#6B7280] transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-brand-muted-dark transition-colors hover:bg-red-50 hover:text-red-600"
                     aria-label="Hapus semua filter"
                 >
                     <X className="h-3 w-3" />

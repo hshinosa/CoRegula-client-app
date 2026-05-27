@@ -39,10 +39,10 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
             <table className="w-full text-sm">
                 <thead>
                     <tr style={{ borderBottom: '1px solid rgba(74,74,74,0.10)' }}>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                             Metrik
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#88161c]">
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-brand-primary">
                             {primaryLabel}
                         </th>
                         {showComparison && (
@@ -50,7 +50,7 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
                                 {comparisonLabel ?? 'Pembanding'}
                             </th>
                         )}
-                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                             Δ vs Kelas
                         </th>
                     </tr>
@@ -64,7 +64,7 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
 
                         return (
                             <tr key={label} style={{ borderBottom: idx === labels.length - 1 ? 'none' : '1px solid rgba(74,74,74,0.06)' }}>
-                                <td className="px-4 py-3 font-medium text-[#4A4A4A]">
+                                <td className="px-4 py-3 font-medium text-brand-dark">
                                     {metricDefinitions?.[label] ? (
                                         <span title={metricDefinitions[label]} className="cursor-help border-b border-dashed border-[#9CA3AF]">
                                             {label}
@@ -73,7 +73,7 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
                                         label
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-right font-semibold text-[#88161c]">
+                                <td className="px-4 py-3 text-right font-semibold text-brand-primary">
                                     {formatScore(value)}
                                 </td>
                                 {showComparison && compValue !== null && (

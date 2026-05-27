@@ -531,36 +531,36 @@ export function LiquidFeatureCard({
         indigo: {
             bg: 'rgba(136,22,28,0.12)',
             bgLight: 'rgba(136,22,28,0.08)',
-            text: 'text-[#88161c]',
-            textLight: 'text-[#88161c]',
+            text: 'text-brand-primary',
+            textLight: 'text-brand-primary',
             glow: 'rgba(136,22,28,0.10)',
         },
         cyan: {
             bg: 'rgba(136,22,28,0.10)',
             bgLight: 'rgba(136,22,28,0.07)',
-            text: 'text-[#88161c]',
-            textLight: 'text-[#88161c]',
+            text: 'text-brand-primary',
+            textLight: 'text-brand-primary',
             glow: 'rgba(136,22,28,0.08)',
         },
         emerald: {
             bg: 'rgba(136,22,28,0.14)',
             bgLight: 'rgba(136,22,28,0.09)',
-            text: 'text-[#88161c]',
-            textLight: 'text-[#88161c]',
+            text: 'text-brand-primary',
+            textLight: 'text-brand-primary',
             glow: 'rgba(136,22,28,0.12)',
         },
         amber: {
             bg: 'rgba(136,22,28,0.11)',
             bgLight: 'rgba(136,22,28,0.07)',
-            text: 'text-[#88161c]',
-            textLight: 'text-[#88161c]',
+            text: 'text-brand-primary',
+            textLight: 'text-brand-primary',
             glow: 'rgba(136,22,28,0.09)',
         },
         rose: {
             bg: 'rgba(136,22,28,0.13)',
             bgLight: 'rgba(136,22,28,0.08)',
-            text: 'text-[#88161c]',
-            textLight: 'text-[#88161c]',
+            text: 'text-brand-primary',
+            textLight: 'text-brand-primary',
             glow: 'rgba(136,22,28,0.11)',
         },
     };
@@ -590,11 +590,10 @@ export function LiquidFeatureCard({
 
                     <h3
                         className="relative z-10 mb-3 text-xl font-semibold"
-                        style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         {title}
                     </h3>
-                    <p className="relative z-10 text-sm leading-relaxed text-[#6B7280]">{description}</p>
+                    <p className="relative z-10 text-sm leading-relaxed text-brand-muted-dark">{description}</p>
                 </LiquidGlassCard>
             </div>
         </motion.div>
@@ -643,7 +642,6 @@ export function StepCard({
                                 border: '1px solid rgba(136,22,28,0.2)',
                                 color: '#88161c',
                                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(136,22,28,0.08)',
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                             }}
                         >
                             {number}
@@ -654,7 +652,6 @@ export function StepCard({
                         <div className="flex items-center justify-between">
                             <h3
                                 className="mb-2 text-xl font-semibold"
-                                style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                             >
                                 {title}
                             </h3>
@@ -663,11 +660,11 @@ export function StepCard({
                                     animate={{ rotate: expanded ? 180 : 0 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <ChevronDown className="h-5 w-5 text-[#88161c]" />
+                                    <ChevronDown className="h-5 w-5 text-brand-primary" />
                                 </motion.div>
                             )}
                         </div>
-                        <p className="text-sm leading-relaxed text-[#6B7280]">{description}</p>
+                        <p className="text-sm leading-relaxed text-brand-muted-dark">{description}</p>
                         
                         {/* Expandable details */}
                         <AnimatePresence>
@@ -679,8 +676,8 @@ export function StepCard({
                                     transition={{ duration: 0.3 }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="mt-4 pt-4 border-t border-[#88161c]/10">
-                                        <p className="text-sm leading-relaxed text-[#6B7280]">{details}</p>
+                                    <div className="mt-4 pt-4 border-t border-brand-primary/10">
+                                        <p className="text-sm leading-relaxed text-brand-muted-dark">{details}</p>
                                     </div>
                                 </motion.div>
                             )}
@@ -755,7 +752,7 @@ export function HeroDashboard({ lightMode = true }: { lightMode?: boolean }) {
                                 className="flex h-7 w-7 items-center justify-center rounded-lg"
                                 style={{ background: t('rgba(254,242,242,0.8)', 'rgba(136,22,28,0.15)') }}
                             >
-                                <BookOpen className="h-3.5 w-3.5 text-[#88161c]" />
+                                <BookOpen className="h-3.5 w-3.5 text-brand-primary" />
                             </div>
                             <span className="text-sm font-medium" style={{ color: t('#334155', '#e2e8f0') }}>
                                 Kolabri
@@ -951,12 +948,11 @@ export function StatMetric({ value, suffix, label, delay = 0 }: { value: number;
             <span
                 ref={ref}
                 className="text-5xl font-light tracking-tight md:text-6xl"
-                style={{ color: '#88161c', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
                 {count.toLocaleString()}
                 {suffix}
             </span>
-            <span className="max-w-[120px] text-center text-sm text-[#6B7280]">{label}</span>
+            <span className="max-w-[120px] text-center text-sm text-brand-muted-dark">{label}</span>
         </motion.div>
     );
 }
@@ -1065,10 +1061,10 @@ export function InteractiveChatDemo({ lightMode = true }: { lightMode?: boolean 
                     <div className="h-3 w-3 rounded-full bg-amber-400/70" />
                     <div className="h-3 w-3 rounded-full bg-green-400/70" />
                 </div>
-                <span className="text-xs font-medium text-[#6B7280]">Grup A Diskusi Sesi 3</span>
+                <span className="text-xs font-medium text-brand-muted-dark">Grup A Diskusi Sesi 3</span>
                 <div className="ml-auto flex items-center gap-1.5">
                     <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                    <span className="text-xs text-[#6B7280]">Live</span>
+                    <span className="text-xs text-brand-muted-dark">Live</span>
                 </div>
             </div>
 
@@ -1147,7 +1143,7 @@ export function InteractiveChatDemo({ lightMode = true }: { lightMode?: boolean 
                             {[0, 1, 2].map((dot) => (
                                 <motion.div
                                     key={dot}
-                                    className="h-1.5 w-1.5 rounded-full bg-[#6B7280]"
+                                    className="h-1.5 w-1.5 rounded-full bg-brand-muted-dark"
                                     animate={{ opacity: [0.35, 1, 0.35], scale: [0.95, 1.1, 0.95] }}
                                     transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: dot * 0.18 }}
                                 />
@@ -1162,7 +1158,7 @@ export function InteractiveChatDemo({ lightMode = true }: { lightMode?: boolean 
                 className="flex items-center justify-between px-4 py-3"
                 style={{ borderTop: lightMode ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.07)' }}
             >
-                <span className="text-xs text-[#6B7280]/60">Simulasi intervensi AI real-time</span>
+                <span className="text-xs text-brand-muted-dark/60">Simulasi intervensi AI real-time</span>
                 <button
                     onClick={runDemo}
                     disabled={running}

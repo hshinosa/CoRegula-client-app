@@ -68,15 +68,14 @@ export function ConfirmDialog({
                                 <div className="flex-1">
                                     <h3
                                         className="text-base font-semibold"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
                                         {title}
                                     </h3>
-                                    <p className="mt-1 text-sm text-[#6B7280]">{message}</p>
+                                    <p className="mt-1 text-sm text-brand-muted-dark">{message}</p>
                                 </div>
                                 <button
                                     onClick={onCancel}
-                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[rgba(136,22,28,0.08)] hover:text-[#88161c]"
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-[rgba(136,22,28,0.08)] hover:text-brand-primary"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>
@@ -86,7 +85,7 @@ export function ConfirmDialog({
                                 <button
                                     onClick={onCancel}
                                     disabled={isProcessing}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium text-[#6B7280] transition-colors hover:bg-[rgba(136,22,28,0.06)] disabled:opacity-50"
+                                    className="rounded-xl px-4 py-2 text-sm font-medium text-brand-muted-dark transition-colors hover:bg-[rgba(136,22,28,0.06)] disabled:opacity-50"
                                 >
                                     {cancelLabel}
                                 </button>

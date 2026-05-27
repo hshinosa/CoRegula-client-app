@@ -125,12 +125,12 @@ export default function ComparisonSelector({
                                     <p className="truncate text-sm font-medium" style={{ color: '#4A4A4A' }}>
                                         {course.name}
                                     </p>
-                                    <p className="text-xs text-[#6B7280]">{course.code}</p>
+                                    <p className="text-xs text-brand-muted-dark">{course.code}</p>
                                 </div>
                             </button>
                         ))}
                     {courses.filter((c) => !selected.includes(c.id)).length === 0 && (
-                        <p className="px-3 py-4 text-center text-xs text-[#6B7280]">Semua kelas sudah dipilih</p>
+                        <p className="px-3 py-4 text-center text-xs text-brand-muted-dark">Semua kelas sudah dipilih</p>
                     )}
                 </div>
             )}

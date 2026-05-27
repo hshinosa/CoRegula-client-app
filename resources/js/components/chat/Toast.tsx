@@ -9,8 +9,8 @@ interface ToastProps {
 
 const toastVariants: Record<ToastProps['type'], { container: string; badge: string; label: string }> = {
     error: {
-        container: 'border-[#88161c]/20 bg-[rgba(136,22,28,0.08)] text-[#6f1218]',
-        badge: 'bg-[#88161c] text-white',
+        container: 'border-brand-primary/20 bg-[rgba(136,22,28,0.08)] text-[#6f1218]',
+        badge: 'bg-brand-primary text-white',
         label: 'Kesalahan',
     },
     success: {
@@ -19,7 +19,7 @@ const toastVariants: Record<ToastProps['type'], { container: string; badge: stri
         label: 'Berhasil',
     },
     info: {
-        container: 'border-white/60 bg-white text-[#4A4A4A]',
+        container: 'border-white/60 bg-white text-brand-dark',
         badge: 'bg-gray-700 text-white',
         label: 'Info',
     },

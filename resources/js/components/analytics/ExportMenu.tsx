@@ -85,7 +85,6 @@ export default function ExportMenu({ courseId, startDate, endDate, preset, class
                 className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-50"
                 style={{
                     ...chipStyle,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}
             >
                 {isExporting ? (
@@ -119,7 +118,7 @@ export default function ExportMenu({ courseId, startDate, endDate, preset, class
                             <p className="font-medium" style={{ color: '#4A4A4A' }}>
                                 Export CSV
                             </p>
-                            <p className="text-xs text-[#6B7280]">Data tabular, bisa dibuka di Excel</p>
+                            <p className="text-xs text-brand-muted-dark">Data tabular, bisa dibuka di Excel</p>
                         </div>
                     </button>
                     <button
@@ -132,7 +131,7 @@ export default function ExportMenu({ courseId, startDate, endDate, preset, class
                             <p className="font-medium" style={{ color: '#4A4A4A' }}>
                                 Export PDF
                             </p>
-                            <p className="text-xs text-[#6B7280]">Laporan terformat dengan charts</p>
+                            <p className="text-xs text-brand-muted-dark">Laporan terformat dengan charts</p>
                         </div>
                     </button>
                 </div>

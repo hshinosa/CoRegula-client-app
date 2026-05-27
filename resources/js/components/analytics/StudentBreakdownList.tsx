@@ -109,7 +109,7 @@ export default function StudentBreakdownList({
         return sortDir === 'desc' ? <ChevronDown className="inline h-3 w-3" /> : <ChevronUp className="inline h-3 w-3" />;
     };
 
-    const th = 'px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]';
+    const th = 'px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-brand-muted-dark';
 
     return (
         <div
@@ -118,11 +118,10 @@ export default function StudentBreakdownList({
         >
             <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-[#6B7280]" />
-                    <h3 className="text-sm font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <Users className="h-4 w-4 text-brand-muted-dark" />
                         Breakdown per Mahasiswa
                     </h3>
-                    <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs text-[#6B7280]">{meta.total}</span>
+                    <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs text-brand-muted-dark">{meta.total}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="relative">
@@ -132,7 +131,7 @@ export default function StudentBreakdownList({
                             placeholder="Cari mahasiswa..."
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                            className="rounded-lg border border-[#E5E7EB] bg-white py-1.5 pl-8 pr-3 text-xs text-[#4A4A4A] placeholder-[#9CA3AF] focus:border-[#88161c] focus:outline-none focus:ring-1 focus:ring-[#88161c]/20"
+                            className="rounded-lg border border-[#E5E7EB] bg-white py-1.5 pl-8 pr-3 text-xs text-brand-dark placeholder-[#9CA3AF] focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary/20"
                         />
                     </div>
                     <select
@@ -145,7 +144,7 @@ export default function StudentBreakdownList({
                             else if (v === '70-100') setScoreFilter({ min: 70, max: 100 });
                             setPage(1);
                         }}
-                        className="rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-xs text-[#4A4A4A] focus:border-[#88161c] focus:outline-none"
+                        className="rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-xs text-brand-dark focus:border-brand-primary focus:outline-none"
                     >
                         <option value="-">Semua Skor</option>
                         <option value="70-100">Baik (&#8805;70)</option>
@@ -215,10 +214,10 @@ export default function StudentBreakdownList({
                                             {s.qualityScore !== null ? s.qualityScore.toFixed(0) : 'N/A'}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 text-center text-sm text-[#4A4A4A]">
+                                    <td className="px-4 py-3 text-center text-sm text-brand-dark">
                                         {s.hotPercentage.toFixed(1)}%
                                     </td>
-                                    <td className="px-4 py-3 text-center text-sm text-[#4A4A4A]">
+                                    <td className="px-4 py-3 text-center text-sm text-brand-dark">
                                         {s.messageCount}
                                     </td>
                                     <td className="px-4 py-3 text-center">

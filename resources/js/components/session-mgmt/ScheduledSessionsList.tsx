@@ -144,7 +144,7 @@ export default function ScheduledSessionsList({ sessions, onCancel, onActivate }
                 {isReady && (
                   <button
                     onClick={() => handleActivate(session.id)}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-brand-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700"
                   >
                     <Play className="w-3 h-3 mr-1" />
                     Activate Now
@@ -153,7 +153,7 @@ export default function ScheduledSessionsList({ sessions, onCancel, onActivate }
 
                 <button
                   onClick={() => handleCancel(session.id)}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-brand-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <X className="w-3 h-3 mr-1" />
                   Cancel

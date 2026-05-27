@@ -76,7 +76,7 @@ export default function BenchmarkToggle({
                 className="flex items-center gap-2"
             >
                 {enabled ? (
-                    <ToggleRight className="h-5 w-5 text-[#88161c]" />
+                    <ToggleRight className="h-5 w-5 text-brand-primary" />
                 ) : (
                     <ToggleLeft className="h-5 w-5 text-[#9CA3AF]" />
                 )}
@@ -90,7 +90,7 @@ export default function BenchmarkToggle({
                     {benchmark.departmentAverage !== null && (
                         <div className="flex items-center gap-1.5">
                             <BarChart3 className="h-3.5 w-3.5 text-[#D97706]" />
-                            <span className="text-xs text-[#4A4A4A]">
+                            <span className="text-xs text-brand-dark">
                                 Rata-rata Dept: <span className="font-semibold">{benchmark.departmentAverage.toFixed(1)}</span>
                             </span>
                         </div>
@@ -101,7 +101,7 @@ export default function BenchmarkToggle({
                         </span>
                     )}
                     {benchmark.percentileRank !== null && (
-                        <span className="text-xs text-[#6B7280]">
+                        <span className="text-xs text-brand-muted-dark">
                             Persentil: {benchmark.percentileRank}
                         </span>
                     )}

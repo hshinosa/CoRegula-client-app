@@ -28,12 +28,11 @@ export default function AboutSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">Tentang Kolabri</span>
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">Tentang Kolabri</span>
                         <h2
                             className="text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
-                            Dibangun untuk <span className="text-[#6B7280] italic">pendidikan berkualitas</span>
+                            Dibangun untuk <span className="text-brand-muted-dark italic">pendidikan berkualitas</span>
                         </h2>
                     </motion.div>
 
@@ -74,15 +73,14 @@ export default function AboutSection({ lightMode }: Props) {
                                             border: '1px solid rgba(136,22,28,0.12)',
                                         }}
                                     >
-                                        <div className="text-[#88161c]">{item.icon}</div>
+                                        <div className="text-brand-primary">{item.icon}</div>
                                     </div>
                                     <h3
                                         className="mb-3 text-lg font-semibold"
-                                        style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
                                         {item.title}
                                     </h3>
-                                    <p className="text-sm leading-relaxed text-[#6B7280]">{item.body}</p>
+                                    <p className="text-sm leading-relaxed text-brand-muted-dark">{item.body}</p>
                                 </LiquidGlassCard>
                             </motion.div>
                         ))}

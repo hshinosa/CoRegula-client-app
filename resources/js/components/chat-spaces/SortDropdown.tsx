@@ -49,7 +49,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-[#6B7280] transition-all duration-200 hover:bg-white/60 hover:text-[#4A4A4A]"
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-muted-dark transition-all duration-200 hover:bg-white/60 hover:text-brand-dark"
                 style={{
                     background: 'rgba(255,255,255,0.4)',
                     border: '1px solid rgba(255,255,255,0.5)',
@@ -88,7 +88,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
                                     onChange(option.value);
                                     setIsOpen(false);
                                 }}
-                                className="flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#88161c]/5"
+                                className="flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-brand-primary/5"
                                 style={{
                                     color: option.value === value ? '#88161c' : '#4A4A4A',
                                     fontWeight: option.value === value ? 600 : 400,

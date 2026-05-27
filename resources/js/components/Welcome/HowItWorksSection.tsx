@@ -58,12 +58,11 @@ export default function HowItWorksSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">Cara Kerja</span>
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">Cara Kerja</span>
                         <h2
                             className="mx-auto max-w-3xl text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
-                            Mulai dalam <span className="text-[#6B7280] italic">tiga langkah sederhana</span>
+                            Mulai dalam <span className="text-brand-muted-dark italic">tiga langkah sederhana</span>
                         </h2>
                     </motion.div>
 
@@ -83,7 +82,7 @@ export default function HowItWorksSection({ lightMode }: Props) {
                                 border: '1px solid rgba(136,22,28,0.1)',
                             }}
                         >
-                            <p className="text-sm leading-relaxed text-[#6B7280]">
+                            <p className="text-sm leading-relaxed text-brand-muted-dark">
                                 Tidak perlu setup rumit. Kolabri dirancang agar dosen dan mahasiswa bisa langsung fokus pada yang penting —
                                 belajar bersama.
                             </p>
@@ -102,17 +101,16 @@ export default function HowItWorksSection({ lightMode }: Props) {
                         >
                             <LiquidGlassCard className="p-10" intensity="medium" lightMode={lightMode}>
                                 <p
-                                    className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-[#88161c]"
+                                    className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-brand-primary"
                                 >
                                     Dirancang untuk
                                 </p>
                                 <h3
                                     className="mb-10 text-4xl font-light leading-tight"
-                                    style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                 >
                                     Kolaborasi yang<br />
-                                    <span className="italic text-[#6B7280]">sederhana</span> dan<br />
-                                    <span className="italic text-[#6B7280]">terukur.</span>
+                                    <span className="italic text-brand-muted-dark">sederhana</span> dan<br />
+                                    <span className="italic text-brand-muted-dark">terukur.</span>
                                 </h3>
 
                                 <div className="flex flex-col gap-8">
@@ -127,7 +125,6 @@ export default function HowItWorksSection({ lightMode }: Props) {
                                         >
                                             <span
                                                 className="text-4xl font-light tabular-nums"
-                                                style={{ color: 'rgba(136,22,28,0.15)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                             >
                                                 0{step.number}
                                             </span>
@@ -149,7 +146,7 @@ export default function HowItWorksSection({ lightMode }: Props) {
                                         border: '1px solid rgba(136,22,28,0.1)',
                                     }}
                                 >
-                                    <p className="text-sm leading-relaxed text-[#6B7280]">
+                                    <p className="text-sm leading-relaxed text-brand-muted-dark">
                                         Tidak perlu setup rumit. Kolabri dirancang agar dosen dan mahasiswa bisa langsung fokus pada yang penting — belajar bersama.
                                     </p>
                                 </div>

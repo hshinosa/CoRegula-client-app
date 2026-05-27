@@ -53,7 +53,7 @@ export default function TrendChart({
                     height,
                 }}
             >
-                <p className="text-sm text-[#6B7280]">Belum ada data trend</p>
+                <p className="text-sm text-brand-muted-dark">Belum ada data trend</p>
             </div>
         );
     }
@@ -69,7 +69,6 @@ export default function TrendChart({
             {title && (
                 <h3
                     className="mb-4 text-sm font-semibold"
-                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                     {title}
                 </h3>
@@ -99,11 +98,9 @@ export default function TrendChart({
                             border: '1px solid rgba(0,0,0,0.1)',
                             borderRadius: '12px',
                             fontSize: 12,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                         }}
                     />
                     <Legend
-                        wrapperStyle={{ fontSize: 11, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     />
                     {targetLine !== undefined && (
                         <Line

@@ -151,7 +151,7 @@ export default function TemplatesList({ templates, onEdit, onDelete, onApply }: 
               <button
                 onClick={() => handleApply(template.id)}
                 disabled={applyingId === template.id}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-brand-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
               >
                 <Play className="w-3 h-3 mr-1" />
                 {applyingId === template.id ? 'Creating...' : 'Use Template'}

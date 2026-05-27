@@ -91,7 +91,7 @@ export default function IndividualStudentAnalytics({
                 <button
                     type="button"
                     onClick={onBack}
-                    className="text-xs font-medium text-[#88161c] hover:underline"
+                    className="text-xs font-medium text-brand-primary hover:underline"
                 >
                     Kembali
                 </button>
@@ -131,15 +131,15 @@ export default function IndividualStudentAnalytics({
                     onClick={onBack}
                     className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#F3F4F6]"
                 >
-                    <ArrowLeft className="h-4 w-4 text-[#6B7280]" />
+                    <ArrowLeft className="h-4 w-4 text-brand-muted-dark" />
                 </button>
                 <div>
                     <nav className="flex items-center gap-1 text-xs text-[#9CA3AF]">
-                        <button type="button" onClick={onBack} className="hover:text-[#4A4A4A] hover:underline">
+                        <button type="button" onClick={onBack} className="hover:text-brand-dark hover:underline">
                             Mahasiswa
                         </button>
                         <span>/</span>
-                        <span className="text-[#4A4A4A]">{data.student.name}</span>
+                        <span className="text-brand-dark">{data.student.name}</span>
                     </nav>
                 </div>
             </div>
@@ -156,7 +156,7 @@ export default function IndividualStudentAnalytics({
                 </div>
                 <div>
                     <h2 className="text-base font-semibold text-[#1F2937]">{data.student.name}</h2>
-                    <p className="text-sm text-[#6B7280]">{data.student.email}</p>
+                    <p className="text-sm text-brand-muted-dark">{data.student.email}</p>
                 </div>
             </div>
 
@@ -169,7 +169,7 @@ export default function IndividualStudentAnalytics({
                     >
                         <div className="flex items-center gap-2">
                             <card.icon className="h-4 w-4" style={{ color: card.color }} />
-                            <span className="text-xs text-[#6B7280]">{card.label}</span>
+                            <span className="text-xs text-brand-muted-dark">{card.label}</span>
                         </div>
                         <p className="mt-2 text-2xl font-bold" style={{ color: card.color }}>
                             {card.value}
@@ -195,14 +195,13 @@ export default function IndividualStudentAnalytics({
                 >
                     <h3
                         className="mb-3 text-sm font-semibold"
-                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         Rekomendasi
                     </h3>
                     <ul className="space-y-2">
                         {data.recommendations.map((rec, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-[#4A4A4A]">
-                                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#88161c]" />
+                            <li key={i} className="flex items-start gap-2 text-sm text-brand-dark">
+                                <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brand-primary" />
                                 {rec}
                             </li>
                         ))}

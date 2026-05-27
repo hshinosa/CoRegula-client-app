@@ -26,14 +26,13 @@ export default function DemoSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">Demo Interaktif</span>
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">Demo Interaktif</span>
                         <h2
                             className="text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
-                            Lihat AI bekerja <span className="text-[#6B7280] italic">secara nyata</span>
+                            Lihat AI bekerja <span className="text-brand-muted-dark italic">secara nyata</span>
                         </h2>
-                        <p className="mx-auto mt-4 max-w-xl text-base text-[#6B7280]">
+                        <p className="mx-auto mt-4 max-w-xl text-base text-brand-muted-dark">
                             Saat diskusi kelompok mulai dangkal, AI Kolabri hadir memberikan pertanyaan pemantik yang mendorong pemikiran tingkat
                             tinggi.
                         </p>
@@ -88,7 +87,7 @@ export default function DemoSection({ lightMode }: Props) {
                                                 <h4 className="mb-1 font-semibold" style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb' }}>
                                                     {item.title}
                                                 </h4>
-                                                <p className="text-sm leading-relaxed text-[#6B7280]">{item.desc}</p>
+                                                <p className="text-sm leading-relaxed text-brand-muted-dark">{item.desc}</p>
                                             </div>
                                         </div>
                                     </LiquidGlassCard>

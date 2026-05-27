@@ -57,16 +57,16 @@ export function AdminPagination({
 
     return (
         <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-[#6B7280]">
+            <p className="text-sm text-brand-muted-dark">
                 Menampilkan{' '}
-                <span className="font-medium text-[#4A4A4A]">{startItem}</span>
+                <span className="font-medium text-brand-dark">{startItem}</span>
                 {' '}-{' '}
-                <span className="font-medium text-[#4A4A4A]">{endItem}</span>
+                <span className="font-medium text-brand-dark">{endItem}</span>
                 {' '}dari{' '}
-                <span className="font-medium text-[#4A4A4A]">{totalItems}</span>
+                <span className="font-medium text-brand-dark">{totalItems}</span>
                 {' '}{itemLabel}
                 {isLoading && (
-                    <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin text-[#88161c]" />
+                    <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin text-brand-primary" />
                 )}
             </p>
 

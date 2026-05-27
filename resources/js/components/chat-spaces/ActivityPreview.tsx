@@ -48,9 +48,9 @@ export function ActivityPreview({ lastMessage, lastMessageAt, lastMessageSender 
     return (
         <div className="space-y-1">
             {lastMessage && (
-                <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">
+                <p className="text-xs text-brand-muted-dark line-clamp-2 leading-relaxed">
                     {lastMessageSender && (
-                        <span className="font-medium text-[#4A4A4A]">
+                        <span className="font-medium text-brand-dark">
                             {lastMessageSender}:{' '}
                         </span>
                     )}

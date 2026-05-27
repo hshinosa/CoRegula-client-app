@@ -24,13 +24,13 @@ export function Pagination({
 
     return (
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-            <p className="text-sm text-[#6B7280]">
+            <p className="text-sm text-brand-muted-dark">
                 Menampilkan{' '}
-                <span className="font-medium text-[#4A4A4A]">{startItem}</span>
+                <span className="font-medium text-brand-dark">{startItem}</span>
                 {' '}-{' '}
-                <span className="font-medium text-[#4A4A4A]">{endItem}</span>
+                <span className="font-medium text-brand-dark">{endItem}</span>
                 {' '}dari{' '}
-                <span className="font-medium text-[#4A4A4A]">{totalItems}</span>
+                <span className="font-medium text-brand-dark">{totalItems}</span>
                 {' '}ruang
             </p>
 
@@ -39,7 +39,7 @@ export function Pagination({
                     type="button"
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage <= 1}
-                    className="inline-flex items-center justify-center rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/60 hover:text-[#4A4A4A] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/60 hover:text-brand-dark disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Halaman sebelumnya"
                 >
                     <ChevronLeft className="h-4 w-4" />
@@ -49,7 +49,7 @@ export function Pagination({
                     page === '...' ? (
                         <span
                             key={`ellipsis-${i}`}
-                            className="px-2 text-sm text-[#6B7280]"
+                            className="px-2 text-sm text-brand-muted-dark"
                         >
                             ...
                         </span>
@@ -80,7 +80,7 @@ export function Pagination({
                     type="button"
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage >= totalPages}
-                    className="inline-flex items-center justify-center rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-white/60 hover:text-[#4A4A4A] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/60 hover:text-brand-dark disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Halaman berikutnya"
                 >
                     <ChevronRight className="h-4 w-4" />

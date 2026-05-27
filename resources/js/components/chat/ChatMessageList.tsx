@@ -68,7 +68,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                             )}
 
                             {message.reply_to && (
-                                <div className="mb-1 rounded-lg border-l-2 border-[#88161c] bg-gray-100 px-2 py-1 text-xs text-gray-500">
+                                <div className="mb-1 rounded-lg border-l-2 border-brand-primary bg-gray-100 px-2 py-1 text-xs text-gray-500">
                                     <span className="font-medium">{sanitizeText(message.reply_to.senderName)}</span>
                                     <p className="truncate">{sanitizeText(message.reply_to.content)}</p>
                                 </div>
@@ -77,10 +77,10 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                             <div
                                 className={`rounded-2xl px-3 py-2 text-sm ${
                                     isOwn
-                                        ? 'rounded-tr-sm bg-[#88161c] text-white'
+                                        ? 'rounded-tr-sm bg-brand-primary text-white'
                                         : isAI || isSystem
-                                        ? 'rounded-tl-sm bg-[rgba(136,22,28,0.08)] text-[#4A4A4A]'
-                                        : 'rounded-tl-sm bg-white text-[#4A4A4A]'
+                                        ? 'rounded-tl-sm bg-[rgba(136,22,28,0.08)] text-brand-dark'
+                                        : 'rounded-tl-sm bg-white text-brand-dark'
                                 }`}
                                 style={{ border: isOwn ? 'none' : '1px solid rgba(255,255,255,0.5)' }}
                             >
@@ -123,7 +123,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                                 {onReply && !isSystem && (
                                     <button
                                         onClick={() => onReply(message)}
-                                        className="text-xs text-gray-400 opacity-0 transition-opacity hover:text-[#88161c] group-hover:opacity-100"
+                                        className="text-xs text-gray-400 opacity-0 transition-opacity hover:text-brand-primary group-hover:opacity-100"
                                     >
                                         Balas
                                     </button>

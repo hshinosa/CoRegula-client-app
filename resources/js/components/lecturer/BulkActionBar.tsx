@@ -47,7 +47,7 @@ export function BulkActionBar({
                             >
                                 {selectedCount}
                             </span>
-                            <span className="text-sm font-medium text-[#4A4A4A]">
+                            <span className="text-sm font-medium text-brand-dark">
                                 dipilih
                             </span>
                         </div>
@@ -56,7 +56,7 @@ export function BulkActionBar({
 
                         <button
                             onClick={allSelected ? onDeselectAll : onSelectAll}
-                            className="text-xs font-medium text-[#6B7280] transition-colors hover:text-[#88161c]"
+                            className="text-xs font-medium text-brand-muted-dark transition-colors hover:text-brand-primary"
                             disabled={isProcessing}
                         >
                             {allSelected ? 'Batal Pilih Semua' : 'Pilih Semua'}
@@ -86,7 +86,7 @@ export function BulkActionBar({
                         <button
                             onClick={onDeselectAll}
                             disabled={isProcessing}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-[rgba(136,22,28,0.08)] hover:text-[#88161c]"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-[rgba(136,22,28,0.08)] hover:text-brand-primary"
                         >
                             <X className="h-4 w-4" />
                         </button>

@@ -95,7 +95,7 @@ export default function SectionExportMenu({
                     <button
                         type="button"
                         onClick={() => handleExport('csv')}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-[#4A4A4A] transition-colors hover:bg-[#F9FAFB]"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-brand-dark transition-colors hover:bg-[#F9FAFB]"
                     >
                         <FileSpreadsheet className="h-4 w-4 text-[#166534]" />
                         Export CSV
@@ -103,10 +103,10 @@ export default function SectionExportMenu({
                     <button
                         type="button"
                         onClick={() => handleExport('pdf')}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-[#4A4A4A] transition-colors hover:bg-[#F9FAFB]"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-brand-dark transition-colors hover:bg-[#F9FAFB]"
                         style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}
                     >
-                        <FileText className="h-4 w-4 text-[#88161c]" />
+                        <FileText className="h-4 w-4 text-brand-primary" />
                         Export PDF
                     </button>
                 </div>

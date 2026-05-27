@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 const tabs = [

@@ -5,10 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const glassPanelStyle = {
     background: 'rgba(255,255,255,0.55)',
@@ -150,7 +149,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#88161c] border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
             </div>
         );
     }
@@ -211,7 +210,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                 value={newSession.title}
                                 onChange={(e) => setNewSession((p) => ({ ...p, title: e.target.value }))}
                                 placeholder="Contoh: Pertemuan 1"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30 focus:ring-1 focus:ring-[#88161c]/20"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
                                 style={headingStyle}
                             />
                         </div>
@@ -221,7 +220,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                 type="date"
                                 value={newSession.session_date}
                                 onChange={(e) => setNewSession((p) => ({ ...p, session_date: e.target.value }))}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30 focus:ring-1 focus:ring-[#88161c]/20"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
                                 style={headingStyle}
                             />
                         </div>
@@ -233,7 +232,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                 value={newSession.session_number}
                                 onChange={(e) => setNewSession((p) => ({ ...p, session_number: e.target.value }))}
                                 placeholder="Opsional"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30 focus:ring-1 focus:ring-[#88161c]/20"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
                                 style={headingStyle}
                             />
                         </div>
@@ -244,7 +243,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                 value={newSession.notes}
                                 onChange={(e) => setNewSession((p) => ({ ...p, notes: e.target.value }))}
                                 placeholder="Opsional"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-[#88161c]/30 focus:ring-1 focus:ring-[#88161c]/20"
+                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
                                 style={headingStyle}
                             />
                         </div>
@@ -306,7 +305,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                 >
                                     <div>
                                         <p className="font-medium" style={{ color: '#4A4A4A' }}>{record.student_name}</p>
-                                        <p className="text-xs text-[#6B7280]">{record.student_email}</p>
+                                        <p className="text-xs text-brand-muted-dark">{record.student_email}</p>
                                     </div>
                                     <button
                                         type="button"
@@ -328,7 +327,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                 <div className="space-y-3">
                     {sessions.length === 0 ? (
                         <LiquidGlassCard intensity="light" className="p-10 text-center" lightMode={true}>
-                            <CalendarCheck className="mx-auto h-12 w-12 text-[#6B7280]/40" />
+                            <CalendarCheck className="mx-auto h-12 w-12 text-brand-muted-dark/40" />
                             <h4 className="mt-4 text-lg font-semibold" style={headingStyle}>Belum ada pertemuan</h4>
                             <p className={`mt-2 ${bodyTextClass}`}>Buat pertemuan pertama untuk mulai mencatat kehadiran.</p>
                         </LiquidGlassCard>
@@ -346,7 +345,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                             )}
                                         </div>
                                         <p className={`mt-1 ${bodyTextClass}`}>{formatDate(session.session_date)}</p>
-                                        {session.notes && <p className="mt-1 text-xs text-[#6B7280]">{session.notes}</p>}
+                                        {session.notes && <p className="mt-1 text-xs text-brand-muted-dark">{session.notes}</p>}
                                     </div>
 
                                     <div className="flex items-center gap-4">
@@ -354,7 +353,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                                             <p className="text-sm font-semibold" style={{ color: session.attendance_rate >= 75 ? '#166534' : session.attendance_rate >= 50 ? '#92400e' : '#b91c1c' }}>
                                                 {session.attendance_rate}%
                                             </p>
-                                            <p className="text-xs text-[#6B7280]">
+                                            <p className="text-xs text-brand-muted-dark">
                                                 {session.present_count}/{session.total_students} hadir
                                             </p>
                                         </div>
@@ -391,25 +390,25 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-[rgba(0,0,0,0.06)]">
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Mahasiswa</th>
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Hadir</th>
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Terlambat</th>
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Izin</th>
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Absen</th>
-                                    <th className="pb-3 pr-4 font-medium text-[#6B7280]">Persentase</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Mahasiswa</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Hadir</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Terlambat</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Izin</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Absen</th>
+                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Persentase</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {summary.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="py-8 text-center text-[#6B7280]">Belum ada data kehadiran.</td>
+                                        <td colSpan={6} className="py-8 text-center text-brand-muted-dark">Belum ada data kehadiran.</td>
                                     </tr>
                                 ) : (
                                     summary.map((s) => (
                                         <tr key={s.student_id} className="border-b border-[rgba(0,0,0,0.04)]">
                                             <td className="py-3 pr-4">
                                                 <p className="font-medium" style={{ color: '#4A4A4A' }}>{s.student_name}</p>
-                                                <p className="text-xs text-[#6B7280]">{s.student_email}</p>
+                                                <p className="text-xs text-brand-muted-dark">{s.student_email}</p>
                                             </td>
                                             <td className="py-3 pr-4 font-medium" style={{ color: '#166534' }}>{s.present}</td>
                                             <td className="py-3 pr-4 font-medium" style={{ color: '#92400e' }}>{s.late}</td>

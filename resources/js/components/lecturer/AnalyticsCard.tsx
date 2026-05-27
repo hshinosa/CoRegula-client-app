@@ -34,14 +34,13 @@ export function AnalyticsCard({ icon: Icon, label, value, suffix = '', index = 0
                 <Icon className="h-5 w-5" style={{ color: '#88161c' }} />
             </div>
             <div className="min-w-0">
-                <p className="text-xs font-medium text-[#6B7280]">{label}</p>
+                <p className="text-xs font-medium text-brand-muted-dark">{label}</p>
                 <p
                     ref={ref as React.Ref<HTMLParagraphElement>}
                     className="text-xl font-bold tabular-nums"
-                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                     {count}
-                    {suffix && <span className="ml-0.5 text-sm font-medium text-[#6B7280]">{suffix}</span>}
+                    {suffix && <span className="ml-0.5 text-sm font-medium text-brand-muted-dark">{suffix}</span>}
                 </p>
             </div>
         </motion.div>

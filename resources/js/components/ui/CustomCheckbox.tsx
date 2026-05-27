@@ -18,10 +18,10 @@ export function CustomCheckbox({ lightMode = true, className = '', checked, onCh
             <div
                 className={`pointer-events-none flex h-full w-full items-center justify-center rounded transition-all duration-200 ${
                     checked
-                        ? 'bg-[#88161c] border-[#88161c]'
+                        ? 'bg-brand-primary border-brand-primary'
                         : lightMode
-                        ? 'bg-white border-slate-300 peer-hover:border-[#88161c]'
-                        : 'bg-slate-800/50 border-slate-600 peer-hover:border-[#88161c]'
+                        ? 'bg-white border-slate-300 peer-hover:border-brand-primary'
+                        : 'bg-slate-800/50 border-slate-600 peer-hover:border-brand-primary'
                 }`}
                 style={{
                     borderWidth: '1.5px',

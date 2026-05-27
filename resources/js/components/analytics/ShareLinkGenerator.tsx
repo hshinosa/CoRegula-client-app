@@ -112,7 +112,7 @@ export default function ShareLinkGenerator({
                             type="text"
                             value={shareUrl}
                             readOnly
-                            className="flex-1 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-[#4A4A4A]"
+                            className="flex-1 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-brand-dark"
                         />
                         <button
                             type="button"

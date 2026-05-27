@@ -129,7 +129,6 @@ export default function DateRangePicker({ value, preset: activePreset, onChange,
                 className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
                 style={{
                     ...chipStyle,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}
             >
                 <Calendar className="h-4 w-4" style={{ color: '#88161c' }} />
@@ -146,7 +145,7 @@ export default function DateRangePicker({ value, preset: activePreset, onChange,
                         border: '1px solid rgba(255,255,255,0.7)',
                     }}
                 >
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">Presets</p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">Presets</p>
                     <div className="mb-4 flex flex-wrap gap-2">
                         {DATE_PRESETS.map((p) => (
                             <button
@@ -161,22 +160,20 @@ export default function DateRangePicker({ value, preset: activePreset, onChange,
                         ))}
                     </div>
 
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#6B7280]">Custom Range</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">Custom Range</p>
                     <div className="flex gap-2">
                         <input
                             type="date"
                             value={customStart}
                             onChange={(e) => setCustomStart(e.target.value)}
                             className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         />
-                        <span className="self-center text-xs text-[#6B7280]">—</span>
+                        <span className="self-center text-xs text-brand-muted-dark">—</span>
                         <input
                             type="date"
                             value={customEnd}
                             onChange={(e) => setCustomEnd(e.target.value)}
                             className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         />
                     </div>
                     <button

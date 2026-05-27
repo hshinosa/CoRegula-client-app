@@ -79,7 +79,6 @@ export default function HeroSection({ lightMode }: Props) {
                             {/* Main headline - Editorial typography */}
                             <h1
                                 className={`text-center text-5xl leading-[1.15] font-light tracking-tight md:text-6xl lg:text-7xl xl:text-8xl`}
-                                style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                             >
                                 <motion.span
                                     initial={{ opacity: 0, y: 20 }}
@@ -114,7 +113,7 @@ export default function HeroSection({ lightMode }: Props) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.8, duration: 0.8 }}
-                                className="mx-auto mt-8 max-w-xl text-center text-base leading-relaxed text-[#6B7280] md:text-lg"
+                                className="mx-auto mt-8 max-w-xl text-center text-base leading-relaxed text-brand-muted-dark md:text-lg"
                             >
                                 Bantu mahasiswa berdiskusi lebih baik. Bantu dosen memahami lebih dalam. Semua dalam satu platform yang sederhana.
                             </motion.p>
@@ -175,7 +174,7 @@ export default function HeroSection({ lightMode }: Props) {
                                                     : { duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 },
                                             }}
                                         >
-                                            <div className="text-[#88161c]">{item.icon}</div>
+                                            <div className="text-brand-primary">{item.icon}</div>
                                             <span className="text-sm font-medium" style={{ color: lightMode ? '#4A4A4A' : '#cbd5e1' }}>
                                                 {item.text}
                                             </span>
@@ -221,7 +220,7 @@ export default function HeroSection({ lightMode }: Props) {
                         transition={prefersReducedMotion ? { duration: 0.3 } : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                         className="flex flex-col items-center gap-2"
                     >
-                        <span className="text-xs tracking-widest text-[#6B7280]/60 uppercase">Gulir</span>
+                        <span className="text-xs tracking-widest text-brand-muted-dark/60 uppercase">Gulir</span>
                         <div className="h-12 w-px bg-gradient-to-b from-[#4A4A4A]/30 to-transparent" />
                     </motion.div>
                 </motion.div>

@@ -68,7 +68,6 @@ function KeyBadge({ children }: { children: React.ReactNode }) {
                 background: 'var(--dm-accent-bg)',
                 color: 'var(--dm-accent)',
                 border: '1px solid var(--dm-accent-border)',
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
         >
             {children}
@@ -125,7 +124,6 @@ export function KeyboardShortcutsHelpModal({ open, onClose, shortcuts }: Keyboar
                                         className="text-xl font-bold"
                                         style={{
                                             color: 'var(--dm-text)',
-                                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                                         }}
                                     >
                                         Pintasan Keyboard
@@ -150,7 +148,6 @@ export function KeyboardShortcutsHelpModal({ open, onClose, shortcuts }: Keyboar
                                             className="text-sm font-semibold mb-3 uppercase tracking-wider"
                                             style={{
                                                 color: 'var(--dm-text-secondary)',
-                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                                             }}
                                         >
                                             {group.label}
@@ -168,7 +165,6 @@ export function KeyboardShortcutsHelpModal({ open, onClose, shortcuts }: Keyboar
                                                         className="text-sm font-medium"
                                                         style={{
                                                             color: 'var(--dm-text)',
-                                                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                                                         }}
                                                     >
                                                         {shortcut.description}

@@ -5,10 +5,9 @@ import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const glassPanelStyle = {
     background: 'rgba(255,255,255,0.55)',
@@ -80,7 +79,7 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#88161c] border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
             </div>
         );
     }
@@ -127,7 +126,7 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
                         placeholder="Cari mahasiswa..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2 text-sm outline-none transition-colors focus:border-[#88161c]/30 focus:ring-1 focus:ring-[#88161c]/20"
+                        className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2 text-sm outline-none transition-colors focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
                         style={{ ...headingStyle, maxWidth: '260px' }}
                     />
                 </div>
@@ -136,16 +135,16 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-[rgba(0,0,0,0.06)]">
-                                <th className="pb-3 pr-4 font-medium text-[#6B7280]">Mahasiswa</th>
+                                <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Mahasiswa</th>
                                 <th
-                                    className="cursor-pointer pb-3 pr-4 font-medium text-[#6B7280] select-none"
+                                    className="cursor-pointer pb-3 pr-4 font-medium text-brand-muted-dark select-none"
                                     onClick={() => toggleSort('total_messages')}
                                 >
                                     Total Pesan {sortField === 'total_messages' && (sortDir === 'desc' ? '↓' : '↑')}
                                 </th>
-                                <th className="pb-3 pr-4 font-medium text-[#6B7280]">Frekuensi</th>
+                                <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Frekuensi</th>
                                 <th
-                                    className="cursor-pointer pb-3 pr-4 font-medium text-[#6B7280] select-none"
+                                    className="cursor-pointer pb-3 pr-4 font-medium text-brand-muted-dark select-none"
                                     onClick={() => toggleSort('last_activity')}
                                 >
                                     Aktivitas Terakhir {sortField === 'last_activity' && (sortDir === 'desc' ? '↓' : '↑')}
@@ -155,7 +154,7 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
                         <tbody>
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="py-8 text-center text-[#6B7280]">
+                                    <td colSpan={4} className="py-8 text-center text-brand-muted-dark">
                                         {search ? 'Tidak ada mahasiswa yang cocok.' : 'Belum ada data aktivitas.'}
                                     </td>
                                 </tr>
@@ -166,7 +165,7 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
                                             <p className="font-medium" style={{ color: '#4A4A4A' }}>
                                                 {s.student.name}
                                             </p>
-                                            <p className="text-xs text-[#6B7280]">{s.student.email}</p>
+                                            <p className="text-xs text-brand-muted-dark">{s.student.email}</p>
                                         </td>
                                         <td className="py-3 pr-4">
                                             <div className="flex items-center gap-3">
@@ -185,7 +184,7 @@ export default function AktivitasTab({ students, summary, loading }: AktivitasTa
                                                 {s.frequency} hari/minggu
                                             </span>
                                         </td>
-                                        <td className="py-3 pr-4 text-[#6B7280]">{formatDate(s.last_activity)}</td>
+                                        <td className="py-3 pr-4 text-brand-muted-dark">{formatDate(s.last_activity)}</td>
                                     </tr>
                                 ))
                             )}

@@ -14,7 +14,6 @@ interface EmptyStateProps {
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
 interface ActionConfig {
@@ -113,7 +112,7 @@ export function EmptyState({
                 {config.title}
             </h3>
 
-            <p className="mt-2 max-w-sm text-sm text-[#6B7280] leading-6">
+            <p className="mt-2 max-w-sm text-sm text-brand-muted-dark leading-6">
                 {config.description}
             </p>
 

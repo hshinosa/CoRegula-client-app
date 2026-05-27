@@ -35,7 +35,7 @@ export function CourseFilters({
     return (
         <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-brand-muted-dark">
                     <Filter className="h-3.5 w-3.5" />
                     Status:
                 </div>
@@ -78,7 +78,7 @@ export function CourseFilters({
 
             {semesterOptions.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-brand-muted-dark">
                         <Calendar className="h-3.5 w-3.5" />
                         Semester:
                     </div>
@@ -126,7 +126,7 @@ export function CourseFilters({
                     exit={{ opacity: 0, scale: 0.9 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={onResetFilters}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-[#6B7280] transition-colors hover:text-[#88161c]"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-brand-muted-dark transition-colors hover:text-brand-primary"
                 >
                     <RotateCcw className="h-3 w-3" />
                     Reset

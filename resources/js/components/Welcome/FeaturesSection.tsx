@@ -66,13 +66,12 @@ export default function FeaturesSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">Fitur Unggulan</span>
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">Fitur Unggulan</span>
                         <h2
                             className="mx-auto max-w-3xl text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
-                            style={{ color: lightMode ? '#4A4A4A' : '#e5e7eb', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
                             Semua yang Anda butuhkan untuk
-                            <span className="text-[#6B7280] italic"> pembelajaran kolaboratif</span>
+                            <span className="text-brand-muted-dark italic"> pembelajaran kolaboratif</span>
                         </h2>
                     </motion.div>
 

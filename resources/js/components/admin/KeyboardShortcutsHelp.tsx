@@ -45,7 +45,6 @@ function KeyBadge({ children }: { children: React.ReactNode }) {
                 background: 'var(--dm-accent-bg)',
                 color: 'var(--dm-accent)',
                 border: '1px solid var(--dm-accent-border)',
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
         >
             {children}
@@ -101,7 +100,6 @@ export function KeyboardShortcutsHelp({ open, onClose }: KeyboardShortcutsHelpPr
                                             className="text-lg font-bold"
                                             style={{
                                                 color: 'var(--dm-text)',
-                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                                             }}
                                         >
                                             Pintasan Keyboard

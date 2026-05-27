@@ -111,19 +111,18 @@ export default function FaqSection({ lightMode }: Props) {
                         transition={{ duration: 0.7 }}
                         className="mb-16 text-center"
                     >
-                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-[#88161c] uppercase">
+                        <span className="mb-4 inline-block text-xl tracking-[0.2em] text-brand-primary uppercase">
                             FAQ
                         </span>
                         <h2
                             className="text-3xl font-light tracking-tight md:text-4xl lg:text-5xl"
                             style={{
                                 color: lightMode ? '#4A4A4A' : '#e5e7eb',
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
                             }}
                         >
-                            Pertanyaan yang <span className="text-[#6B7280] italic">sering ditanyakan</span>
+                            Pertanyaan yang <span className="text-brand-muted-dark italic">sering ditanyakan</span>
                         </h2>
-                        <p className="mx-auto mt-4 max-w-xl text-base text-[#6B7280]">
+                        <p className="mx-auto mt-4 max-w-xl text-base text-brand-muted-dark">
                             Temukan jawaban untuk pertanyaan umum seputar Kolabri
                         </p>
                     </motion.div>
@@ -158,7 +157,6 @@ export default function FaqSection({ lightMode }: Props) {
                                         : lightMode
                                             ? '1px solid rgba(0,0,0,0.08)'
                                             : '1px solid rgba(255,255,255,0.08)',
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 }}
                             >
                                 {cat.label}
@@ -196,7 +194,6 @@ export default function FaqSection({ lightMode }: Props) {
                                                     className="pr-4 text-base font-medium md:text-lg"
                                                     style={{
                                                         color: lightMode ? '#4A4A4A' : '#e5e7eb',
-                                                        fontFamily: "'Plus Jakarta Sans', sans-serif",
                                                     }}
                                                 >
                                                     {faq.question}
@@ -233,7 +230,6 @@ export default function FaqSection({ lightMode }: Props) {
                                                                 className="pt-4 text-sm leading-relaxed md:text-base"
                                                                 style={{
                                                                     color: '#6B7280',
-                                                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                                                                 }}
                                                             >
                                                                 {faq.answer}
