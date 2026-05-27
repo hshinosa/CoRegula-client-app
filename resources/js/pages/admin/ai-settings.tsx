@@ -272,8 +272,8 @@ function ProviderCard({
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-sm font-semibold text-brand-dark">{provider.displayName}</p>
-                        <p className="mt-1 truncate text-xs text-slate-600">{provider.name}</p>
+                        <p className="text-sm font-semibold text-brand-dark dark:text-gray-100">{provider.displayName}</p>
+                        <p className="mt-1 truncate text-xs text-slate-600 dark:text-gray-400">{provider.name}</p>
                     </div>
                     <span
                         className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
@@ -286,20 +286,20 @@ function ProviderCard({
                     </span>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-slate-600">
+                <div className="space-y-1.5 text-xs text-slate-600 dark:text-gray-400">
                     <p>
-                        <span className="font-medium text-brand-dark">Model:</span> {getProviderModel(provider)}
+                        <span className="font-medium text-brand-dark dark:text-gray-200">Model:</span> {getProviderModel(provider)}
                     </p>
                     <p>
-                        <span className="font-medium text-brand-dark">Base URL:</span> {provider.baseUrl || '-'}
+                        <span className="font-medium text-brand-dark dark:text-gray-200">Base URL:</span> {provider.baseUrl || '-'}
                     </p>
                     <p>
-                        <span className="font-medium text-brand-dark">Updated:</span> {formatDate(provider.updatedAt)}
+                        <span className="font-medium text-brand-dark dark:text-gray-200">Updated:</span> {formatDate(provider.updatedAt)}
                     </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                    <span className="text-xs font-medium text-brand-dark">Set Active</span>
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                    <span className="text-xs font-medium text-brand-dark dark:text-gray-200">Set Active</span>
                     <div className="flex items-center gap-2">
                         <ToggleSwitch
                             checked={provider.isActive}
@@ -314,21 +314,21 @@ function ProviderCard({
                     <button
                         type="button"
                         onClick={() => onTest(provider)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35 dark:border-white/20 dark:bg-white/5 dark:text-gray-200 dark:hover:border-brand-primary/50"
                     >
                         Test
                     </button>
                     <button
                         type="button"
                         onClick={() => onEdit(provider)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 transition hover:border-brand-primary/35 dark:border-white/20 dark:bg-white/5 dark:text-gray-200 dark:hover:border-brand-primary/50"
                     >
                         Edit
                     </button>
                     <button
                         type="button"
                         onClick={() => onDelete(provider)}
-                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2 text-xs text-rose-600 transition hover:bg-rose-100"
+                        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2 text-xs text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:hover:bg-rose-900/30"
                     >
                         Delete
                     </button>
@@ -677,7 +677,7 @@ background: 'var(--dm-accent-bg)',
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
                                         AI Settings
                                     </h1>
-                                    <p className="mt-2 max-w-2xl text-brand-muted-dark">
+                                    <p className="mt-2 max-w-2xl text-brand-muted-dark dark:text-gray-300">
                                         Kelola provider AI untuk kebutuhan admin tanpa ubah code. API key tetap disimpan aman,
                                         hanya ditampilkan dalam bentuk masked, dan satu provider aktif bisa dipilih langsung dari tabel.
                                     </p>
@@ -691,19 +691,19 @@ background: 'var(--dm-accent-bg)',
                         </div>
 
                         <div className="mt-5 grid gap-4 md:grid-cols-3">
-                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-brand-muted-dark">Total Providers</p>
-                                <p className="mt-2 text-2xl font-semibold text-brand-dark">{providerList.length}</p>
+                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Total Providers</p>
+                                <p className="mt-2 text-2xl font-semibold text-brand-dark dark:text-gray-100">{providerList.length}</p>
                             </div>
-                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-brand-muted-dark">Active Provider</p>
-                                <p className="mt-2 text-lg font-semibold text-brand-dark">
+                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Active Provider</p>
+                                <p className="mt-2 text-lg font-semibold text-brand-dark dark:text-gray-100">
                                     {activeProvider ? activeProvider.displayName : 'Belum ada'}
                                 </p>
                             </div>
-                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4">
-                                <p className="text-sm text-brand-muted-dark">Security</p>
-                                <p className="mt-2 text-sm font-medium text-brand-dark">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
+                            <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Security</p>
+                                <p className="mt-2 text-sm font-medium text-brand-dark dark:text-gray-100">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
                             </div>
                         </div>
                     </LiquidGlassCard>
@@ -714,22 +714,22 @@ background: 'var(--dm-accent-bg)',
                         <SkeletonCard cardCount={providerList.length || 3} />
                     ) : (
                     <LiquidGlassCard intensity="medium" className="overflow-hidden p-0" lightMode={true}>
-                        <div className="border-b border-black/5 px-6 py-4">
-                            <h2 className="text-lg font-semibold text-brand-dark">Provider List</h2>
-                            <p className="mt-1 text-sm text-brand-muted-dark">Aktifkan satu provider yang akan dipakai sistem, test koneksi kapan pun, lalu update konfigurasi via modal.</p>
+                        <div className="border-b border-black/5 px-6 py-4 dark:border-white/10">
+                            <h2 className="text-lg font-semibold text-brand-dark dark:text-gray-100">Provider List</h2>
+                            <p className="mt-1 text-sm text-brand-muted-dark dark:text-gray-300">Aktifkan satu provider yang akan dipakai sistem, test koneksi kapan pun, lalu update konfigurasi via modal.</p>
                         </div>
 
                         {providerList.length === 0 ? (
                             <div className="px-6 py-12 text-center">
                                 <Server className="mx-auto h-10 w-10 text-brand-primary/70" />
-                                <h3 className="mt-4 text-lg font-semibold text-brand-dark">Belum ada provider</h3>
-                                <p className="mt-2 text-sm text-brand-muted-dark">Tambahkan provider pertama untuk mulai mengelola AI Settings.</p>
+                                <h3 className="mt-4 text-lg font-semibold text-brand-dark dark:text-gray-100">Belum ada provider</h3>
+                                <p className="mt-2 text-sm text-brand-muted-dark dark:text-gray-300">Tambahkan provider pertama untuk mulai mengelola AI Settings.</p>
                             </div>
                         ) : (
                             <>
                                 <div className="hidden overflow-x-auto md:block">
-                                    <table className="min-w-full divide-y divide-black/5 text-sm">
-                                        <thead className="bg-white/60 text-left text-brand-muted-dark">
+                                    <table className="min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
+                                        <thead className="bg-white/60 text-left text-brand-muted-dark dark:bg-white/5 dark:text-gray-400">
                                             <tr>
                                                 <th className="px-6 py-4 font-medium">Name</th>
                                                 <th className="px-6 py-4 font-medium">Status</th>
@@ -739,7 +739,7 @@ background: 'var(--dm-accent-bg)',
                                                 <th className="px-6 py-4 text-right font-medium">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-black/5 bg-white/30">
+                                        <tbody className="divide-y divide-black/5 bg-white/30 dark:divide-white/10 dark:bg-white/5">
                                             {providerList.map((provider) => (
                                                 <tr key={provider.id} className={provider.isActive ? 'bg-brand-primary/[0.03]' : ''}>
                                                     <td className="px-6 py-4 align-top">
@@ -748,8 +748,8 @@ background: 'var(--dm-accent-bg)',
                                                                 <Server className="h-4 w-4" />
                                                             </div>
                                                             <div>
-                                                                <p className="font-semibold text-brand-dark">{provider.displayName}</p>
-                                                                <p className="text-xs text-brand-muted-dark">{provider.name}</p>
+                                                                <p className="font-semibold text-brand-dark dark:text-gray-100">{provider.displayName}</p>
+                                                                <p className="text-xs text-brand-muted-dark dark:text-gray-400">{provider.name}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -772,24 +772,24 @@ background: 'var(--dm-accent-bg)',
                                                             {activatingId === provider.id && buttonSpinner}
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 align-top text-brand-dark">{provider.baseUrl || '-'}</td>
-                                                    <td className="px-6 py-4 align-top font-mono text-xs text-brand-muted-dark">{provider.apiKeyMasked}</td>
-                                                    <td className="px-6 py-4 align-top text-brand-muted-dark">{formatDate(provider.updatedAt)}</td>
+                                                    <td className="px-6 py-4 align-top text-brand-dark dark:text-gray-200">{provider.baseUrl || '-'}</td>
+                                                    <td className="px-6 py-4 align-top font-mono text-xs text-brand-muted-dark dark:text-gray-400">{provider.apiKeyMasked}</td>
+                                                    <td className="px-6 py-4 align-top text-brand-muted-dark dark:text-gray-400">{formatDate(provider.updatedAt)}</td>
                                                     <td className="relative px-6 py-4 align-top text-right">
                                                         <button
                                                             type="button"
                                                             onClick={() => setOpenActionsFor(openActionsFor === provider.id ? null : provider.id)}
-                                                            className="rounded-lg p-2 text-brand-muted-dark transition hover:bg-black/5 hover:text-brand-dark"
+                                                            className="rounded-lg p-2 text-brand-muted-dark transition hover:bg-black/5 hover:text-brand-dark dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
 
                                                         {openActionsFor === provider.id ? (
-                                                            <div className="absolute right-6 top-14 z-20 w-48 rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-xl">
+                                                            <div className="absolute right-6 top-14 z-20 w-48 rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-xl dark:border-white/20 dark:bg-gray-800">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openEdit(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/10"
                                                                 >
                                                                     <UserPen className="h-4 w-4" />
                                                                     Edit
@@ -797,7 +797,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openTest(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/10"
                                                                 >
                                                                     <TestTube2 className="h-4 w-4" />
                                                                     Test Connection
@@ -805,7 +805,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleActivateProvider(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-brand-dark transition hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/10"
                                                                 >
                                                                     <Power className="h-4 w-4" />
                                                                     Set Active
@@ -813,7 +813,7 @@ background: 'var(--dm-accent-bg)',
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openDelete(provider)}
-                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                     Delete
@@ -852,8 +852,8 @@ background: 'var(--dm-accent-bg)',
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <h2 className="text-lg font-semibold text-brand-dark">Fallback Order</h2>
-                                <p className="mt-1 text-sm text-brand-muted-dark">
+                                <h2 className="text-lg font-semibold text-brand-dark dark:text-gray-100">Fallback Order</h2>
+                                <p className="mt-1 text-sm text-brand-muted-dark dark:text-gray-300">
                                     Urutan ini menentukan provider cadangan saat provider utama gagal. Pindahkan provider ke atas atau bawah untuk mengatur chain 1st → 2nd → 3rd.
                                 </p>
                             </div>
@@ -862,10 +862,10 @@ background: 'var(--dm-accent-bg)',
 
                         <div className="mt-5 space-y-3">
                             {fallbackProviders.map((provider, index) => (
-                                <div key={provider.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
+                                <div key={provider.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 dark:border-white/20 dark:bg-white/5">
                                     <div>
-                                        <p className="font-medium text-brand-dark">{index + 1}. {provider.displayName}</p>
-                                        <p className="text-xs text-brand-muted-dark">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
+                                        <p className="font-medium text-brand-dark dark:text-gray-100">{index + 1}. {provider.displayName}</p>
+                                        <p className="text-xs text-brand-muted-dark dark:text-gray-400">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -901,7 +901,7 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={handleCreateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="text-sm font-medium text-brand-dark">Provider Name</label>
+                            <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Provider Name</label>
                             <input
                                 value={createForm.name}
                                 onChange={(event) => setCreateForm((prev) => ({ ...prev, name: event.target.value }))}
@@ -911,7 +911,7 @@ background: 'var(--dm-accent-bg)',
                             <InputError message={createErrors.name} className="mt-2" />
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-brand-dark">Display Name</label>
+                            <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Display Name</label>
                             <input
                                 value={createForm.displayName}
                                 onChange={(event) => setCreateForm((prev) => ({ ...prev, displayName: event.target.value }))}
@@ -923,7 +923,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">API Key</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">API Key</label>
                         <div className="relative">
                             <input
                                 type={showCreateApiKey ? 'text' : 'password'}
@@ -935,7 +935,7 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowCreateApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-400"
                             >
                                 {showCreateApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -944,7 +944,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">Base URL</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Base URL</label>
                         <input
                             value={createForm.baseUrl}
                             onChange={(event) => setCreateForm((prev) => ({ ...prev, baseUrl: event.target.value }))}
@@ -955,7 +955,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">Config (JSON)</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Config (JSON)</label>
                         <textarea
                             value={createForm.config}
                             onChange={(event) => setCreateForm((prev) => ({ ...prev, config: event.target.value }))}
@@ -985,11 +985,11 @@ background: 'var(--dm-accent-bg)',
                 <form onSubmit={handleUpdateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label className="text-sm font-medium text-brand-dark">Provider Name</label>
-                            <input value={editForm.name} disabled className={`${inputClassName} cursor-not-allowed bg-slate-100 text-slate-500`} />
+                            <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Provider Name</label>
+                            <input value={editForm.name} disabled className={`${inputClassName} cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-gray-800 dark:text-gray-500`} />
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-brand-dark">Display Name</label>
+                            <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Display Name</label>
                             <input
                                 value={editForm.displayName}
                                 onChange={(event) => setEditForm((prev) => ({ ...prev, displayName: event.target.value }))}
@@ -1000,7 +1000,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">New API Key</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">New API Key</label>
                         <div className="relative">
                             <input
                                 type={showEditApiKey ? 'text' : 'password'}
@@ -1012,17 +1012,17 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowEditApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-400"
                             >
                                 {showEditApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                         </div>
-                        <p className="mt-2 text-xs text-brand-muted-dark">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
+                        <p className="mt-2 text-xs text-brand-muted-dark dark:text-gray-400">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
                         <InputError message={editErrors.apiKey} className="mt-2" />
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">Base URL</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Base URL</label>
                         <input
                             value={editForm.baseUrl}
                             onChange={(event) => setEditForm((prev) => ({ ...prev, baseUrl: event.target.value }))}
@@ -1033,7 +1033,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">Config (JSON)</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Config (JSON)</label>
                         <textarea
                             value={editForm.config}
                             onChange={(event) => setEditForm((prev) => ({ ...prev, config: event.target.value }))}
@@ -1069,7 +1069,7 @@ background: 'var(--dm-accent-bg)',
                 maxWidth="max-w-lg"
             >
                 <div className="space-y-5">
-                    <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400">
                         Anda akan menghapus <strong>{selectedProvider?.displayName}</strong>.
                     </div>
 
@@ -1098,12 +1098,12 @@ background: 'var(--dm-accent-bg)',
                 maxWidth="max-w-xl"
             >
                 <div className="space-y-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-brand-dark">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-brand-dark dark:border-white/20 dark:bg-white/5 dark:text-gray-200">
                         Provider: <strong>{selectedProvider?.displayName}</strong>
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-brand-dark">Test Prompt</label>
+                        <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Test Prompt</label>
                         <textarea
                             value={testPrompt}
                             onChange={(event) => setTestPrompt(event.target.value)}
@@ -1123,12 +1123,12 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     {testResult ? (
-                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                            <div className="flex items-center gap-2 text-emerald-700">
+                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-900/20">
+                            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                                 <CheckCircle2 className="h-5 w-5" />
                                 <p className="font-semibold">Test berhasil</p>
                             </div>
-                            <div className="mt-3 space-y-2 text-sm text-brand-dark">
+                            <div className="mt-3 space-y-2 text-sm text-brand-dark dark:text-gray-200">
                                 <p>
                                     <strong>Status:</strong> {testResult.status}
                                 </p>
@@ -1140,7 +1140,7 @@ background: 'var(--dm-accent-bg)',
                                 </p>
                                 <div>
                                     <strong>Response:</strong>
-                                    <div className="mt-2 rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-brand-dark">
+                                    <div className="mt-2 rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-brand-dark dark:border-emerald-900/50 dark:bg-emerald-900/10 dark:text-gray-200">
                                         {testResult.response}
                                     </div>
                                 </div>
