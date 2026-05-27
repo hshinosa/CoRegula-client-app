@@ -116,11 +116,11 @@ export default function GuestLayout({ children }: PropsWithChildren) {
 
                             {/* Divider + subtitle */}
                             <div className="mt-4 flex items-center justify-center gap-4">
-                                <span className="h-px w-16 bg-[#88161c] opacity-25" />
-                                <p className="text-sm font-semibold tracking-[0.2em] text-[#88161c] uppercase">
+                                <span className="h-px w-16 bg-brand-primary opacity-25" />
+                                <p className="text-sm font-semibold tracking-[0.2em] text-brand-primary uppercase">
                                     Platform Kolaborasi
                                 </p>
-                                <span className="h-px w-16 bg-[#88161c] opacity-25" />
+                                <span className="h-px w-16 bg-brand-primary opacity-25" />
                             </div>
 
                             {/* Description */}
@@ -227,7 +227,7 @@ export default function GuestLayout({ children }: PropsWithChildren) {
                             className="relative z-10 mt-6 text-center text-xs"
                             style={{ color: t('#6B7280', '#94a3b8') }}
                         >
-                            <p className="font-medium text-[#88161c]">Dikembangkan di Telkom University</p>
+                            <p className="font-medium text-brand-primary">Dikembangkan di Telkom University</p>
                         </motion.footer>
                     </div>
                 </div>

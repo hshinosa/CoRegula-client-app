@@ -225,7 +225,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             >
                                 Kolabri
                             </span>
-                            <p className="text-xs text-[#6B7280]">Platform Kolaborasi</p>
+                            <p className="text-xs text-brand-muted-dark">Platform Kolaborasi</p>
                         </div>
                     </div>
 
@@ -239,7 +239,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         {user?.role === 'admin' && (
                             <button
                                 onClick={() => setSearchOpen(true)}
-                                className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-[#6B7280] hover:text-[#88161c]"
+                                className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
                                 style={{
                                     background: 'rgba(136,22,28,0.04)',
                                     border: '1px solid rgba(136,22,28,0.08)',
@@ -374,7 +374,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                     {user?.role === 'admin' && (
                                         <button
                                             onClick={() => { setSearchOpen(true); setSidebarOpen(false); }}
-                                            className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-[#6B7280] hover:text-[#88161c]"
+                                            className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
                                             style={{
                                                 background: 'rgba(136,22,28,0.04)',
                                                 border: '1px solid rgba(136,22,28,0.08)',
@@ -449,7 +449,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         </button>
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#6B7280] transition-all"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-brand-muted-dark transition-all"
                             style={{
                                 background: 'var(--dm-surface-transparent)',
                                 border: `1px solid var(--dm-surface-transparent-strong)`,
