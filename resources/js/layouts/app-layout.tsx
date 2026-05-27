@@ -266,25 +266,29 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                         style={{ borderTop: `1px solid var(--dm-sidebar-divider)` }}
                     >
                         <div 
-                            className="flex items-center gap-3 rounded-2xl p-3"
+                            className="flex items-center gap-3 rounded-2xl p-3 transition-all"
                             style={{
                                 background: 'var(--dm-sidebar-user-bg)',
                                 border: `1px solid var(--dm-sidebar-divider)`,
                             }}
                         >
                             <div 
-                                className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white"
+                                className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-bold text-white text-sm shadow-sm"
                                 style={{
                                     background: 'linear-gradient(135deg, #88161c 0%, #a41219 100%)',
                                 }}
                             >
                                 {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                <div 
+                                    className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-400"
+                                    style={{ borderColor: 'var(--dm-surface-solid)' }}
+                                />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="truncate font-semibold text-[var(--dm-text)]">
+                                <p className="truncate text-sm font-semibold text-[var(--dm-text)] leading-tight">
                                     {user?.name || 'User'}
                                 </p>
-                                <p className="truncate text-xs text-[var(--dm-text-secondary)] capitalize">
+                                <p className="truncate text-[11px] text-[var(--dm-text-muted)] capitalize mt-0.5">
                                     {user?.role || 'Tamu'}
                                 </p>
                             </div>

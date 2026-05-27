@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { Bell, ChevronDown, LogOut, Moon, Settings, Sun } from 'lucide-react';
+import { LogOut, Moon, Settings, Sun, ChevronUp } from 'lucide-react';
 
 import NotificationCenter from '@/components/dashboard/NotificationCenter';
 import auth from '@/routes/auth';
@@ -18,8 +18,6 @@ interface ProfileDropdownProps {
 export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: ProfileDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const displayName = user?.name?.trim() || 'User';
-    const initials = displayName.charAt(0).toUpperCase();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -37,66 +35,96 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
             <button
                 type="button"
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-xl p-2 text-[var(--dm-text-secondary)] transition-colors hover:text-[var(--dm-accent)]"
-                style={{ background: isOpen ? 'var(--dm-surface)' : 'var(--dm-surface-transparent)' }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
+                style={{
+                    background: isOpen ? 'var(--dm-accent-bg)' : 'transparent',
+                    color: isOpen ? 'var(--dm-accent)' : 'var(--dm-text-muted)',
+                    border: isOpen ? '1px solid var(--dm-accent-border)' : '1px solid transparent',
+                }}
+                onMouseEnter={(e) => {
+                    if (!isOpen) {
+                        e.currentTarget.style.background = 'var(--dm-surface-transparent)';
+                        e.currentTarget.style.color = 'var(--dm-text-secondary)';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!isOpen) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'var(--dm-text-muted)';
+                    }
+                }}
+                title="Profile settings"
             >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-sm font-semibold text-white">
-                    {initials}
-                </div>
-                <div className="hidden text-left md:block">
-                    <p className="text-sm font-semibold text-[var(--dm-text)]">{displayName}</p>
-                    <p className="text-xs capitalize text-[var(--dm-text-secondary)]">{user.role}</p>
-                </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronUp className={`h-4 w-4 transition-transform duration-200 ${isOpen ? '' : 'rotate-180'}`} />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute bottom-full right-0 z-50 mb-2 w-80 overflow-hidden rounded-xl border shadow-lg"
+                    className="absolute bottom-full left-1/2 z-50 mb-3 w-56 -translate-x-1/2 overflow-hidden rounded-2xl shadow-xl"
                     style={{
-                        background: 'var(--dm-surface)',
-                        borderColor: 'var(--dm-border)',
+                        background: 'var(--dm-surface-solid)',
+                        border: '1px solid var(--dm-border-strong)',
+                        backdropFilter: 'blur(20px)',
                     }}
                 >
-                    <div className="p-3">
-                        <div className="mb-2 flex items-center gap-2 px-2 text-sm font-semibold text-[var(--dm-text)]">
-                            <Bell className="h-4 w-4" />
-                            <span>Notifikasi</span>
+                    <div className="p-1.5">
+                        <div className="px-3 py-2.5 mb-1">
+                            <p className="text-xs font-medium text-[var(--dm-text-muted)] uppercase tracking-wider">Akun</p>
                         </div>
-                        <NotificationCenter lightMode={!darkMode} inDropdown />
-                    </div>
 
-                    <div className="border-t p-2" style={{ borderColor: 'var(--dm-border)' }}>
+                        <div className="px-1.5 pb-1.5">
+                            <NotificationCenter />
+                        </div>
+
                         <button
                             type="button"
-                            onClick={() => {
-                                onToggleDarkMode();
-                                setIsOpen(false);
+                            onClick={onToggleDarkMode}
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
+                            style={{ color: 'var(--dm-text)' }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--dm-surface-hover)';
                             }}
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[var(--dm-text)] transition-colors hover:bg-[var(--dm-surface-hover)]"
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                            }}
                         >
-                            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                            <span className="flex-1 text-left">{darkMode ? 'Mode Terang' : 'Mode Gelap'}</span>
+                            {darkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-400" />}
+                            <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                            <span className="ml-auto text-[10px] text-[var(--dm-text-muted)]">
+                                {darkMode ? '☀' : '☾'}
+                            </span>
                         </button>
 
                         <Link
-                            href="/settings"
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[var(--dm-text)] transition-colors hover:bg-[var(--dm-surface-hover)]"
-                            onClick={() => setIsOpen(false)}
+                            href="/settings/profile"
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--dm-text)] transition-colors"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                            }}
                         >
-                            <Settings className="h-5 w-5" />
-                            <span className="flex-1 text-left">Pengaturan</span>
+                            <Settings className="h-4 w-4 text-[var(--dm-text-muted)]" />
+                            <span>Settings</span>
                         </Link>
+
+                        <div className="my-1.5 mx-3 h-px" style={{ background: 'var(--dm-border)' }} />
 
                         <Link
                             href={auth.logout.url()}
                             method="post"
                             as="button"
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                            onClick={() => setIsOpen(false)}
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400 transition-colors"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                            }}
                         >
-                            <LogOut className="h-5 w-5" />
-                            <span className="flex-1 text-left">Keluar</span>
+                            <LogOut className="h-4 w-4" />
+                            <span>Log out</span>
                         </Link>
                     </div>
                 </div>
