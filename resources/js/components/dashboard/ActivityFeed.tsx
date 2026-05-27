@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Activity, BookOpen, MessageSquare, Pencil, Users, AlertTriangle } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export interface ActivityItem {
     id: string;
@@ -60,12 +61,11 @@ export default function ActivityFeed({ activities, lightMode = true, maxItems = 
 
     if (items.length === 0) {
         return (
-            <div className="px-4 py-8 text-center">
-                <Activity className="mx-auto mb-2 h-8 w-8 opacity-30" style={{ color: lightMode ? '#6B7280' : '#9ca3af' }} />
-                <p className="text-sm" style={{ color: lightMode ? '#6B7280' : '#9ca3af' }}>
-                    Belum ada aktivitas terbaru
-                </p>
-            </div>
+            <EmptyState
+                icon={Activity}
+                title="Belum ada aktivitas"
+                description="Aktivitas terbaru Anda akan muncul di sini"
+            />
         );
     }
 

@@ -20,9 +20,10 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { AdminPagination } from '@/components/ui/AdminPagination';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { InputError } from '@/components/ui/input-error';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
-import { SkeletonTable } from '@/components/ui/skeletons';
+import { TableRowSkeleton } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV, parseCSV, validateCSVColumns, type CsvRecord } from '@/lib/csv-utils';
 import { connectWebSocket } from '@/lib/websocket';
@@ -155,6 +156,10 @@ function FormModal({
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-40 bg-black"
                     onClick={onClose}
+                    style={{
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
+                    }}
                 />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -171,7 +176,10 @@ function FormModal({
                             border: '1px solid var(--dm-border-strong)',
                         }}
                     >
-                        <div className="flex items-start justify-between gap-4">
+                        <div
+                            className="flex items-start justify-between gap-4 pb-4"
+                            style={{ borderBottom: '1px solid var(--dm-border)' }}
+                        >
                             <div>
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
@@ -181,12 +189,21 @@ function FormModal({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
+                                style={{
+                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="mt-6">{children}</div>
+                        <div className="mt-6 space-y-4">{children}</div>
                     </div>
                 </motion.div>
             </>
@@ -218,8 +235,8 @@ function UserCard({
         <LiquidGlassCard intensity="light" className="p-4 transition-shadow duration-200" lightMode={true}>
             <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                        <label className="mb-3 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
+                    <div className="min-w-0 flex-1">
+                        <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
                             <input
                                 type="checkbox"
                                 checked={selected}
@@ -228,10 +245,10 @@ function UserCard({
                             />
                             Select user
                         </label>
-                        <p className="text-sm font-semibold text-brand-dark">{user.name}</p>
-                        <p className="mt-1 truncate text-xs text-slate-600">{user.email}</p>
+                        <p className="text-base font-semibold text-[var(--dm-text)]">{user.name}</p>
+                        <p className="mt-0.5 truncate text-sm text-[var(--dm-text-secondary)]">{user.email}</p>
                     </div>
-                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusBadgeClassName}`}>
+                    <span className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${statusBadgeClassName}`}>
                         {statusLabel}
                     </span>
                 </div>
@@ -240,7 +257,7 @@ function UserCard({
                     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${roleConfig[user.role].className}`}>
                         {roleConfig[user.role].label}
                     </span>
-                    <span className="text-xs text-slate-500">Created: {formatDate(user.created_at)}</span>
+                    <span className="text-xs text-[var(--dm-text-muted)]">Created: {formatDate(user.created_at)}</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -278,6 +295,7 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
     const [roleFilter, setRoleFilter] = useState<FilterRole>(filters.role ?? 'all');
     const [limit, setLimit] = useState<number>(pagination.limit);
     const [isFetching, setIsFetching] = useState(false);
+    const [showSkeleton, setShowSkeleton] = useState(false);
     const [openActionsFor, setOpenActionsFor] = useState<string | null>(null);
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -417,7 +435,9 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
         role?: FilterRole;
         search?: string;
     } = {}) => {
+        const startTime = Date.now();
         setIsFetching(true);
+        setShowSkeleton(true);
 
         router.get(
             '/admin/users',
@@ -432,7 +452,13 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
                 preserveScroll: true,
                 replace: true,
                 onFinish: () => {
-                    setIsFetching(false);
+                    const elapsed = Date.now() - startTime;
+                    const remaining = Math.max(0, 300 - elapsed);
+                    
+                    setTimeout(() => {
+                        setIsFetching(false);
+                        setShowSkeleton(false);
+                    }, remaining);
                 },
             },
         );
@@ -919,17 +945,11 @@ background: 'var(--dm-accent-bg)',
                         </div>
 
                         <div className="relative">
-                            {isFetching && (
-                                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/65 backdrop-blur-[2px]">
-                                    <SkeletonTable columns={6} rows={6} />
-                                </div>
-                            )}
-
                             <div className="hidden overflow-x-auto rounded-2xl border border-white/70 bg-white/55 md:block">
                                 <table className="min-w-full divide-y divide-white/70">
                                     <thead className="bg-white/70">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">
                                                 <input
                                                     type="checkbox"
                                                     checked={allUsersSelected}
@@ -938,23 +958,31 @@ background: 'var(--dm-accent-bg)',
                                                     className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                 />
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Name</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Email</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Role</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Created At</th>
-                                            <th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 uppercase">Actions</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Name</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Email</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Role</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Created At</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/70">
-                                        {userList.length === 0 ? (
+                                        {showSkeleton ? (
+                                            Array.from({ length: 5 }).map((_, i) => (
+                                                <TableRowSkeleton key={i} columns={6} />
+                                            ))
+                                        ) : userList.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
-                                                    No users found. Try changing search or filters.
+                                                <td colSpan={6} className="px-4 py-8">
+                                                    <EmptyState
+                                                        icon={Search}
+                                                        title="Tidak ada data ditemukan"
+                                                        description="Coba ubah pencarian atau filter untuk menemukan user."
+                                                    />
                                                 </td>
                                             </tr>
                                         ) : (
                                             userList.map((user) => (
-                                                <tr key={user.id} className="hover:bg-white/60">
+                                                <tr key={user.id} className="transition-colors duration-150 hover:bg-[var(--dm-surface-hover)]">
                                                     <td className="px-4 py-3 text-sm text-slate-600">
                                                         <input
                                                             type="checkbox"
@@ -1030,8 +1058,12 @@ background: 'var(--dm-accent-bg)',
 
                             <div className="block space-y-4 md:hidden">
                                 {userList.length === 0 ? (
-                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-12 text-center text-sm text-brand-muted-dark">
-                                        No users found. Try changing search or filters.
+                                    <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-8">
+                                        <EmptyState
+                                            icon={Search}
+                                            title="Tidak ada data ditemukan"
+                                            description="Coba ubah pencarian atau filter untuk menemukan user."
+                                        />
                                     </div>
                                 ) : (
                                     userList.map((user) => (
@@ -1130,7 +1162,10 @@ background: 'var(--dm-accent-bg)',
                         </div>
                     )}
 
-                    <div className="flex gap-3 pt-2">
+                    <div
+                        className="flex gap-3 pt-4"
+                        style={{ borderTop: '1px solid var(--dm-border)' }}
+                    >
                         <SecondaryButton onClick={closeImportModal} className="flex-1">
                             Cancel
                         </SecondaryButton>
@@ -1212,7 +1247,10 @@ background: 'var(--dm-accent-bg)',
                         <InputError message={createForm.errors.role} />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div
+                        className="flex gap-3 pt-4"
+                        style={{ borderTop: '1px solid var(--dm-border)' }}
+                    >
                         <SecondaryButton onClick={closeCreateModal} className="flex-1">
                             Cancel
                         </SecondaryButton>
@@ -1277,7 +1315,10 @@ background: 'var(--dm-accent-bg)',
                         <InputError message={editForm.errors.role} />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div
+                        className="flex gap-3 pt-4"
+                        style={{ borderTop: '1px solid var(--dm-border)' }}
+                    >
                         <SecondaryButton onClick={closeEditModal} className="flex-1">
                             Cancel
                         </SecondaryButton>
@@ -1306,7 +1347,10 @@ background: 'var(--dm-accent-bg)',
                         Anda akan menghapus user <span className="font-semibold">{selectedUser?.name}</span>.
                     </div>
 
-                    <div className="flex gap-3">
+                    <div
+                        className="flex gap-3 pt-4"
+                        style={{ borderTop: '1px solid var(--dm-border)' }}
+                    >
                         <SecondaryButton onClick={closeDeleteModal} className="flex-1">
                             Cancel
                         </SecondaryButton>
@@ -1338,7 +1382,10 @@ background: 'var(--dm-accent-bg)',
                         <InputError message={resetPasswordForm.errors.password} />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div
+                        className="flex gap-3 pt-4"
+                        style={{ borderTop: '1px solid var(--dm-border)' }}
+                    >
                         <SecondaryButton onClick={closeResetPasswordModal} className="flex-1">
                             Cancel
                         </SecondaryButton>

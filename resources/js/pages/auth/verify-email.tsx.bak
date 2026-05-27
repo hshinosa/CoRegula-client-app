@@ -50,12 +50,12 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                         >
                             <Mail size={28} className="text-blue-500" />
                         </div>
-                        <h1 className="text-2xl font-bold tracking-tight text-[var(--dm-text)]">
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Verifikasi Email Anda
                         </h1>
-                        <p className="mt-1.5 text-sm text-[var(--dm-text-secondary)]">
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             Kami telah mengirim email verifikasi ke{' '}
-                            <strong className="text-[var(--dm-text)]">
+                            <strong className="text-brand-dark dark:text-slate-50">
                                 {email || 'email Anda'}
                             </strong>
                         </p>
@@ -86,14 +86,15 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                     )}
 
                     <div
-                        className="mb-6 rounded-xl p-4 text-sm text-[var(--dm-text)]"
+                        className="mb-6 rounded-xl p-4 text-sm"
                         style={{
                             background: lightMode ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.1)',
                             border: `1px solid ${lightMode ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.25)'}`,
+                            color: lightMode ? '#4A4A4A' : '#e2e8f0',
                         }}
                     >
                         <p className="mb-2 font-medium">Langkah selanjutnya:</p>
-                        <ol className="list-inside list-decimal space-y-1 text-slate-500 text-[var(--dm-text-secondary)]">
+                        <ol className="list-inside list-decimal space-y-1 text-slate-500 dark:text-slate-400">
                             <li>Buka kotak masuk email Anda</li>
                             <li>Cari email dari Kolabri (periksa folder spam jika tidak ada)</li>
                             <li>Klik tombol verifikasi di dalam email</li>
@@ -118,7 +119,7 @@ export default function VerifyEmail({ email, success }: VerifyEmailProps) {
                         </PrimaryButton>
                     </form>
 
-                    <p className="mt-6 text-center text-sm text-slate-500 text-[var(--dm-text-secondary)]">
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         <Link href="/login" className="font-medium text-brand-primary hover:underline">
                             Kembali ke Masuk
                         </Link>

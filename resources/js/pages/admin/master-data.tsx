@@ -27,8 +27,8 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
-import { AdminPagination } from '@/components/ui/AdminPagination';
-import { SkeletonTable } from '@/components/ui/skeletons';
+import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import { TableRowSkeleton } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV, parseCSV, validateCSVColumns, type CsvRecord } from '@/lib/csv-utils';
 import { connectWebSocket } from '@/lib/websocket';
@@ -263,6 +263,10 @@ function FormModal({
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-40 bg-black"
                     onClick={onClose}
+                    style={{
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
+                    }}
                 />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -279,7 +283,10 @@ function FormModal({
                             border: '1px solid var(--dm-border-strong)',
                         }}
                     >
-                        <div className="flex items-start justify-between gap-4">
+                        <div
+                            className="flex items-start justify-between gap-4 pb-4"
+                            style={{ borderBottom: '1px solid var(--dm-border)' }}
+                        >
                             <div>
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
@@ -289,12 +296,21 @@ function FormModal({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
+                                style={{
+                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="mt-6">{children}</div>
+                        <div className="mt-6 space-y-4">{children}</div>
                     </div>
                 </motion.div>
             </>
@@ -393,6 +409,7 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
     const [ownerFilter, setOwnerFilter] = useState(filters.ownerId ?? 'all');
     const [limit, setLimit] = useState<number>(pagination.limit || 10);
     const [isFetching, setIsFetching] = useState(false);
+    const [showSkeleton, setShowSkeleton] = useState(false);
     const [openActionsFor, setOpenActionsFor] = useState<string | null>(null);
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -584,7 +601,9 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
         ownerId?: string;
         search?: string;
     } = {}) => {
+        const startTime = Date.now();
         setIsFetching(true);
+        setShowSkeleton(true);
 
         router.get(
             '/admin/master-data',
@@ -599,7 +618,15 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-                onFinish: () => setIsFetching(false),
+                onFinish: () => {
+                    const elapsed = Date.now() - startTime;
+                    const remaining = Math.max(0, 300 - elapsed);
+                    
+                    setTimeout(() => {
+                        setIsFetching(false);
+                        setShowSkeleton(false);
+                    }, remaining);
+                },
             },
         );
     }, [isArchivedView, limit, ownerFilter, paginationState.page, searchInput]);
@@ -1393,12 +1420,6 @@ background: 'var(--dm-accent-bg)',
                         )}
 
                         <div className="relative">
-                            {isFetching && (
-                                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/65 backdrop-blur-[2px]">
-                                    <SkeletonTable columns={6} rows={6} />
-                                </div>
-                            )}
-
                             <div className="hidden overflow-x-auto rounded-2xl border border-white/70 bg-white/55 md:block">
                                 <table className="min-w-full divide-y divide-white/70">
                                     <thead className="bg-white/70">
@@ -1424,7 +1445,11 @@ background: 'var(--dm-accent-bg)',
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/70">
-                                        {courseList.length === 0 ? (
+                                        {showSkeleton ? (
+                                            Array.from({ length: 5 }).map((_, i) => (
+                                                <TableRowSkeleton key={i} columns={isArchivedView ? 7 : 8} />
+                                            ))
+                                        ) : courseList.length === 0 ? (
                                             <tr>
                                                 <td colSpan={isArchivedView ? 7 : 8} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
                                                     {isArchivedView ? 'No archived courses found.' : 'No courses found. Try changing search or filters.'}

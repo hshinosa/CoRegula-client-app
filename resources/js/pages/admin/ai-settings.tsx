@@ -147,6 +147,10 @@ function FormModal({
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-40 bg-black"
                     onClick={onClose}
+                    style={{
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
+                    }}
                 />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -163,7 +167,10 @@ function FormModal({
                             border: '1px solid var(--dm-border-strong)',
                         }}
                     >
-                        <div className="flex items-start justify-between gap-4">
+                        <div
+                            className="flex items-start justify-between gap-4 pb-4"
+                            style={{ borderBottom: '1px solid var(--dm-border)' }}
+                        >
                             <div>
                                 <h3 className="text-lg font-semibold" style={headingStyle}>
                                     {title}
@@ -173,12 +180,21 @@ function FormModal({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-black/5 hover:text-brand-dark"
+                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
+                                style={{
+                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="mt-6">{children}</div>
+                        <div className="mt-6 space-y-4">{children}</div>
                     </div>
                 </motion.div>
             </>

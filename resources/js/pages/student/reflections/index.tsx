@@ -11,6 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
 import { Course, Reflection, ReflectionTemplate } from '@/types';
 import { Skeleton } from '@/components/ui/skeletons';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 import { ReflectionSearchBar } from './components/ReflectionSearchBar';
 import { FilterChips } from './components/FilterChips';
@@ -443,60 +444,28 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                         </motion.div>
 
                         {hasActiveFilters && filteredReflections.length === 0 ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                            >
-                                <LiquidGlassCard intensity="light" className="flex flex-col items-center justify-center py-12 text-center" lightMode={true}>
-                                    <div
-                                        className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
-                                        style={{
-                                            background: 'rgba(136,22,28,0.08)',
-                                            border: '1px solid rgba(136,22,28,0.12)',
-                                        }}
-                                    >
-                                        <Pencil className="h-7 w-7" style={{ color: 'var(--color-brand-primary)' }} />
-                                    </div>
-                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Tidak ada refleksi yang cocok
-                                    </h3>
-                                    <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
-                                        Coba ubah kata kunci pencarian atau filter yang digunakan.
-                                    </p>
-                                    <SecondaryButton onClick={clearFilters} className="mt-4">
+                            <EmptyState
+                                icon={Pencil}
+                                title="Tidak ada refleksi yang cocok"
+                                description="Coba ubah kata kunci pencarian atau filter yang digunakan"
+                                action={
+                                    <SecondaryButton onClick={clearFilters}>
                                         Hapus Filter
                                     </SecondaryButton>
-                                </LiquidGlassCard>
-                            </motion.div>
+                                }
+                            />
                         ) : safeReflections.length === 0 ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                            >
-                                <LiquidGlassCard intensity="light" className="flex flex-col items-center justify-center py-12 text-center" lightMode={true}>
-                                    <div
-                                        className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
-                                        style={{
-                                            background: 'rgba(136,22,28,0.08)',
-                                            border: '1px solid rgba(136,22,28,0.12)',
-                                        }}
-                                    >
-                                        <Pencil className="h-7 w-7" style={{ color: 'var(--color-brand-primary)' }} />
-                                    </div>
-                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Belum Ada Refleksi
-                                    </h3>
-                                    <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
-                                        Mulai perjalanan refleksi Anda dengan menulis refleksi pertama.
-                                    </p>
-                                    <PrimaryButton onClick={() => setShowCreateModal(true)} className="mt-4">
-                                        <Plus className="h-4 w-4" />
-                                        Tulis Refleksi Mingguan
+                            <EmptyState
+                                icon={Pencil}
+                                title="Belum ada refleksi"
+                                description="Mulai perjalanan refleksi Anda dengan menulis refleksi pertama"
+                                action={
+                                    <PrimaryButton onClick={() => setShowCreateModal(true)}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Tulis Refleksi
                                     </PrimaryButton>
-                                </LiquidGlassCard>
-                            </motion.div>
+                                }
+                            />
                         ) : (
                             <div className="space-y-6">
                                 {sessionReflections.length > 0 && (

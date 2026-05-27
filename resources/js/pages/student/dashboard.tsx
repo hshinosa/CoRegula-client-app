@@ -4,8 +4,10 @@ import { BookOpen, MessageSquare, Pencil, Sparkles, Users } from 'lucide-react';
 
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
+import { EnhancedStatCard } from '@/components/dashboard/EnhancedStatCard';
 import QuickActionsGrid from '@/components/dashboard/QuickActionsGrid';
 import { useStudentNav } from '@/components/navigation/student-nav';
+import { SkeletonStatCard } from '@/components/ui/skeletons';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
@@ -116,36 +118,22 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {statCards.map((stat, index) => (
-                            <motion.div
-                                key={stat.label}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 * (index + 1), duration: 0.5 }}
-                            >
-                                <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <p className="text-sm text-brand-muted-dark">{stat.label}</p>
-                                            <p
-                                                className="mt-2 text-3xl font-light font-sans text-brand-dark"
-                                            >
-                                                {stat.value}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                            style={{
-                                                background: `${stat.color}15`,
-                                                border: `1px solid ${stat.color}25`,
-                                            }}
-                                        >
-                                            <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-                                        </div>
-                                    </div>
-                                </LiquidGlassCard>
-                            </motion.div>
-                        ))}
+                        {!stats ? (
+                            Array.from({ length: 4 }).map((_, index) => (
+                                <SkeletonStatCard key={index} />
+                            ))
+                        ) : (
+                            statCards.map((stat, index) => (
+                                <EnhancedStatCard
+                                    key={stat.label}
+                                    label={stat.label}
+                                    value={stat.value}
+                                    icon={stat.icon}
+                                    color={stat.color}
+                                    isPrimary={index === 0}
+                                />
+                            ))
+                        )}
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-3">

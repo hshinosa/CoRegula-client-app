@@ -7,7 +7,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { AdminPagination } from '@/components/ui/AdminPagination';
-import { SkeletonTable } from '@/components/ui/skeletons';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TableRowSkeleton } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV } from '@/lib/csv-utils';
 import AppLayout from '@/layouts/app-layout';
@@ -129,6 +130,7 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
     const [auditMeta, setAuditMeta] = useState<AuditMeta>(meta);
     const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showSkeleton, setShowSkeleton] = useState(false);
     const [searchUser, setSearchUser] = useState(filters.userId ?? '');
     const [filterState, setFilterState] = useState<AuditFilters>({
         action: filters.action ?? '',
@@ -153,7 +155,9 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
     }, [filterState]);
 
     const fetchAuditLogs = async (nextFilters: AuditFilters) => {
+        const startTime = Date.now();
         setIsLoading(true);
+        setShowSkeleton(true);
 
         try {
             const response = await axios.get<{ data: AuditLogItem[]; meta: AuditMeta }>('/admin/audit-logs', {
@@ -168,7 +172,13 @@ export default function AdminAuditLogPage({ logs, meta, filters }: PageProps) {
         } catch {
             toast.error('Failed to load audit logs.');
         } finally {
-            setIsLoading(false);
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, 300 - elapsed);
+            
+            setTimeout(() => {
+                setIsLoading(false);
+                setShowSkeleton(false);
+            }, remaining);
         }
     };
 
@@ -352,33 +362,45 @@ background: 'var(--dm-accent-bg)',
                             </SecondaryButton>
                         </div>
 
-                        <div className="relative overflow-x-auto rounded-2xl border border-white/70 bg-white/55">
-                            {isLoading && (
-                                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/65 backdrop-blur-[2px]">
-                                    <SkeletonTable columns={6} rows={6} />
-                                </div>
-                            )}
-                            <table className="min-w-full divide-y divide-white/70">
+                        <div className="relative">
+                            {/* Desktop table */}
+                            <div className="hidden overflow-x-auto rounded-2xl border border-white/70 bg-white/55 md:block">
+                                <table className="min-w-full divide-y divide-white/70">
                                 <thead className="bg-white/70">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Timestamp</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">User</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Action</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Entity</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">Details</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 uppercase">Changes</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Timestamp</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">User</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Action</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Entity</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Details</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Changes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/70">
-                                    {auditLogs.length === 0 ? (
+                                    {showSkeleton ? (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                            <TableRowSkeleton key={i} columns={6} />
+                                        ))
+                                    ) : auditLogs.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-4 py-16 text-center text-sm text-brand-muted-dark">
-                                                No audit logs found for the selected filters.
+                                            <td colSpan={6} className="px-4 py-8">
+                                                <EmptyState
+                                                    icon={Filter}
+                                                    title="Tidak ada log ditemukan"
+                                                    description="Tidak ada log audit yang sesuai dengan filter yang dipilih"
+                                                    action={
+                                                        hasActiveFilters && (
+                                                            <SecondaryButton onClick={clearFilters}>
+                                                                Reset Filter
+                                                            </SecondaryButton>
+                                                        )
+                                                    }
+                                                />
                                             </td>
                                         </tr>
                                     ) : (
                                         auditLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-white/60">
+                                            <tr key={log.id} className="transition-colors duration-150 hover:bg-[var(--dm-surface-hover)]">
                                                 <td className="px-4 py-3 text-sm text-slate-600">{formatDateTime(log.createdAt)}</td>
                                                 <td className="px-4 py-3 text-sm text-slate-600">
                                                     <div>
@@ -412,6 +434,65 @@ background: 'var(--dm-accent-bg)',
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Mobile cards */}
+                        <div className="block space-y-4 md:hidden">
+                            {auditLogs.length === 0 ? (
+                                <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-8">
+                                    <EmptyState
+                                        icon={Search}
+                                        title="Tidak ada data ditemukan"
+                                        description="Tidak ada log audit yang sesuai dengan filter yang dipilih."
+                                    />
+                                </div>
+                            ) : (
+                                auditLogs.map((log) => (
+                                    <LiquidGlassCard key={log.id} intensity="light" className="p-4" lightMode={true}>
+                                        <div className="space-y-3">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-base font-semibold text-[var(--dm-text)]">{log.action}</p>
+                                                    <p className="mt-0.5 text-sm text-[var(--dm-text-secondary)]">{formatDateTime(log.createdAt)}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">User</p>
+                                                    <p className="mt-0.5 font-medium text-[var(--dm-text)]">{log.user?.name ?? '-'}</p>
+                                                    <p className="text-xs text-[var(--dm-text-secondary)]">{log.user?.email ?? log.userId}</p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Entity</p>
+                                                    <p className="mt-0.5 font-medium text-[var(--dm-text)]">{log.entityType}</p>
+                                                    <p className="text-xs text-[var(--dm-text-secondary)]">{log.entityId}</p>
+                                                </div>
+
+                                                {log.metadata && Object.keys(log.metadata).length > 0 && (
+                                                    <div>
+                                                        <p className="text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Details</p>
+                                                        <p className="mt-0.5 line-clamp-2 text-xs text-[var(--dm-text-secondary)]">{JSON.stringify(log.metadata)}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {log.changes && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedLog(log)}
+                                                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-brand-primary/35"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                    View Changes
+                                                </button>
+                                            )}
+                                        </div>
+                                    </LiquidGlassCard>
+                                ))
+                            )}
+                        </div>
+                    </div>
 
                         <AdminPagination
                             currentPage={currentPage}

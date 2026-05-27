@@ -86,10 +86,10 @@ export default function Login() {
             >
                 <LiquidGlassCard intensity="medium" lightMode={lightMode} className="w-full p-8 sm:p-10 transition-colors duration-500">
                     <div className="mb-6 text-center">
-                        <h1 className="text-2xl font-bold tracking-tight text-[var(--dm-text)]">
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-dark dark:text-slate-50">
                             Selamat Datang Kembali
                         </h1>
-                        <p className="mt-1.5 text-sm text-[var(--dm-text-secondary)]">
+                        <p className="mt-1.5 text-sm text-brand-muted-dark dark:text-slate-400">
                             Masuk untuk melanjutkan perjalanan belajar Anda
                         </p>
                     </div>
@@ -126,7 +126,7 @@ export default function Login() {
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-[var(--dm-text)]">
+                            <label htmlFor="email" className="block text-sm font-medium text-brand-dark dark:text-slate-200">
                                 Alamat Email
                             </label>
                             <input
@@ -148,7 +148,7 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-[var(--dm-text)]">
+                            <label htmlFor="password" className="block text-sm font-medium text-brand-dark dark:text-slate-200">
                                 Kata Sandi
                             </label>
                             <PasswordInput
@@ -172,7 +172,7 @@ export default function Login() {
                                     onChange={(e) => setData('remember', e.target.checked)}
                                     lightMode={lightMode}
                                 />
-                                <span className="ml-2 text-sm text-slate-500 text-[var(--dm-text-secondary)]">
+                                <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">
                                     Ingat saya
                                 </span>
                             </label>
@@ -242,7 +242,7 @@ export default function Login() {
                         Masuk dengan Google
                     </a>
 
-                    <p className="mt-6 text-center text-sm text-slate-500 text-[var(--dm-text-secondary)]">
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         Belum punya akun?{' '}
                         <Link href="/register" className="font-medium text-brand-primary hover:underline">
                             Daftar Sekarang

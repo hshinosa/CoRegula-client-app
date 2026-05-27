@@ -5,7 +5,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
+import { EnhancedStatCard } from '@/components/dashboard/EnhancedStatCard';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import { SkeletonStatCard } from '@/components/ui/skeletons';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
@@ -154,34 +156,14 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {statCards.map((stat, index) => (
-                            <motion.div
+                            <EnhancedStatCard
                                 key={stat.label}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 * (index + 1), duration: 0.5 }}
-                            >
-                                <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
-                                    <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p className="text-sm text-brand-muted-dark">{stat.label}</p>
-                                        <p
-                                            className="mt-2 text-3xl font-light font-sans text-brand-dark"
-                                        >
-                                                {stat.value}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                            style={{
-                                                background: `${stat.color}15`,
-                                                border: `1px solid ${stat.color}25`,
-                                            }}
-                                        >
-                                            <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-                                        </div>
-                                    </div>
-                                </LiquidGlassCard>
-                            </motion.div>
+                                label={stat.label}
+                                value={stat.value}
+                                icon={stat.icon}
+                                color={stat.color}
+                                isPrimary={index === 0}
+                            />
                         ))}
                     </div>
 

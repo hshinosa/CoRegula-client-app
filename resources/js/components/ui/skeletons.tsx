@@ -459,3 +459,41 @@ export function SkeletonCard({ cardCount = 4 }: { cardCount?: number }) {
         </div>
     );
 }
+
+// Task 1.2: SkeletonStatCard - for dashboard stat cards
+export function SkeletonStatCard() {
+    return (
+        <div className="card p-6">
+            <div className="flex items-start justify-between">
+                <div className="space-y-3 flex-1">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-8 w-24" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-lg" />
+            </div>
+        </div>
+    );
+}
+
+// Task 1.3: SkeletonTableRow - configurable column count
+export function SkeletonTableRow({ columns = 4 }: { columns?: number }) {
+    return (
+        <tr className="border-b border-[var(--dm-border)]">
+            {Array.from({ length: columns }).map((_, index) => (
+                <td key={index} className="px-4 py-3">
+                    <Skeleton className="h-4 w-full" />
+                </td>
+            ))}
+        </tr>
+    );
+}
+
+// Task 1.4: SkeletonChart - rectangular placeholder for charts
+export function SkeletonChart({ height = "h-64" }: { height?: string }) {
+    return (
+        <div className={`card p-6 ${height}`}>
+            <Skeleton className="h-full w-full rounded-lg" />
+        </div>
+    );
+}
+

@@ -19,6 +19,7 @@ import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
+import { EmptyState } from '@/components/ui/EmptyState';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course, User } from '@/types';
@@ -295,31 +296,17 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                     </div>
 
                     {groups.length === 0 ? (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <LiquidGlassCard intensity="medium" className="px-6 py-16 text-center" lightMode={true}>
-                                <div
-                                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
-                                    style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
-                                    }}
-                                >
-                                    <FolderKanban className="h-8 w-8" style={{ color: '#88161c' }} />
-                                </div>
-                                <h2 className="mt-5 text-xl font-semibold" style={headingStyle}>
-                                    Belum ada grup di kelas ini
-                                </h2>
-                                <p className={`mx-auto mt-2 max-w-md ${bodyTextClass}`}>
-                                    Mulai dengan membuat grup pertama, lalu tugaskan mahasiswa dan siapkan ruang diskusi untuk setiap tim.
-                                </p>
-                                <div className="mt-6 flex justify-center">
-                                    <PrimaryButton onClick={() => setShowCreateModal(true)}>
-                                        <Plus className="h-4 w-4" />
-                                        Tambah Grup
-                                    </PrimaryButton>
-                                </div>
-                            </LiquidGlassCard>
-                        </motion.div>
+                        <EmptyState
+                            icon={FolderKanban}
+                            title="Belum ada grup"
+                            description="Mulai dengan membuat grup pertama, lalu tugaskan mahasiswa dan siapkan ruang diskusi untuk setiap tim"
+                            action={
+                                <PrimaryButton onClick={() => setShowCreateModal(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Tambah Grup
+                                </PrimaryButton>
+                            }
+                        />
                     ) : (
                         <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
                             {groups.map((group, index) => {

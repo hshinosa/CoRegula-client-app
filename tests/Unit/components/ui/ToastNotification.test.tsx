@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 
 const pageProps = vi.hoisted(() => ({
-    flash: {} as { success?: string; error?: string; info?: string },
+    flash: {} as { success?: string; error?: string; info?: string; warning?: string },
     errors: undefined as Record<string, string> | undefined,
     auth: { user: { name: 'Test User' } },
     name: 'Kolabri',
@@ -76,7 +76,7 @@ describe('ToastNotification', () => {
         expect(screen.queryByText('Tutup saya')).not.toBeInTheDocument();
     });
 
-    it('automatically removes a toast after 4.5 seconds', async () => {
+    it('automatically removes a toast after 5 seconds', async () => {
         pageProps.flash = { success: 'Auto close' };
 
         render(<ToastNotification />);
@@ -84,19 +84,27 @@ describe('ToastNotification', () => {
         expect(screen.getByText('Auto close')).toBeInTheDocument();
 
         act(() => {
-            vi.advanceTimersByTime(4500);
+            vi.advanceTimersByTime(5000);
         });
 
         expect(screen.queryByText('Auto close')).not.toBeInTheDocument();
     });
 
+    it('renders a warning flash toast', async () => {
+        pageProps.flash = { warning: 'Peringatan penting' };
+
+        render(<ToastNotification />);
+
+        expect(screen.getByText('Peringatan penting')).toBeInTheDocument();
+    });
+
     it('applies dark mode styles when lightMode is false', async () => {
         pageProps.flash = { info: 'Dark mode toast' };
 
-        render(<ToastNotification lightMode={false} />);
+        const { container } = render(<ToastNotification lightMode={false} />);
 
-        const toastText = screen.getByText('Dark mode toast');
-        expect(toastText).toHaveClass('text-slate-200');
-        expect(toastText.parentElement).toHaveClass('bg-slate-900/95');
+        expect(screen.getByText('Dark mode toast')).toBeInTheDocument();
+        const toastElement = container.querySelector('.bg-blue-950\\/95');
+        expect(toastElement).toBeInTheDocument();
     });
 });

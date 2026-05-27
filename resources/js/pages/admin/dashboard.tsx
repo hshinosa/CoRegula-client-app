@@ -19,10 +19,11 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { useCallback, useEffect, useState } from 'react';
 
 import { LiquidGlassCard, SecondaryButton, OrganicBlob } from '@/components/Welcome/utils/helpers';
-import { SkeletonDashboard } from '@/components/ui/skeletons';
+import { SkeletonDashboard, SkeletonStatCard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { connectWebSocket } from '@/lib/websocket';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
+import { EnhancedStatCard } from '@/components/dashboard/EnhancedStatCard';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, UserRole } from '@/types';
 
@@ -435,6 +436,7 @@ function StatCard({
     accent,
     helper,
     subtext,
+    isPrimary = false,
 }: {
     title: string;
     value: string;
@@ -446,33 +448,60 @@ function StatCard({
     };
     helper: string;
     subtext: string;
+    isPrimary?: boolean;
 }) {
     return (
-        <LiquidGlassCard intensity="light" className="h-full p-5" lightMode={true}>
-            <div className="flex h-full flex-col justify-between gap-5">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-medium text-brand-muted-dark">{title}</p>
-                        <h2 className="mt-3 text-3xl font-bold tracking-tight" style={headingStyle}>
-                            {value}
-                        </h2>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{
+                y: -2,
+                transition: { duration: 0.2 },
+            }}
+            className="group relative h-full"
+        >
+            {isPrimary && (
+                <div
+                    className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{
+                        background: `linear-gradient(135deg, ${accent.text} 0%, transparent 100%)`,
+                        padding: '1px',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                    }}
+                />
+            )}
+            <LiquidGlassCard 
+                intensity="light" 
+                className="relative h-full p-5 transition-all duration-300 group-hover:border-brand-primary/20 group-hover:shadow-lg" 
+                lightMode={true}
+            >
+                <div className="flex h-full flex-col justify-between gap-5">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-medium text-brand-muted-dark">{title}</p>
+                            <h2 className="mt-3 text-3xl font-bold tracking-tight" style={headingStyle}>
+                                {value}
+                            </h2>
+                        </div>
+                        <div
+                            className="flex h-11 w-11 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110"
+                            style={{ background: accent.bg, border: accent.border }}
+                        >
+                            <Icon className="h-5 w-5" style={{ color: accent.text }} />
+                        </div>
                     </div>
-                    <div
-                        className="flex h-11 w-11 items-center justify-center rounded-2xl"
-                        style={{ background: accent.bg, border: accent.border }}
-                    >
-                        <Icon className="h-5 w-5" style={{ color: accent.text }} />
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <p className="text-sm font-medium" style={{ color: accent.text }}>
-                        {helper}
-                    </p>
-                    <p className="text-sm leading-6 text-brand-muted-dark">{subtext}</p>
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium" style={{ color: accent.text }}>
+                            {helper}
+                        </p>
+                        <p className="text-sm leading-6 text-brand-muted-dark">{subtext}</p>
+                    </div>
                 </div>
-            </div>
-        </LiquidGlassCard>
+            </LiquidGlassCard>
+        </motion.div>
     );
 }
 
@@ -848,17 +877,16 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                 ) : (
                     <>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                    {statsCards.map((card, index) => (
-                        <motion.div
-                            key={card.title}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.08 * (index + 1), duration: 0.45 }}
-                        >
-                            <StatCard {...card} />
-                        </motion.div>
-                    ))}
-                </div>
+                        {isStatsLoading ? (
+                            Array.from({ length: 5 }).map((_, index) => (
+                                <SkeletonStatCard key={index} />
+                            ))
+                        ) : (
+                            statsCards.map((card, index) => (
+                                <StatCard key={card.title} {...card} isPrimary={index === 0} />
+                            ))
+                        )}
+                    </div>
 
                 <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <motion.div

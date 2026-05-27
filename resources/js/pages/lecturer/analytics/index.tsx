@@ -17,7 +17,7 @@ import { io, Socket } from 'socket.io-client';
 import { DateRangePicker, ExportMenu, TrendChart, type TrendDataPoint } from '@/components/analytics';
 import { LiquidGlassCard, OrganicBlob, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
-import { DashboardSkeleton } from '@/components/ui/skeletons';
+import { DashboardSkeleton, SkeletonChart } from '@/components/ui/skeletons';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
@@ -195,6 +195,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
     const [selectedMetric, setSelectedMetric] = useState<TrendMetric>('engagement');
     const [trendData, setTrendData] = useState<TrendsData | null>(analytics?.trends ?? null);
     const [isLoadingTrends, setIsLoadingTrends] = useState(false);
+    const [showChartSkeleton, setShowChartSkeleton] = useState(false);
 
     const [activePreset, setActivePreset] = useState<string | undefined>(filters?.preset);
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | undefined>(
@@ -279,7 +280,10 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
     }, [course.id, dateRange, activePreset]);
 
     const fetchTrends = useCallback(async (metric: TrendMetric) => {
+        const startTime = Date.now();
         setIsLoadingTrends(true);
+        setShowChartSkeleton(true);
+        
         try {
             const params = new URLSearchParams({ metric });
             if (dateRange?.startDate) params.set('start_date', dateRange.startDate);
@@ -301,7 +305,13 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
         } catch (error) {
             console.error('Failed to fetch trends:', error);
         } finally {
-            setIsLoadingTrends(false);
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, 300 - elapsed);
+            
+            setTimeout(() => {
+                setIsLoadingTrends(false);
+                setShowChartSkeleton(false);
+            }, remaining);
         }
     }, [course.id, dateRange, activePreset]);
 
@@ -551,10 +561,8 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                     ))}
                                 </div>
                             </div>
-                            {isLoadingTrends ? (
-                                <div className="flex h-[300px] items-center justify-center">
-                                    <RefreshCw className="h-6 w-6 animate-spin text-brand-muted-dark" />
-                                </div>
+                            {showChartSkeleton ? (
+                                <SkeletonChart height="h-[300px]" />
                             ) : (
                                 <TrendChart
                                     data={currentTrendData}
