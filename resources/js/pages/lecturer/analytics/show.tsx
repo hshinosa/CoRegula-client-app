@@ -78,21 +78,20 @@ interface Props {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
-    color: '#88161c',
+    color: 'rgb(var(--color-brand-primary))',
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
 const neutralChipStyle = {
     background: 'rgba(74,74,74,0.08)',
-    color: '#4A4A4A',
+    color: 'rgb(var(--color-brand-dark))',
     border: '1px solid rgba(74,74,74,0.12)',
 } as const;
 
@@ -426,21 +425,21 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
                             <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
                                 <div className="max-w-3xl">
-                                    <div className="flex flex-wrap items-center gap-2 text-sm text-[#6B7280]">
-                                        <Link href={lecturer.courses.index.url()} className="transition-colors hover:text-[#88161c]">
+                                    <div className="flex flex-wrap items-center gap-2 text-sm text-brand-muted-dark">
+                                        <Link href={lecturer.courses.index.url()} className="transition-colors hover:text-brand-primary">
                                             Kelas
                                         </Link>
                                         <span>/</span>
                                         <Link
                                             href={lecturer.courses.show.url({ course: course.id })}
-                                            className="transition-colors hover:text-[#88161c]"
+                                            className="transition-colors hover:text-brand-primary"
                                         >
                                             {course.code}
                                         </Link>
                                         <span>/</span>
                                         <Link
                                             href={lecturer.analytics.index.url({ course: course.id })}
-                                            className="transition-colors hover:text-[#88161c]"
+                                            className="transition-colors hover:text-brand-primary"
                                         >
                                             Analytics
                                         </Link>
@@ -475,14 +474,14 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
 
                                 <div className="grid gap-3 sm:grid-cols-2 xl:w-[380px] xl:grid-cols-1">
                                     <div className="rounded-[28px] p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#6B7280]">Skor terkini</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Skor terkini</p>
                                         <div className="mt-2 flex items-end gap-2">
                                             <span className="text-4xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
                                                 {liveQuality?.toFixed(1) ?? '—'}
                                             </span>
                                             <span className="pb-1 text-sm text-[#9CA3AF]">/ 100</span>
                                         </div>
-                                        <p className="mt-2 text-xs text-[#6B7280]">Status: {getQualityLabel(liveQuality)}</p>
+                                        <p className="mt-2 text-xs text-brand-muted-dark">Status: {getQualityLabel(liveQuality)}</p>
                                     </div>
 
                                     <SecondaryButton href={`/api/analytics/export/${course.id}`} className="justify-center">
@@ -510,7 +509,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             {safeAnalytics.local_message_count ?? 0} pesan dianalisis
                                         </span>
                                     </div>
-                                    <p className="mt-4 text-sm font-medium text-[#6B7280]">Skor kualitas diskusi</p>
+                                    <p className="mt-4 text-sm font-medium text-brand-muted-dark">Skor kualitas diskusi</p>
                                     <div className="mt-2 flex items-end gap-3">
                                         <span className="text-6xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
                                             {liveQuality?.toFixed(1) ?? '—'}
@@ -521,7 +520,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         <div className="mt-4 rounded-[24px] p-4" style={glassPanelStyle}>
                                             <div className="flex items-start gap-3">
                                                 <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
-                                                <p className="text-sm leading-6 text-[#6B7280]">{safeAnalytics.recommendation}</p>
+                                                <p className="text-sm leading-6 text-brand-muted-dark">{safeAnalytics.recommendation}</p>
                                             </div>
                                         </div>
                                     )}
@@ -540,10 +539,10 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             <p className="text-2xl font-semibold" style={{ color: card.color }}>
                                                 {card.value}
                                             </p>
-                                            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7280]">
+                                            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted-dark">
                                                 {card.label}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">{card.detail}</p>
+                                            <p className="mt-1 text-xs text-brand-muted-dark">{card.detail}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -558,7 +557,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     <div className="flex h-full flex-col justify-between gap-4">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="text-sm text-[#6B7280]">{card.label}</p>
+                                                <p className="text-sm text-brand-muted-dark">{card.label}</p>
                                                 <p className="mt-2 text-3xl font-light break-words" style={headingStyle}>
                                                     {card.value}
                                                 </p>
@@ -583,7 +582,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         </div>
 
                                         <div>
-                                            <p className="text-xs text-[#6B7280]">{card.detail}</p>
+                                            <p className="text-xs text-brand-muted-dark">{card.detail}</p>
                                             {card.action && (
                                                 <p className="mt-3 text-xs font-medium" style={{ color: '#88161c' }}>
                                                     {card.action}
@@ -835,7 +834,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                         )}
                                                     </div>
 
-                                                    <p className="mt-2 text-sm leading-6 text-[#6B7280]">{activity.content}</p>
+                                                    <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{activity.content}</p>
                                                     <p className="mt-2 text-xs text-[#9CA3AF]">{formatDateTime(activity.createdAt)}</p>
                                                 </div>
                                             </div>
@@ -873,14 +872,14 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
                                             Daftar Anggota ({safeMembers.length})
                                         </h3>
-                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                        <p className="mt-1 text-sm text-brand-muted-dark">
                                             Seluruh anggota grup dapat ditinjau dari modal ini.
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowMemberModal(false)}
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-gray-100 hover:text-[#374151]"
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-brand-muted-dark transition-colors hover:bg-gray-100 hover:text-[#374151]"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -889,7 +888,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                 <div className="mt-5 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                                     {safeMembers.length === 0 ? (
                                         <div className="rounded-xl border border-dashed border-gray-200 px-6 py-10 text-center">
-                                            <p className="text-sm text-[#6B7280]">Belum ada anggota</p>
+                                            <p className="text-sm text-brand-muted-dark">Belum ada anggota</p>
                                         </div>
                                     ) : (
                                         safeMembers.map((member) => (
@@ -904,7 +903,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                     <p className="truncate text-sm font-medium text-[#1F2937]">
                                                         {member.name}
                                                     </p>
-                                                    <p className="mt-0.5 truncate text-xs text-[#6B7280]">{member.email}</p>
+                                                    <p className="mt-0.5 truncate text-xs text-brand-muted-dark">{member.email}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -941,14 +940,14 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
                                             Sesi Diskusi ({safeChatSpaces.length})
                                         </h3>
-                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                        <p className="mt-1 text-sm text-brand-muted-dark">
                                             Status sesi, waktu dibuat, dan waktu selesai.
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowSessionModal(false)}
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-gray-100 hover:text-[#374151]"
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-brand-muted-dark transition-colors hover:bg-gray-100 hover:text-[#374151]"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -957,7 +956,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                 <div className="mt-5 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                                     {safeChatSpaces.length === 0 ? (
                                         <div className="rounded-xl border border-dashed border-gray-200 px-6 py-10 text-center">
-                                            <p className="text-sm text-[#6B7280]">Belum ada sesi diskusi</p>
+                                            <p className="text-sm text-brand-muted-dark">Belum ada sesi diskusi</p>
                                         </div>
                                     ) : (
                                         safeChatSpaces.map((session) => (
@@ -966,11 +965,11 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                     <p className="text-sm font-medium text-[#1F2937]">
                                                         {session.name || 'Sesi Tanpa Judul'}
                                                     </p>
-                                                    <p className="mt-1 text-xs text-[#6B7280]">
+                                                    <p className="mt-1 text-xs text-brand-muted-dark">
                                                         Dibuat: {formatDateTime(session.createdAt)}
                                                     </p>
                                                     {session.closedAt && (
-                                                        <p className="mt-0.5 text-xs text-[#6B7280]">
+                                                        <p className="mt-0.5 text-xs text-brand-muted-dark">
                                                             Selesai: {formatDateTime(session.closedAt)}
                                                         </p>
                                                     )}

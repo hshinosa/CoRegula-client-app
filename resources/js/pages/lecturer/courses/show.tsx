@@ -52,21 +52,20 @@ const STATUS_LABELS: Record<VectorStatus, string> = {
 };
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
-    color: '#88161c',
+    color: 'rgb(var(--color-brand-primary))',
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
 const neutralChipStyle = {
     background: 'rgba(74,74,74,0.08)',
-    color: '#4A4A4A',
+    color: 'rgb(var(--color-brand-dark))',
     border: '1px solid rgba(74,74,74,0.12)',
 } as const;
 
@@ -351,11 +350,11 @@ export default function ShowCourse({ course }: Props) {
                                 <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <p className="text-sm text-[#6B7280]">{stat.label}</p>
+                                            <p className="text-sm text-brand-muted-dark">{stat.label}</p>
                                             <p className="mt-2 text-3xl font-light" style={headingStyle}>
                                                 {stat.value}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">{stat.detail}</p>
+                                            <p className="mt-1 text-xs text-brand-muted-dark">{stat.detail}</p>
                                         </div>
                                         <div
                                             className="flex h-11 w-11 items-center justify-center rounded-2xl"
@@ -416,7 +415,7 @@ export default function ShowCourse({ course }: Props) {
                                         <BookOpen className="h-6 w-6" style={{ color: '#88161c' }} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-[#6B7280]">Kode bergabung mahasiswa</p>
+                                        <p className="text-sm font-medium text-brand-muted-dark">Kode bergabung mahasiswa</p>
                                         <div className="mt-2 flex flex-wrap items-center gap-3">
                                             <span
                                                 className="rounded-full px-5 py-2 font-mono text-2xl font-semibold tracking-[0.25em]"
@@ -446,13 +445,13 @@ export default function ShowCourse({ course }: Props) {
 
                                 <div className="grid gap-3 sm:grid-cols-2 lg:w-[320px]">
                                     <div className="rounded-2xl p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#6B7280]">Siap dipakai</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Siap dipakai</p>
                                         <p className="mt-2 text-xl font-semibold" style={headingStyle}>
                                             {knowledgeBaseStats.ready} file
                                         </p>
                                     </div>
                                     <div className="rounded-2xl p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#6B7280]">Menunggu / gagal</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Menunggu / gagal</p>
                                         <p className="mt-2 text-xl font-semibold" style={headingStyle}>
                                             {knowledgeBaseStats.processing + knowledgeBaseStats.failed + knowledgeBaseStats.skipped} file
                                         </p>
@@ -531,7 +530,7 @@ export default function ShowCourse({ course }: Props) {
                                         multiple
                                         accept={ACCEPTED_FILE_TYPES.join(',')}
                                         onChange={handleFilesChange}
-                                        className="mt-5 block w-full text-sm text-[#6B7280] file:mr-4 file:rounded-full file:border-0 file:px-4 file:py-2.5 file:text-sm file:font-medium"
+                                        className="mt-5 block w-full text-sm text-brand-muted-dark file:mr-4 file:rounded-full file:border-0 file:px-4 file:py-2.5 file:text-sm file:font-medium"
                                         style={{
                                             color: '#6B7280',
                                         }}
@@ -565,7 +564,7 @@ export default function ShowCourse({ course }: Props) {
                                                         <p className="truncate text-sm font-medium" style={{ color: '#4A4A4A' }}>
                                                             {file.name}
                                                         </p>
-                                                        <p className="mt-1 text-xs text-[#6B7280]">{formatFileSize(file.size)}</p>
+                                                        <p className="mt-1 text-xs text-brand-muted-dark">{formatFileSize(file.size)}</p>
                                                     </div>
                                                     <button
                                                         type="button"
@@ -597,7 +596,7 @@ export default function ShowCourse({ course }: Props) {
                                             <span className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
                                                 Ekstrak gambar
                                             </span>
-                                            <span className="mt-1 block text-sm text-[#6B7280]">
+                                            <span className="mt-1 block text-sm text-brand-muted-dark">
                                                 Konversi slide atau materi visual secara otomatis untuk memperkaya konteks AI.
                                             </span>
                                         </span>
@@ -614,7 +613,7 @@ export default function ShowCourse({ course }: Props) {
                                             <span className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
                                                 Aktifkan OCR
                                             </span>
-                                            <span className="mt-1 block text-sm text-[#6B7280]">
+                                            <span className="mt-1 block text-sm text-brand-muted-dark">
                                                 Gunakan untuk dokumen hasil pindaian atau materi dengan teks yang perlu dibaca ulang.
                                             </span>
                                         </span>
@@ -703,11 +702,11 @@ export default function ShowCourse({ course }: Props) {
                                                                 <p className="truncate text-sm font-semibold" style={{ color: '#4A4A4A' }}>
                                                                     {file.file_name}
                                                                 </p>
-                                                                <p className="mt-1 text-xs text-[#6B7280]">
+                                                                <p className="mt-1 text-xs text-brand-muted-dark">
                                                                     {formatFileSize(file.file_size)} • Diunggah {formatDate(file.uploaded_at)}
                                                                 </p>
                                                                 {file.processed_at && (
-                                                                    <p className="mt-1 text-xs text-[#6B7280]">
+                                                                    <p className="mt-1 text-xs text-brand-muted-dark">
                                                                         Diproses {formatDate(file.processed_at)}
                                                                     </p>
                                                                 )}
@@ -746,7 +745,7 @@ export default function ShowCourse({ course }: Props) {
                                 )}
 
                                 {hiddenKnowledgeBaseCount > 0 && readyKnowledgeBase.length > 0 && (
-                                    <p className="mt-4 text-xs text-[#6B7280]">
+                                    <p className="mt-4 text-xs text-brand-muted-dark">
                                         Menampilkan file yang telah siap dipakai. {hiddenKnowledgeBaseCount} file lain masih dalam antrian,
                                         dilewati, atau gagal diproses.
                                     </p>

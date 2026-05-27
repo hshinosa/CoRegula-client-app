@@ -107,12 +107,11 @@ export default function AnalyticsOverview({ courses, filters }: Props) {
                                 className="flex h-10 w-10 items-center justify-center rounded-xl"
                                 style={{ background: 'rgba(136,22,28,0.08)' }}
                             >
-                                <BarChart3 className="h-5 w-5" style={{ color: '#88161c' }} />
+                                <BarChart3 className="h-5 w-5 text-brand-primary" />
                             </div>
                             <div>
                                 <h2
-                                    className="text-2xl font-bold"
-                                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    className="text-2xl font-bold font-sans text-brand-dark"
                                 >
                                     Analytics
                                 </h2>
@@ -129,12 +128,10 @@ export default function AnalyticsOverview({ courses, filters }: Props) {
                             />
                             <Link
                                 href={lecturer.analytics.comparison.url()}
-                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium font-sans text-brand-primary transition-all"
                                 style={{
                                     background: 'rgba(136,22,28,0.06)',
                                     border: '1px solid rgba(136,22,28,0.12)',
-                                    color: '#88161c',
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 }}
                             >
                                 <GitCompareArrows className="h-4 w-4" />
@@ -175,20 +172,19 @@ export default function AnalyticsOverview({ courses, filters }: Props) {
                                             >
                                                 {course.courseCode}
                                             </span>
-                                            <span className="inline-flex items-center gap-1 text-xs text-[#6B7280]">
+                                            <span className="inline-flex items-center gap-1 text-xs text-brand-muted-dark">
                                                 <Users className="h-3.5 w-3.5" />
                                                 {course.studentsCount} siswa
                                             </span>
                                         </div>
 
                                         <h3
-                                            className="text-lg font-semibold"
-                                            style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                            className="text-lg font-semibold font-sans text-brand-dark"
                                         >
                                             {course.courseName}
                                         </h3>
 
-                                        <p className="mt-2 text-sm text-[#6B7280]">
+                                        <p className="mt-2 text-sm text-brand-muted-dark">
                                             Quality Score: <QualityBadge score={course.avgQualityScore} />
                                             {course.needsAttention && (
                                                 <span className="ml-2 inline-flex items-center gap-1 text-red-600">
@@ -199,8 +195,8 @@ export default function AnalyticsOverview({ courses, filters }: Props) {
                                         </p>
 
                                         <div className="mt-4 flex items-center justify-between gap-3">
-                                            <p className="text-sm text-[#6B7280]">{course.groupsCount} grup</p>
-                                            <div className="flex items-center text-sm font-medium" style={{ color: '#88161c' }}>
+                                            <p className="text-sm text-brand-muted-dark">{course.groupsCount} grup</p>
+                                            <div className="flex items-center text-sm font-medium text-brand-primary">
                                                 Lihat Analytics
                                                 <svg
                                                     className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"

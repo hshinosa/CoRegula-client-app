@@ -34,12 +34,11 @@ import AppLayout from '@/layouts/app-layout';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
 const inputClassName =
-    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-[#88161c] focus:outline-none focus:ring focus:ring-[#88161c]/20';
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2';
 
 const buttonSpinner = <Loader2 className="h-4 w-4 animate-spin" />;
 
@@ -154,7 +153,7 @@ const TabButton = ({ label, icon, active, onClick }: { label: string; icon: Reac
     <button
         onClick={onClick}
         className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-            active ? 'bg-[#88161c] text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+            active ? 'bg-brand-primary text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
         }`}
     >
         {icon}
@@ -645,7 +644,7 @@ function HistoryTab({ courses }: { courses: Course[] }) {
             </LiquidGlassCard>
 
             {loading ? (
-                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[#88161c]" /></div>
+                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-brand-primary" /></div>
             ) : records.length === 0 ? (
                 <LiquidGlassCard className="p-8 text-center">
                     <Clock className="mx-auto mb-3 h-10 w-10 text-slate-300" />
@@ -813,7 +812,7 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
             </div>
 
             {loading ? (
-                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[#88161c]" /></div>
+                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-brand-primary" /></div>
             ) : tests.length === 0 ? (
                 <LiquidGlassCard className="p-8 text-center">
                     <FlaskConical className="mx-auto mb-3 h-10 w-10 text-slate-300" />
@@ -903,7 +902,7 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
             )}
 
             {selectedTest && statsLoading && (
-                <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-[#88161c]" /></div>
+                <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-brand-primary" /></div>
             )}
 
             <Modal open={showCreator} title="Create A/B Test" onClose={() => setShowCreator(false)} maxWidth="max-w-3xl">
@@ -984,7 +983,7 @@ export default function LecturerAISettings({ presets, courses, department }: Pag
                             <p className="mt-1 text-sm text-slate-500">Manage AI prompts, presets, interaction history, and A/B tests</p>
                         </div>
 
-                        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl bg-white/50 p-1.5 shadow-sm backdrop-blur-sm">
+                        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl bg-white/50 p-1.5 shadow-brand-sm backdrop-blur-sm">
                             {tabs.map((tab) => (
                                 <TabButton key={tab.key} label={tab.label} icon={tab.icon} active={activeTab === tab.key} onClick={() => setActiveTab(tab.key)} />
                             ))}

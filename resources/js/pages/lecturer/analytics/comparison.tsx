@@ -111,13 +111,13 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
                                         className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
                                         style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
                                     >
-                                        <GitCompareArrows className="h-6 w-6" style={{ color: '#88161c' }} />
+                                        <GitCompareArrows className="h-6 w-6 text-brand-primary" />
                                     </div>
                                     <div>
-                                        <h1 className="text-2xl font-bold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                        <h1 className="text-2xl font-bold font-sans text-brand-dark">
                                             Perbandingan Analytics
                                         </h1>
-                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                        <p className="mt-1 text-sm text-brand-muted-dark">
                                             Bandingkan metrik antar kelas (maks 3)
                                         </p>
                                     </div>
@@ -133,7 +133,7 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
 
                     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                         <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                            <h2 className="mb-3 text-sm font-semibold text-[#4A4A4A]">Pilih Kelas untuk Dibandingkan</h2>
+                            <h2 className="mb-3 text-sm font-semibold font-sans text-brand-dark">Pilih Kelas untuk Dibandingkan</h2>
                             <ComparisonSelector
                                 courses={allCourses}
                                 selected={selected}
@@ -144,8 +144,7 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
                                 type="button"
                                 onClick={handleCompare}
                                 disabled={selected.length < 2}
-                                className="mt-4 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-40"
-                                style={{ background: '#88161c' }}
+                                className="mt-4 rounded-xl bg-brand-primary px-6 py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-40"
                             >
                                 Bandingkan ({selected.length}/3)
                             </button>
@@ -156,8 +155,8 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
                         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                             <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
                                 <div className="mb-4 flex items-center gap-2">
-                                    <BarChart3 className="h-5 w-5" style={{ color: '#88161c' }} />
-                                    <h2 className="text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    <BarChart3 className="h-5 w-5 text-brand-primary" />
+                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
                                         Hasil Perbandingan
                                     </h2>
                                 </div>

@@ -185,10 +185,9 @@ const MOCK_CLASSES: ClassEntity[] = [
 
 const headingStyle = {
     color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
@@ -361,7 +360,7 @@ const RadarChartPage: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <label className="text-xs uppercase tracking-wider text-[#6B7280]">Kelas:</label>
+                                    <label className="text-xs uppercase tracking-wider text-brand-muted-dark">Kelas:</label>
                                     <select
                                         value={activeClassId}
                                         onChange={(e) => handleClassChange(e.target.value)}
@@ -385,7 +384,7 @@ const RadarChartPage: React.FC = () => {
                                         <Icon className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <p className="text-xs uppercase tracking-wider text-[#6B7280]">{label}</p>
+                                        <p className="text-xs uppercase tracking-wider text-brand-muted-dark">{label}</p>
                                         <p className="mt-1 text-2xl font-semibold" style={headingStyle}>{value}</p>
                                     </div>
                                 </div>
@@ -431,7 +430,7 @@ const RadarChartPage: React.FC = () => {
                                 </button>
                             </div>
                             {comparisonMode && !secondaryId && (
-                                <p className="mt-2 px-1 text-xs text-[#6B7280]">
+                                <p className="mt-2 px-1 text-xs text-brand-muted-dark">
                                     Pilih item kedua di sidebar untuk dibandingkan dengan {primaryEntity.label}.
                                 </p>
                             )}
@@ -447,7 +446,7 @@ const RadarChartPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="mt-3">
-                                <label className="text-xs uppercase tracking-wider text-[#6B7280]">Urutkan:</label>
+                                <label className="text-xs uppercase tracking-wider text-brand-muted-dark">Urutkan:</label>
                                 <select
                                     value={sortMode}
                                     onChange={(e) => setSortMode(e.target.value as SortMode)}
@@ -501,7 +500,7 @@ const RadarChartPage: React.FC = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            <p className="mt-0.5 text-xs text-[#6B7280]">{item.subtitle}</p>
+                                            <p className="mt-0.5 text-xs text-brand-muted-dark">{item.subtitle}</p>
                                         </button>
                                     );
                                 })}
@@ -539,10 +538,10 @@ const RadarChartPage: React.FC = () => {
                             <div className="mt-4 grid grid-cols-1 gap-3">
                                 <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
                                     <div className="flex items-start gap-3">
-                                        <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
+                                        <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-primary" />
                                         <div>
-                                            <p className="text-xs font-semibold uppercase tracking-wider text-[#88161c]">{primaryEntity.label}</p>
-                                            <p className="mt-1 text-sm leading-6 text-[#6B7280]">{primaryEntity.note}</p>
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-brand-primary">{primaryEntity.label}</p>
+                                            <p className="mt-1 text-sm leading-6 text-brand-muted-dark">{primaryEntity.note}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -552,7 +551,7 @@ const RadarChartPage: React.FC = () => {
                                             <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#475569' }} />
                                             <div>
                                                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>{secondaryEntity.label}</p>
-                                                <p className="mt-1 text-sm leading-6 text-[#6B7280]">{secondaryEntity.note}</p>
+                                                <p className="mt-1 text-sm leading-6 text-brand-muted-dark">{secondaryEntity.note}</p>
                                             </div>
                                         </div>
                                     </div>

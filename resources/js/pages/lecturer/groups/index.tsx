@@ -48,21 +48,20 @@ interface Props {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
-    color: '#88161c',
+    color: 'rgb(var(--color-brand-primary))',
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
 const neutralChipStyle = {
     background: 'rgba(74,74,74,0.08)',
-    color: '#4A4A4A',
+    color: 'rgb(var(--color-brand-dark))',
     border: '1px solid rgba(74,74,74,0.12)',
 } as const;
 
@@ -274,11 +273,11 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                 <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <p className="text-sm text-[#6B7280]">{stat.label}</p>
+                                            <p className="text-sm text-brand-muted-dark">{stat.label}</p>
                                             <p className="mt-2 text-3xl font-light" style={headingStyle}>
                                                 {stat.value}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">{stat.detail}</p>
+                                            <p className="mt-1 text-xs text-brand-muted-dark">{stat.detail}</p>
                                         </div>
                                         <div
                                             className="flex h-11 w-11 items-center justify-center rounded-2xl"
@@ -349,7 +348,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                                 <h2 className="truncate text-lg font-semibold" style={headingStyle}>
                                                                     {group.name}
                                                                 </h2>
-                                                                <p className="text-sm text-[#6B7280]">
+                                                                <p className="text-sm text-brand-muted-dark">
                                                                     {memberCount} anggota • {chatSpaceCount} sesi diskusi
                                                                 </p>
                                                             </div>
@@ -411,7 +410,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="text-xs text-[#6B7280]">Belum ada sesi diskusi</span>
+                                                                <span className="text-xs text-brand-muted-dark">Belum ada sesi diskusi</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -433,14 +432,14 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                                         >
                                                                             {member.name.charAt(0).toUpperCase()}
                                                                         </div>
-                                                                        <span className="truncate text-sm text-[#4A4A4A]">{member.name}</span>
+                                                                        <span className="truncate text-sm text-brand-dark">{member.name}</span>
                                                                     </div>
                                                                 ))
                                                             ) : (
-                                                                <p className="text-sm text-[#6B7280]">Belum ada anggota</p>
+                                                                <p className="text-sm text-brand-muted-dark">Belum ada anggota</p>
                                                             )}
                                                             {memberCount > 4 && (
-                                                                <p className="text-xs text-[#6B7280]">+{memberCount - 4} mahasiswa lainnya</p>
+                                                                <p className="text-xs text-brand-muted-dark">+{memberCount - 4} mahasiswa lainnya</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -586,7 +585,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                             type="text"
                                             value={createForm.data.name}
                                             onChange={(event) => createForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Grup A"
                                         />
                                         <InputError message={createForm.errors.name} />
@@ -771,7 +770,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => setSelectedGroupJoinCode(null)}
-                                    className="mt-3 w-full text-sm text-[#6B7280] transition-colors hover:text-[#4A4A4A]"
+                                    className="mt-3 w-full text-sm text-brand-muted-dark transition-colors hover:text-brand-dark"
                                 >
                                     Tutup
                                 </button>
@@ -827,7 +826,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                             type="text"
                                             value={chatSpaceForm.data.name}
                                             onChange={(event) => chatSpaceForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Diskusi BAB 1"
                                         />
                                         <InputError message={chatSpaceForm.errors.name} />

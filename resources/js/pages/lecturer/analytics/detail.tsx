@@ -48,11 +48,11 @@ interface Props {
     socketUrl?: string;
 }
 
-const headingStyle = { color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
-const bodyTextClass = 'text-sm text-[#6B7280]';
+const headingStyle = { color: 'rgb(var(--color-brand-dark))' } as const;
+const bodyTextClass = 'text-sm text-brand-muted-dark font-sans';
 
 const TREND_METRICS: MetricOption[] = [
-    { value: 'quality_score', label: 'Skor Kualitas', color: '#88161c' },
+    { value: 'quality_score', label: 'Skor Kualitas', color: 'rgb(var(--color-brand-primary))' },
     { value: 'hot_percentage', label: 'HOT %', color: '#334155' },
     { value: 'engagement', label: 'Engagement', color: '#166534' },
     { value: 'lexical_variety', label: 'Lexical Variety', color: '#92400e' },
@@ -124,15 +124,15 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
 
                 <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6">
                     <nav className="mb-6 flex items-center gap-1.5 text-sm text-[#9CA3AF]">
-                        <Link href="/lecturer/courses" className="transition-colors hover:text-[#4A4A4A]">
+                        <Link href="/lecturer/courses" className="transition-colors hover:text-brand-dark">
                             Kelas
                         </Link>
                         <ChevronRight className="h-3.5 w-3.5" />
-                        <Link href={`/lecturer/courses/${course.id}`} className="transition-colors hover:text-[#4A4A4A]">
+                        <Link href={`/lecturer/courses/${course.id}`} className="transition-colors hover:text-brand-dark">
                             {course.code}
                         </Link>
                         <ChevronRight className="h-3.5 w-3.5" />
-                        <span className="font-medium text-[#4A4A4A]">Analytics Detail</span>
+                        <span className="font-medium text-brand-dark">Analytics Detail</span>
                     </nav>
 
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -180,7 +180,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                         <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${card.color}12` }}>
                                             <card.icon className="h-4 w-4" style={{ color: card.color }} />
                                         </div>
-                                        <span className="text-xs text-[#6B7280]">{card.label}</span>
+                                        <span className="text-xs text-brand-muted-dark">{card.label}</span>
                                     </div>
                                     <p className="mt-3 text-2xl font-bold" style={{ color: card.color }}>{card.value}</p>
                                     <p className="mt-0.5 text-xs text-[#9CA3AF]">{card.detail}</p>

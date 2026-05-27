@@ -177,12 +177,11 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <h2
-                                    className="text-2xl font-bold"
-                                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    className="text-2xl font-bold font-sans text-brand-dark"
                                 >
                                     Kelas Saya
                                 </h2>
-                                <p className="mt-1 text-sm text-[#6B7280]">Kelola kelas dan grup siswa Anda</p>
+                                <p className="mt-1 text-sm text-brand-muted-dark">Kelola kelas dan grup siswa Anda</p>
                             </div>
                             <PrimaryButton href={lecturer.courses.create.url()}>
                                 <Plus className="h-4 w-4" />
@@ -225,21 +224,19 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <BookOpen className="h-8 w-8" style={{ color: '#88161c' }} />
+                                    <BookOpen className="h-8 w-8 text-brand-primary" />
                                 </div>
                                 <h3
-                                    className="text-lg font-semibold"
-                                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    className="text-lg font-semibold font-sans text-brand-dark"
                                 >
                                     Tidak ada kelas ditemukan
                                 </h3>
-                                <p className="mt-2 max-w-sm text-sm text-[#6B7280]">
+                                <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
                                     Coba ubah kata kunci atau filter yang digunakan.
                                 </p>
                                 <button
                                     onClick={handleResetFilters}
-                                    className="mt-4 text-sm font-medium transition-colors"
-                                    style={{ color: '#88161c' }}
+                                    className="mt-4 text-sm font-medium text-brand-primary transition-colors"
                                 >
                                     Reset Filter
                                 </button>
@@ -263,15 +260,14 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <BookOpen className="h-8 w-8" style={{ color: '#88161c' }} />
+                                    <BookOpen className="h-8 w-8 text-brand-primary" />
                                 </div>
                                 <h3
-                                    className="text-lg font-semibold"
-                                    style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    className="text-lg font-semibold font-sans text-brand-dark"
                                 >
                                     Belum ada kelas
                                 </h3>
-                                <p className="mt-2 max-w-sm text-sm text-[#6B7280]">
+                                <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
                                     Buat kelas pertama Anda untuk mulai mengelola pembelajaran dan kolaborasi mahasiswa.
                                 </p>
                                 <div className="mt-6">
@@ -285,7 +281,7 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                     ) : (
                         <>
                             <div className="flex items-center justify-between">
-                                <p className="text-xs text-[#6B7280]">
+                                <p className="text-xs text-brand-muted-dark">
                                     {filteredCourses.length} kelas
                                     {(debouncedQuery.trim() || activeStatus || activeSemester)
                                         ? ` (difilter dari ${courses.length})`
@@ -357,35 +353,31 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                                                 border: '1px solid rgba(136,22,28,0.15)',
                                                             }}
                                                         >
-                                                            {course.code}
-                                                        </span>
-                                                        <span className="inline-flex items-center gap-1 text-xs text-[#6B7280]">
-                                                            <Users className="h-3.5 w-3.5" />
-                                                            {course.students_count || 0} siswa
-                                                        </span>
-                                                    </div>
+                                                        {course.code}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1 text-xs text-brand-muted-dark">
+                                                        <Users className="h-3.5 w-3.5" />
+                                                        {course.students_count || 0} siswa
+                                                    </span>
+                                                </div>
 
-                                                    <h3
-                                                        className="text-lg font-semibold"
-                                                        style={{
-                                                            color: '#4A4A4A',
-                                                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                                        }}
-                                                    >
-                                                        {course.name}
-                                                    </h3>
+                                                <h3
+                                                    className="text-lg font-semibold font-sans text-brand-dark"
+                                                >
+                                                    {course.name}
+                                                </h3>
 
-                                                    {course.semester && course.academic_year && (
-                                                        <p className="mt-1 text-xs text-[#6B7280]">
-                                                            {course.semester} {course.academic_year}
-                                                        </p>
-                                                    )}
-
-                                                    <p className="mt-2 text-sm text-[#6B7280]">
-                                                        Dosen: {course.owner?.name || 'Tidak Diketahui'}
+                                                {course.semester && course.academic_year && (
+                                                    <p className="mt-1 text-xs text-brand-muted-dark">
+                                                        {course.semester} {course.academic_year}
                                                     </p>
-                                                    <div className="mt-4 flex items-center justify-between gap-3">
-                                                        <p className="text-sm text-[#6B7280]">{course.groups_count || 0} grup</p>
+                                                )}
+
+                                                <p className="mt-2 text-sm text-brand-muted-dark">
+                                                    Dosen: {course.owner?.name || 'Tidak Diketahui'}
+                                                </p>
+                                                <div className="mt-4 flex items-center justify-between gap-3">
+                                                    <p className="text-sm text-brand-muted-dark">{course.groups_count || 0} grup</p>
                                                         <div className="flex items-center text-sm font-medium" style={{ color: '#88161c' }}>
                                                             Lihat Detail
                                                             <svg

@@ -61,7 +61,7 @@ interface Props {
     chartData: ChartData;
 }
 
-const COLORS = ['#88161c', '#4A4A4A', '#6B7280', '#92400e', '#166534', '#7c3aed', '#0369a1', '#be123c', '#854d0e', '#15803d', '#6d28d9', '#0e7490'];
+const COLORS = ['rgb(var(--color-brand-primary))', 'rgb(var(--color-brand-dark))', 'rgb(var(--color-brand-muted))', '#92400e', '#166534', '#7c3aed', '#0369a1', '#be123c', '#854d0e', '#15803d', '#6d28d9', '#0e7490'];
 
 export default function LecturerDashboard({ stats, recentActivity, chartData }: Props) {
     const { auth } = usePage<SharedData>().props;
@@ -133,10 +133,10 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <h1 className="text-2xl font-bold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    <h1 className="text-2xl font-bold font-sans text-brand-dark">
                                         Selamat datang kembali, {auth.user?.name}!
                                     </h1>
-                                    <p className="mt-2 text-[#6B7280]">Kelola kelas Anda dan pantau kolaborasi mahasiswa dari satu tempat.</p>
+                                    <p className="mt-2 text-brand-muted-dark">Kelola kelas Anda dan pantau kolaborasi mahasiswa dari satu tempat.</p>
                                 </div>
                                 <div
                                     className="flex h-14 w-14 items-center justify-center rounded-2xl"
@@ -145,7 +145,7 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <BookOpen className="h-7 w-7" style={{ color: '#88161c' }} />
+                                    <BookOpen className="h-7 w-7 text-brand-primary" />
                                 </div>
                             </div>
                         </LiquidGlassCard>
@@ -162,12 +162,11 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                             >
                                 <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                     <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p className="text-sm text-[#6B7280]">{stat.label}</p>
-                                            <p
-                                                className="mt-2 text-3xl font-light"
-                                                style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                            >
+                                    <div>
+                                        <p className="text-sm text-brand-muted-dark">{stat.label}</p>
+                                        <p
+                                            className="mt-2 text-3xl font-light font-sans text-brand-dark"
+                                        >
                                                 {stat.value}
                                             </p>
                                         </div>
@@ -190,16 +189,16 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <div className="flex items-center gap-2 mb-4">
-                                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
-                                    <h2 className="text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    <BarChart3 className="h-5 w-5 text-brand-muted-dark" />
+                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
                                         Distribusi Kelas
                                     </h2>
                                 </div>
 
                                 {chartData.classDistribution.length === 0 ? (
                                     <div className="text-center py-8">
-                                        <BarChart3 className="mx-auto h-10 w-10 text-[#6B7280] opacity-50" />
-                                        <p className="mt-3 text-sm text-[#6B7280]">Belum ada data</p>
+                                        <BarChart3 className="mx-auto h-10 w-10 text-brand-muted-dark opacity-50" />
+                                        <p className="mt-3 text-sm text-brand-muted-dark">Belum ada data</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
@@ -208,8 +207,8 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                             return (
                                                 <div key={item.code}>
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-sm font-medium text-[#374151]">{item.code}</span>
-                                                        <span className="text-xs text-[#6B7280]">{item.groupCount} grup · {item.studentCount} mahasiswa</span>
+                                                        <span className="text-sm font-medium text-brand-muted-dark">{item.code}</span>
+                                                        <span className="text-xs text-brand-muted-dark">{item.groupCount} grup · {item.studentCount} mahasiswa</span>
                                                     </div>
                                                     <div className="h-2.5 w-full rounded-full bg-gray-100">
                                                         <div
@@ -229,8 +228,8 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <Activity className="h-5 w-5 text-[#6B7280]" />
-                                        <h2 className="text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                        <Activity className="h-5 w-5 text-brand-muted-dark" />
+                                        <h2 className="text-lg font-semibold font-sans text-brand-dark">
                                             Aktivitas Terbaru
                                         </h2>
                                     </div>
@@ -240,15 +239,15 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                         ) : (
                                             <WifiOff className="h-3.5 w-3.5 text-gray-400" />
                                         )}
-                                        <span className="text-[10px] text-[#6B7280]">{isConnected ? 'Live' : 'Offline'}</span>
+                                        <span className="text-[10px] text-brand-muted-dark">{isConnected ? 'Live' : 'Offline'}</span>
                                     </div>
                                 </div>
 
                                 {liveActivity.length === 0 ? (
                                     <div className="text-center py-8">
-                                        <Activity className="mx-auto h-10 w-10 text-[#6B7280] opacity-50" />
-                                        <p className="mt-3 text-sm text-[#6B7280]">Belum ada aktivitas</p>
-                                        <p className="text-xs text-[#6B7280] mt-1">Aktivitas akan muncul saat mahasiswa berdiskusi</p>
+                                        <Activity className="mx-auto h-10 w-10 text-brand-muted-dark opacity-50" />
+                                        <p className="mt-3 text-sm text-brand-muted-dark">Belum ada aktivitas</p>
+                                        <p className="text-xs text-brand-muted-dark mt-1">Aktivitas akan muncul saat mahasiswa berdiskusi</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
@@ -262,14 +261,14 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                                         {activity.senderName?.charAt(0) || '?'}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-[#1F2937] truncate">{activity.senderName}</p>
-                                                        <p className="text-xs text-[#6B7280]">
+                                                        <p className="text-sm font-medium text-brand-dark truncate">{activity.senderName}</p>
+                                                        <p className="text-xs text-brand-muted-dark">
                                                             {activity.courseName && `${activity.courseName} · `}
                                                             {activity.groupName}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <p className="mt-2 text-sm text-[#6B7280] line-clamp-2">{activity.content}</p>
+                                                <p className="mt-2 text-sm text-brand-muted-dark line-clamp-2">{activity.content}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -282,8 +281,8 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <div className="flex items-center gap-2 mb-4">
-                                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
-                                    <h2 className="text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    <BarChart3 className="h-5 w-5 text-brand-muted-dark" />
+                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
                                         Tren Aktivitas Mingguan
                                     </h2>
                                 </div>
@@ -292,8 +291,8 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                         const maxMsg = Math.max(...trend.data.map(d => d.messageCount), 1);
                                         return (
                                             <div key={trend.courseCode} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                                <p className="text-sm font-medium text-[#1F2937]">{trend.courseCode}</p>
-                                                <p className="text-xs text-[#6B7280] mb-3">{trend.courseName}</p>
+                                                <p className="text-sm font-medium text-brand-dark">{trend.courseCode}</p>
+                                                <p className="text-xs text-brand-muted-dark mb-3">{trend.courseName}</p>
                                                 <div className="flex items-end gap-1 h-20">
                                                     {trend.data.map((d, di) => (
                                                         <div key={di} className="flex-1 flex flex-col items-center gap-1">
@@ -310,7 +309,7 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                                     ))}
                                                 </div>
                                                 <div className="flex items-center justify-between mt-2">
-                                                    <span className="text-[10px] text-[#6B7280]">
+                                                    <span className="text-[10px] text-brand-muted-dark">
                                                         {trend.data.length} minggu
                                                     </span>
                                                     <span className="text-[10px] font-medium" style={{ color: COLORS[ti % COLORS.length] }}>
@@ -327,7 +326,7 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
                         <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                            <h2 className="mb-4 text-lg font-semibold" style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                            <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
                                 Aksi Cepat
                             </h2>
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -336,11 +335,11 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                     className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
                                 >
                                     <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(136,22,28,0.08)' }}>
-                                        <Plus className="h-5 w-5" style={{ color: '#88161c' }} />
+                                        <Plus className="h-5 w-5 text-brand-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-[#1F2937]">Buat Kelas Baru</p>
-                                        <p className="text-xs text-[#6B7280]">Tambah kelas baru</p>
+                                        <p className="text-sm font-medium text-brand-dark">Buat Kelas Baru</p>
+                                        <p className="text-xs text-brand-muted-dark">Tambah kelas baru</p>
                                     </div>
                                 </Link>
 
@@ -349,11 +348,11 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                     className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
                                 >
                                     <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(74,74,74,0.08)' }}>
-                                        <BookOpen className="h-5 w-5" style={{ color: '#4A4A4A' }} />
+                                        <BookOpen className="h-5 w-5 text-brand-dark" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-[#1F2937]">Kelola Kelas</p>
-                                        <p className="text-xs text-[#6B7280]">Lihat semua kelas</p>
+                                        <p className="text-sm font-medium text-brand-dark">Kelola Kelas</p>
+                                        <p className="text-xs text-brand-muted-dark">Lihat semua kelas</p>
                                     </div>
                                 </Link>
 
@@ -362,11 +361,11 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                     className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
                                 >
                                     <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(107,114,128,0.08)' }}>
-                                        <Users className="h-5 w-5" style={{ color: '#6B7280' }} />
+                                        <Users className="h-5 w-5 text-brand-muted-dark" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-[#1F2937]">Kelola Mahasiswa</p>
-                                        <p className="text-xs text-[#6B7280]">Atur anggota grup</p>
+                                        <p className="text-sm font-medium text-brand-dark">Kelola Mahasiswa</p>
+                                        <p className="text-xs text-brand-muted-dark">Atur anggota grup</p>
                                     </div>
                                 </Link>
                             </div>

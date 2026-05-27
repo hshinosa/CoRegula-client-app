@@ -41,16 +41,15 @@ export default function CreateCourse() {
                                         border: '1px solid rgba(136,22,28,0.12)',
                                     }}
                                 >
-                                    <BookOpen className="h-7 w-7" style={{ color: '#88161c' }} />
+                                    <BookOpen className="h-7 w-7 text-brand-primary" />
                                 </div>
                                 <div>
                                     <h2
-                                        className="text-xl font-semibold sm:text-2xl"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                        className="text-xl font-semibold sm:text-2xl font-sans text-brand-dark"
                                     >
                                         Buat Kelas Baru
                                     </h2>
-                                    <p className="mt-1 text-sm text-[#6B7280] sm:text-base">
+                                    <p className="mt-1 text-sm text-brand-muted-dark sm:text-base">
                                         Siapkan kelas baru untuk siswa Anda.
                                     </p>
                                 </div>
@@ -66,11 +65,11 @@ export default function CreateCourse() {
                                         type="text"
                                         value={data.code}
                                         onChange={(e) => setData('code', e.target.value.toUpperCase())}
-                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-mono tracking-wider text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-mono tracking-wider text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         placeholder="misalnya, CS401"
                                         maxLength={50}
                                     />
-                                    <p className="mt-2 text-xs text-[#6B7280]">Pengenal unik untuk kelas Anda</p>
+                                    <p className="mt-2 text-xs text-brand-muted-dark">Pengenal unik untuk kelas Anda</p>
                                     <InputError message={errors.code} />
                                 </div>
 
@@ -83,7 +82,7 @@ export default function CreateCourse() {
                                         type="text"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-[#4A4A4A] shadow-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[#88161c]/30 sm:text-sm sm:leading-6"
+                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         placeholder="misalnya, Interaksi Manusia-Komputer"
                                         maxLength={255}
                                     />
@@ -128,11 +127,10 @@ export default function CreateCourse() {
                                 <div>
                                     <p
                                         className="font-medium"
-                                        style={{ color: '#4A4A4A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
                                         Apa yang terjadi selanjutnya?
                                     </p>
-                                    <p className="mt-1 text-sm leading-relaxed text-[#6B7280]">
+                                    <p className="mt-1 text-sm leading-relaxed text-brand-muted-dark">
                                         Setelah membuat kelas, Anda akan mendapatkan kode bergabung unik yang dapat digunakan siswa untuk mendaftar.
                                         Anda juga dapat mengunggah materi kelas dan membuat grup siswa.
                                     </p>

@@ -65,19 +65,18 @@ interface Props {
 }
 
 const headingStyle = {
-    color: '#4A4A4A',
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: 'rgb(var(--color-brand-dark))',
 } as const;
 
 const brandChipStyle = {
     background: 'rgba(136,22,28,0.08)',
-    color: '#88161c',
+    color: 'rgb(var(--color-brand-primary))',
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
 const neutralChipStyle = {
     background: 'rgba(74,74,74,0.08)',
-    color: '#4A4A4A',
+    color: 'rgb(var(--color-brand-dark))',
     border: '1px solid rgba(74,74,74,0.12)',
 } as const;
 
@@ -422,7 +421,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                         <h1 className="text-2xl font-bold" style={headingStyle}>
                                             {course.name}
                                         </h1>
-                                        <p className="mt-1 text-sm text-[#6B7280]">
+                                        <p className="mt-1 text-sm text-brand-muted-dark">
                                             {course.code} · Analytics Dashboard
                                         </p>
                                     </div>
@@ -448,7 +447,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                         <div
                                             className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-300'}`}
                                         />
-                                        <span className="text-xs text-[#6B7280]">
+                                        <span className="text-xs text-brand-muted-dark">
                                             {isConnected ? 'Live' : 'Offline'}
                                         </span>
                                     </div>
@@ -507,11 +506,11 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                 <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <p className="text-sm text-[#6B7280]">{card.label}</p>
+                                            <p className="text-sm text-brand-muted-dark">{card.label}</p>
                                             <p className="mt-2 text-3xl font-light" style={headingStyle}>
                                                 {card.value}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#6B7280]">{card.detail}</p>
+                                            <p className="mt-1 text-xs text-brand-muted-dark">{card.detail}</p>
                                         </div>
                                         <div
                                             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -554,7 +553,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                             </div>
                             {isLoadingTrends ? (
                                 <div className="flex h-[300px] items-center justify-center">
-                                    <RefreshCw className="h-6 w-6 animate-spin text-[#6B7280]" />
+                                    <RefreshCw className="h-6 w-6 animate-spin text-brand-muted-dark" />
                                 </div>
                             ) : (
                                 <TrendChart
@@ -590,37 +589,37 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                         <thead>
                                             <tr>
                                                 <th
-                                                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Grup
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Anggota
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Pesan
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Kualitas
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Status
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                                                    className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-brand-muted-dark"
                                                     style={tableHeaderStyle}
                                                 >
                                                     Aksi
@@ -651,19 +650,19 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-sm font-medium text-[#4A4A4A]">
+                                                                    <p className="text-sm font-medium text-brand-dark">
                                                                         {group.groupName}
                                                                     </p>
-                                                                    <p className="mt-0.5 text-xs text-[#6B7280]">
+                                                                    <p className="mt-0.5 text-xs text-brand-muted-dark">
                                                                         {group.chatSpaceCount} sesi diskusi
                                                                     </p>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-brand-dark">
                                                             {group.memberCount}
                                                         </td>
-                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-[#4A4A4A]">
+                                                        <td className="border-t border-white/50 px-4 py-4 text-center align-top text-sm text-brand-dark">
                                                             {group.messageCount}
                                                         </td>
                                                         <td className="border-t border-white/50 px-4 py-4 text-center align-top">
@@ -705,7 +704,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                 {liveGroups.filter((g) => g.engagementDistribution && Object.keys(g.engagementDistribution).length > 0)
                                     .length > 0 && (
                                     <div className="mt-8 space-y-6">
-                                        <h3 className="text-sm font-semibold text-[#4A4A4A]">Distribusi Engagement per Grup</h3>
+                                        <h3 className="text-sm font-semibold text-brand-dark">Distribusi Engagement per Grup</h3>
                                         {liveGroups
                                             .filter(
                                                 (group) =>
@@ -719,10 +718,10 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                 return (
                                                     <div key={group.groupId} className="rounded-2xl p-4" style={glassPanelStyle}>
                                                         <div className="mb-3 flex items-center justify-between">
-                                                            <p className="text-sm font-medium text-[#4A4A4A]">
+                                                            <p className="text-sm font-medium text-brand-dark">
                                                                 {group.groupName}
                                                             </p>
-                                                            <span className="text-xs text-[#6B7280]">{total} total</span>
+                                                            <span className="text-xs text-brand-muted-dark">{total} total</span>
                                                         </div>
 
                                                         <div className="mt-4 space-y-3">
@@ -739,7 +738,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                                             >
                                                                                 {type}
                                                                             </span>
-                                                                            <span className="text-sm font-medium text-[#4A4A4A]">
+                                                                            <span className="text-sm font-medium text-brand-dark">
                                                                                 {count} • {percentage.toFixed(0)}%
                                                                             </span>
                                                                         </div>
@@ -758,7 +757,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                             <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.45)' }}>
                                                                 <div className="flex items-start gap-3">
                                                                     <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#88161c' }} />
-                                                                    <p className="text-sm leading-6 text-[#6B7280]">{group.recommendation}</p>
+                                                                    <p className="text-sm leading-6 text-brand-muted-dark">{group.recommendation}</p>
                                                                 </div>
                                                             </div>
                                                         )}
