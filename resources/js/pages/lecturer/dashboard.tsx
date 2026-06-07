@@ -163,12 +163,60 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                 icon={stat.icon}
                                 color={stat.color}
                                 isPrimary={index === 0}
+                                forceLight
                             />
                         ))}
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-2">
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+                            <div className="space-y-4">
+                                <LiquidGlassCard intensity="medium" className="p-4" lightMode={true}>
+                                    <h2 className="mb-3 text-base font-semibold font-sans text-brand-dark">
+                                        Aksi Cepat
+                                    </h2>
+                                    <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                                        <Link
+                                            href={lecturer.courses.create.url()}
+                                            className="group flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 transition-colors hover:bg-gray-100"
+                                        >
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'rgba(136,22,28,0.08)' }}>
+                                                <Plus className="h-4 w-4 text-brand-primary" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-semibold text-brand-dark">Buat Kelas</p>
+                                                <p className="truncate text-[11px] text-brand-muted-dark">Kelas baru</p>
+                                            </div>
+                                        </Link>
+
+                                        <Link
+                                            href={lecturer.courses.index.url()}
+                                            className="group flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 transition-colors hover:bg-gray-100"
+                                        >
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'rgba(74,74,74,0.08)' }}>
+                                                <BookOpen className="h-4 w-4 text-brand-dark" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-semibold text-brand-dark">Kelola Kelas</p>
+                                                <p className="truncate text-[11px] text-brand-muted-dark">Semua kelas</p>
+                                            </div>
+                                        </Link>
+
+                                        <Link
+                                            href={lecturer.courses.index.url()}
+                                            className="group flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 transition-colors hover:bg-gray-100"
+                                        >
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'rgba(107,114,128,0.08)' }}>
+                                                <Users className="h-4 w-4 text-brand-muted-dark" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-semibold text-brand-dark">Mahasiswa</p>
+                                                <p className="truncate text-[11px] text-brand-muted-dark">Anggota grup</p>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                </LiquidGlassCard>
+
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <div className="flex items-center gap-2 mb-4">
                                     <BarChart3 className="h-5 w-5 text-brand-muted-dark" />
@@ -204,6 +252,7 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                     </div>
                                 )}
                             </LiquidGlassCard>
+                            </div>
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
@@ -258,101 +307,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                             </LiquidGlassCard>
                         </motion.div>
                     </div>
-
-                    {chartData.qualityTrends.length > 0 && chartData.qualityTrends.some(t => t.data.length > 0) && (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-                            <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <BarChart3 className="h-5 w-5 text-brand-muted-dark" />
-                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Tren Aktivitas Mingguan
-                                    </h2>
-                                </div>
-                                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                    {chartData.qualityTrends.filter(t => t.data.length > 0).map((trend, ti) => {
-                                        const maxMsg = Math.max(...trend.data.map(d => d.messageCount), 1);
-                                        return (
-                                            <div key={trend.courseCode} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                                <p className="text-sm font-medium text-brand-dark">{trend.courseCode}</p>
-                                                <p className="text-xs text-brand-muted-dark mb-3">{trend.courseName}</p>
-                                                <div className="flex items-end gap-1 h-20">
-                                                    {trend.data.map((d, di) => (
-                                                        <div key={di} className="flex-1 flex flex-col items-center gap-1">
-                                                            <div
-                                                                className="w-full rounded-t transition-all duration-500"
-                                                                style={{
-                                                                    height: `${(d.messageCount / maxMsg) * 100}%`,
-                                                                    minHeight: d.messageCount > 0 ? 4 : 0,
-                                                                    backgroundColor: COLORS[ti % COLORS.length],
-                                                                    opacity: 0.8,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="flex items-center justify-between mt-2">
-                                                    <span className="text-[10px] text-brand-muted-dark">
-                                                        {trend.data.length} minggu
-                                                    </span>
-                                                    <span className="text-[10px] font-medium" style={{ color: COLORS[ti % COLORS.length] }}>
-                                                        {trend.data.reduce((s, d) => s + d.messageCount, 0)} pesan
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    )}
-
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
-                        <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                            <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
-                                Aksi Cepat
-                            </h2>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                <Link
-                                    href={lecturer.courses.create.url()}
-                                    className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
-                                >
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(136,22,28,0.08)' }}>
-                                        <Plus className="h-5 w-5 text-brand-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-brand-dark">Buat Kelas Baru</p>
-                                        <p className="text-xs text-brand-muted-dark">Tambah kelas baru</p>
-                                    </div>
-                                </Link>
-
-                                <Link
-                                    href={lecturer.courses.index.url()}
-                                    className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
-                                >
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(74,74,74,0.08)' }}>
-                                        <BookOpen className="h-5 w-5 text-brand-dark" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-brand-dark">Kelola Kelas</p>
-                                        <p className="text-xs text-brand-muted-dark">Lihat semua kelas</p>
-                                    </div>
-                                </Link>
-
-                                <Link
-                                    href={lecturer.courses.index.url()}
-                                    className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 transition-colors hover:bg-gray-100"
-                                >
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'rgba(107,114,128,0.08)' }}>
-                                        <Users className="h-5 w-5 text-brand-muted-dark" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-brand-dark">Kelola Mahasiswa</p>
-                                        <p className="text-xs text-brand-muted-dark">Atur anggota grup</p>
-                                    </div>
-                                </Link>
-                            </div>
-                        </LiquidGlassCard>
-                    </motion.div>
                 </div>
             </div>
         </AppLayout>

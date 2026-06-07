@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface Notification {
     id: string;
@@ -16,11 +17,51 @@ interface NotificationsBellProps {
     lightMode?: boolean;
 }
 
+interface ApiNotification extends Omit<Notification, 'read' | 'timestamp'> {
+    read?: boolean;
+    isRead?: boolean;
+    timestamp?: string;
+    createdAt?: string;
+}
+
+function normalizeNotifications(data: unknown): Notification[] {
+    const payload = data as {
+        data?: ApiNotification[] | { notifications?: ApiNotification[] };
+        notifications?: ApiNotification[];
+    };
+    const items = Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload.data?.notifications)
+            ? payload.data.notifications
+            : Array.isArray(payload.notifications)
+                ? payload.notifications
+                : [];
+
+    return items.map((item) => ({
+        ...item,
+        read: item.read ?? item.isRead ?? false,
+        timestamp: item.timestamp ?? item.createdAt ?? new Date().toISOString(),
+    }));
+}
+
 export default function NotificationsBell({ lightMode = true }: NotificationsBellProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const rootRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+
+    const updateDropdownPosition = () => {
+        const rect = buttonRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        setDropdownPosition({
+            top: rect.bottom + 8,
+            right: Math.max(16, window.innerWidth - rect.right),
+        });
+    };
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -30,7 +71,7 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const items: Notification[] = data.data ?? data.notifications ?? [];
+                    const items = normalizeNotifications(data);
                     setNotifications(items);
                     setUnreadCount(items.filter((n) => !n.read).length);
                 }
@@ -44,13 +85,30 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+            const target = e.target as Node;
+            const isInsideRoot = rootRef.current?.contains(target);
+            const isInsideDropdown = dropdownRef.current?.contains(target);
+
+            if (!isInsideRoot && !isInsideDropdown) {
                 setIsOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        updateDropdownPosition();
+        window.addEventListener('resize', updateDropdownPosition);
+        window.addEventListener('scroll', updateDropdownPosition, true);
+
+        return () => {
+            window.removeEventListener('resize', updateDropdownPosition);
+            window.removeEventListener('scroll', updateDropdownPosition, true);
+        };
+    }, [isOpen]);
 
     const markAsRead = async (id: string) => {
         setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -89,9 +147,14 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
     };
 
     return (
-        <div className="relative" ref={dropdownRef}>
+        <>
+        <div className="relative" ref={rootRef}>
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                ref={buttonRef}
+                onClick={() => {
+                    updateDropdownPosition();
+                    setIsOpen(!isOpen);
+                }}
                 className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:scale-105"
                 style={{
                     background: lightMode ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.08)',
@@ -110,15 +173,21 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
                 )}
             </button>
 
+        </div>
+
+        {typeof document !== 'undefined' && createPortal(
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
+                        ref={dropdownRef}
                         initial={{ opacity: 0, y: -8, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.96 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl"
+                        className="fixed z-[9999] w-80 overflow-hidden rounded-2xl"
                         style={{
+                            top: dropdownPosition.top,
+                            right: dropdownPosition.right,
                             background: lightMode ? 'rgba(255,255,255,0.95)' : 'rgba(20,20,30,0.95)',
                             backdropFilter: 'blur(20px)',
                             border: lightMode ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.08)',
@@ -228,7 +297,9 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
                         )}
                     </motion.div>
                 )}
-            </AnimatePresence>
-        </div>
+            </AnimatePresence>,
+            document.body,
+        )}
+        </>
     );
 }

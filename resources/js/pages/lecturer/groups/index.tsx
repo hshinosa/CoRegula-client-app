@@ -77,6 +77,22 @@ const glassPanelStyle = {
     border: '1px solid rgba(255,255,255,0.65)',
 } as const;
 
+const whiteModalStyle = {
+    background: '#ffffff',
+    border: '1px solid rgba(226,232,240,0.95)',
+    boxShadow: '0 28px 80px rgba(15,23,42,0.18)',
+} as const;
+
+const modalSectionStyle = {
+    background: '#f8fafc',
+    border: '1px solid rgba(226,232,240,0.95)',
+} as const;
+
+const modalCloseButtonStyle = {
+    background: '#f8fafc',
+    border: '1px solid rgba(226,232,240,0.95)',
+} as const;
+
 const modalBackdropClass = 'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm';
 
 const getGoalChipStyle = (group: GroupWithDetails): CSSProperties => {
@@ -609,8 +625,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-lg p-6" lightMode={true}>
-                                <div className="flex items-center justify-between gap-4">
+                            <div className="w-full max-w-lg rounded-3xl p-6" style={whiteModalStyle}>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                                     <div>
                                         <h3 className="text-lg font-semibold" style={headingStyle}>
                                             Tugaskan Mahasiswa
@@ -622,17 +638,17 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setShowAssignModal(null)}
-                                        className="rounded-full p-2 transition-colors"
-                                        style={glassPanelStyle}
+                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
+                                        style={modalCloseButtonStyle}
                                     >
                                         <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
                                     </button>
                                 </div>
 
                                 <form onSubmit={handleAssignMembers} className="mt-6 space-y-4">
-                                    <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                                    <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl p-2" style={modalSectionStyle}>
                                         {unassignedStudents.length === 0 ? (
-                                            <div className="rounded-[28px] px-6 py-10 text-center" style={glassPanelStyle}>
+                                            <div className="rounded-[24px] bg-white px-6 py-10 text-center ring-1 ring-slate-200">
                                                 <div
                                                     className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
                                                     style={{
@@ -655,10 +671,11 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                         key={student.id}
                                                         className="flex cursor-pointer items-center gap-3 rounded-2xl p-4 transition-all"
                                                         style={{
-                                                            background: checked ? 'rgba(136,22,28,0.10)' : 'rgba(255,255,255,0.55)',
+                                                            background: checked ? 'rgba(136,22,28,0.08)' : '#ffffff',
                                                             border: checked
                                                                 ? '1px solid rgba(136,22,28,0.18)'
-                                                                : '1px solid rgba(255,255,255,0.7)',
+                                                                : '1px solid rgba(226,232,240,0.95)',
+                                                            boxShadow: checked ? '0 10px 30px rgba(136,22,28,0.08)' : '0 6px 20px rgba(15,23,42,0.04)',
                                                         }}
                                                     >
                                                         <input
@@ -696,7 +713,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </LiquidGlassCard>
+                            </div>
                         </motion.div>
                     </>
                 )}
@@ -783,8 +800,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
-                                <div className="flex items-center justify-between gap-4">
+                            <div className="w-full max-w-md rounded-3xl p-6" style={whiteModalStyle}>
+                                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                                     <div>
                                         <h3 className="text-lg font-semibold" style={headingStyle}>
                                             Buat Chat Space Baru
@@ -796,8 +813,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setShowChatSpaceModal(null)}
-                                        className="rounded-full p-2 transition-colors"
-                                        style={glassPanelStyle}
+                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
+                                        style={modalCloseButtonStyle}
                                     >
                                         <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
                                     </button>
@@ -813,7 +830,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                             type="text"
                                             value={chatSpaceForm.data.name}
                                             onChange={(event) => chatSpaceForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm placeholder:text-slate-400 focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Diskusi BAB 1"
                                         />
                                         <InputError message={chatSpaceForm.errors.name} />
@@ -828,7 +845,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </LiquidGlassCard>
+                            </div>
                         </motion.div>
                     </>
                 )}

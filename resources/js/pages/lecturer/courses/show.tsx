@@ -25,7 +25,7 @@ import AttendanceTab from '@/components/lecturer/AttendanceTab';
 import MaterialsTab from '@/components/lecturer/MaterialsTab';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
-import { ActivitySummary, Course, KnowledgeBase, StudentActivity, VectorStatus } from '@/types';
+import { ActivitySummary, Course, CourseMaterial, KnowledgeBase, MaterialModule, StudentActivity, VectorStatus } from '@/types';
 
 const ACCEPTED_FILE_TYPES = [
     '.pdf',
@@ -139,6 +139,8 @@ export default function ShowCourse({ course }: Props) {
     const [activityData, setActivityData] = useState<StudentActivity[]>([]);
     const [activitySummary, setActivitySummary] = useState<ActivitySummary>({ total_students: 0, total_messages: 0, active_students: 0 });
     const [activityLoading, setActivityLoading] = useState(false);
+    const [materialModules, setMaterialModules] = useState<MaterialModule[]>([]);
+    const [unassignedMaterials, setUnassignedMaterials] = useState<CourseMaterial[]>([]);
 
     useEffect(() => {
         setIsLoading(false);
@@ -157,11 +159,27 @@ export default function ShowCourse({ course }: Props) {
         setActivityLoading(false);
     }, [course.id]);
 
+    const fetchLocalMaterials = useCallback(async () => {
+        try {
+            const res = await fetch(`/lecturer/courses/${course.id}/materials`);
+            const data = await res.json();
+            setMaterialModules(data.modules || []);
+            setUnassignedMaterials(data.unassigned || []);
+        } catch {
+            setMaterialModules([]);
+            setUnassignedMaterials([]);
+        }
+    }, [course.id]);
+
     useEffect(() => {
         if (activeTab === 'aktivitas' && activityData.length === 0) {
             fetchActivity();
         }
     }, [activeTab, activityData.length, fetchActivity]);
+
+    useEffect(() => {
+        fetchLocalMaterials();
+    }, [fetchLocalMaterials]);
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<{
         files: File[];
@@ -224,12 +242,19 @@ export default function ShowCourse({ course }: Props) {
         };
     }, [course.knowledge_base]);
 
+    const localMaterials = useMemo(() => {
+        return [...materialModules.flatMap((module) => module.materials || []), ...unassignedMaterials];
+    }, [materialModules, unassignedMaterials]);
+
+    const readyMaterialCount = Math.max(knowledgeBaseStats.ready, localMaterials.length);
+    const totalMaterialCount = Math.max(knowledgeBaseStats.total, localMaterials.length);
+
     const readyKnowledgeBase = useMemo(() => {
         return (course.knowledge_base || []).filter((file) => file.vector_status === 'ready');
     }, [course.knowledge_base]);
 
     const hiddenKnowledgeBaseCount = Math.max((course.knowledge_base?.length || 0) - readyKnowledgeBase.length, 0);
-    const hasAnyKnowledgeFiles = (course.knowledge_base?.length || 0) > 0;
+    const hasAnyKnowledgeFiles = (course.knowledge_base?.length || 0) > 0 || localMaterials.length > 0;
 
     const knowledgeStatusLabel = (() => {
         if (knowledgeBaseStats.total === 0) {
@@ -325,8 +350,8 @@ export default function ShowCourse({ course }: Props) {
                             },
                             {
                                 label: 'Materi Siap Pakai',
-                                value: knowledgeBaseStats.ready,
-                                detail: `${knowledgeBaseStats.total} total file basis pengetahuan`,
+                                value: readyMaterialCount,
+                                detail: `${totalMaterialCount} total materi kelas`,
                                 icon: CheckCircle2,
                                 color: '#166534',
                             },
@@ -659,7 +684,7 @@ export default function ShowCourse({ course }: Props) {
                                     </div>
                                     {hasAnyKnowledgeFiles && (
                                         <span className="rounded-full px-3 py-1 text-xs font-medium" style={neutralChipStyle}>
-                                            {readyKnowledgeBase.length} siap • {hiddenKnowledgeBaseCount} tersembunyi
+                                            {readyMaterialCount} siap{hiddenKnowledgeBaseCount > 0 ? ` • ${hiddenKnowledgeBaseCount} tersembunyi` : ''}
                                         </span>
                                     )}
                                 </div>
@@ -717,6 +742,37 @@ export default function ShowCourse({ course }: Props) {
                                                     <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium" style={getStatusStyle(file.vector_status)}>
                                                         {STATUS_LABELS[file.vector_status]}
                                                     </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : localMaterials.length > 0 ? (
+                                    <div className="mt-5 grid gap-4 xl:grid-cols-2">
+                                        {localMaterials.map((material) => (
+                                            <div key={material.id} className="rounded-[28px] p-5" style={glassPanelStyle}>
+                                                <div className="flex items-start gap-3">
+                                                    <div
+                                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl"
+                                                        style={{
+                                                            background: 'rgba(136,22,28,0.08)',
+                                                            border: '1px solid rgba(136,22,28,0.12)',
+                                                        }}
+                                                    >
+                                                        <Files className="h-5 w-5" style={{ color: '#88161c' }} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-semibold" style={{ color: '#4A4A4A' }}>
+                                                            {material.title}
+                                                        </p>
+                                                        {material.description && (
+                                                            <p className="mt-1 line-clamp-2 text-xs text-brand-muted-dark">
+                                                                {material.description}
+                                                            </p>
+                                                        )}
+                                                        <p className="mt-1 text-xs text-brand-muted-dark">
+                                                            {material.file_name} • {formatFileSize(material.file_size)} • {material.view_count} views
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

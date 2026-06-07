@@ -2,10 +2,6 @@ import { router } from '@inertiajs/react';
 import { BarChart3, BookOpen, CalendarCheck } from 'lucide-react';
 import { useState } from 'react';
 
-const headingStyle = {
-    color: '#4A4A4A',
-} as const;
-
 const tabs = [
     { id: 'aktivitas', label: 'Aktivitas', icon: BarChart3 },
     { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
@@ -43,7 +39,6 @@ export default function CourseDetailTabs({ courseId, activeTab, onTabChange }: C
                                       color: '#6B7280',
                                       border: '1px solid transparent',
                                   }),
-                            ...headingStyle,
                         }}
                     >
                         <tab.icon className="h-4 w-4" />

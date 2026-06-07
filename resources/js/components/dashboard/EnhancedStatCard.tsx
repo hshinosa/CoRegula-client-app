@@ -8,6 +8,7 @@ interface EnhancedStatCardProps {
     icon: LucideIcon;
     color: string;
     isPrimary?: boolean;
+    forceLight?: boolean;
     className?: string;
 }
 
@@ -24,6 +25,7 @@ export function EnhancedStatCard({
     icon: Icon,
     color,
     isPrimary = false,
+    forceLight = false,
     className = '',
 }: EnhancedStatCardProps) {
     const [hasAnimated, setHasAnimated] = useState(false);
@@ -64,14 +66,18 @@ export function EnhancedStatCard({
             )}
 
             <div
-                className="relative h-full rounded-2xl border border-zinc-200/50 bg-white/80 p-5 backdrop-blur-sm transition-all duration-300 dark:border-zinc-700/50 dark:bg-zinc-900/80 group-hover:border-brand-primary/20 group-hover:shadow-lg"
+                className={`relative h-full rounded-2xl border p-5 backdrop-blur-sm transition-all duration-300 group-hover:border-brand-primary/20 group-hover:shadow-lg ${
+                    forceLight
+                        ? 'border-zinc-200/50 bg-white/80'
+                        : 'border-zinc-200/50 bg-white/80 dark:border-zinc-700/50 dark:bg-zinc-900/80'
+                }`}
             >
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                        <p className="text-sm font-medium text-brand-muted-dark dark:text-zinc-400">
+                        <p className={`text-sm font-medium ${forceLight ? 'text-brand-muted-dark' : 'text-brand-muted-dark dark:text-zinc-400'}`}>
                             {label}
                         </p>
-                        <motion.p className="mt-2 font-sans text-3xl font-light text-brand-dark dark:text-white">
+                        <motion.p className={`mt-2 font-sans text-3xl font-light ${forceLight ? 'text-brand-dark' : 'text-brand-dark dark:text-white'}`}>
                             {displayValue}
                         </motion.p>
                     </div>

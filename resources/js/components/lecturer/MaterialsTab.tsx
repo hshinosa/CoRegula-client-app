@@ -4,6 +4,9 @@ import { BookOpen, Download, Eye, FileText, FolderPlus, GripVertical, Plus, Tras
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 const bodyTextClass = 'text-sm text-brand-muted-dark';
+const headingStyle = {
+    color: '#4A4A4A',
+} as const;
 const glassPanelStyle = { background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' } as const;
 
 const formatFileSize = (bytes?: number) => {
@@ -133,6 +136,7 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
             <span className="text-lg">{FILE_ICONS[material.file_type || ''] || '📄'}</span>
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium" style={{ color: '#4A4A4A' }}>{material.title}</p>
+                {material.description && <p className="mt-0.5 line-clamp-2 text-xs text-brand-muted-dark">{material.description}</p>}
                 <div className="mt-0.5 flex items-center gap-3 text-xs text-brand-muted-dark">
                     <span>{material.file_name}</span>
                     <span>{formatFileSize(material.file_size)}</span>

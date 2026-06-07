@@ -80,7 +80,7 @@ class AnalyticsController extends Controller
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
 
-            $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups/{$group}");
+            $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/{$group}");
             $groupData = $groupResponse->successful() ? $groupResponse->json('data') : null;
 
             $analyticsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/analytics/group/{$group}");
@@ -214,16 +214,8 @@ class AnalyticsController extends Controller
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Failed to fetch group messages', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch messages',
-            ], 500);
         } catch (\Illuminate\Http\Client\RequestException $e) {
             Log::error('Failed to fetch group messages', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch messages',
-            ], 500);
         }
 
         return Inertia::render('lecturer/analytics/overview', [

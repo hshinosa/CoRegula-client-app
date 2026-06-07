@@ -4,56 +4,44 @@ import { BookOpen, CheckSquare, Plus, Square, Users } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
+import NotificationsBell from '@/components/dashboard/NotificationsBell';
 import { CourseGridSkeleton } from '@/components/ui/skeletons';
 import { LiquidGlassCard, PrimaryButton } from '@/components/Welcome/utils/helpers';
 import { BulkActionBar } from '@/components/lecturer/BulkActionBar';
-import { CourseFilters } from '@/components/lecturer/CourseFilters';
 import { CourseSearchBar } from '@/components/lecturer/CourseSearchBar';
-import { CoursesAnalyticsOverview } from '@/components/lecturer/CoursesAnalyticsOverview';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { toast } from '@/components/ui/toaster';
 import { useDebounce } from '@/hooks/useDebounce';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
-import { Course, CourseAnalytics, CourseStatus } from '@/types';
+import { Course } from '@/types';
 
 interface Props {
     courses: Course[];
-    analytics: CourseAnalytics;
 }
 
 function readUrlParams() {
-    if (typeof window === 'undefined') return { q: '', status: null as CourseStatus | null, semester: null as string | null };
+    if (typeof window === 'undefined') return { q: '' };
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
-    const status = params.get('status') as CourseStatus | null;
-    const semester = params.get('semester');
-    return {
-        q,
-        status: status && ['aktif', 'selesai', 'belum_mulai'].includes(status) ? status : null,
-        semester: semester || null,
-    };
+    return { q };
 }
 
-function writeUrlParams(q: string, status: CourseStatus | null, semester: string | null) {
+function writeUrlParams(q: string) {
     const params = new URLSearchParams();
     if (q.trim()) params.set('q', q.trim());
-    if (status) params.set('status', status);
-    if (semester) params.set('semester', semester);
     const qs = params.toString();
     const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', url);
 }
 
-export default function LecturerCoursesIndex({ courses, analytics }: Props) {
+export default function LecturerCoursesIndex({ courses }: Props) {
     const navItems = useLecturerNav('courses');
     const [isLoading, setIsLoading] = useState(true);
 
     const initial = readUrlParams();
     const [searchQuery, setSearchQuery] = useState(initial.q);
-    const [activeStatus, setActiveStatus] = useState<CourseStatus | null>(initial.status);
-    const [activeSemester, setActiveSemester] = useState<string | null>(initial.semester);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isProcessing, setIsProcessing] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -65,8 +53,8 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
     }, []);
 
     useEffect(() => {
-        writeUrlParams(debouncedQuery, activeStatus, activeSemester);
-    }, [debouncedQuery, activeStatus, activeSemester]);
+        writeUrlParams(debouncedQuery);
+    }, [debouncedQuery]);
 
     const filteredCourses = useMemo(() => {
         let result = courses;
@@ -80,22 +68,8 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
             );
         }
 
-        if (activeStatus) {
-            const effectiveStatus = (c: Course): CourseStatus => c.status || 'belum_mulai';
-            result = result.filter((c) => effectiveStatus(c) === activeStatus);
-        }
-
-        if (activeSemester) {
-            result = result.filter((c) => {
-                const key = c.semester && c.academic_year
-                    ? `${c.semester} ${c.academic_year}`
-                    : null;
-                return key === activeSemester;
-            });
-        }
-
         return result;
-    }, [courses, debouncedQuery, activeStatus, activeSemester]);
+    }, [courses, debouncedQuery]);
 
     const toggleSelection = useCallback((id: string) => {
         setSelectedIds((prev) => {
@@ -158,8 +132,6 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
     }, [selectedIds]);
 
     const handleResetFilters = useCallback(() => {
-        setActiveStatus(null);
-        setActiveSemester(null);
         setSearchQuery('');
     }, []);
 
@@ -183,30 +155,21 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                 </h2>
                                 <p className="mt-1 text-sm text-brand-muted-dark">Kelola kelas dan grup siswa Anda</p>
                             </div>
-                            <PrimaryButton href={lecturer.courses.create.url()}>
-                                <Plus className="h-4 w-4" />
-                                Buat Kelas
-                            </PrimaryButton>
+                            <div className="flex items-center gap-3">
+                                <PrimaryButton href={lecturer.courses.create.url()}>
+                                    <Plus className="h-4 w-4" />
+                                    Buat Kelas
+                                </PrimaryButton>
+                                <NotificationsBell lightMode={true} />
+                            </div>
                         </div>
                     </LiquidGlassCard>
 
-                    <CoursesAnalyticsOverview analytics={analytics} />
-
                     <div className="space-y-3">
                         <CourseSearchBar value={searchQuery} onChange={setSearchQuery} />
-                        <CourseFilters
-                            activeStatus={activeStatus}
-                            onStatusChange={setActiveStatus}
-                            statusCounts={analytics.status_counts}
-                            activeSemester={activeSemester}
-                            onSemesterChange={setActiveSemester}
-                            semesterCounts={analytics.semester_counts}
-                            hasActiveFilters={!!activeStatus || !!activeSemester || !!searchQuery.trim()}
-                            onResetFilters={handleResetFilters}
-                        />
                     </div>
 
-                    {filteredCourses.length === 0 && (debouncedQuery.trim() || activeStatus || activeSemester) ? (
+                    {filteredCourses.length === 0 && debouncedQuery.trim() ? (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -232,13 +195,13 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                     Tidak ada kelas ditemukan
                                 </h3>
                                 <p className="mt-2 max-w-sm text-sm text-brand-muted-dark">
-                                    Coba ubah kata kunci atau filter yang digunakan.
+                                    Coba ubah kata kunci yang digunakan.
                                 </p>
                                 <button
                                     onClick={handleResetFilters}
                                     className="mt-4 text-sm font-medium text-brand-primary transition-colors"
                                 >
-                                    Reset Filter
+                                    Reset Pencarian
                                 </button>
                             </LiquidGlassCard>
                         </motion.div>
@@ -283,7 +246,7 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                             <div className="flex items-center justify-between">
                                 <p className="text-xs text-brand-muted-dark">
                                     {filteredCourses.length} kelas
-                                    {(debouncedQuery.trim() || activeStatus || activeSemester)
+                                    {debouncedQuery.trim()
                                         ? ` (difilter dari ${courses.length})`
                                         : ''}
                                 </p>
@@ -373,9 +336,6 @@ export default function LecturerCoursesIndex({ courses, analytics }: Props) {
                                                     </p>
                                                 )}
 
-                                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                                    Dosen: {course.owner?.name || 'Tidak Diketahui'}
-                                                </p>
                                                 <div className="mt-4 flex items-center justify-between gap-3">
                                                     <p className="text-sm text-brand-muted-dark">{course.groups_count || 0} grup</p>
                                                         <div className="flex items-center text-sm font-medium" style={{ color: '#88161c' }}>
