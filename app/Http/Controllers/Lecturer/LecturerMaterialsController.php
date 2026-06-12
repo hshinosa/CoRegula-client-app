@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CourseMaterial;
 use App\Models\MaterialModule;
 use App\Models\MaterialView;
+use App\Services\CoreApiInternalClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,9 @@ use Illuminate\Support\Str;
 
 class LecturerMaterialsController extends Controller
 {
+    public function __construct(
+        private readonly CoreApiInternalClient $coreApiInternal
+    ) {}
     /**
      * List modules with materials for a course.
      */
@@ -119,10 +123,11 @@ class LecturerMaterialsController extends Controller
     public function store(Request $request, string $course): JsonResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'module_id' => 'nullable|string',
             'file' => 'required|file|max:51200', // 50MB max
+            'extract_images' => 'sometimes|boolean',
+            'perform_ocr' => 'sometimes|boolean',
         ]);
 
         $file = $request->file('file');
@@ -133,23 +138,50 @@ class LecturerMaterialsController extends Controller
         // Store file
         $path = $file->store("materials/{$course}", 'public');
 
+        $title = $validated['title'] ?? null;
+        if (empty($title)) {
+            $title = pathinfo($fileName, PATHINFO_FILENAME);
+        }
+
         $material = CourseMaterial::create([
             'id' => (string) Str::uuid(),
             'course_id' => $course,
-            'module_id' => $validated['module_id'] ?? null,
-            'title' => $validated['title'],
+            'title' => $title,
             'description' => $validated['description'] ?? null,
             'file_name' => $fileName,
             'file_path' => $path,
             'file_type' => $fileType,
             'file_size' => $fileSize,
             'uploaded_by' => session('user.id') ?? null,
-            'sort_order' => CourseMaterial::where('course_id', $course)
-                ->where('module_id', $validated['module_id'] ?? null)
-                ->max('sort_order') + 1 ?? 0,
+            'sort_order' => (CourseMaterial::where('course_id', $course)
+                ->max('sort_order') ?? 0) + 1,
         ]);
 
-        return response()->json(['data' => $material], 201);
+        $absolutePath = Storage::disk('public')->path($path);
+        $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
+        $queuePayload = [
+            'course_id' => $course,
+            'course_material_id' => $material->id,
+            'file_path' => $absolutePath,
+            'file_name' => $fileName,
+            'mime_type' => $fileType ?? 'application/octet-stream',
+            'file_size' => (int) $fileSize,
+            'uploaded_by' => $uploaderId,
+        ];
+        if ($request->boolean('extract_images')) {
+            $queuePayload['extract_images'] = true;
+        }
+        if ($request->boolean('perform_ocr')) {
+            $queuePayload['perform_ocr'] = true;
+        }
+        $this->coreApiInternal->queueCourseMaterial($queuePayload);
+
+        return response()->json([
+            'data' => $material,
+            'meta' => [
+                'ai_index_configured' => $this->coreApiInternal->isConfigured(),
+            ],
+        ], 201);
     }
 
     /**
@@ -162,7 +194,6 @@ class LecturerMaterialsController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'module_id' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
@@ -179,6 +210,8 @@ class LecturerMaterialsController extends Controller
         $material = CourseMaterial::where('course_id', $course)->findOrFail($materialId);
 
         // Delete file from storage
+        $this->coreApiInternal->deleteCourseMaterialKb($course, $materialId);
+
         if (Storage::disk('public')->exists($material->file_path)) {
             Storage::disk('public')->delete($material->file_path);
         }
@@ -244,4 +277,35 @@ class LecturerMaterialsController extends Controller
             'recent_views' => $recentViews,
         ]);
     }
+
+    /**
+     * Re-trigger KB indexing for an existing material.
+     */
+    public function reindex(string $course, string $materialId): JsonResponse
+    {
+        $material = CourseMaterial::where('course_id', $course)->findOrFail($materialId);
+
+        if (! Storage::disk('public')->exists($material->file_path)) {
+            return response()->json(['message' => 'File tidak ditemukan di storage.'], 404);
+        }
+
+        $absolutePath = Storage::disk('public')->path($material->file_path);
+        $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
+
+        $this->coreApiInternal->queueCourseMaterial([
+            'course_id' => $course,
+            'course_material_id' => $material->id,
+            'file_path' => $absolutePath,
+            'file_name' => $material->file_name,
+            'mime_type' => $material->file_type ?? 'application/octet-stream',
+            'file_size' => (int) $material->file_size,
+            'uploaded_by' => $uploaderId,
+        ]);
+
+        return response()->json([
+            'message' => 'Antrian indeks berhasil dikirim.',
+            'meta' => ['ai_index_configured' => $this->coreApiInternal->isConfigured()],
+        ]);
+    }
+
 }

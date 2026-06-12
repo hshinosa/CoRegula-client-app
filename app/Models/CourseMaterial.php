@@ -15,7 +15,6 @@ class CourseMaterial extends Model
     protected $fillable = [
         'id',
         'course_id',
-        'module_id',
         'title',
         'description',
         'file_name',
@@ -36,6 +35,16 @@ class CourseMaterial extends Model
     public function module(): BelongsTo
     {
         return $this->belongsTo(MaterialModule::class, 'module_id');
+    }
+
+    public function weeks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            CourseWeek::class,
+            'course_week_materials',
+            'course_material_id',
+            'course_week_id'
+        )->withPivot(['sort_order', 'id']);
     }
 
     public function views(): HasMany
