@@ -4,7 +4,6 @@ import {
     Activity,
     BarChart3,
     Clock3,
-    Download,
     MessageSquare,
     Lightbulb,
     Users,
@@ -61,6 +60,11 @@ interface RecentActivity {
     content: string;
     createdAt: string;
     isIntervention: boolean;
+    interventionType?: string;
+    interventionReason?: string;
+    scaffoldingLevel?: string;
+    guardrailOutcome?: string;
+    guardrailReason?: string;
 }
 
 interface Props {
@@ -472,23 +476,24 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     </p>
                                 </div>
 
-                                <div className="grid gap-3 sm:grid-cols-2 xl:w-[380px] xl:grid-cols-1">
-                                    <div className="rounded-[28px] p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Skor terkini</p>
-                                        <div className="mt-2 flex items-end gap-2">
-                                            <span className="text-4xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
-                                                {liveQuality?.toFixed(1) ?? '—'}
-                                            </span>
-                                            <span className="pb-1 text-sm text-[#9CA3AF]">/ 100</span>
-                                        </div>
-                                        <p className="mt-2 text-xs text-brand-muted-dark">Status: {getQualityLabel(liveQuality)}</p>
-                                    </div>
-
-                                    <SecondaryButton href={`/api/analytics/export/${course.id}`} className="justify-center">
-                                        <Download className="h-4 w-4" />
-                                        Export process mining
-                                    </SecondaryButton>
-                                </div>
+                                      <div className="grid gap-3 sm:grid-cols-2 xl:w-[380px] xl:grid-cols-1">
+                                          {/* 
+                                           * TEMP HIDE (user request 2026-06-09):
+                                           * Export process mining button (was <SecondaryButton href=...>Export process mining</SecondaryButton>)
+                                           * Hidden in "Detail kualitas diskusi" card header.
+                                           * Will restore later. The descriptive text still mentions "tautan export" (left as-is for minimal patch).
+                                           */}
+                                          <div className="rounded-[28px] p-4" style={glassPanelStyle}>
+                                              <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Skor terkini</p>
+                                              <div className="mt-2 flex items-end gap-2">
+                                                  <span className="text-4xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
+                                                      {liveQuality?.toFixed(1) ?? '—'}
+                                                  </span>
+                                                  <span className="pb-1 text-sm text-[#9CA3AF]">/ 100</span>
+                                              </div>
+                                              <p className="mt-2 text-xs text-brand-muted-dark">Status: {getQualityLabel(liveQuality)}</p>
+                                          </div>
+                                      </div>
                             </div>
                         </LiquidGlassCard>
                     </motion.div>
@@ -722,13 +727,20 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             primaryLabel={group.name}
                                         />
                                     </div>
-                                    <MetricBreakdownTable
-                                        metrics={radarMetrics}
-                                        labels={RADAR_METRIC_LABELS}
-                                        classAverage={radarMetrics}
-                                        primaryLabel={group.name}
-                                        metricDefinitions={RADAR_METRIC_DEFINITIONS}
-                                    />
+                                     {/* 
+                                      * TEMP HIDE (user request): Δ VS KELAS column in SSRL radar table.
+                                      * Using showDelta={false} on MetricBreakdownTable (added for this purpose).
+                                      * The column is still available in RadarChartPage (full comparison view).
+                                      * Restore by removing this prop when re-enabling.
+                                      */}
+                                     <MetricBreakdownTable
+                                         metrics={radarMetrics}
+                                         labels={RADAR_METRIC_LABELS}
+                                         classAverage={radarMetrics}
+                                         primaryLabel={group.name}
+                                         metricDefinitions={RADAR_METRIC_DEFINITIONS}
+                                         showDelta={false}
+                                     />
                                 </div>
                             </LiquidGlassCard>
                         </motion.div>
@@ -828,8 +840,22 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                                     color: '#92400e',
                                                                     border: '1px solid rgba(180,83,9,0.18)',
                                                                 }}
+                                                                title={activity.interventionReason || activity.guardrailReason || undefined}
                                                             >
-                                                                Intervensi
+                                                                {activity.interventionType === 'scaffolding' ? 'Scaffolding' : activity.interventionType === 'redirection' ? 'Diarahkan' : activity.interventionType || 'Intervensi'}
+                                                            </span>
+                                                        )}
+                                                        {activity.scaffoldingLevel && (
+                                                            <span
+                                                                className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium"
+                                                                style={{
+                                                                    background: 'rgba(37,99,235,0.08)',
+                                                                    color: '#1e40af',
+                                                                    border: '1px solid rgba(37,99,235,0.15)',
+                                                                }}
+                                                                title={`Level scaffolding: ${activity.scaffoldingLevel}`}
+                                                            >
+                                                                AI membantu
                                                             </span>
                                                         )}
                                                     </div>

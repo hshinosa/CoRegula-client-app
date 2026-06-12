@@ -15,6 +15,8 @@ export default function CreateCourse() {
     const { data, setData, post, processing, errors } = useForm({
         code: '',
         name: '',
+        min_members_per_group: 1,
+        max_members_per_group: 10,
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -87,6 +89,33 @@ export default function CreateCourse() {
                                         maxLength={255}
                                     />
                                     <InputError message={errors.name} />
+                                </div>
+
+                                <div className="grid gap-5 sm:grid-cols-2">
+                                    <div>
+                                        <InputLabel htmlFor="min_members_per_group">Minimal Anggota per Grup</InputLabel>
+                                        <input
+                                            id="min_members_per_group"
+                                            type="number"
+                                            min={1}
+                                            value={data.min_members_per_group}
+                                            onChange={(e) => setData('min_members_per_group', Number(e.target.value) || 1)}
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                        />
+                                        <InputError message={errors.min_members_per_group} />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="max_members_per_group">Maksimal Anggota per Grup</InputLabel>
+                                        <input
+                                            id="max_members_per_group"
+                                            type="number"
+                                            min={1}
+                                            value={data.max_members_per_group}
+                                            onChange={(e) => setData('max_members_per_group', Number(e.target.value) || 1)}
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                        />
+                                        <InputError message={errors.max_members_per_group} />
+                                    </div>
                                 </div>
 
                                 <div className="pt-2">

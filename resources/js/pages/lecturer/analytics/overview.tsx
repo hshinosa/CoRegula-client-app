@@ -1,9 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, BarChart3, GitCompareArrows, Users } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { AlertTriangle, BarChart3, Users } from 'lucide-react';
 
-import { DateRangePicker } from '@/components/analytics';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
@@ -20,15 +18,8 @@ interface CourseOverview {
     lastActivity: string | null;
 }
 
-interface FiltersState {
-    startDate?: string;
-    endDate?: string;
-    preset?: string;
-}
-
 interface Props {
     courses: CourseOverview[];
-    filters?: FiltersState;
 }
 
 function QualityBadge({ score }: { score: number | null }) {
@@ -58,36 +49,8 @@ function formatLastActivity(lastActivity: string | null): string {
     return `${Math.floor(days / 30)} bulan lalu`;
 }
 
-export default function AnalyticsOverview({ courses, filters }: Props) {
+export default function AnalyticsOverview({ courses }: Props) {
     const navItems = useLecturerNav('analytics-overview');
-
-    const [activePreset, setActivePreset] = useState<string | undefined>(filters?.preset);
-    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | undefined>(
-        filters?.startDate && filters?.endDate
-            ? { startDate: filters.startDate, endDate: filters.endDate }
-            : undefined,
-    );
-
-    const handleDateChange = useCallback(
-        (range: { startDate: string; endDate: string }, preset?: string) => {
-            setDateRange(range);
-            setActivePreset(preset);
-
-            const params: Record<string, string> = {};
-            if (preset) {
-                params.preset = preset;
-            } else {
-                params.start_date = range.startDate;
-                params.end_date = range.endDate;
-            }
-
-            router.get(lecturer.analytics.overview.url(), params, {
-                preserveState: true,
-                preserveScroll: true,
-            });
-        },
-        [],
-    );
 
     return (
         <AppLayout title="Analytics" navItems={navItems}>
@@ -119,24 +82,6 @@ export default function AnalyticsOverview({ courses, filters }: Props) {
                                     {courses.length} kelas · ringkasan kualitas diskusi
                                 </p>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <DateRangePicker
-                                value={dateRange}
-                                preset={activePreset}
-                                onChange={handleDateChange}
-                            />
-                            <Link
-                                href={lecturer.analytics.comparison.url()}
-                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium font-sans text-brand-primary transition-all"
-                                style={{
-                                    background: 'rgba(136,22,28,0.06)',
-                                    border: '1px solid rgba(136,22,28,0.12)',
-                                }}
-                            >
-                                <GitCompareArrows className="h-4 w-4" />
-                                Bandingkan
-                            </Link>
                         </div>
                     </div>
                 </LiquidGlassCard>

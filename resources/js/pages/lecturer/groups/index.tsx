@@ -13,10 +13,10 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { CSSProperties, FormEvent, useMemo, useState } from 'react';
+import { CSSProperties, FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
-import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -48,6 +48,8 @@ interface Props {
     students: User[];
 }
 
+const getMemberRangeLabel = (course: Course) => `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per grup`;
+
 const headingStyle = {
     color: 'var(--color-brand-dark)',
 } as const;
@@ -75,12 +77,6 @@ const warningChipStyle = {
 const glassPanelStyle = {
     background: 'rgba(255,255,255,0.55)',
     border: '1px solid rgba(255,255,255,0.65)',
-} as const;
-
-const whiteModalStyle = {
-    background: '#ffffff',
-    border: '1px solid rgba(226,232,240,0.95)',
-    boxShadow: '0 28px 80px rgba(15,23,42,0.18)',
 } as const;
 
 const modalSectionStyle = {
@@ -128,9 +124,26 @@ export default function GroupsIndex({ course, groups, students }: Props) {
     const chatSpaceForm = useForm({
         name: '',
         description: '',
+        week_id: '',
+        course_id: course.id,
     });
 
+    const [weekOptions, setWeekOptions] = useState<{ id: string; week_index: number; title: string }[]>([]);
+    const [weeksLoading, setWeeksLoading] = useState(false);
+
     const deleteForm = useForm({});
+
+    useEffect(() => {
+        if (!showChatSpaceModal) {
+            return;
+        }
+        setWeeksLoading(true);
+        fetch(`/lecturer/courses/${course.id}/weeks`)
+            .then((res) => res.json())
+            .then((json) => setWeekOptions(json.weeks || []))
+            .catch(() => setWeekOptions([]))
+            .finally(() => setWeeksLoading(false));
+    }, [showChatSpaceModal, course.id]);
 
     const handleCreateGroup = (event: FormEvent) => {
         event.preventDefault();
@@ -239,6 +252,9 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
                                         Atur pembagian kelompok, sesi diskusi, dan penugasan mahasiswa dengan bahasa visual yang sama
                                         seperti halaman student rollout dan wave dosen sebelumnya.
+                                    </p>
+                                    <p className={`mt-2 ${bodyTextClass}`}>
+                                        Batas ukuran grup aktif: <span className="font-semibold text-brand-dark">{getMemberRangeLabel(course)}</span>
                                     </p>
                                 </div>
 
@@ -558,7 +574,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
+                            <WhiteModal className="max-w-md">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
                                         <h3 className="text-lg font-semibold" style={headingStyle}>
@@ -571,8 +587,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateModal(false)}
-                                        className="rounded-full p-2 transition-colors"
-                                        style={glassPanelStyle}
+                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
+                                        style={modalCloseButtonStyle}
                                     >
                                         <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
                                     </button>
@@ -588,7 +604,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                             type="text"
                                             value={createForm.data.name}
                                             onChange={(event) => createForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Grup A"
                                         />
                                         <InputError message={createForm.errors.name} />
@@ -598,16 +614,16 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         <SecondaryButton onClick={() => setShowCreateModal(false)} className="flex-1 justify-center">
                                             Batal
                                         </SecondaryButton>
-                                        <PrimaryButton disabled={createForm.processing} className="flex-1 justify-center">
-                                            {createForm.processing ? 'Membuat...' : 'Buat'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                                         <PrimaryButton disabled={createForm.processing} className="flex-1 justify-center">
+                                             {createForm.processing ? 'Membuat...' : 'Buat'}
+                                         </PrimaryButton>
+                                     </div>
+                                 </form>
+                             </WhiteModal>
+                         </motion.div>
+                     </>
+                 )}
+             </AnimatePresence>
 
             <AnimatePresence>
                 {showAssignModal && (
@@ -625,7 +641,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <div className="w-full max-w-lg rounded-3xl p-6" style={whiteModalStyle}>
+                            <WhiteModal className="max-w-lg">
                                 <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                                     <div>
                                         <h3 className="text-lg font-semibold" style={headingStyle}>
@@ -705,16 +721,16 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         <SecondaryButton onClick={() => setShowAssignModal(null)} className="flex-1 justify-center">
                                             Batal
                                         </SecondaryButton>
-                                        <PrimaryButton
-                                            disabled={assignForm.processing || assignForm.data.member_ids.length === 0}
-                                            className="flex-1 justify-center"
-                                        >
-                                            {assignForm.processing ? 'Menugaskan...' : 'Tugaskan'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </div>
-                        </motion.div>
+                                         <PrimaryButton
+                                             disabled={assignForm.processing || assignForm.data.member_ids.length === 0}
+                                             className="flex-1 justify-center"
+                                         >
+                                             {assignForm.processing ? 'Menugaskan...' : 'Tugaskan'}
+                                         </PrimaryButton>
+                                     </div>
+                                 </form>
+                             </WhiteModal>
+                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
@@ -735,7 +751,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-sm p-6 text-center" lightMode={true}>
+                            <WhiteModal className="max-w-sm text-center">
                                 <div
                                     className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
                                     style={{
@@ -752,7 +768,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     Bagikan kode ini kepada mahasiswa untuk masuk ke grup yang tepat.
                                 </p>
 
-                                <div className="my-6 rounded-[28px] px-4 py-6" style={glassPanelStyle}>
+                                <div className="my-6 rounded-[28px] px-4 py-6" style={modalSectionStyle}>
                                     <span className="font-mono text-3xl font-semibold tracking-[0.35em]" style={{ color: '#88161c' }}>
                                         {selectedGroupJoinCode}
                                     </span>
@@ -776,13 +792,13 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                     onClick={() => setSelectedGroupJoinCode(null)}
                                     className="mt-3 w-full text-sm text-brand-muted-dark transition-colors hover:text-brand-dark"
                                 >
-                                    Tutup
-                                </button>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                                     Tutup
+                                 </button>
+                             </WhiteModal>
+                         </motion.div>
+                     </>
+                 )}
+             </AnimatePresence>
 
             <AnimatePresence>
                 {showChatSpaceModal && (
@@ -800,7 +816,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <div className="w-full max-w-md rounded-3xl p-6" style={whiteModalStyle}>
+                            <WhiteModal className="max-w-md">
                                 <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                                     <div>
                                         <h3 className="text-lg font-semibold" style={headingStyle}>
@@ -836,17 +852,45 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         <InputError message={chatSpaceForm.errors.name} />
                                     </div>
 
-                                    <div className="flex gap-3 pt-2">
-                                        <SecondaryButton onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
-                                            Batal
-                                        </SecondaryButton>
-                                        <PrimaryButton disabled={chatSpaceForm.processing} className="flex-1 justify-center">
-                                            {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
-                                        </PrimaryButton>
+                                    <div>
+                                        <InputLabel htmlFor="chat_space_week" required>
+                                            Minggu kuliah
+                                        </InputLabel>
+                                        <select
+                                            id="chat_space_week"
+                                            value={chatSpaceForm.data.week_id}
+                                            onChange={(event) => chatSpaceForm.setData('week_id', event.target.value)}
+                                            required
+                                            disabled={weeksLoading || weekOptions.length === 0}
+                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm"
+                                        >
+                                            <option value="">
+                                                {weeksLoading
+                                                    ? 'Memuat minggu…'
+                                                    : weekOptions.length === 0
+                                                      ? 'Buat minggu di tab Minggu kelas dulu'
+                                                      : 'Pilih minggu'}
+                                            </option>
+                                            {weekOptions.map((w) => (
+                                                <option key={w.id} value={w.id}>
+                                                    Minggu {w.week_index}: {w.title}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError message={chatSpaceForm.errors.week_id} />
                                     </div>
-                                </form>
-                            </div>
-                        </motion.div>
+
+                                     <div className="flex gap-3 pt-2">
+                                         <SecondaryButton onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
+                                             Batal
+                                         </SecondaryButton>
+                                         <PrimaryButton disabled={chatSpaceForm.processing} className="flex-1 justify-center">
+                                             {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
+                                         </PrimaryButton>
+                                     </div>
+                                 </form>
+                             </WhiteModal>
+                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
@@ -867,7 +911,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
+                            <WhiteModal className="max-w-md">
                                 <div className="flex items-start gap-4">
                                     <div
                                         className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl"
@@ -908,7 +952,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                         </div>
                                     </div>
                                 </div>
-                            </LiquidGlassCard>
+                            </WhiteModal>
                         </motion.div>
                     </>
                 )}

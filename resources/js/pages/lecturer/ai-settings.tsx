@@ -212,7 +212,7 @@ function PreviewTab({ courses }: { courses: Course[] }) {
             if (remaining) setRateRemaining(parseInt(remaining));
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 429) {
-                toast.error('Rate limit exceeded. Please wait before testing again.');
+                toast.error('Batas permintaan terlampaui. Tunggu sebentar sebelum mencoba lagi.');
             } else {
                 toast.error(extractErrorMessage(error, 'Preview failed'));
             }
@@ -461,7 +461,7 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
             {filtered.length === 0 ? (
                 <LiquidGlassCard className="p-8 text-center">
                     <FileText className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-                    <p className="text-slate-500">{searchQuery ? 'No presets match your search' : 'No presets yet. Create one to get started!'}</p>
+                    <p className="text-slate-500">{searchQuery ? 'Tidak ada preset yang cocok dengan pencarian' : 'Belum ada preset. Buat satu untuk memulai!'}</p>
                 </LiquidGlassCard>
             ) : (
                 <div className="space-y-3">
@@ -541,7 +541,7 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                         </label>
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
-                        <SecondaryButton onClick={() => setShowEditor(false)}>Cancel</SecondaryButton>
+                        <SecondaryButton onClick={() => setShowEditor(false)}>Batal</SecondaryButton>
                         <PrimaryButton disabled={saving}>
                             {saving ? buttonSpinner : null}
                             {saving ? 'Saving...' : editingPreset ? 'Update' : 'Create'}
@@ -563,7 +563,7 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                         />
                     </div>
                     <div className="flex justify-end gap-2">
-                        <SecondaryButton onClick={() => { setShowImport(false); setImportData(''); }}>Cancel</SecondaryButton>
+                        <SecondaryButton onClick={() => { setShowImport(false); setImportData(''); }}>Batal</SecondaryButton>
                         <PrimaryButton onClick={handleImport} disabled={!importData.trim()}>Import</PrimaryButton>
                     </div>
                 </div>
@@ -941,7 +941,7 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
                         </div>
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
-                        <SecondaryButton onClick={() => setShowCreator(false)}>Cancel</SecondaryButton>
+                        <SecondaryButton onClick={() => setShowCreator(false)}>Batal</SecondaryButton>
                         <PrimaryButton disabled={saving}>
                             {saving ? buttonSpinner : null}
                             {saving ? 'Creating...' : 'Create Test'}

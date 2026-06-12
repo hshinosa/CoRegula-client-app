@@ -1,19 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import {
-    AlertTriangle,
-    BarChart3,
-    BookOpen,
-    CheckCircle2,
-    Clock3,
-    Copy,
-    Files,
-    FolderKanban,
-    Sparkles,
-    UploadCloud,
-    Users,
-} from 'lucide-react';
-import { ChangeEvent, CSSProperties, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BarChart3, BookOpen, CheckCircle2, Clock3, Copy, FolderKanban, Users } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
@@ -22,34 +10,10 @@ import { InputError } from '@/components/ui/input-error';
 import CourseDetailTabs, { TabId } from '@/components/lecturer/CourseDetailTabs';
 import AktivitasTab from '@/components/lecturer/AktivitasTab';
 import AttendanceTab from '@/components/lecturer/AttendanceTab';
-import MaterialsTab from '@/components/lecturer/MaterialsTab';
+import UnifiedMaterialsTab from '@/components/lecturer/UnifiedMaterialsTab';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
-import { ActivitySummary, Course, CourseMaterial, KnowledgeBase, MaterialModule, StudentActivity, VectorStatus } from '@/types';
-
-const ACCEPTED_FILE_TYPES = [
-    '.pdf',
-    '.docx',
-    '.pptx',
-    '.txt',
-    '.md',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.webp',
-    '.zip',
-];
-
-const SUPPORTED_FORMAT_LABEL = 'PDF, DOCX, PPTX, TXT, MD, PNG, JPG, JPEG, GIF, WEBP, ZIP';
-
-const STATUS_LABELS: Record<VectorStatus, string> = {
-    pending: 'Menunggu',
-    processing: 'Memproses',
-    ready: 'Siap',
-    failed: 'Gagal',
-    skipped: 'Dilewati',
-};
+import { ActivitySummary, Course, KnowledgeBase, StudentActivity } from '@/types';
 
 const headingStyle = {
     color: 'var(--color-brand-dark)',
@@ -63,65 +27,10 @@ const brandChipStyle = {
     border: '1px solid rgba(136,22,28,0.15)',
 } as const;
 
-const neutralChipStyle = {
-    background: 'rgba(74,74,74,0.08)',
-    color: 'var(--color-brand-dark)',
-    border: '1px solid rgba(74,74,74,0.12)',
-} as const;
-
 const glassPanelStyle = {
     background: 'rgba(255,255,255,0.55)',
     border: '1px solid rgba(255,255,255,0.65)',
 } as const;
-
-const formatFileSize = (bytes?: number) => {
-    if (!bytes || bytes <= 0) return '-';
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const index = Math.floor(Math.log(bytes) / Math.log(1024));
-    const value = bytes / 1024 ** index;
-    return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${sizes[index]}`;
-};
-
-const formatDate = (value?: string | null) => {
-    if (!value) return '—';
-    return new Date(value).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    });
-};
-
-const getStatusStyle = (status: VectorStatus): CSSProperties => {
-    switch (status) {
-        case 'ready':
-            return {
-                background: 'rgba(34,197,94,0.10)',
-                color: '#166534',
-                border: '1px solid rgba(34,197,94,0.18)',
-            };
-        case 'processing':
-        case 'pending':
-            return {
-                background: 'rgba(245,158,11,0.10)',
-                color: '#92400e',
-                border: '1px solid rgba(245,158,11,0.18)',
-            };
-        case 'failed':
-            return {
-                background: 'rgba(239,68,68,0.10)',
-                color: '#b91c1c',
-                border: '1px solid rgba(239,68,68,0.18)',
-            };
-        case 'skipped':
-            return {
-                background: 'rgba(107,114,128,0.10)',
-                color: '#4b5563',
-                border: '1px solid rgba(107,114,128,0.18)',
-            };
-        default:
-            return brandChipStyle;
-    }
-};
 
 interface Props {
     course: Course & {
@@ -134,17 +43,46 @@ export default function ShowCourse({ course }: Props) {
     const [isLoading, setIsLoading] = useState(true);
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('aktivitas');
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [hubStats, setHubStats] = useState({ total: 0, ready: 0, processing: 0, failed: 0 });
 
     const [activityData, setActivityData] = useState<StudentActivity[]>([]);
     const [activitySummary, setActivitySummary] = useState<ActivitySummary>({ total_students: 0, total_messages: 0, active_students: 0 });
     const [activityLoading, setActivityLoading] = useState(false);
-    const [materialModules, setMaterialModules] = useState<MaterialModule[]>([]);
-    const [unassignedMaterials, setUnassignedMaterials] = useState<CourseMaterial[]>([]);
 
     useEffect(() => {
         setIsLoading(false);
     }, []);
+
+    const refreshHubStats = useCallback(async () => {
+        try {
+            const res = await fetch(`/lecturer/courses/${course.id}/materials-hub`, {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const kb = (data.kb_by_material_id ?? {}) as Record<string, { vector_status?: string }>;
+            const materials = data.materials ?? [];
+            let ready = 0;
+            let processing = 0;
+            let failed = 0;
+            for (const m of materials) {
+                const st = kb[m.id]?.vector_status;
+                if (st === 'ready') ready += 1;
+                else if (st === 'pending' || st === 'processing') processing += 1;
+                else if (st === 'failed') failed += 1;
+            }
+            setHubStats({ total: materials.length, ready, processing, failed });
+        } catch {
+            return;
+        }
+    }, [course.id]);
+
+    useEffect(() => {
+        void refreshHubStats();
+        const id = window.setInterval(() => void refreshHubStats(), 5000);
+        return () => window.clearInterval(id);
+    }, [refreshHubStats]);
 
     const fetchActivity = useCallback(async () => {
         setActivityLoading(true);
@@ -159,36 +97,26 @@ export default function ShowCourse({ course }: Props) {
         setActivityLoading(false);
     }, [course.id]);
 
-    const fetchLocalMaterials = useCallback(async () => {
-        try {
-            const res = await fetch(`/lecturer/courses/${course.id}/materials`);
-            const data = await res.json();
-            setMaterialModules(data.modules || []);
-            setUnassignedMaterials(data.unassigned || []);
-        } catch {
-            setMaterialModules([]);
-            setUnassignedMaterials([]);
-        }
-    }, [course.id]);
-
     useEffect(() => {
         if (activeTab === 'aktivitas' && activityData.length === 0) {
             fetchActivity();
         }
     }, [activeTab, activityData.length, fetchActivity]);
 
-    useEffect(() => {
-        fetchLocalMaterials();
-    }, [fetchLocalMaterials]);
-
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm<{
-        files: File[];
-        extract_images: boolean;
-        perform_ocr: boolean;
-    }>({
-        files: [],
-        extract_images: true,
-        perform_ocr: false,
+    const {
+        data: groupPolicyData,
+        setData: setGroupPolicyData,
+        put: updateGroupPolicy,
+        processing: updatingGroupPolicy,
+        errors: groupPolicyErrors,
+    } = useForm({
+        min_members_per_group: course.min_members_per_group ?? 1,
+        max_members_per_group: course.max_members_per_group ?? 1000,
+        ai_guardrail_preset: course.ai_guardrail_preset ?? 'balanced',
+        ai_guardrail_allow_rewrite: course.ai_guardrail_allow_rewrite ?? true,
+        ai_guardrail_allow_flag_only: course.ai_guardrail_allow_flag_only ?? false,
+        ai_scaffolding_level: course.ai_scaffolding_level ?? 'auto',
+        ai_scaffolding_enabled: course.ai_scaffolding_enabled ?? true,
     });
 
     const navItems = useLecturerNav('course-detail');
@@ -199,88 +127,12 @@ export default function ShowCourse({ course }: Props) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleFilesChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(event.target.files ?? []);
-        setData('files', files);
-        if (files.length > 0) {
-            clearErrors('files');
-        }
-    };
-
-    const removeSelectedFile = (index: number) => {
-        const updated = [...data.files];
-        updated.splice(index, 1);
-        setData('files', updated);
-    };
-
-    const handleUpload = (event: FormEvent) => {
+    const handleGroupPolicySubmit = (event: FormEvent) => {
         event.preventDefault();
-        if (data.files.length === 0) {
-            return;
-        }
-
-        post(lecturer.courses.knowledgeBase.store.url({ course: course.id }), {
-            forceFormData: true,
+        updateGroupPolicy(`/lecturer/courses/${course.id}`, {
             preserveScroll: true,
-            onSuccess: () => {
-                reset();
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-            },
         });
     };
-
-    const knowledgeBaseStats = useMemo(() => {
-        const files = course.knowledge_base || [];
-        return {
-            total: files.length,
-            ready: files.filter((file) => file.vector_status === 'ready').length,
-            processing: files.filter((file) => file.vector_status === 'processing' || file.vector_status === 'pending').length,
-            failed: files.filter((file) => file.vector_status === 'failed').length,
-            skipped: files.filter((file) => file.vector_status === 'skipped').length,
-        };
-    }, [course.knowledge_base]);
-
-    const localMaterials = useMemo(() => {
-        return [...materialModules.flatMap((module) => module.materials || []), ...unassignedMaterials];
-    }, [materialModules, unassignedMaterials]);
-
-    const readyMaterialCount = Math.max(knowledgeBaseStats.ready, localMaterials.length);
-    const totalMaterialCount = Math.max(knowledgeBaseStats.total, localMaterials.length);
-
-    const readyKnowledgeBase = useMemo(() => {
-        return (course.knowledge_base || []).filter((file) => file.vector_status === 'ready');
-    }, [course.knowledge_base]);
-
-    const hiddenKnowledgeBaseCount = Math.max((course.knowledge_base?.length || 0) - readyKnowledgeBase.length, 0);
-    const hasAnyKnowledgeFiles = (course.knowledge_base?.length || 0) > 0 || localMaterials.length > 0;
-
-    const knowledgeStatusLabel = (() => {
-        if (knowledgeBaseStats.total === 0) {
-            return 'Belum ada materi';
-        }
-        if (knowledgeBaseStats.processing > 0) {
-            return 'Sedang diproses';
-        }
-        if (knowledgeBaseStats.failed > 0) {
-            return 'Perlu perhatian';
-        }
-        if (knowledgeBaseStats.skipped > 0) {
-            return 'Selesai dengan pengecualian';
-        }
-        return 'Semua siap';
-    })();
-
-    const knowledgeStatusStyle: CSSProperties = knowledgeBaseStats.total === 0
-        ? neutralChipStyle
-        : knowledgeBaseStats.processing > 0
-          ? getStatusStyle('processing')
-          : knowledgeBaseStats.failed > 0
-            ? getStatusStyle('failed')
-            : knowledgeBaseStats.skipped > 0
-              ? getStatusStyle('skipped')
-              : getStatusStyle('ready');
 
     return (
         <AppLayout title={course.name} navItems={navItems}>
@@ -299,22 +151,24 @@ export default function ShowCourse({ course }: Props) {
                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
                             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                                 <div className="max-w-3xl">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={brandChipStyle}>
-                                            {course.code}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={knowledgeStatusStyle}>
-                                            <Sparkles className="h-3.5 w-3.5" />
-                                            {knowledgeStatusLabel}
-                                        </span>
-                                    </div>
+                                      <div className="flex flex-wrap items-center gap-2">
+                                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={brandChipStyle}>
+                                              {course.code}
+                                          </span>
+                                          {/* 
+                                           * TEMP HIDE (user request): 
+                                           * Removed the "Belum ada materi" / "Semua siap" / "Sedang diproses" etc. status chips 
+                                           * (knowledgeStatusLabel + knowledgeStatusStyle + Sparkles icon).
+                                           * These were summary chips for materi readiness in detail kelas header.
+                                           * Will restore if needed. Computation logic was cleaned as part of minimal patch.
+                                           */}
+                                      </div>
 
                                     <h1 className="mt-3 text-2xl font-bold sm:text-3xl" style={headingStyle}>
                                         {course.name}
                                     </h1>
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
-                                        Pusat kendali kelas untuk mengelola materi, memantau kesiapan basis pengetahuan, dan
-                                        mengarahkan kolaborasi mahasiswa tanpa mengubah alur kerja yang sudah berjalan.
+                                        Kelola materi, minggu perkuliahan, dan indeks AI dari tab Materi; pantau aktivitas dan aturan grup di sini.
                                     </p>
                                 </div>
 
@@ -350,18 +204,20 @@ export default function ShowCourse({ course }: Props) {
                             },
                             {
                                 label: 'Materi Siap Pakai',
-                                value: readyMaterialCount,
-                                detail: `${totalMaterialCount} total materi kelas`,
+                                value: hubStats.ready,
+                                detail: `${hubStats.total} total materi kelas`,
                                 icon: CheckCircle2,
                                 color: '#166534',
                             },
                             {
                                 label: 'Dalam Proses',
-                                value: knowledgeBaseStats.processing,
+                                value: hubStats.processing,
                                 detail:
-                                    knowledgeBaseStats.failed > 0
-                                        ? `${knowledgeBaseStats.failed} file perlu perhatian`
-                                        : 'Pemrosesan materi terbaru',
+                                    hubStats.failed > 0
+                                        ? `${hubStats.failed} file perlu perhatian`
+                                        : hubStats.processing > 0
+                                          ? 'Memperbarui otomatis…'
+                                          : 'Indeks AI dari upload materi',
                                 icon: Clock3,
                                 color: '#92400e',
                             },
@@ -416,9 +272,9 @@ export default function ShowCourse({ course }: Props) {
                         </motion.div>
                     )}
 
-                    {activeTab === 'materials' && (
+                    {activeTab === 'materi' && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-                            <MaterialsTab courseId={course.id} />
+                            <UnifiedMaterialsTab courseId={course.id} onHubStats={setHubStats} />
                         </motion.div>
                     )}
 
@@ -468,345 +324,93 @@ export default function ShowCourse({ course }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="grid gap-3 sm:grid-cols-2 lg:w-[320px]">
-                                    <div className="rounded-2xl p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Siap dipakai</p>
-                                        <p className="mt-2 text-xl font-semibold" style={headingStyle}>
-                                            {knowledgeBaseStats.ready} file
-                                        </p>
-                                    </div>
-                                    <div className="rounded-2xl p-4" style={glassPanelStyle}>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-brand-muted-dark">Menunggu / gagal</p>
-                                        <p className="mt-2 text-xl font-semibold" style={headingStyle}>
-                                            {knowledgeBaseStats.processing + knowledgeBaseStats.failed + knowledgeBaseStats.skipped} file
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
-                        </LiquidGlassCard>
-                    </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.18 }}
-                    >
-                        <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
-                            <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                                <div className="max-w-2xl">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="flex h-12 w-12 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: 'rgba(136,22,28,0.08)',
-                                                border: '1px solid rgba(136,22,28,0.12)',
-                                            }}
-                                        >
-                                            <UploadCloud className="h-6 w-6" style={{ color: '#88161c' }} />
+                            <form onSubmit={handleGroupPolicySubmit} className="mt-5 rounded-[28px] p-5" style={glassPanelStyle}>
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                                    <div className="grid gap-4 sm:grid-cols-2 lg:flex-1">
+                                        <div>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Minimal anggota per grup</p>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={groupPolicyData.min_members_per_group}
+                                                onChange={(e) => setGroupPolicyData('min_members_per_group', Number(e.target.value) || 1)}
+                                                className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
+                                            />
+                                            <InputError message={groupPolicyErrors.min_members_per_group} className="mt-1.5" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-semibold" style={headingStyle}>
-                                                Basis Pengetahuan
-                                            </h2>
-                                            <p className={`mt-1 ${bodyTextClass}`}>
-                                                Unggah materi kelas untuk memperkaya jawaban chatbot AI tanpa mengubah alur upload yang
-                                                sudah ada.
-                                            </p>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Maksimal anggota per grup</p>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={groupPolicyData.max_members_per_group}
+                                                onChange={(e) => setGroupPolicyData('max_members_per_group', Number(e.target.value) || 1)}
+                                                className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
+                                            />
+                                            <InputError message={groupPolicyErrors.max_members_per_group} className="mt-1.5" />
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-full px-3 py-1 text-xs font-medium" style={knowledgeStatusStyle}>
-                                    {knowledgeStatusLabel}
-                                </div>
-                            </div>
-
-                            <form onSubmit={handleUpload} className="mt-6 space-y-5">
-                                <div className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                                        <div className="flex items-start gap-4">
-                                            <div
-                                                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl"
-                                                style={{
-                                                    background: 'rgba(136,22,28,0.08)',
-                                                    border: '1px solid rgba(136,22,28,0.12)',
-                                                }}
+                                        <div>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Preset guardrail AI</p>
+                                            <select
+                                                value={groupPolicyData.ai_guardrail_preset}
+                                                onChange={(e) => setGroupPolicyData('ai_guardrail_preset', e.target.value as 'strict' | 'balanced' | 'relaxed')}
+                                                className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
                                             >
-                                                <Files className="h-6 w-6" style={{ color: '#88161c' }} />
-                                            </div>
-                                            <div>
-                                                <p className="text-base font-semibold" style={headingStyle}>
-                                                    Unggah materi baru
-                                                </p>
-                                                <p className={`mt-1 ${bodyTextClass}`}>
-                                                    Maksimal 50MB per file. Format didukung: {SUPPORTED_FORMAT_LABEL}.
-                                                </p>
-                                            </div>
+                                                <option value="strict">Strict</option>
+                                                <option value="balanced">Balanced</option>
+                                                <option value="relaxed">Relaxed</option>
+                                            </select>
+                                            <InputError message={groupPolicyErrors.ai_guardrail_preset} className="mt-1.5" />
                                         </div>
-
-                                        <div className="rounded-full px-3 py-1 text-xs font-medium" style={neutralChipStyle}>
-                                            {data.files.length > 0 ? `${data.files.length} file dipilih` : 'Belum ada file dipilih'}
-                                        </div>
-                                    </div>
-
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        multiple
-                                        accept={ACCEPTED_FILE_TYPES.join(',')}
-                                        onChange={handleFilesChange}
-                                        className="mt-5 block w-full text-sm text-brand-muted-dark file:mr-4 file:rounded-full file:border-0 file:px-4 file:py-2.5 file:text-sm file:font-medium"
-                                        style={{
-                                            color: '#6B7280',
-                                        }}
-                                    />
-                                    <style>{`input[type="file"]::file-selector-button { background: rgba(136,22,28,0.10); color: #88161c; }`}</style>
-                                    <InputError message={errors.files} />
-                                </div>
-
-                                {data.files.length > 0 && (
-                                    <div className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                        <div className="flex items-center justify-between gap-3">
-                                            <p className="text-sm font-medium" style={headingStyle}>
-                                                Berkas siap diunggah
-                                            </p>
-                                            <span className="rounded-full px-3 py-1 text-xs font-medium" style={brandChipStyle}>
-                                                {data.files.length} item
-                                            </span>
-                                        </div>
-
-                                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                                            {data.files.map((file, index) => (
-                                                <div
-                                                    key={`${file.name}-${index}`}
-                                                    className="flex items-start justify-between gap-3 rounded-2xl p-4"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.55)',
-                                                        border: '1px solid rgba(255,255,255,0.7)',
-                                                    }}
-                                                >
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium" style={{ color: '#4A4A4A' }}>
-                                                            {file.name}
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-brand-muted-dark">{formatFileSize(file.size)}</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeSelectedFile(index)}
-                                                        className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
-                                                        style={{
-                                                            background: 'rgba(239,68,68,0.10)',
-                                                            color: '#b91c1c',
-                                                            border: '1px solid rgba(239,68,68,0.16)',
-                                                        }}
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="grid gap-4 lg:grid-cols-2">
-                                    <label className="flex items-start gap-3 rounded-[28px] p-5" style={glassPanelStyle}>
-                                        <input
-                                            type="checkbox"
-                                            checked={data.extract_images}
-                                            onChange={(event) => setData('extract_images', event.target.checked)}
-                                            className="mt-1 h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500"
-                                        />
-                                        <span>
-                                            <span className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
-                                                Ekstrak gambar
-                                            </span>
-                                            <span className="mt-1 block text-sm text-brand-muted-dark">
-                                                Konversi slide atau materi visual secara otomatis untuk memperkaya konteks AI.
-                                            </span>
-                                        </span>
-                                    </label>
-
-                                    <label className="flex items-start gap-3 rounded-[28px] p-5" style={glassPanelStyle}>
-                                        <input
-                                            type="checkbox"
-                                            checked={data.perform_ocr}
-                                            onChange={(event) => setData('perform_ocr', event.target.checked)}
-                                            className="mt-1 h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500"
-                                        />
-                                        <span>
-                                            <span className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
-                                                Aktifkan OCR
-                                            </span>
-                                            <span className="mt-1 block text-sm text-brand-muted-dark">
-                                                Gunakan untuk dokumen hasil pindaian atau materi dengan teks yang perlu dibaca ulang.
-                                            </span>
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <div className="flex flex-col gap-4 rounded-[28px] p-5 lg:flex-row lg:items-center lg:justify-between" style={glassPanelStyle}>
-                                    <div className="flex items-start gap-3">
-                                        <div
-                                            className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: 'rgba(245,158,11,0.10)',
-                                                border: '1px solid rgba(245,158,11,0.16)',
-                                            }}
-                                        >
-                                            <AlertTriangle className="h-5 w-5" style={{ color: '#92400e' }} />
+                                        <div className="sm:col-span-2 grid gap-3">
+                                            <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
+                                                <span>Izinkan AI me-rewrite jawaban agar tetap aman</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={groupPolicyData.ai_guardrail_allow_rewrite}
+                                                    onChange={(e) => setGroupPolicyData('ai_guardrail_allow_rewrite', e.target.checked)}
+                                                />
+                                            </label>
+                                            <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
+                                                <span>Tandai saja konten non-kritis tanpa blok penuh</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={groupPolicyData.ai_guardrail_allow_flag_only}
+                                                    onChange={(e) => setGroupPolicyData('ai_guardrail_allow_flag_only', e.target.checked)}
+                                                />
+                                            </label>
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium" style={{ color: '#4A4A4A' }}>
-                                                Catatan pemrosesan
-                                            </p>
-                                            <p className={`mt-1 ${bodyTextClass}`}>
-                                                OCR menambah waktu proses dan penggunaan resource. Aktifkan hanya saat benar-benar diperlukan.
-                                            </p>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Level scaffolding AI</p>
+                                            <select
+                                                value={groupPolicyData.ai_scaffolding_level}
+                                                onChange={(e) => setGroupPolicyData('ai_scaffolding_level', e.target.value as 'early' | 'late' | 'auto')}
+                                                className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
+                                            >
+                                                <option value="auto">Auto (berdasarkan semester)</option>
+                                                <option value="early">Early (lebih terarah & bertahap)</option>
+                                                <option value="late">Late (lebih mandiri & sumber)</option>
+                                            </select>
+                                            <InputError message={groupPolicyErrors.ai_scaffolding_level} className="mt-1.5" />
+                                        </div>
+                                        <div className="sm:col-span-2 grid gap-3">
+                                            <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
+                                                <span>Aktifkan adaptasi scaffolding berdasarkan level</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={groupPolicyData.ai_scaffolding_enabled}
+                                                    onChange={(e) => setGroupPolicyData('ai_scaffolding_enabled', e.target.checked)}
+                                                />
+                                            </label>
                                         </div>
                                     </div>
-
-                                    <PrimaryButton disabled={data.files.length === 0 || processing} className="justify-center">
-                                        {processing ? 'Mengunggah...' : 'Unggah Berkas'}
+                                    <PrimaryButton type="submit" className="justify-center" disabled={updatingGroupPolicy}>
+                                        {updatingGroupPolicy ? 'Menyimpan...' : 'Simpan aturan grup'}
                                     </PrimaryButton>
                                 </div>
                             </form>
-
-                            <div className="mt-8">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Materi yang siap digunakan AI
-                                        </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Menampilkan file yang telah selesai diproses dan siap dijadikan referensi jawaban.
-                                        </p>
-                                    </div>
-                                    {hasAnyKnowledgeFiles && (
-                                        <span className="rounded-full px-3 py-1 text-xs font-medium" style={neutralChipStyle}>
-                                            {readyMaterialCount} siap{hiddenKnowledgeBaseCount > 0 ? ` • ${hiddenKnowledgeBaseCount} tersembunyi` : ''}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {!hasAnyKnowledgeFiles ? (
-                                    <div className="mt-5 rounded-[28px] px-6 py-10 text-center" style={glassPanelStyle}>
-                                        <div
-                                            className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: 'rgba(136,22,28,0.08)',
-                                                border: '1px solid rgba(136,22,28,0.12)',
-                                            }}
-                                        >
-                                            <Files className="h-8 w-8" style={{ color: '#88161c' }} />
-                                        </div>
-                                        <h4 className="mt-4 text-lg font-semibold" style={headingStyle}>
-                                            Belum ada materi yang diunggah
-                                        </h4>
-                                        <p className={`mx-auto mt-2 max-w-md ${bodyTextClass}`}>
-                                            Tambahkan materi kelas untuk mulai membangun basis pengetahuan yang dapat dipakai chatbot AI.
-                                        </p>
-                                    </div>
-                                ) : readyKnowledgeBase.length > 0 ? (
-                                    <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                                        {readyKnowledgeBase.map((file) => (
-                                            <div key={file.id} className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-start gap-3">
-                                                            <div
-                                                                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl"
-                                                                style={{
-                                                                    background: 'rgba(136,22,28,0.08)',
-                                                                    border: '1px solid rgba(136,22,28,0.12)',
-                                                                }}
-                                                            >
-                                                                <Files className="h-5 w-5" style={{ color: '#88161c' }} />
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="truncate text-sm font-semibold" style={{ color: '#4A4A4A' }}>
-                                                                    {file.file_name}
-                                                                </p>
-                                                                <p className="mt-1 text-xs text-brand-muted-dark">
-                                                                    {formatFileSize(file.file_size)} • Diunggah {formatDate(file.uploaded_at)}
-                                                                </p>
-                                                                {file.processed_at && (
-                                                                    <p className="mt-1 text-xs text-brand-muted-dark">
-                                                                        Diproses {formatDate(file.processed_at)}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium" style={getStatusStyle(file.vector_status)}>
-                                                        {STATUS_LABELS[file.vector_status]}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : localMaterials.length > 0 ? (
-                                    <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                                        {localMaterials.map((material) => (
-                                            <div key={material.id} className="rounded-[28px] p-5" style={glassPanelStyle}>
-                                                <div className="flex items-start gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl"
-                                                        style={{
-                                                            background: 'rgba(136,22,28,0.08)',
-                                                            border: '1px solid rgba(136,22,28,0.12)',
-                                                        }}
-                                                    >
-                                                        <Files className="h-5 w-5" style={{ color: '#88161c' }} />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-semibold" style={{ color: '#4A4A4A' }}>
-                                                            {material.title}
-                                                        </p>
-                                                        {material.description && (
-                                                            <p className="mt-1 line-clamp-2 text-xs text-brand-muted-dark">
-                                                                {material.description}
-                                                            </p>
-                                                        )}
-                                                        <p className="mt-1 text-xs text-brand-muted-dark">
-                                                            {material.file_name} • {formatFileSize(material.file_size)} • {material.view_count} views
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="mt-5 rounded-[28px] px-6 py-10 text-center" style={glassPanelStyle}>
-                                        <div
-                                            className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
-                                            style={{
-                                                background: 'rgba(245,158,11,0.10)',
-                                                border: '1px solid rgba(245,158,11,0.16)',
-                                            }}
-                                        >
-                                            <Clock3 className="h-8 w-8" style={{ color: '#92400e' }} />
-                                        </div>
-                                        <h4 className="mt-4 text-lg font-semibold" style={headingStyle}>
-                                            Materi masih diproses
-                                        </h4>
-                                        <p className={`mx-auto mt-2 max-w-md ${bodyTextClass}`}>
-                                            Belum ada file yang siap digunakan.{' '}
-                                            {hiddenKnowledgeBaseCount > 0
-                                                ? `${hiddenKnowledgeBaseCount} file sedang menunggu pemrosesan atau memerlukan perhatian.`
-                                                : 'Silakan tunggu beberapa saat lalu muat ulang halaman.'}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {hiddenKnowledgeBaseCount > 0 && readyKnowledgeBase.length > 0 && (
-                                    <p className="mt-4 text-xs text-brand-muted-dark">
-                                        Menampilkan file yang telah siap dipakai. {hiddenKnowledgeBaseCount} file lain masih dalam antrian,
-                                        dilewati, atau gagal diproses.
-                                    </p>
-                                )}
-                            </div>
                         </LiquidGlassCard>
                     </motion.div>
                     </>

@@ -22,6 +22,7 @@ import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
+import CourseExportButton from '@/components/CourseExportButton';
 
 interface GroupAnalytics {
     groupId: string;
@@ -418,52 +419,42 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                     ) : (
                     <>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                        <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
-                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                                <div className="flex items-start gap-4">
-                                    <div
-                                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
-                                        style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
-                                    >
-                                        <BarChart3 className="h-6 w-6" style={{ color: '#88161c' }} />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-2xl font-bold" style={headingStyle}>
-                                            {course.name}
-                                        </h1>
-                                        <p className="mt-1 text-sm text-brand-muted-dark">
-                                            {course.code} · Analytics Dashboard
-                                        </p>
-                                    </div>
-                                </div>
+                         <LiquidGlassCard intensity="medium" className="p-6 sm:p-8" lightMode={true}>
+                             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                 <div className="flex items-start gap-4">
+                                     <div
+                                         className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                                         style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}
+                                     >
+                                         <BarChart3 className="h-6 w-6" style={{ color: '#88161c' }} />
+                                     </div>
+                                     <div>
+                                         <h1 className="text-2xl font-bold" style={headingStyle}>
+                                             {course.name}
+                                         </h1>
+                                         <p className="mt-1 text-sm text-brand-muted-dark">
+                                             {course.code} · Analytics Dashboard
+                                         </p>
+                                     </div>
+                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <DateRangePicker
-                                        value={dateRange}
-                                        preset={activePreset}
-                                        onChange={handleDateChange}
-                                    />
-                                    <ExportMenu
-                                        courseId={course.id}
-                                        startDate={dateRange?.startDate}
-                                        endDate={dateRange?.endDate}
-                                        preset={activePreset}
-                                    />
-                                    <SecondaryButton onClick={refreshAnalytics}>
-                                        <RefreshCw className="mr-2 h-4 w-4" />
-                                        Refresh
-                                    </SecondaryButton>
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-300'}`}
-                                        />
-                                        <span className="text-xs text-brand-muted-dark">
-                                            {isConnected ? 'Live' : 'Offline'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </LiquidGlassCard>
+                                 <div className="flex flex-wrap items-center gap-3">
+                                      <CourseExportButton courseId={course.id} />
+                                      <SecondaryButton onClick={refreshAnalytics}>
+                                          <RefreshCw className="mr-2 h-4 w-4" />
+                                          Refresh
+                                      </SecondaryButton>
+                                      <div className="flex items-center gap-2">
+                                          <div
+                                              className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-300'}`}
+                                          />
+                                          <span className="text-xs text-brand-muted-dark">
+                                              {isConnected ? 'Live' : 'Offline'}
+                                          </span>
+                                      </div>
+                                  </div>
+                             </div>
+                         </LiquidGlassCard>
                     </motion.div>
 
                     {alerts.length > 0 && (
