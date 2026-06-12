@@ -144,7 +144,7 @@ class ProfileController extends Controller
                 'groups' => true,
             ],
             'language' => 'id',
-            'theme' => 'system',
+            'theme' => 'light',
             'font_size' => 'normal',
         ];
     }

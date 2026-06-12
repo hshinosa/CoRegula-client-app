@@ -129,6 +129,8 @@ class CourseController extends Controller
             'name' => 'required|string|max:255',
             'semester' => 'nullable|string|in:Ganjil,Genap',
             'academic_year' => 'nullable|string|regex:/^\d{4}\/\d{4}$/',
+            'min_members_per_group' => 'nullable|integer|min:1',
+            'max_members_per_group' => 'nullable|integer|min:1|gte:min_members_per_group',
         ]);
 
         try {
@@ -164,6 +166,74 @@ class CourseController extends Controller
         return Inertia::render('lecturer/courses/show', [
             'course' => $courseData,
         ]);
+    }
+
+    public function update(Request $request, string $course)
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'semester' => 'nullable|string|in:Ganjil,Genap',
+            'academic_year' => 'nullable|string|regex:/^\d{4}\/\d{4}$/',
+            'status' => 'nullable|string|in:aktif,selesai',
+            'min_members_per_group' => 'nullable|integer|min:1',
+            'max_members_per_group' => 'nullable|integer|min:1|gte:min_members_per_group',
+            'ai_guardrail_preset' => 'nullable|string|in:strict,balanced,relaxed',
+            'ai_guardrail_allow_rewrite' => 'nullable|boolean',
+            'ai_guardrail_allow_flag_only' => 'nullable|boolean',
+            'ai_scaffolding_level' => 'nullable|string|in:early,late,auto',
+            'ai_scaffolding_enabled' => 'nullable|boolean',
+        ]);
+
+        try {
+            $response = $this->apiRequest()->put($this->apiUrl() . "/api/courses/{$course}", $validated);
+
+            if ($response->successful()) {
+                return back()->with('success', 'Pengaturan ukuran grup berhasil diperbarui!');
+            }
+
+            return back()->withErrors([
+                'ai_guardrail_preset' => $response->json('message', 'Gagal memperbarui pengaturan AI course'),
+            ]);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to update course', ['error' => $e->getMessage()]);
+            return back()->withErrors(['ai_guardrail_preset' => 'Gagal memperbarui pengaturan AI course']);
+        }
+    }
+
+    public function knowledgeBaseIndex(string $course): JsonResponse
+    {
+        try {
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/knowledge-base");
+
+            if (!$response->successful()) {
+                return response()->json(
+                    ['data' => [], 'message' => $response->json('message', 'Gagal memuat basis pengetahuan')],
+                    $response->status()
+                );
+            }
+
+            $rows = $response->json('data', []);
+            $data = array_map(static function (array $row): array {
+                return [
+                    'id' => $row['id'] ?? '',
+                    'course_material_id' => $row['courseMaterialId'] ?? $row['course_material_id'] ?? null,
+                    'file_name' => $row['fileName'] ?? $row['file_name'] ?? '',
+                    'file_size' => $row['fileSize'] ?? $row['file_size'] ?? null,
+                    'file_type' => $row['mimeType'] ?? $row['file_type'] ?? null,
+                    'vector_status' => $row['vectorStatus'] ?? $row['vector_status'] ?? 'pending',
+                    'uploaded_at' => $row['uploadedAt'] ?? $row['uploaded_at'] ?? null,
+                    'processed_at' => $row['processedAt'] ?? $row['processed_at'] ?? null,
+                    'error_message' => $row['errorMessage'] ?? $row['error_message'] ?? null,
+                ];
+            }, $rows);
+
+            return response()->json(['data' => $data]);
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('CourseController: failed to fetch knowledge base', ['error' => $e->getMessage()]);
+
+            return response()->json(['data' => [], 'message' => 'Gagal memuat basis pengetahuan'], 502);
+        }
     }
 
     public function uploadKnowledgeBase(Request $request, string $course)

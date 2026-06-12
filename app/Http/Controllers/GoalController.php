@@ -41,6 +41,18 @@ class GoalController extends Controller
             abort(404, 'Course not found');
         }
 
+        if (
+            $chatSpaceData
+            && empty($chatSpaceData['isClosed'])
+            && ! empty($chatSpaceData['weekId'])
+            && empty($chatSpaceData['hasPreReadCompleted'])
+        ) {
+            return redirect()->route('student.chat-spaces.pre-read.show', [
+                'course' => $course,
+                'chatSpace' => $chatSpace,
+            ]);
+        }
+
         // If chat space already has a shared goal (myGoal), redirect to chat spaces list
         // This means another group member already set the goal for everyone
         if ($chatSpaceData && isset($chatSpaceData['myGoal']) && $chatSpaceData['myGoal']) {
@@ -116,7 +128,17 @@ class GoalController extends Controller
                     ->with('success', 'Learning goal saved! You can now access the chat.');
             }
 
-            return back()->withErrors(['content' => $response->json('message', 'Failed to save goal')]);
+            $body = $response->json();
+            $message = $body['error']['message'] ?? $body['message'] ?? 'Failed to save goal';
+            $details = $body['error']['details'] ?? [];
+            $hint = is_array($details) ? ($details['socratic_hint'] ?? null) : null;
+            if (is_string($hint) && $hint !== '') {
+                $message = $hint;
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['content' => $message]);
         } catch (ConnectionException $e) {
             Log::error('Goal creation failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['content' => 'Unable to save goal']);

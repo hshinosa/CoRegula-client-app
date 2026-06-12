@@ -16,12 +16,14 @@ class MessageController extends Controller
             'content' => 'required|string|max:5000',
             'conversation_id' => 'required|string',
             'old_content' => 'required|string',
+            'version' => 'sometimes|integer|min:0',
         ]);
 
         $userId = $request->user()->id;
         $conversationId = $validated['conversation_id'];
         $newContent = $validated['content'];
         $oldContent = $validated['old_content'];
+        $clientVersion = $validated['version'] ?? 0;
 
         $lastAction = ChatMessageAudit::forMessage($messageId)
             ->orderByDesc('created_at')
@@ -49,6 +51,19 @@ class MessageController extends Controller
             ], 422);
         }
 
+        $editCount = ChatMessageAudit::forMessage($messageId)
+            ->where('action', 'edit')
+            ->count();
+        $currentVersion = $editCount;
+
+        if ($clientVersion !== $currentVersion) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konflik versi: pesan telah diedit oleh pihak lain',
+                'current_version' => $currentVersion,
+            ], 409);
+        }
+
         ChatMessageAudit::create([
             'message_id' => $messageId,
             'user_id' => $userId,
@@ -62,6 +77,7 @@ class MessageController extends Controller
             'message_id' => $messageId,
             'user_id' => $userId,
             'conversation_id' => $conversationId,
+            'version' => $currentVersion + 1,
         ]);
 
         return response()->json([
@@ -70,6 +86,7 @@ class MessageController extends Controller
             'data' => [
                 'message_id' => $messageId,
                 'edited_at' => now()->toISOString(),
+                'version' => $currentVersion + 1,
             ],
         ]);
     }

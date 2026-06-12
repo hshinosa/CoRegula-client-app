@@ -22,6 +22,7 @@ return [
     'api' => [
         'base_url' => env('API_BASE_URL', 'http://localhost:3000'),
         'socket_url' => env('SOCKET_URL', 'http://localhost:3000'),
+        'internal_secret' => env('CORE_API_INTERNAL_SECRET', env('AI_ENGINE_SECRET')),
     ],
 
     'google' => [

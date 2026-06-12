@@ -210,12 +210,29 @@ class GroupController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:50',
             'description' => 'nullable|string|max:200',
+            'week_id' => 'required|uuid',
+            'course_id' => 'nullable|uuid',
         ]);
 
         try {
-            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/chat-spaces", $validated);
+            $payload = [
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'week_id' => $validated['week_id'],
+            ];
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/chat-spaces", $payload);
 
             if ($response->successful()) {
+                $chatId = $response->json('data.id');
+                $courseId = $validated['course_id'] ?? null;
+                $role = session('user.role') ?? null;
+                if ($chatId && $courseId && $role === 'student') {
+                    return redirect()->route('student.chat-spaces.pre-read.show', [
+                        'course' => $courseId,
+                        'chatSpace' => $chatId,
+                    ]);
+                }
+
                 return back()->with('success', 'Ruang chat berhasil dibuat!');
             }
 

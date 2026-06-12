@@ -115,6 +115,9 @@ class SettingsController extends Controller
             'notifications.discussion' => 'sometimes|boolean',
             'notifications.reflection' => 'sometimes|boolean',
             'notifications.announcement' => 'sometimes|boolean',
+            'analyticsVisibility' => 'sometimes|boolean',
+            'aiInteractionConsent' => 'sometimes|boolean',
+            'dataSharingConsent' => 'sometimes|boolean',
         ]);
 
         $payload = [];
@@ -127,6 +130,9 @@ class SettingsController extends Controller
             $payload['notify_reflection'] = $validated['notifications']['reflection'] ?? true;
             $payload['notify_announcement'] = $validated['notifications']['announcement'] ?? true;
         }
+        if (array_key_exists('analyticsVisibility', $validated)) $payload['analytics_visibility'] = $validated['analyticsVisibility'];
+        if (array_key_exists('aiInteractionConsent', $validated)) $payload['ai_interaction_consent'] = $validated['aiInteractionConsent'];
+        if (array_key_exists('dataSharingConsent', $validated)) $payload['data_sharing_consent'] = $validated['dataSharingConsent'];
 
         try {
             $response = $this->apiRequest()->put($this->apiUrl() . '/api/users/me/preferences', $payload);
@@ -155,7 +161,9 @@ class SettingsController extends Controller
                 'password' => $validated['password'],
             ]);
             if ($response->successful()) {
-                session()->flush();
+                if ($request->hasSession()) {
+                    $request->session()->flush();
+                }
                 return response()->json(['message' => 'Akun berhasil dihapus', 'redirect' => '/']);
             }
             return response()->json(['message' => 'Gagal menghapus akun'], $response->status());

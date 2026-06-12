@@ -13,6 +13,9 @@ class UserPreference extends Model
         'notifications_tasks',
         'notifications_chat',
         'notifications_groups',
+        'analytics_visibility',
+        'ai_interaction_consent',
+        'data_sharing_consent',
         'language',
         'theme',
         'font_size',
@@ -26,6 +29,9 @@ class UserPreference extends Model
             'notifications_tasks' => 'boolean',
             'notifications_chat' => 'boolean',
             'notifications_groups' => 'boolean',
+            'analytics_visibility' => 'boolean',
+            'ai_interaction_consent' => 'boolean',
+            'data_sharing_consent' => 'boolean',
         ];
     }
 
@@ -39,7 +45,7 @@ class UserPreference extends Model
             'notifications_chat' => true,
             'notifications_groups' => true,
             'language' => 'id',
-            'theme' => 'system',
+            'theme' => 'light',
             'font_size' => 'normal',
         ];
     }

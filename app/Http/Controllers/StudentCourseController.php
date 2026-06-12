@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\JsonResponse;
 
 class StudentCourseController extends Controller
 {
@@ -189,34 +190,42 @@ class StudentCourseController extends Controller
     }
 
     /**
-     * Show Course Details (Student)
+     * Show Course Details (Student) - Unified page with group and session management
      */
     public function showStudent(string $course): Response
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
-            $groupsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
+            $myGroupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-group");
+            $availableGroupsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
 
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
-            $groups = $groupsResponse->successful() ? $groupsResponse->json('data') : [];
+            $myGroup = $myGroupResponse->successful() ? $myGroupResponse->json('data') : null;
+            $availableGroups = $availableGroupsResponse->successful() ? $availableGroupsResponse->json('data', []) : [];
 
-            if ($courseData && is_array($groups)) {
-                foreach ($groups as &$group) {
-                    $chatSpacesResponse = $this->apiRequest()->get(
-                        $this->apiUrl() . "/api/groups/{$group['id']}/chat-spaces"
-                    );
-                    $group['chat_spaces'] = $chatSpacesResponse->successful() 
-                        ? $chatSpacesResponse->json('data') 
-                        : [];
-                }
-                $courseData['groups'] = $groups;
+            // Fetch chat spaces (sessions) for student's group
+            $sessions = [];
+            if ($myGroup && isset($myGroup['id'])) {
+                $chatSpacesResponse = $this->apiRequest()->get(
+                    $this->apiUrl() . "/api/groups/{$myGroup['id']}/chat-spaces"
+                );
+                $sessions = $chatSpacesResponse->successful() 
+                    ? $chatSpacesResponse->json('data', []) 
+                    : [];
             }
+
         } catch (ConnectionException $e) {
             Log::error('StudentCourseController: failed to fetch course', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
+            $myGroup = null;
+            $availableGroups = [];
+            $sessions = [];
         } catch (RequestException $e) {
             Log::error('StudentCourseController: failed to fetch course', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
+            $myGroup = null;
+            $availableGroups = [];
+            $sessions = [];
         }
 
         if (!$courseData) {
@@ -225,7 +234,45 @@ class StudentCourseController extends Controller
 
         return Inertia::render('student/courses/show', [
             'course' => $courseData,
+            'myGroup' => $myGroup,
+            'availableGroups' => $availableGroups,
+            'sessions' => $sessions,
         ]);
+    }
+
+    public function readingRecommendations(Request $request, string $course): JsonResponse
+    {
+        $validated = $request->validate([
+            'topic' => 'required|string|min:1|max:200',
+            'limit' => 'nullable|integer|min:1|max:5',
+            'source_scope' => 'nullable|string|in:course_knowledge_base',
+        ]);
+
+        try {
+            $response = $this->apiRequest()->post(
+                $this->apiUrl() . "/api/courses/{$course}/reading-recommendations",
+                [
+                    'topic' => $validated['topic'],
+                    'limit' => $validated['limit'] ?? 3,
+                    'source_scope' => $validated['source_scope'] ?? 'course_knowledge_base',
+                ]
+            );
+
+            if ($response->successful()) {
+                return response()->json($response->json('data'));
+            }
+
+            return response()->json([
+                'message' => $response->json('message', 'Gagal mengambil rekomendasi bacaan'),
+                'errors' => $response->json('errors', []),
+            ], $response->status());
+        } catch (ConnectionException | RequestException $e) {
+            Log::error('StudentCourseController: reading recommendations failed', ['course' => $course, 'error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Gagal mengambil rekomendasi bacaan',
+            ], 500);
+        }
     }
 
     /**
@@ -286,7 +333,7 @@ class StudentCourseController extends Controller
     /**
      * Chat Room Page (specific chat space)
      */
-    public function chatRoom(string $course, string $chatSpace): Response
+    public function chatRoom(string $course, string $chatSpace): Response|\Illuminate\Http\RedirectResponse
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
@@ -310,6 +357,24 @@ class StudentCourseController extends Controller
 
         if (!$courseData || !$group || !$chatSpaceData) {
             abort(404, 'Course, group, or chat space not found');
+        }
+
+        if (
+            empty($chatSpaceData['isClosed'])
+            && ! empty($chatSpaceData['weekId'])
+            && empty($chatSpaceData['hasPreReadCompleted'])
+        ) {
+            return redirect()->route('student.chat-spaces.pre-read.show', [
+                'course' => $course,
+                'chatSpace' => $chatSpace,
+            ]);
+        }
+
+        if (empty($chatSpaceData['isClosed']) && empty($chatSpaceData['myGoal'])) {
+            return redirect()->route('student.goals.create', [
+                'course' => $course,
+                'chatSpace' => $chatSpace,
+            ]);
         }
 
         return Inertia::render('student/chat/room', [

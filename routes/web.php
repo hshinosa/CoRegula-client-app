@@ -15,6 +15,7 @@ use App\Http\Controllers\ChatUploadController;
 use App\Http\Controllers\Student\MessageController;
 use App\Http\Controllers\Student\MessageSearchController;
 use App\Http\Controllers\Student\PinnedMessageController;
+use App\Http\Controllers\CoreApiProxyController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
@@ -35,6 +36,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SessionManagementController;
 use App\Http\Controllers\SessionTemplateController;
 use App\Http\Controllers\Lecturer\LearningSessionController;
+use App\Http\Controllers\Student\StudentCourseWeeksController;
+use App\Http\Controllers\Student\StudentPreReadController;
+use App\Http\Controllers\Student\StudentSessionMaterialsController;
 use App\Http\Controllers\Student\ProfileAvatarController;
 use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\ProfilePreferenceController;
@@ -44,6 +48,7 @@ use App\Http\Controllers\Student\GlobalSearchController as StudentGlobalSearchCo
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Lecturer\LecturerAktivitasController;
 use App\Http\Controllers\Lecturer\LecturerAttendanceController;
+use App\Http\Controllers\Lecturer\LecturerCourseWeeksController;
 use App\Http\Controllers\Lecturer\LecturerMaterialsController;
 use App\Http\Controllers\Lecturer\GlobalSearchController as LecturerGlobalSearchController;
 use Illuminate\Support\Facades\Route;
@@ -134,6 +139,11 @@ Route::middleware('auth.jwt')->group(function () {
     Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
     Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
 
+    Route::get('/api/privacy/policy', [CoreApiProxyController::class, 'privacyPolicy'])->name('api.privacy.policy');
+    Route::get('/api/user/privacy-preferences', [CoreApiProxyController::class, 'privacyPreferencesGet'])->name('api.user.privacy-preferences.get');
+    Route::put('/api/user/privacy-preferences', [CoreApiProxyController::class, 'privacyPreferencesPut'])->name('api.user.privacy-preferences.put');
+    Route::get('/api/lecturer/discussion-health', [CoreApiProxyController::class, 'discussionHealth'])->name('api.lecturer.discussion-health');
+
     // Plan vs Diskusi Chart
     Route::get('/plan-vs-diskusi', function () {
         return Inertia::render('PlanVsDiskusiPage');
@@ -145,6 +155,10 @@ Route::middleware('auth.jwt')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/api/retention-policies', [CoreApiProxyController::class, 'retentionPoliciesIndex'])->name('api.retention-policies.index');
+        Route::put('/api/retention-policies/{id}', [CoreApiProxyController::class, 'retentionPoliciesUpdate'])->name('api.retention-policies.update');
+        Route::delete('/api/retention-policies/{id}', [CoreApiProxyController::class, 'retentionPoliciesDestroy'])->name('api.retention-policies.destroy');
+
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
         Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.page');
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-log.index');
@@ -226,9 +240,12 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
         Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
         Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+        Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
         Route::post('/courses/bulk-archive', [CourseController::class, 'bulkArchive'])->name('courses.bulk-archive');
 
-        // Knowledge Base Upload
+        // Knowledge Base
+        Route::get('/courses/{course}/knowledge-base', [CourseController::class, 'knowledgeBaseIndex'])
+            ->name('courses.knowledge-base.index');
         Route::post('/courses/{course}/knowledge-base', [CourseController::class, 'uploadKnowledgeBase'])
             ->name('courses.knowledge-base.store');
 
@@ -306,6 +323,9 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/courses/{course}/attendance/export', [LecturerAttendanceController::class, 'export'])
             ->name('courses.attendance.export');
 
+        Route::get('/courses/{course}/materials-hub', [\App\Http\Controllers\Lecturer\LecturerMaterialsHubController::class, 'show'])
+            ->name('courses.materials-hub.show');
+
         // Materials
         Route::get('/courses/{course}/materials', [LecturerMaterialsController::class, 'index'])
             ->name('courses.materials.index');
@@ -315,6 +335,8 @@ Route::middleware('auth.jwt')->group(function () {
             ->name('courses.materials.update');
         Route::delete('/courses/{course}/materials/{materialId}', [LecturerMaterialsController::class, 'destroy'])
             ->name('courses.materials.destroy');
+        Route::post('/courses/{course}/materials/{materialId}/reindex', [LecturerMaterialsController::class, 'reindex'])
+            ->name('courses.materials.reindex');
         Route::post('/courses/{course}/materials/{materialId}/view', [LecturerMaterialsController::class, 'recordView'])
             ->name('courses.materials.view');
         Route::get('/courses/{course}/materials/{materialId}/stats', [LecturerMaterialsController::class, 'viewStats'])
@@ -327,6 +349,24 @@ Route::middleware('auth.jwt')->group(function () {
             ->name('courses.materials.modules.destroy');
         Route::post('/courses/{course}/materials/modules/reorder', [LecturerMaterialsController::class, 'reorderModules'])
             ->name('courses.materials.modules.reorder');
+
+        // Course weeks (official syllabus weeks)
+        Route::get('/courses/{course}/weeks', [LecturerCourseWeeksController::class, 'index'])
+            ->name('courses.weeks.index');
+        Route::post('/courses/{course}/weeks', [LecturerCourseWeeksController::class, 'store'])
+            ->name('courses.weeks.store');
+        Route::put('/courses/{course}/weeks/{weekId}', [LecturerCourseWeeksController::class, 'update'])
+            ->name('courses.weeks.update');
+        Route::delete('/courses/{course}/weeks/{weekId}', [LecturerCourseWeeksController::class, 'destroy'])
+            ->name('courses.weeks.destroy');
+        Route::post('/courses/{course}/weeks/reorder', [LecturerCourseWeeksController::class, 'reorderWeeks'])
+            ->name('courses.weeks.reorder');
+        Route::post('/courses/{course}/weeks/{weekId}/materials', [LecturerCourseWeeksController::class, 'assignMaterial'])
+            ->name('courses.weeks.materials.assign');
+        Route::delete('/courses/{course}/weeks/{weekId}/materials/{materialId}', [LecturerCourseWeeksController::class, 'unassignMaterial'])
+            ->name('courses.weeks.materials.unassign');
+        Route::post('/courses/{course}/weeks/{weekId}/materials/reorder', [LecturerCourseWeeksController::class, 'reorderWeekMaterials'])
+            ->name('courses.weeks.materials.reorder');
 
         // Session Templates
         Route::prefix('session-templates')->name('session-templates.')->group(function () {
@@ -372,9 +412,10 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/courses-data', [StudentCourseController::class, 'index'])->name('courses.data');
         Route::post('/courses/join', [StudentCourseController::class, 'join'])->name('courses.join');
         Route::get('/courses/{course}', [StudentCourseController::class, 'showStudent'])->name('courses.show');
+        Route::post('/courses/{course}/reading-recommendations', [StudentCourseController::class, 'readingRecommendations'])->name('courses.reading-recommendations');
 
-        // Groups
-        Route::get('/courses/{course}/groups', [GroupController::class, 'studentIndex'])->name('groups.index');
+        // Groups (redirect to unified course detail page)
+        Route::get('/courses/{course}/groups', fn($course) => redirect()->route('student.courses.show', $course))->name('groups.index');
         Route::post('/courses/{course}/groups', [GroupController::class, 'store'])->name('groups.store');
         Route::post('/groups/join', [GroupController::class, 'join'])->name('groups.join');
         Route::post('/groups/{group}/invite', [GroupController::class, 'inviteMembers'])->name('groups.invite');
@@ -398,15 +439,28 @@ Route::middleware('auth.jwt')->group(function () {
         // Leave Group
         Route::post('/groups/{group}/leave', [GroupMemberManagementController::class, 'leave'])->name('groups.leave');
 
+        Route::get('/courses/{course}/chat-spaces/{chatSpace}/pre-read', [StudentPreReadController::class, 'show'])
+            ->name('chat-spaces.pre-read.show');
+        Route::post('/courses/{course}/chat-spaces/{chatSpace}/pre-read/complete', [StudentPreReadController::class, 'complete'])
+            ->name('chat-spaces.pre-read.complete');
+
         // Goals - now per chat space
         Route::get('/courses/{course}/chat-spaces/{chatSpace}/goal', [GoalController::class, 'create'])->name('goals.create');
         Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
 
-        // Chat Spaces (list of sessions)
-        Route::get('/courses/{course}/chat-spaces', [StudentCourseController::class, 'chatSpaces'])->name('courses.chat-spaces');
+        // Chat Spaces (redirect to unified course detail page)
+        Route::get('/courses/{course}/weeks', [StudentCourseWeeksController::class, 'index'])->name('courses.weeks.index');
+        Route::get('/courses/{course}/chat-spaces', fn($course) => redirect()->route('student.courses.show', $course))->name('courses.chat-spaces');
 
         Route::get('/courses/{course}/chat', [StudentCourseController::class, 'chat'])->name('courses.chat.index');
         Route::get('/courses/{course}/chat/{chatSpace}', [StudentCourseController::class, 'chatRoom'])->name('courses.chat.room');
+
+        Route::get('/courses/{course}/chat-spaces/{chatSpace}/materials', [StudentSessionMaterialsController::class, 'indexByCourse'])
+            ->name('chat-spaces.materials.by-course');
+        Route::get('/groups/{group}/chat-spaces/{chatSpace}/materials', [StudentSessionMaterialsController::class, 'index'])
+            ->name('chat-spaces.materials.index');
+        Route::get('/courses/{course}/materials/{materialId}/stream', [StudentSessionMaterialsController::class, 'stream'])
+            ->name('courses.materials.stream');
 
         // BFF proxy routes for chat-space close/reflection/summary
         Route::post('/courses/{course}/chat-spaces/{chatSpace}/close', [StudentCourseController::class, 'closeSession'])

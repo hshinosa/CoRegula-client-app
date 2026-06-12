@@ -288,46 +288,151 @@ class LecturerAttendanceController extends Controller
     }
 
     /**
-     * Export attendance to CSV.
+     * Export attendance to XES-compatible IEEE CSV event log.
+     *
+     * Format: one row = one event (attendance record).
+     * Required XES columns: case_id, activity, timestamp, resource.
+     * Additional case attributes: student_name, student_email.
      */
     public function export(string $course): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         try {
-            $summaryResponse = $this->summary($course);
-            $data = json_decode($summaryResponse->getContent(), true)['data'] ?? [];
-            $meta = json_decode($summaryResponse->getContent(), true)['meta'] ?? [];
-        } catch (ConnectionException $e) {
-            $data = [];
-            $meta = [];
-        } catch (RequestException $e) {
-            $data = [];
-            $meta = [];
+            $studentsResponse = $this->apiRequest()->get(
+                $this->apiUrl() . "/api/courses/{$course}/students"
+            );
+            $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
+        } catch (\Throwable $e) {
+            $students = [];
         }
+
+        $studentMap = [];
+        foreach ($students as $student) {
+            $sid = $student['id'] ?? $student['user_id'] ?? null;
+            if ($sid) {
+                $studentMap[$sid] = [
+                    'name' => $student['name'] ?? $student['user']['name'] ?? 'Unknown',
+                    'email' => $student['email'] ?? $student['user']['email'] ?? '',
+                ];
+            }
+        }
+
+        $sessions = AttendanceSession::where('course_id', $course)
+            ->orderBy('session_date')
+            ->orderBy('session_number')
+            ->get()
+            ->keyBy('id');
+
+        $records = AttendanceRecord::whereIn('session_id', $sessions->keys())
+            ->orderBy('marked_at')
+            ->get();
 
         $filename = "kehadiran_{$course}_" . date('Y-m-d') . ".csv";
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        return response()->stream(function () use ($data, $meta) {
+        return response()->stream(function () use ($records, $sessions, $studentMap) {
             $handle = fopen('php://output', 'w');
+
+            // UTF-8 BOM for Excel compatibility
+            fprintf($handle, "\xEF\xBB\xBF");
+
+            // XES-compatible IEEE header comment
+            fputcsv($handle, ['# XES-compatible IEEE CSV Event Log']);
+            fputcsv($handle, ['# Format: one row = one event (attendance record)']);
+            fputcsv($handle, ['# case_id: unique student identifier']);
+            fputcsv($handle, ['# activity: attendance status (present, absent, late, excused)']);
+            fputcsv($handle, ['# timestamp: ISO 8601 datetime of the session']);
+            fputcsv($handle, ['# resource: session title / number']);
+            fputcsv($handle, []);
+
+            // Column headers
             fputcsv($handle, [
-                'Nama', 'Email', 'Total Pertemuan', 'Hadir', 'Terlambat', 'Izin', 'Tidak Hadir', 'Persentase Kehadiran'
+                'case_id',
+                'case:student_name',
+                'case:student_email',
+                'activity',
+                'timestamp',
+                'resource',
+                'session_title',
+                'session_number',
+                'notes',
             ]);
 
-            foreach ($data as $row) {
+            foreach ($records as $record) {
+                $session = $sessions[$record->session_id] ?? null;
+                $student = $studentMap[$record->student_id] ?? ['name' => 'Unknown', 'email' => ''];
+
+                $timestamp = $record->marked_at
+                    ? $record->marked_at->toIso8601String()
+                    : ($session ? $session->session_date->format('Y-m-d') . 'T00:00:00+07:00' : '');
+
+                $resource = $session
+                    ? "Sesi {$session->session_number}: {$session->title}"
+                    : 'Unknown Session';
+
                 fputcsv($handle, [
-                    $row['student_name'],
-                    $row['student_email'],
-                    $row['total_sessions'],
-                    $row['present'],
-                    $row['late'],
-                    $row['excused'],
-                    $row['absent'],
-                    $row['attendance_percentage'] . '%',
+                    $record->student_id,
+                    $student['name'],
+                    $student['email'],
+                    $record->status,
+                    $timestamp,
+                    $resource,
+                    $session ? $session->title : '',
+                    $session ? $session->session_number : '',
+                    $record->notes ?? '',
                 ]);
+            }
+
+            // Summary section
+            if ($records->isNotEmpty()) {
+                fputcsv($handle, []);
+                fputcsv($handle, ['# SUMMARY: Aggregated attendance per student']);
+                fputcsv($handle, [
+                    'student_id',
+                    'student_name',
+                    'student_email',
+                    'total_sessions',
+                    'present',
+                    'late',
+                    'excused',
+                    'absent',
+                    'attendance_rate_pct',
+                ]);
+
+                $summary = $records->groupBy('student_id')->map(function ($studentRecords) use ($studentMap) {
+                    $sid = $studentRecords->first()->student_id;
+                    $student = $studentMap[$sid] ?? ['name' => 'Unknown', 'email' => ''];
+                    return [
+                        'student_id' => $sid,
+                        'student_name' => $student['name'],
+                        'student_email' => $student['email'],
+                        'total_sessions' => $studentRecords->count(),
+                        'present' => $studentRecords->where('status', 'present')->count(),
+                        'late' => $studentRecords->where('status', 'late')->count(),
+                        'excused' => $studentRecords->where('status', 'excused')->count(),
+                        'absent' => $studentRecords->where('status', 'absent')->count(),
+                        'attendance_rate' => $studentRecords->count() > 0
+                            ? round($studentRecords->whereIn('status', ['present', 'late'])->count() / $studentRecords->count() * 100, 1)
+                            : 0,
+                    ];
+                })->sortByDesc('attendance_rate')->values();
+
+                foreach ($summary as $row) {
+                    fputcsv($handle, [
+                        $row['student_id'],
+                        $row['student_name'],
+                        $row['student_email'],
+                        $row['total_sessions'],
+                        $row['present'],
+                        $row['late'],
+                        $row['excused'],
+                        $row['absent'],
+                        $row['attendance_rate'],
+                    ]);
+                }
             }
 
             fclose($handle);
