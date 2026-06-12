@@ -1,7 +1,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormEvent, useState } from 'react';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 import { InputError } from '@/components/ui/input-error';
 import AppLayout from '@/layouts/app-layout';
@@ -11,7 +11,6 @@ import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/We
 import { CourseGridSkeleton } from '@/components/ui/skeletons';
 
 import { SearchBar } from './components/SearchBar';
-import { FilterChips } from './components/FilterChips';
 import { EmptyState } from './components/EmptyState';
 import { useCourseFilters } from './hooks/useCourseFilters';
 import { useCourses } from './hooks/useCourses';
@@ -21,8 +20,8 @@ export default function StudentCoursesIndex() {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const { serviceError } = usePage<{ serviceError?: string }>().props;
 
-    const { filters, setQuery, toggleStatus, setPage, resetFilters, hasActiveFilters } = useCourseFilters();
-    const { courses, meta, filterCounts, isLoading, isError, isFetching, refetch } = useCourses({
+    const { filters, setQuery, setPage, resetFilters, hasActiveFilters } = useCourseFilters();
+    const { courses, meta, isLoading, isError, isFetching, refetch } = useCourses({
         q: filters.q,
         status: filters.status,
         page: filters.page,
@@ -55,8 +54,8 @@ export default function StudentCoursesIndex() {
     };
 
     return (
-        <AppLayout title="Mata Kuliah Saya" navItems={navItems}>
-            <Head title="Mata Kuliah Saya" />
+        <AppLayout title="Kelas Saya" navItems={navItems}>
+            <Head title="Kelas Saya" />
 
             <div className="space-y-6">
                 {/* Header */}
@@ -66,18 +65,18 @@ export default function StudentCoursesIndex() {
                             <h2
                                 className="text-2xl font-bold font-sans text-brand-dark"
                             >
-                                Mata Kuliah Saya
+                                Kelas Saya
                             </h2>
                             <p className="mt-1 text-sm text-brand-muted-dark">
                                 {meta.total > 0
-                                    ? `${meta.total} mata kuliah ditemukan`
-                                    : 'Mata kuliah dan kelompok yang Anda ikuti'
+                                    ? `${meta.total} kelas ditemukan`
+                                    : 'Kelas dan kelompok yang Anda ikuti'
                                 }
                             </p>
                         </div>
                         <PrimaryButton onClick={() => setShowJoinModal(true)}>
                             <Plus className="h-4 w-4" />
-                            Gabung Mata Kuliah
+                            Gabung Kelas
                         </PrimaryButton>
                     </div>
                 </LiquidGlassCard>
@@ -88,19 +87,11 @@ export default function StudentCoursesIndex() {
                         <SearchBar
                             value={filters.q}
                             onChange={setQuery}
-                            placeholder="Cari mata kuliah berdasarkan nama atau kode..."
+                            placeholder="Cari kelas berdasarkan nama atau kode..."
                         />
-                        <div className="flex items-center justify-between">
-                            <FilterChips
-                                activeStatus={filters.status}
-                                onToggleStatus={toggleStatus}
-                                filterCounts={filterCounts}
-                                isFetching={isFetching}
-                            />
-                            {isFetching && !isLoading && (
-                                <Loader2 className="h-4 w-4 animate-spin text-[#9CA3AF]" />
-                            )}
-                        </div>
+                        {/* Filter chips (Berjalan / Belum Mulai / Selesai) hidden for now per request.
+                            Status filtering via URL params may still apply if set directly.
+                            Will restore later. */}
                     </div>
                 </LiquidGlassCard>
 
@@ -112,7 +103,7 @@ export default function StudentCoursesIndex() {
                         className="rounded-2xl border border-red-200 bg-red-50 p-4 text-center"
                     >
                         <p className="text-sm text-red-600">
-                            {serviceError || 'Gagal memuat data mata kuliah. Coba lagi nanti.'}
+                            {serviceError || 'Gagal memuat data kelas. Coba lagi nanti.'}
                         </p>
                         <button
                             onClick={() => refetch()}
@@ -201,7 +192,7 @@ export default function StudentCoursesIndex() {
                                             <div
                                                 className="mt-4 flex items-center text-sm font-medium text-brand-primary"
                                             >
-                                                Lihat Mata Kuliah
+                                                Lihat Kelas
                                                 <svg
                                                     className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"
                                                     fill="none"
@@ -271,7 +262,7 @@ export default function StudentCoursesIndex() {
                                     <h3
                                         className="text-lg font-semibold font-sans text-brand-dark"
                                     >
-                                        Gabung Mata Kuliah
+                                        Gabung Kelas
                                     </h3>
                                     <button
                                         onClick={() => setShowJoinModal(false)}

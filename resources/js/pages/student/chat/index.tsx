@@ -10,6 +10,7 @@ import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
+import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import {
     createOptimisticMessage,
     reconcileIncomingMessage,
@@ -21,6 +22,7 @@ import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup'
 import { uploadAttachments } from '@/lib/upload-attachments';
 import { useMessageWindow } from '@/features/chat/use-message-window';
 import { safeAttachmentUrl } from '@/lib/attachment-url';
+import { useOfflineQueue } from '@/features/chat/use-offline-queue';
 
 interface GroupMember {
     id: string;
@@ -128,21 +130,24 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const { auth } = usePage<SharedData>().props;
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
-    const [messages, setMessages] = useState<DisplayMessage[]>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
-    const [isScrolling, setIsScrolling] = useState(false);
-    const [showGoalBanner, setShowGoalBanner] = useState(!hasGoal);
-
-    useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
-    }, []);
 
     // Chat space state - default to first chat space
     const [activeChatSpaceId] = useState<string | null>(
         group.chatSpaces?.[0]?.id || null
     );
+
+    const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    const [newMessage, setNewMessage] = useState('');
+    useDraftAutosave(activeChatSpaceId ?? '', newMessage, setNewMessage);
+    const [isTyping, setIsTyping] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const [showGoalBanner, setShowGoalBanner] = useState(!hasGoal);
+    const confirmDeliveredRef = useRef<(clientId?: string) => Promise<void>>(async () => {});
+
+    useEffect(() => {
+        getAuthToken().then(setJwtToken).catch(console.error);
+    }, []);
     
     // Get active chat space
     const activeChatSpace = useMemo(() => 
@@ -241,6 +246,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
             setMessages(loaded);
         },
         onMessageReceived: (_display, raw) => {
+            void confirmDeliveredRef.current(raw.clientId);
             setMessages((prev) => reconcileIncomingMessage(prev, raw));
         },
         onMessageDeleted: (messageId) => {
@@ -248,17 +254,37 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         },
     });
 
+    const { queueOrSend, confirmDelivered } = useOfflineQueue({
+        socketRef,
+        isConnected,
+        onMessageQueued: (clientId) => {
+            setMessages((prev) => markMessageSending(prev, clientId, 'sending', 0));
+        },
+        onMessageRetrying: (clientId, attempts) => {
+            setMessages((prev) => markMessageSending(prev, clientId, 'retrying', attempts));
+        },
+        onMessageFailed: (clientId, attempts) => {
+            setMessages((prev) => markMessageFailed(markMessageSending(prev, clientId, 'failed', Math.max(attempts - 1, 0)), clientId));
+        },
+    });
+
+    confirmDeliveredRef.current = confirmDelivered;
+
     const emitChatMessage = useCallback((message: DisplayMessage) => {
-        if (!socketRef.current || !activeChatSpace) {
+        if (!activeChatSpace) {
             setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
-            return;
+            return Promise.resolve({ queued: false as const, attempts: 0 });
         }
-        socketRef.current.emit('send_message', toSocketPayload(message, {
-            roomId: activeChatSpace.id,
-            courseId: course.id,
-            groupId: group.id,
-        }));
-    }, [activeChatSpace, course.id, group.id, socketRef]);
+
+        return queueOrSend({
+            message,
+            payload: toSocketPayload(message, {
+                roomId: activeChatSpace.id,
+                courseId: course.id,
+                groupId: group.id,
+            }),
+        });
+    }, [activeChatSpace, course.id, group.id, queueOrSend]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -593,9 +619,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         });
 
         setMessages((prev) => [...prev, optimisticMessage]);
-        emitChatMessage(optimisticMessage);
+        void emitChatMessage(optimisticMessage);
 
         setNewMessage('');
+        clearDraft();
         setReplyingTo(null);
         revokePendingFilePreviews(pendingFiles);
         setPendingFiles([]);
@@ -624,7 +651,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     // Task 5: retry a message sent earlier
     const handleRetryMessage = (message: DisplayMessage) => {
         const retryId = message.clientId || message.id;
-        setMessages((prev) => markMessageSending(prev, retryId));
+        setMessages((prev) => markMessageSending(prev, retryId, 'sending', 0));
 
         const retryMessage: DisplayMessage = {
             ...message,
@@ -632,9 +659,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
             id: retryId,
             deliveryStatus: 'sending',
             isOptimistic: true,
+            retryCount: 0,
         };
 
-        emitChatMessage(retryMessage);
+        void emitChatMessage(retryMessage);
     };
 
     const formatTime = (date: string) => {
@@ -987,6 +1015,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                                         <div className="mt-1 text-xs text-brand-muted-dark">
                                                                             {message.deliveryStatus === 'sending' ? (
                                                                                 <span>Mengirim...</span>
+                                                                            ) : message.deliveryStatus === 'retrying' ? (
+                                                                                <span>Retrying...</span>
                                                                             ) : message.deliveryStatus === 'failed' ? (
                                                                                 <button onClick={() => handleRetryMessage(message)} className="text-brand-primary hover:underline">Coba lagi</button>
                                                                             ) : null}

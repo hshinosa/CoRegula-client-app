@@ -1,3 +1,8 @@
+/**
+ * @deprecated This page has been consolidated into the unified course detail page.
+ * The route `/courses/{course}/groups` now redirects to `/courses/{course}`.
+ * See: resources/js/pages/student/courses/show.tsx
+ */
 import { Head, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormEvent, useState, useEffect } from 'react';
@@ -75,6 +80,8 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
         });
     };
 
+    const memberRangeLabel = `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per grup`;
+
     return (
         <AppLayout title={`Grup - ${course.name}`} navItems={navItems}>
             <Head title={`Grup - ${course.name}`} />
@@ -141,6 +148,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                     <p className="mt-1 text-sm text-brand-muted-dark">
                         Bergabung dengan grup yang sudah ada atau buat grup baru untuk {course.name}
                     </p>
+                    <p className="mt-2 text-sm text-brand-muted-dark">Batas ukuran grup: {memberRangeLabel}</p>
                 </LiquidGlassCard>
 
                 {myGroup && (

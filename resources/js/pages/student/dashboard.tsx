@@ -1,5 +1,6 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import { BookOpen, MessageSquare, Pencil, Sparkles, Users } from 'lucide-react';
 
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
@@ -12,6 +13,7 @@ import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
 import { SharedData } from '@/types';
+import DataExportButton from '@/components/DataExportButton';
 
 interface StudentStats {
     enrolledCourses: number;
@@ -44,8 +46,39 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
 
     const displayStats = stats ?? { enrolledCourses: 0, activeGroups: 0, reflections: 0, chatMessages: 0 };
 
+    const [period, setPeriod] = useState<'all' | '7d' | '30d'>('all');
+
+    const filteredActivities = useMemo(() => {
+        if (period === 'all') return recentActivity;
+        const now = Date.now();
+        const days = period === '7d' ? 7 : 30;
+        const cutoff = now - days * 24 * 60 * 60 * 1000;
+        return recentActivity.filter((a: ActivityItem) => {
+            const ts = a.timestamp || a.createdAt;
+            if (!ts) return true;
+            return new Date(ts).getTime() >= cutoff;
+        });
+    }, [recentActivity, period]);
+
+    const handleActivityClick = (item: ActivityItem) => {
+        const type = (item.type || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        if (type.includes('reflection') || desc.includes('refleksi')) {
+            router.visit(student.reflections.index.url());
+        } else if (type.includes('course') || type.includes('book') || desc.includes('kursus') || desc.includes('mata kuliah') || desc.includes('kelas')) {
+            router.visit(student.courses.index.url());
+        } else if (type.includes('group') || type.includes('user') || desc.includes('grup')) {
+            const groupsUrl = (student as any).groups?.index?.url?.() || student.courses.index.url();
+            router.visit(groupsUrl);
+        } else if (type.includes('chat') || type.includes('message') || type.includes('discussion') || desc.includes('diskusi') || desc.includes('chat')) {
+            router.visit(student.aiChat.index.url());
+        } else {
+            router.visit(student.courses.index.url());
+        }
+    };
+
     const statCards = [
-        { label: 'Mata Kuliah', value: displayStats.enrolledCourses, icon: BookOpen, color: 'var(--color-brand-primary)' },
+        { label: 'Kelas', value: displayStats.enrolledCourses, icon: BookOpen, color: 'var(--color-brand-primary)' },
         { label: 'Grup Aktif', value: displayStats.activeGroups, icon: Users, color: 'var(--color-brand-dark)' },
         { label: 'Refleksi', value: displayStats.reflections, icon: Pencil, color: 'var(--color-brand-muted)' },
         { label: 'Pesan Obrolan', value: displayStats.chatMessages, icon: MessageSquare, color: 'var(--color-brand-primary)' },
@@ -55,7 +88,7 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
         {
             href: student.courses.index.url(),
             icon: Users,
-            title: 'Gabung Mata Kuliah',
+            title: 'Gabung Kelas',
             desc: 'Gunakan kode gabung',
             color: 'var(--color-brand-primary)',
         },
@@ -155,12 +188,39 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5, duration: 0.5 }}
+                            className="space-y-6"
                         >
                             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
+                                        Aktivitas Terbaru
+                                    </h2>
+                                    <select
+                                        value={period}
+                                        onChange={(e) => setPeriod(e.target.value as 'all' | '7d' | '30d')}
+                                        className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-brand-muted-dark focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                                        aria-label="Filter periode aktivitas"
+                                    >
+                                        <option value="all">Semua</option>
+                                        <option value="7d">7 hari terakhir</option>
+                                        <option value="30d">30 hari terakhir</option>
+                                    </select>
+                                </div>
+                                <ActivityFeed
+                                    activities={filteredActivities}
+                                    maxItems={5}
+                                    onActivityClick={handleActivityClick}
+                                />
+                            </LiquidGlassCard>
+
+                            <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                                 <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
-                                    Aktivitas Terbaru
+                                    Data Pribadi
                                 </h2>
-                                <ActivityFeed activities={recentActivity} maxItems={5} />
+                                <p className="mb-4 text-sm text-brand-muted-dark">
+                                    Unduh semua data pribadi Anda dalam format JSON
+                                </p>
+                                <DataExportButton />
                             </LiquidGlassCard>
                         </motion.div>
                     </div>

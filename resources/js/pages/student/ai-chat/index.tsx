@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, Bookmark, FileText, Search } from 'lucide-react';
+import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import AppLayout from '@/layouts/app-layout';
@@ -14,7 +14,7 @@ import { usePage } from '@inertiajs/react';
 import { formatAiOutput } from '@/lib/formatAiOutput';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { SearchBar, BookmarkButton, BookmarkPanel, TemplatePanel } from './components';
+import { SearchBar, BookmarkPanel, TemplatePanel } from './components';
 import { useAiChatSync } from '@/hooks/useAiChatSync';
 
 
@@ -553,29 +553,11 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 <div className="flex items-center justify-end mb-3 gap-2">
                     <button
                         type="button"
-                        onClick={() => setTemplatePanelOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
-                        title="Template prompt"
-                    >
-                        <FileText className="h-4.5 w-4.5" />
-                        Template
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setBookmarkPanelOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
-                        title="Bookmark"
-                    >
-                        <Bookmark className="h-4.5 w-4.5" />
-                        Bookmark
-                    </button>
-                    <button
-                        type="button"
                         onClick={() => setSidebarOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3.5 py-2.5 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/75 bg-white/72 px-3 py-2 text-sm font-medium text-brand-dark shadow-[0_12px_28px_rgba(148,163,184,0.14)] transition-colors hover:text-brand-primary"
                         title="Buka riwayat chat"
                     >
-                        <Menu className="h-4.5 w-4.5" />
+                        <Menu className="h-4 w-4" />
                         Riwayat
                     </button>
                 </div>
@@ -658,16 +640,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 <p className={`mt-1 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-brand-muted-dark'}`}>
                                                     {formatTime(message.created_at)}
                                                 </p>
-                                                {message.role === 'assistant' && activeChat && (
-                                                    <div className="mt-1 flex justify-end">
-                                                        <BookmarkButton
-                                                            messageId={message.id}
-                                                            conversationId={activeChat.id}
-                                                            initialBookmarked={bookmarkedMessageIds.has(message.id)}
-                                                            onToggle={(bookmarked) => handleBookmarkToggle(message.id, bookmarked)}
-                                                        />
-                                                    </div>
-                                                )}
+
                                             </div>
                                         </motion.div>
                                     ))}

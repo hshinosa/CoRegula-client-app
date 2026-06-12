@@ -1,19 +1,23 @@
+/**
+ * @deprecated This page has been consolidated into the unified course detail page.
+ * The route `/courses/{course}/chat-spaces` now redirects to `/courses/{course}`.
+ * See: resources/js/pages/student/courses/show.tsx
+ */
 import { Head, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, FormEvent, useMemo, useEffect } from 'react';
-import { Lightbulb, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course } from '@/types';
 import student from '@/routes/student';
 import { room as chatRoom } from '@/routes/student/courses/chat';
-import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { LiquidGlassCard, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
 import { Skeleton } from '@/components/ui/skeletons';
 
 import { useSpaceFilters } from '@/hooks/useSpaceFilters';
 import { SearchBar } from '@/components/chat-spaces/SearchBar';
-import { FilterChips } from '@/components/chat-spaces/FilterChips';
 import { SortDropdown } from '@/components/chat-spaces/SortDropdown';
 import { SpaceCard } from '@/components/chat-spaces/SpaceCard';
 import { EmptyState } from '@/components/chat-spaces/EmptyState';
@@ -34,6 +38,9 @@ interface ChatSpace {
     name: string;
     description?: string;
     isDefault: boolean;
+    weekTitle?: string | null;
+    weekIndex?: number | null;
+    hasPreReadCompleted?: boolean;
     isClosed?: boolean;
     closedAt?: string;
     myGoal?: ChatSpaceGoal | null;
@@ -56,6 +63,9 @@ const getChatSpaceUrl = (courseId: string, chatSpace: ChatSpace): string => {
     }
     if (chatSpace.myGoal) {
         return chatRoom.url({ course: courseId, chatSpace: chatSpace.id });
+    }
+    if (!chatSpace.hasPreReadCompleted && (chatSpace.weekIndex != null || chatSpace.weekTitle)) {
+        return `/student/courses/${courseId}/chat-spaces/${chatSpace.id}/pre-read`;
     }
     return student.goals.create.url({ course: courseId, chatSpace: chatSpace.id });
 };
@@ -103,34 +113,41 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
+        week_id: '',
+        course_id: course.id,
     });
+    const [weekOptions, setWeekOptions] = useState<{ id: string; week_index: number; title: string }[]>([]);
+    const [weeksLoading, setWeeksLoading] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsInitialLoading(false), 300);
         return () => clearTimeout(timer);
     }, []);
 
+    useEffect(() => {
+        if (!showCreateModal) return;
+        setWeeksLoading(true);
+        fetch(`/student/courses/${course.id}/weeks`)
+            .then((res) => res.json())
+            .then((json) => setWeekOptions(json.weeks || []))
+            .catch(() => setWeekOptions([]))
+            .finally(() => setWeeksLoading(false));
+    }, [showCreateModal, course.id]);
+
     const {
         filters,
         setQuery,
-        toggleType,
-        toggleStatus,
         setSort,
         setPage,
         clearFilters,
         clearSearch,
         hasActiveFilters,
-        activeFilterCount,
     } = useSpaceFilters();
 
     const allChatSpaces: ChatSpace[] = group.chatSpaces || [];
     const hasServerData = !!chatSpaceMeta?.data;
 
-    const {
-        filteredSpaces,
-        typeCounts,
-        statusCounts,
-    } = useMemo(() => {
+    const { filteredSpaces } = useMemo(() => {
         if (hasServerData) {
             const serverSpaces = chatSpaceMeta!.data!;
             const tCounts: Record<SpaceType, number> = { Akademik: 0, Proyek: 0, Umum: 0 };
@@ -281,21 +298,8 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                             />
                         </div>
 
-                        <FilterChips
-                            selectedTypes={filters.types}
-                            selectedStatuses={filters.statuses}
-                            onToggleType={toggleType}
-                            onToggleStatus={toggleStatus}
-                            onClearAll={clearFilters}
-                            typeCounts={typeCounts}
-                            statusCounts={statusCounts}
-                        />
-
-                        {activeFilterCount > 0 && (
-                            <p className="text-xs text-brand-muted-dark">
-                                {activeFilterCount} filter aktif • {filteredSpaces.length} ruang ditemukan
-                            </p>
-                        )}
+                        {/* Filter chips (type/status) hidden for now */}
+                        {/* Active filter count paragraph also removed with the chips */}
                     </motion.div>
                 )}
 
@@ -351,36 +355,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                     />
                 )}
 
-                {!showEmptyState && !showFilterEmpty && !showSearchEmpty && allChatSpaces.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
-                            <div className="flex items-start gap-4">
-                                <div
-                                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
-                                    style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
-                                    }}
-                                >
-                                    <Lightbulb className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
-                                </div>
-                                <div>
-                                    <p className="text-base font-semibold font-sans text-brand-dark">
-                                        Tips: Gunakan Sesi Terpisah
-                                    </p>
-                                    <p className="mt-2 leading-6 text-sm text-brand-muted-dark">
-                                        Buat sesi diskusi terpisah untuk topik berbeda agar diskusi lebih terfokus.
-                                        Setiap sesi memiliki tujuan pembelajaran sendiri.
-                                    </p>
-                                </div>
-                            </div>
-                        </LiquidGlassCard>
-                    </motion.div>
-                )}
+                {/* Tips card (below filters) hidden for now */}
             </div>
             </>
             )}
@@ -401,7 +376,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
+                            <WhiteModal className="max-w-md">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-lg font-semibold font-sans text-brand-dark">
@@ -414,7 +389,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
+                                         className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-slate-100"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
@@ -451,6 +426,35 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                         />
                                     </div>
 
+                                    <div>
+                                        <label className="block text-sm font-medium text-brand-dark">
+                                            Minggu kuliah <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
+                                        </label>
+                                        <select
+                                            value={data.week_id}
+                                            onChange={(e) => setData('week_id', e.target.value)}
+                                            required
+                                            disabled={weeksLoading || weekOptions.length === 0}
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm"
+                                        >
+                                            <option value="">
+                                                {weeksLoading
+                                                    ? 'Memuat minggu…'
+                                                    : weekOptions.length === 0
+                                                      ? 'Belum ada minggu (minta dosen)'
+                                                      : 'Pilih minggu'}
+                                            </option>
+                                            {weekOptions.map((w) => (
+                                                <option key={w.id} value={w.id}>
+                                                    Minggu {w.week_index}: {w.title}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.week_id && (
+                                            <p className="mt-1 text-xs text-red-600">{errors.week_id}</p>
+                                        )}
+                                    </div>
+
                                     <div className="flex gap-3 pt-4">
                                         <SecondaryButton
                                             onClick={() => setShowCreateModal(false)}
@@ -459,14 +463,14 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                                             Batal
                                         </SecondaryButton>
                                         <PrimaryButton
-                                            disabled={processing || !data.name.trim()}
+                                            disabled={processing || !data.name.trim() || !data.week_id}
                                             className="flex-1"
                                         >
                                             {processing ? 'Membuat...' : 'Buat Sesi'}
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </LiquidGlassCard>
+                            </WhiteModal>
                         </motion.div>
                     </>
                 )}

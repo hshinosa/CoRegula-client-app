@@ -13,7 +13,7 @@ export function EmptyState({ hasFilters, onResetFilters, onJoinCourse }: EmptySt
         return (
             <SharedEmptyState
                 icon={SearchX}
-                title="Tidak ada mata kuliah yang cocok"
+                title="Tidak ada kelas yang cocok"
                 description="Coba kata kunci lain atau hapus filter"
                 action={
                     onResetFilters && (
@@ -32,8 +32,8 @@ export function EmptyState({ hasFilters, onResetFilters, onJoinCourse }: EmptySt
     return (
         <SharedEmptyState
             icon={BookOpen}
-            title="Belum ada mata kuliah"
-            description="Gunakan kode gabung untuk mendaftar ke mata kuliah pertama Anda"
+title="Belum ada kelas"
+description="Gunakan kode gabung untuk mendaftar ke kelas pertama Anda"
             action={
                 onJoinCourse && (
                     <PrimaryButton onClick={onJoinCourse}>

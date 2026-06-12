@@ -21,7 +21,15 @@ import { normalizeDroppedFile, useDragDrop } from '@/features/chat/useDragDrop';
 import { focusFirstElement, trapFocusWithin } from '@/lib/focus-management';
 import { Toast } from '@/components/chat/Toast';
 import { ConnectionBanner } from '@/components/chat/ConnectionBanner';
+import { DiscussionProgressBar } from '@/components/chat/DiscussionProgressBar';
+import { HealthScoreCard } from '@/components/chat/HealthScoreCard';
+import { RelevanceBadge } from '@/components/chat/RelevanceBadge';
+import { SessionSummaryModal } from '@/components/chat/SessionSummaryModal';
+import { ChatWeekMaterialsPanel } from '@/components/course/ChatWeekMaterialsPanel';
+import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
 import { ChatSkeleton } from '@/components/ui/skeletons';
+import { useOfflineQueue } from '@/features/chat/use-offline-queue';
+import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import {
     createOptimisticMessage,
     markMessageFailed,
@@ -36,6 +44,13 @@ import { SearchResults } from './room/components/SearchResults';
 import { PinnedMessages } from './room/components/PinnedMessages';
 import { useMessageSearch } from './room/hooks/useMessageSearch';
 import { usePinnedMessages } from './room/hooks/usePinnedMessages';
+import {
+    aggregateCitedMaterials,
+    buildMaterialIndexFromApi,
+    citationChipLabel,
+    type MaterialIndexEntry,
+} from '@/features/chat/cited-materials';
+import type { ChatCitation } from '@/types/chat';
 import axios from 'axios';
 
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
@@ -95,6 +110,8 @@ interface Group {
         name: string;
         description?: string;
         isDefault: boolean;
+        weekTitle?: string | null;
+        weekIndex?: number | null;
         groupId: string;
         isClosed?: boolean;
         closedAt?: string;
@@ -199,6 +216,8 @@ interface MessageItemProps {
     onRetry: (message: DisplayMessage) => void;
     onOpenImagePreview: (url: string, name: string) => void;
     onDownloadAttachment: (url: string, name: string) => void;
+    onOpenCitation: (cite: ChatCitation) => void;
+    materialIndex: Map<string, MaterialIndexEntry>;
     onEdit: (messageId: string) => void;
     onPin: (messageId: string) => void;
     onUnpin: (messageId: string) => void;
@@ -223,6 +242,8 @@ const MessageItem = memo(function MessageItem({
     onRetry,
     onOpenImagePreview,
     onDownloadAttachment,
+    onOpenCitation,
+    materialIndex,
     onEdit,
     onPin,
     onUnpin,
@@ -339,32 +360,7 @@ const MessageItem = memo(function MessageItem({
                 )}
 
                 {message.content && (
-                    <div className="flex items-center gap-1">
-                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            <button
-                                type="button"
-                                onClick={() => onReply(message)}
-                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-primary"
-                                title="Balas"
-                                aria-label="Balas pesan"
-                            >
-                                <CornerUpLeft className="h-4 w-4" />
-                            </button>
-                            <MessageActions
-                                messageId={message.id}
-                                isOwn={ownMessage}
-                                isDeleted={isDeleted}
-                                isPinned={isPinned}
-                                canPin={canPin}
-                                canEdit={canEdit && !isDeleted}
-                                onEdit={() => onEdit(message.id)}
-                                onDelete={() => onDelete(message.id)}
-                                onPin={() => onPin(message.id)}
-                                onUnpin={() => onUnpin(message.id)}
-                                onCopy={() => onCopy(message.content)}
-                            />
-                        </div>
-
+                    <div className={`flex items-center gap-1 ${ownMessage ? 'flex-row-reverse' : ''}`}>
                         <div
                             className={`rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 ${
                                 ownMessage
@@ -400,6 +396,77 @@ const MessageItem = memo(function MessageItem({
                                     Diedit
                                 </p>
                             )}
+                            {isAIMessage(message) && (message.intervention_type || message.guardrail_outcome || message.scaffolding_level) && (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                                    {message.intervention_type && (
+                                        <span
+                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                            style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
+                                            title={message.intervention_reason || message.guardrail_reason || undefined}
+                                        >
+                                            {message.intervention_type === 'scaffolding' ? 'Scaffolding' : message.intervention_type === 'redirection' ? 'Diarahkan' : message.intervention_type}
+                                        </span>
+                                    )}
+                                    {message.scaffolding_level && (
+                                        <span
+                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                            style={{ background: 'rgba(37,99,235,0.08)', color: '#1e40af', border: '1px solid rgba(37,99,235,0.15)' }}
+                                            title={`Level scaffolding: ${message.scaffolding_level}`}
+                                        >
+                                            AI membantu
+                                        </span>
+                                    )}
+                                    {!message.intervention_type && message.guardrail_outcome && (
+                                        <span
+                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                            style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
+                                            title={message.guardrail_reason || undefined}
+                                        >
+                                            Guardrail: {message.guardrail_outcome}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            {isAIMessage(message) && (message.citations?.length ?? 0) > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {message.citations!.map((cite) => (
+                                        <button
+                                            key={`${cite.course_material_id}-${cite.page ?? 0}-${cite.label ?? ''}`}
+                                            type="button"
+                                            onClick={() => onOpenCitation(cite)}
+                                            className="inline-flex max-w-full items-center rounded-full border px-2 py-0.5 text-[11px] font-medium text-brand-primary transition-colors hover:bg-[rgba(136,22,28,0.08)]"
+                                            style={{ borderColor: 'rgba(136,22,28,0.2)', background: 'rgba(255,255,255,0.6)' }}
+                                        >
+                                            <span className="truncate">{citationChipLabel(cite, materialIndex)}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button
+                                type="button"
+                                onClick={() => onReply(message)}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-primary"
+                                title="Balas"
+                                aria-label="Balas pesan"
+                            >
+                                <CornerUpLeft className="h-4 w-4" />
+                            </button>
+                            <MessageActions
+                                messageId={message.id}
+                                isOwn={ownMessage}
+                                isDeleted={isDeleted}
+                                isPinned={isPinned}
+                                canPin={canPin}
+                                canEdit={canEdit && !isDeleted}
+                                onEdit={() => onEdit(message.id)}
+                                onDelete={() => onDelete(message.id)}
+                                onPin={() => onPin(message.id)}
+                                onUnpin={() => onUnpin(message.id)}
+                                onCopy={() => onCopy(message.content)}
+                            />
                         </div>
                     </div>
                 )}
@@ -414,16 +481,27 @@ const MessageItem = memo(function MessageItem({
                 )}
 
                 {message.showTime && (
-                    <span className="mt-1 text-xs text-brand-muted-dark">
-                        {formatTime(message.created_at)}
-                    </span>
+                    <div className="mt-1 flex items-center gap-1.5">
+                        <span className="text-xs text-brand-muted-dark">
+                            {formatTime(message.created_at)}
+                        </span>
+                        <RelevanceBadge isRelevant={message.isRelevant} />
+                    </div>
                 )}
 
-                {ownMessage && (message.deliveryStatus === 'sending' || message.deliveryStatus === 'failed') && (
+                {ownMessage && message.deliveryStatus === 'sending' && (
+                    <div className="mt-1 text-xs text-brand-muted-dark">
+                        <span>Mengirim...</span>
+                    </div>
+                )}
+                {ownMessage && message.deliveryStatus === 'retrying' && (
+                    <div className="mt-1 text-xs text-brand-muted-dark">
+                        <span>Retrying...</span>
+                    </div>
+                )}
+                {ownMessage && message.deliveryStatus === 'failed' && (
                     <div className="mt-1 flex items-center gap-2 text-xs text-brand-muted-dark">
-                        <span>
-                            {message.deliveryStatus === 'sending' ? 'Mengirim...' : 'Gagal mengirim'}
-                        </span>
+                        <span>Gagal mengirim</span>
                         <button
                             type="button"
                             onClick={() => onRetry(message)}
@@ -453,8 +531,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const { auth } = usePage<SharedData>().props;
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
+    const confirmDeliveredRef = useRef<(clientId?: string) => Promise<void>>(async () => {});
     const hasGoal = !!chatSpace.myGoal;
     const goal = chatSpace.myGoal;
+    const [aiSummary, setAiSummary] = useState<null | { goalAchieved: boolean; topics: string[]; contributions: Record<string, number>; assessment: string }>(null);
+    const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+    const [showAiSummaryModal, setShowAiSummaryModal] = useState(false);
     const initialSessionClosed = isClosedChatSpace(chatSpace);
     const [sessionClosed, setSessionClosed] = useState(initialSessionClosed);
     const [, setSessionClosedAt] = useState<string | null>(chatSpace.closedAt || null);
@@ -462,11 +544,79 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         initialSessionClosed ? 'Sesi diskusi ini telah ditutup.' : null
     );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    const relevantCount = useMemo(() => messages.filter(m => m.isRelevant === true).length, [messages]);
+    const offTopicCount = useMemo(() => messages.filter(m => m.isRelevant === false).length, [messages]);
+    const discussionHealthScore = useMemo(() => {
+        if (!hasGoal || messages.length === 0) {
+            return 0;
+        }
+        const studentMessages = messages.filter(
+            (m) => m.senderType === 'student' || m.senderType === 'lecturer'
+        );
+        const total = studentMessages.length;
+        if (total === 0) {
+            return 0;
+        }
+        const relevant = studentMessages.filter((m) => m.isRelevant === true).length;
+        const relevanceRatio = relevant / total;
+        const contributions: Record<string, number> = {};
+        for (const m of studentMessages) {
+            const key = m.senderId || m.senderName || 'unknown';
+            contributions[key] = (contributions[key] || 0) + 1;
+        }
+        const counts = Object.values(contributions);
+        const n = counts.length;
+        let participationBalance = 1;
+        if (n > 1) {
+            const totalMsgs = counts.reduce((a, b) => a + b, 0);
+            let entropy = 0;
+            for (const c of counts) {
+                const p = c / totalMsgs;
+                if (p > 0) {
+                    entropy -= p * Math.log2(p);
+                }
+            }
+            const maxEntropy = Math.log2(n);
+            participationBalance = maxEntropy === 0 ? 1 : entropy / maxEntropy;
+        }
+        const goalProgress = Math.min(total / 20, 1);
+        const score =
+            relevanceRatio * 0.4 + participationBalance * 0.3 + goalProgress * 0.3;
+        return Math.round(score * 100);
+    }, [hasGoal, messages]);
     const [isInitialMessagesLoading, setIsInitialMessagesLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
+    const { clear: clearDraft } = useDraftAutosave(chatSpace.id, newMessage, setNewMessage);
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch(console.error);
     }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch(
+                    `/student/courses/${course.id}/chat-spaces/${chatSpace.id}/materials`,
+                    { headers: { Accept: 'application/json' }, credentials: 'same-origin' },
+                );
+                if (!res.ok || cancelled) {
+                    return;
+                }
+                const json = (await res.json()) as {
+                    primary: Array<{ material: MaterialIndexEntry }>;
+                    earlier: Array<{ material: MaterialIndexEntry }>;
+                };
+                if (!cancelled) {
+                    setMaterialIndex(buildMaterialIndexFromApi(json));
+                }
+            } catch {
+                void 0;
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [course.id, chatSpace.id]);
 
     // Fallback: stop loading skeleton after 5s even if socket doesn't report back
     useEffect(() => {
@@ -508,6 +658,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             });
         },
         onMessageReceived: (_display, raw) => {
+            void confirmDeliveredRef.current(raw.clientId);
             setMessages((prev) => reconcileIncomingMessage(prev, raw));
         },
         onMessageDeleted: (messageId) => {
@@ -542,6 +693,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         onMessageUnpinned: (messageId) => {
             removePinnedMessage(messageId);
         },
+        onMessageClassified: (classifications) => {
+            setMessages((prev) =>
+                prev.map((msg) => {
+                    const classification = classifications.find((c) => c.messageId === msg.id);
+                    return classification ? { ...msg, isRelevant: classification.isRelevant } : msg;
+                })
+            );
+        },
     });
 
     useEffect(() => {
@@ -575,6 +734,61 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         scrollToMessage: scrollToSearchResult,
         highlightMessageId: searchHighlightId,
     } = useMessageSearch({ conversationId: chatSpace.id });
+
+    // Client-side search for discussion session (chat space) messages.
+    // The server endpoint /api/chat/messages/search only queries ChatMessage rows by conversation_id
+    // (used by regular group/AI chats). Discussion sessions store messages as ChatLog (Mongo, keyed by chatSpaceId)
+    // and deliver them via socket history + realtime. Hence server search always returns 0 for chat spaces,
+    // even when "hai" etc. are visible in the live messages list.
+    // We filter the already-loaded `messages` state (includes AI welcome, user msgs, optimistic, history).
+    const [localSearchResults, setLocalSearchResults] = useState<any[]>([]);
+    const [localSearchTotal, setLocalSearchTotal] = useState(0);
+    const [localSearchActive, setLocalSearchActive] = useState(false);
+    const [localSearchLoading, setLocalSearchLoading] = useState(false);
+
+    const performLocalSearch = useCallback((query: string) => {
+        if (!query || query.trim().length < 2) {
+            clearLocalSearch();
+            return;
+        }
+        setLocalSearchLoading(true);
+        const q = query.trim();
+        const lower = q.toLowerCase();
+        const matches = messages.filter((m: DisplayMessage) =>
+            m.content && m.content.toLowerCase().includes(lower)
+        );
+        const mapped = matches.map((m: DisplayMessage) => {
+            const content = m.content || '';
+            const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const highlighted = content.replace(
+                new RegExp(`(${escaped})`, 'gi'),
+                '<mark class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">$1</mark>'
+            );
+            return {
+                id: m.id,
+                content,
+                highlighted_content: highlighted,
+                sender_name: m.sender_name || 'Unknown',
+                created_at: m.created_at,
+            };
+        });
+        setLocalSearchResults(mapped);
+        setLocalSearchTotal(mapped.length);
+        setLocalSearchActive(true);
+        setLocalSearchLoading(false);
+    }, [messages]);
+
+    const clearLocalSearch = useCallback(() => {
+        setLocalSearchResults([]);
+        setLocalSearchTotal(0);
+        setLocalSearchActive(false);
+        setLocalSearchLoading(false);
+    }, []);
+
+    const combinedClearSearch = useCallback(() => {
+        clearSearch();
+        clearLocalSearch();
+    }, [clearSearch]);
 
     const {
         pinnedMessages,
@@ -628,8 +842,16 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
     const [imageZoom, setImageZoom] = useState(1);
+    const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
+    const [materialIndex, setMaterialIndex] = useState<Map<string, MaterialIndexEntry>>(() => new Map());
+
+    const citedMaterials = useMemo(
+        () => aggregateCitedMaterials(messages, materialIndex),
+        [messages, materialIndex],
+    );
 
     const [showRightSidebar, setShowRightSidebar] = useState(false);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const isLoadingMoreRef = useRef(false);
@@ -705,17 +927,37 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         return `client-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     };
 
+    const { queueOrSend, confirmDelivered } = useOfflineQueue({
+        socketRef,
+        isConnected,
+        onMessageQueued: (clientId) => {
+            setMessages((prev) => markMessageSending(prev, clientId, 'sending', 0));
+        },
+        onMessageRetrying: (clientId, attempts) => {
+            setMessages((prev) => markMessageSending(prev, clientId, 'retrying', attempts));
+        },
+        onMessageFailed: (clientId, attempts) => {
+            setMessages((prev) => markMessageFailed(markMessageSending(prev, clientId, 'failed', Math.max(attempts - 1, 0)), clientId));
+        },
+    });
+
+    confirmDeliveredRef.current = confirmDelivered;
+
     const emitChatMessage = useCallback((message: DisplayMessage) => {
         if (!socketRef.current) {
             setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
-            return;
+            return Promise.resolve({ queued: false as const, attempts: 0 });
         }
-        socketRef.current.emit('send_message', toSocketPayload(message, {
-            roomId: chatSpace.id,
-            courseId: course.id,
-            groupId: group.id,
-        }));
-    }, [chatSpace.id, course.id, group.id, socketRef]);
+
+        return queueOrSend({
+            message,
+            payload: toSocketPayload(message, {
+                roomId: chatSpace.id,
+                courseId: course.id,
+                groupId: group.id,
+            }),
+        });
+    }, [chatSpace.id, course.id, group.id, queueOrSend, socketRef]);
 
     const clearTypingDebounceTimers = useCallback(() => {
         if (typingStartTimeoutRef.current) {
@@ -810,9 +1052,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         });
 
         setMessages((prev) => [...prev, optimisticMessage]);
-        emitChatMessage(optimisticMessage);
+        void emitChatMessage(optimisticMessage);
 
         setNewMessage('');
+        clearDraft();
         setReplyingTo(null);
         revokePendingFilePreviews(pendingFiles);
         setPendingFiles([]);
@@ -820,7 +1063,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     const handleRetryMessage = useCallback((message: DisplayMessage) => {
         const retryId = message.clientId || message.id;
-        setMessages((prev) => markMessageSending(prev, retryId));
+        setMessages((prev) => markMessageSending(prev, retryId, 'sending', 0));
 
         const retryMessage: DisplayMessage = {
             ...message,
@@ -828,9 +1071,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             id: retryId,
             deliveryStatus: 'sending',
             isOptimistic: true,
+            retryCount: 0,
         };
 
-        emitChatMessage(retryMessage);
+        void emitChatMessage(retryMessage);
     }, [emitChatMessage]);
     const filteredMembers = useMemo(() => {
         const filter = mentionFilter.toLowerCase();
@@ -1136,6 +1380,24 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         document.body.removeChild(link);
     }, []);
 
+    const openCitation = useCallback(
+        (cite: ChatCitation) => {
+            const meta = materialIndex.get(cite.course_material_id);
+            if (!meta) {
+                setToastMessage({ message: 'Materi sitasi belum tersedia di daftar minggu ini.', type: 'info' });
+                return;
+            }
+            const streamUrl = `/student/courses/${course.id}/materials/${meta.id}/stream?chatSpace=${encodeURIComponent(chatSpace.id)}`;
+            setDocumentViewer({
+                title: cite.label ?? meta.title,
+                fileName: meta.file_name,
+                streamUrl,
+                fileType: meta.file_type,
+            });
+        },
+        [materialIndex, course.id, chatSpace.id],
+    );
+
     // Handle keyboard for image preview
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -1179,6 +1441,37 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             focusFirstElement(rightSidebarRef.current);
         }
     }, [showRightSidebar]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        if (typeof window.visualViewport !== 'undefined') {
+            const viewport = window.visualViewport;
+            const handler = () => {
+                setKeyboardVisible(viewport.height < window.innerHeight * 0.8);
+            };
+
+            handler();
+            viewport.addEventListener('resize', handler);
+
+            return () => {
+                viewport.removeEventListener('resize', handler);
+            };
+        }
+
+        const handler = () => {
+            setKeyboardVisible(window.innerHeight < 500);
+        };
+
+        handler();
+        window.addEventListener('resize', handler);
+
+        return () => {
+            window.removeEventListener('resize', handler);
+        };
+    }, []);
 
     // Render message content with highlighted mentions and basic markdown
     const renderMessageContent = useCallback((content: string, mentions?: string[]) => {
@@ -1244,13 +1537,60 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     generatedAt: new Date().toISOString(),
                 });
             }
+
+            // Close the confirmation modal on successful session close.
+            // The socket 'session_closed' event will update the UI (setSessionClosed, show summary, etc.),
+            // but the local modal state must be cleared here.
+            setShowCloseConfirmModal(false);
+            restoreFocusToTrigger();
+
+            if (hasGoal && goal?.content) {
+                setAiSummaryLoading(true);
+                setShowAiSummaryModal(true);
+
+                const summaryMessages = messages.map((m) => ({
+                    content: m.content,
+                    senderName: m.sender_name || 'Unknown',
+                }));
+
+                const stats = {
+                    totalMessages: messages.length,
+                    participantCount: new Set(messages.map((m) => m.sender_id)).size,
+                };
+
+                fetch('/api/discussion-direction/summary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: summaryMessages,
+                        goal: goal.content,
+                        stats,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        if (data?.data) {
+                            setAiSummary(data.data);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Failed to generate AI summary', err);
+                    })
+                    .finally(() => {
+                        setAiSummaryLoading(false);
+                    });
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Gagal menutup sesi diskusi';
             showCloseError(message);
         } finally {
             setIsClosingSession(false);
         }
-    }, [sessionClosed, isClosingSession, course.id, chatSpace.id, showCloseError]);
+    }, [sessionClosed, isClosingSession, course.id, chatSpace.id, showCloseError, restoreFocusToTrigger, hasGoal, goal, messages, jwtToken]);
 
     const handleOpenCloseConfirmModal = useCallback(() => {
         if (sessionClosed || isClosingSession) return;
@@ -1348,6 +1688,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 content: newContent,
                 conversation_id: chatSpace.id,
                 old_content: message.content,
+                version: message.version ?? 0,
             });
 
             if (response.data.success) {
@@ -1356,7 +1697,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 setMessages((prev) =>
                     prev.map((msg) =>
                         msg.id === editingMessageId
-                            ? { ...msg, content: newContent, edited_at: response.data.data.edited_at }
+                            ? { ...msg, content: newContent, edited_at: response.data.data.edited_at, version: response.data.data.version }
                             : msg
                     )
                 );
@@ -1365,7 +1706,17 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 setToastMessage({ message: 'Pesan berhasil diedit', type: 'success' });
             }
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response?.data?.message) {
+            if (axios.isAxiosError(error) && error.response?.status === 409) {
+                const serverVersion = error.response.data.current_version;
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === editingMessageId
+                            ? { ...msg, version: serverVersion }
+                            : msg
+                    )
+                );
+                setToastMessage({ message: 'Pesan telah diedit oleh pihak lain. Silakan coba lagi.', type: 'error' });
+            } else if (axios.isAxiosError(error) && error.response?.data?.message) {
                 setToastMessage({ message: error.response.data.message, type: 'error' });
             } else {
                 setToastMessage({ message: 'Gagal mengedit pesan', type: 'error' });
@@ -1468,7 +1819,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 />
             )}
 
-            <div className="flex h-[calc(100vh-5rem)] min-h-0 gap-4 overflow-hidden sm:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)]">
+            <div className="flex h-[calc(100vh-5rem)] min-h-0 gap-4 overflow-hidden sm:h-[calc(100vh-6rem)] lg:h-[calc(100vh-5rem)]" style={{ paddingBottom: 'var(--safe-bottom)' }}>
                 {/* Main Chat Area */}
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     {/* Chat Header */}
@@ -1489,8 +1840,21 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         {group.name}
                                     </h2>
                                     <p className="truncate text-sm text-brand-muted-dark">
-                                        {course.name} • Diskusi
+                                        {chatSpace.name} • {course.name}
                                     </p>
+                                    {chatSpace.weekTitle && (
+                                        <p className="truncate text-xs font-medium text-brand-primary">
+                                            {chatSpace.weekIndex != null ? `Minggu ${chatSpace.weekIndex}: ` : ''}
+                                            {chatSpace.weekTitle}
+                                        </p>
+                                    )}
+                                    {hasGoal && messages.length > 0 && (
+                                        <p className="mt-1 text-xs text-brand-muted-dark">
+                                            <span className="text-green-600 font-medium">{relevantCount} Relevan</span>
+                                            {' • '}
+                                            <span className="text-red-600 font-medium">{offTopicCount} Off-topic</span>
+                                        </p>
+                                    )}
                                     {sessionClosed && (
                                         <span 
                                             className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
@@ -1508,11 +1872,11 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-2">
                                 <SearchBar
-                                    onSearch={performSearch}
-                                    onClear={clearSearch}
-                                    isSearching={searchIsLoading}
-                                    resultCount={searchTotalResults}
-                                    isActive={searchIsActive}
+                                    onSearch={performLocalSearch}
+                                    onClear={combinedClearSearch}
+                                    isSearching={localSearchLoading}
+                                    resultCount={localSearchTotal}
+                                    isActive={localSearchActive}
                                 />
                                 {/* Online Users Avatars - compact */}
                                 {isConnected && onlineUsers.length > 0 && (
@@ -1564,7 +1928,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                                         openRightSidebar(event.currentTarget);
                                     }}
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50 lg:hidden"
+                                    className="touch-target flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50 lg:hidden"
                                     style={{ background: 'rgba(255,255,255,0.4)' }}
                                     aria-label="Buka detail grup"
                                     aria-expanded={showRightSidebar}
@@ -1576,6 +1940,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         </div>
 
                     </LiquidGlassCard>
+
+                    {hasGoal && (
+                        <div className="mb-2 space-y-2">
+                            <DiscussionProgressBar messages={messages} learningGoal={goal?.content} />
+                            {messages.length > 0 && <HealthScoreCard score={discussionHealthScore} />}
+                        </div>
+                    )}
 
                     {isSummaryVisible && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
@@ -1593,15 +1964,15 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     />
 
                         <AnimatePresence>
-                            {searchIsActive && (
+                            {localSearchActive && (
                                 <SearchResults
-                                    results={searchResults}
-                                    hasMore={searchHasMore}
-                                    isLoading={searchIsLoading}
-                                    totalResults={searchTotalResults}
+                                    results={localSearchResults}
+                                    hasMore={false}
+                                    isLoading={localSearchLoading}
+                                    totalResults={localSearchTotal}
                                     onResultClick={scrollToSearchResult}
-                                    onLoadMore={loadMoreSearch}
-                                    onClose={clearSearch}
+                                    onLoadMore={() => {}}
+                                    onClose={combinedClearSearch}
                                 />
                             )}
                         </AnimatePresence>
@@ -1768,7 +2139,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 role="log"
                                 aria-live="polite"
                                 aria-label="Daftar pesan chat"
-                                className={`scrollbar-stable min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 ${isScrolling ? 'is-scrolling' : ''}`}
+                                className={`chat-messages-scroll scrollbar-stable min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 ${isScrolling ? 'is-scrolling' : ''}`}
+                                style={{ paddingBottom: keyboardVisible ? '8rem' : '5.5rem' }}
                             >
                                 <LayoutGroup>
                                     <div className="space-y-1">
@@ -1817,6 +2189,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                         onRetry={handleRetryMessage}
                                                         onOpenImagePreview={openImagePreview}
                                                         onDownloadAttachment={downloadImage}
+                                                        onOpenCitation={openCitation}
+                                                        materialIndex={materialIndex}
                                                         onEdit={handleEdit}
                                                         onPin={handlePin}
                                                         onUnpin={handleUnpin}
@@ -1879,7 +2253,14 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                             </div>
 
                             {/* Message Input */}
-                            <div className="mt-4 border-t border-white/50 pt-4">
+                            <div
+                                className="fixed inset-x-0 bottom-0 z-30 border-t border-white/50 bg-white/85 px-3 pt-3 pb-3 shadow-[0_-12px_32px_rgba(136,22,28,0.12)] backdrop-blur-xl md:static md:z-auto md:mt-4 md:border-t md:bg-transparent md:px-0 md:pt-4 md:pb-0 md:shadow-none"
+                                style={{
+                                    paddingBottom: `calc(var(--safe-bottom) + ${keyboardVisible ? '0.75rem' : '0.5rem'})`,
+                                    left: 'max(var(--safe-left), 0px)',
+                                    right: 'max(var(--safe-right), 0px)',
+                                }}
+                            >
                                 {/* Reply Preview */}
                                 <AnimatePresence>
                                     {replyingTo && (
@@ -1902,7 +2283,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             <button
                                                 type="button"
                                                 onClick={cancelReply}
-                                                className="ml-2 flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50"
+                                                className="touch-target ml-2 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-brand-muted-dark transition-colors hover:bg-white/50"
                                                 aria-label="Tutup"
                                             >
                                                 <X className="h-4 w-4" />
@@ -1934,7 +2315,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removePendingFile(pf.id)}
-                                                                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
+                                                                className="touch-target absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
                                                                 aria-label="Tutup"
                                                             >
                                                                 <X className="h-3 w-3" />
@@ -1952,7 +2333,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removePendingFile(pf.id)}
-                                                                className="ml-1 flex h-6 w-6 items-center justify-center rounded text-brand-muted-dark transition-colors hover:bg-white/50"
+                                                                className="touch-target ml-1 flex h-6 w-6 items-center justify-center rounded text-brand-muted-dark transition-colors hover:bg-white/50"
                                                                 aria-label="Tutup"
                                                             >
                                                                 <X className="h-4 w-4" />
@@ -1982,7 +2363,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                                     type="button"
                                                     onClick={() => insertMention(member)}
                                                     role="menuitem"
-                                                    className={`flex w-full items-center gap-2 px-3 py-2 text-left transition-colors ${
+                                                    className={`touch-target flex w-full items-center gap-2 px-3 py-2 text-left transition-colors ${
                                                         index === selectedMentionIndex
                                                             ? 'bg-[rgba(136,22,28,0.08)]'
                                                             : 'hover:bg-[rgba(107,114,128,0.08)]'
@@ -2046,7 +2427,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={!isConnected || sessionClosed}
-                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-brand-muted-dark transition-colors hover:border-brand-primary hover:text-brand-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="touch-target flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-brand-muted-dark transition-colors hover:border-brand-primary hover:text-brand-primary disabled:cursor-not-allowed disabled:opacity-50"
                                         style={{ background: 'rgba(255,255,255,0.5)' }}
                                         title={sessionClosed ? "Sesi telah ditutup" : "Lampirkan file"}
                                         aria-label="Lampirkan file"
@@ -2077,7 +2458,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     <button
                                         type="submit"
                                         disabled={(!newMessage.trim() && pendingFiles.length === 0) || !isConnected || isUploading || sessionClosed}
-                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-white transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4"
+                                        className="touch-target flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-white transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4"
                                         style={{
                                             background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
                                             boxShadow: '0 8px 32px rgba(136,22,28,0.4)',
@@ -2337,42 +2718,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         </div>
                     </LiquidGlassCard>
 
-                    {/* Shared Resources Section */}
-                    <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
-                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
-                            Sumber Daya Bersama
-                        </h3>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
-                                <div 
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold text-blue-600"
-                                    style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}
-                                >
-                                    DOC
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-brand-dark">
-                                        Panduan Mata Kuliah
-                                    </p>
-                                    <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
-                                <div 
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold text-green-600"
-                                    style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}
-                                >
-                                    PDF
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium text-brand-dark">
-                                        Template Tugas
-                                    </p>
-                                    <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
-                                </div>
-                            </div>
-                        </div>
-                    </LiquidGlassCard>
+                    <ChatWeekMaterialsPanel
+                        courseId={course.id}
+                        chatSpaceId={chatSpace.id}
+                        cited={citedMaterials}
+                        variant="card"
+                        onOpenDocument={(target) => setDocumentViewer(target)}
+                    />
                 </aside>
 
                 {/* Right Sidebar - Mobile Overlay */}
@@ -2401,6 +2753,9 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 className="fixed inset-y-0 right-0 z-50 w-72 overflow-y-auto border-l border-white/50 p-4 lg:hidden"
                                 style={{ 
                                     background: 'linear-gradient(135deg, #f5f0f0 0%, #e8e4f0 50%, #f0e8e8 100%)',
+                                    paddingTop: 'calc(var(--safe-top) + 1rem)',
+                                    paddingRight: 'calc(var(--safe-right) + 1rem)',
+                                    paddingBottom: 'calc(var(--safe-bottom) + 1rem)',
                                 }}
                             >
                                 {/* Close button */}
@@ -2409,7 +2764,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     <button
                                         type="button"
                                         onClick={closeRightSidebar}
-                                        className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
+                                        className="touch-target flex h-10 w-10 items-center justify-center rounded-xl text-brand-muted-dark transition-colors hover:bg-white/50"
                                         style={{ background: 'rgba(255,255,255,0.4)' }}
                                         aria-label="Tutup"
                                     >
@@ -2587,42 +2942,13 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     </div>
                                 </div>
 
-                                {/* Shared Resources Section */}
-                                <div>
-                                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
-                                        Sumber Daya Bersama
-                                    </h3>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
-                                            <div 
-                                                className="flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold text-blue-600"
-                                                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}
-                                            >
-                                                DOC
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-brand-dark">
-                                                    Panduan Mata Kuliah
-                                                </p>
-                                                <p className="text-xs text-brand-muted-dark">Dibagikan oleh dosen</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/30">
-                                            <div 
-                                                className="flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold text-green-600"
-                                                style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}
-                                            >
-                                                PDF
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-brand-dark">
-                                                    Template Tugas
-                                                </p>
-                                                <p className="text-xs text-brand-muted-dark">Ditambahkan 2 jam lalu</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ChatWeekMaterialsPanel
+                                    courseId={course.id}
+                                    chatSpaceId={chatSpace.id}
+                                    cited={citedMaterials}
+                                    variant="plain"
+                                    onOpenDocument={(target) => setDocumentViewer(target)}
+                                />
                             </motion.aside>
                         </>
                     )}
@@ -2951,6 +3277,24 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* AI Discussion Direction Summary Modal (NFR-USABILITY-04) */}
+            {showAiSummaryModal && (
+                <SessionSummaryModal
+                    goalAchieved={aiSummary?.goalAchieved ?? false}
+                    topics={aiSummary?.topics ?? []}
+                    contributions={aiSummary?.contributions ?? {}}
+                    assessment={aiSummary?.assessment ?? ''}
+                    isLoading={aiSummaryLoading}
+                    onClose={() => setShowAiSummaryModal(false)}
+                />
+            )}
+
+            <DocumentViewerModal
+                open={documentViewer !== null}
+                target={documentViewer}
+                onClose={() => setDocumentViewer(null)}
+            />
         </AppLayout>
     );
 }

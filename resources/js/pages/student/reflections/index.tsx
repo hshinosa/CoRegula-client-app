@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormEvent, useState, useMemo, useEffect, useCallback } from 'react';
-import { BookOpen, ChevronDown, Lightbulb, MessageSquare, Pencil, Plus, X, BarChart3, LayoutGrid } from 'lucide-react';
+import { BookOpen, ChevronDown, Lightbulb, MessageSquare, Pencil, Plus, X } from 'lucide-react';
 
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ReflectionSearchBar } from './components/ReflectionSearchBar';
 import { FilterChips } from './components/FilterChips';
 import { TemplatePanel } from './components/TemplatePanel';
-import { AnalyticsPanel } from './components/AnalyticsPanel';
+
 import { TagInput } from './components/TagInput';
 import { TagBadge } from './components/TagBadge';
 
@@ -120,7 +120,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     const safeCourses = courses ?? [];
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [expandedReflection, setExpandedReflection] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'reflections' | 'templates' | 'analytics'>('reflections');
+
     const [isInitialLoading, setIsInitialLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -257,7 +257,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     const handleTemplateSelect = (template: ReflectionTemplate) => {
         setData('content', template.content_template);
         setShowCreateModal(true);
-        setActiveTab('reflections');
     };
 
     const formatDate = (date?: string) => {
@@ -336,88 +335,35 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                 Lacak perjalanan pembelajaran Anda melalui refleksi sesi dan mingguan.
                             </p>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setActiveTab(activeTab === 'templates' ? 'reflections' : 'templates')}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
-                                style={{
-                                    background: activeTab === 'templates' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'templates' ? 'var(--color-brand-primary)' : 'var(--color-brand-muted-dark)',
-                                }}
-                            >
-                                <LayoutGrid className="h-4 w-4" />
-                                Template
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTab(activeTab === 'analytics' ? 'reflections' : 'analytics')}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
-                                style={{
-                                    background: activeTab === 'analytics' ? 'rgba(136,22,28,0.12)' : 'transparent',
-                                    color: activeTab === 'analytics' ? 'var(--color-brand-primary)' : 'var(--color-brand-muted-dark)',
-                                }}
-                            >
-                                <BarChart3 className="h-4 w-4" />
-                                Analitik
-                            </button>
-                            {safeReflections.length > 0 && (
-                                <PrimaryButton onClick={() => setShowCreateModal(true)}>
-                                    <Plus className="h-4 w-4" />
-                                    Refleksi Mingguan
-                                </PrimaryButton>
-                            )}
-                        </div>
+
                     </div>
                 </LiquidGlassCard>
 
-                {activeTab === 'templates' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                            <TemplatePanel onSelect={handleTemplateSelect} />
-                        </LiquidGlassCard>
-                    </motion.div>
-                )}
 
-                {activeTab === 'analytics' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                            <AnalyticsPanel />
-                        </LiquidGlassCard>
-                    </motion.div>
-                )}
 
-                {activeTab === 'reflections' && (
-                    <>
-                        <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
-                            <div className="space-y-3">
-                                <ReflectionSearchBar
-                                    value={searchQuery}
-                                    onChange={setSearchQuery}
-                                    onClear={() => setSearchQuery('')}
-                                />
-                                <FilterChips
-                                    selectedTags={selectedTags}
-                                    dateFrom={dateFrom}
-                                    dateTo={dateTo}
-                                    onToggleTag={toggleTag}
-                                    onDateFromChange={setDateFrom}
-                                    onDateToChange={setDateTo}
-                                    onClearAll={clearFilters}
-                                    availableTags={availableTags}
-                                />
-                            </div>
-                        </LiquidGlassCard>
 
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+
+                <LiquidGlassCard intensity="light" className="p-4" lightMode={true}>
+                    <div className="space-y-3">
+                        <ReflectionSearchBar
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            onClear={() => setSearchQuery('')}
+                        />
+                        <FilterChips
+                            selectedTags={selectedTags}
+                            dateFrom={dateFrom}
+                            dateTo={dateTo}
+                            onToggleTag={toggleTag}
+                            onDateFromChange={setDateFrom}
+                            onDateToChange={setDateTo}
+                            onClearAll={clearFilters}
+                            availableTags={availableTags}
+                        />
+                    </div>
+                </LiquidGlassCard>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                             <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
                                 <div className="flex items-start gap-4">
                                     <div
@@ -659,12 +605,10 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                         </div>
                                     </div>
                                 )}
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-            )}
+                             </div>
+                         )}
+                     </div>
+                 )}
 
             <AnimatePresence>
                 {showCreateModal && (

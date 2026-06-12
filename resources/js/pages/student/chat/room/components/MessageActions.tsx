@@ -98,7 +98,7 @@ export function MessageActions({
                         transition={{ duration: 0.15 }}
                         role="menu"
                         aria-label="Menu aksi pesan"
-                        className="absolute right-0 top-full z-50 mt-1 min-w-[160px] overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                        className={`absolute ${isOwn ? 'right-0' : 'left-0'} top-full z-50 mt-1 min-w-[160px] overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800`}
                     >
                         <button
                             role="menuitem"

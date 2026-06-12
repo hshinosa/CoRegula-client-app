@@ -7,7 +7,7 @@ interface SearchBarProps {
     placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Cari mata kuliah...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = 'Cari kelas...' }: SearchBarProps) {
     const [localValue, setLocalValue] = useState(value);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isInitialMount = useRef(true);
