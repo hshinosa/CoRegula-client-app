@@ -12,9 +12,13 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('chat_messages', function (Blueprint $table) {
-            $table->fullText('content');
-        });
+        try {
+            Schema::table('chat_messages', function (Blueprint $table) {
+                $table->fullText('content');
+            });
+        } catch (\Throwable) {
+            // Index may already exist from Prisma migration
+        }
     }
 
     public function down(): void
