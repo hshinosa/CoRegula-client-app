@@ -10,6 +10,7 @@ import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, Group } from '@/types';
 import student from '@/routes/student';
 import { room as chatRoom } from '@/routes/student/courses/chat';
+import { show as preReadShow } from '@/routes/student/chat-spaces/pre-read';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 
 interface ChatSpace {
@@ -17,6 +18,8 @@ interface ChatSpace {
     name: string;
     description?: string;
     isDefault: boolean;
+    weekTitle?: string | null;
+    weekIndex?: number | null;
 }
 
 interface Props {
@@ -58,7 +61,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
 
     const navItems = useStudentNav('goals', { courseId: course.id });
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, clearErrors } = useForm({
         chat_space_id: chatSpace?.id || '',
         content: '',
     });
@@ -96,13 +99,14 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        clearErrors();
         post(student.goals.store.url(), {
+            preserveScroll: true,
             onSuccess: () => {
-                // Redirect langsung ke chat room setelah set goal
                 if (chatSpace) {
                     router.visit(chatRoom.url({ course: course.id, chatSpace: chatSpace.id }));
                 } else {
-                    router.visit(student.courses.chatSpaces.url({ course: course.id }));
+                    router.visit(student.courses.show.url({ course: course.id }));
                 }
             },
         });
@@ -111,8 +115,8 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
     // Check if student has a group
     if (!group) {
         return (
-            <AppLayout title="Tetapkan Tujuan Pembelajaran" navItems={navItems}>
-                <Head title="Tetapkan Tujuan Pembelajaran" />
+            <AppLayout title="Tetapkan Tujuan Kelompok" navItems={navItems}>
+                <Head title="Tetapkan Tujuan Kelompok" />
                 <div className="relative mx-auto max-w-3xl">
                     <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={250} />
                     <motion.div
@@ -161,8 +165,8 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
     // Check if chat space exists
     if (!chatSpace) {
         return (
-            <AppLayout title="Tetapkan Tujuan Pembelajaran" navItems={navItems}>
-                <Head title="Tetapkan Tujuan Pembelajaran" />
+            <AppLayout title="Tetapkan Tujuan Kelompok" navItems={navItems}>
+                <Head title="Tetapkan Tujuan Kelompok" />
                 <div className="relative mx-auto max-w-3xl">
                     <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={250} />
                     <motion.div
@@ -191,7 +195,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                 Chat space yang Anda cari tidak ditemukan atau Anda tidak memiliki akses.
                             </p>
                             <Link
-                                href={student.courses.chatSpaces.url({ course: course.id })}
+                                href={student.courses.show.url({ course: course.id })}
                                 className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white transition-all"
                                 style={{ 
                                     background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -208,8 +212,8 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
     }
 
     return (
-        <AppLayout title="Tetapkan Tujuan Pembelajaran" navItems={navItems}>
-            <Head title="Tetapkan Tujuan Pembelajaran" />
+        <AppLayout title="Tetapkan Tujuan Kelompok" navItems={navItems}>
+            <Head title="Tetapkan Tujuan Kelompok" />
 
             <div className="relative mx-auto max-w-3xl">
                 {/* Background decorative blobs */}
@@ -223,7 +227,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <Link
-                            href={student.courses.chatSpaces.url({ course: course.id })}
+                            href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id })}
                             className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all"
                             style={{ 
                                 background: 'rgba(255,255,255,0.6)', 
@@ -232,17 +236,23 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                             }}
                         >
                             <ArrowLeft className="h-4 w-4" />
-                            Kembali ke Sesi Diskusi
+                            Kembali ke Pre-Read
                         </Link>
                         <h2 
                             className="text-2xl font-bold"
                             style={{ color: 'var(--color-brand-dark)' }}
                         >
-                            Tetapkan Tujuan Pembelajaran Anda
+                            Tetapkan Tujuan Kelompok
                         </h2>
                         <p className="mt-1 text-sm text-brand-muted-dark">
                             Untuk chat space: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{chatSpace.name}</span>
                         </p>
+                        {chatSpace.weekTitle && (
+                            <p className="mt-1 text-sm font-medium" style={{ color: 'var(--color-brand-primary)' }}>
+                                {chatSpace.weekIndex != null ? `Minggu ${chatSpace.weekIndex}: ` : ''}
+                                {chatSpace.weekTitle}
+                            </p>
+                        )}
                     </motion.div>
 
                     {/* Info Card */}
@@ -334,7 +344,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                 <div>
                                     <div className="flex items-center justify-between">
                                         <InputLabel htmlFor="content" required>
-                                            <span style={{ color: 'var(--color-brand-dark)' }}>Tujuan Pembelajaran Anda</span>
+                                            <span style={{ color: 'var(--color-brand-dark)' }}>Tujuan Kelompok</span>
                                         </InputLabel>
                                         {detectedLevel && (
                                             <span 
@@ -358,6 +368,14 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                         rows={4}
                                     />
                                     <InputError message={errors.content} />
+                                    {errors.content && (
+                                        <p
+                                            className="mt-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-900"
+                                            role="status"
+                                        >
+                                            Perbaiki tujuan sesuai petunjuk di atas, lalu kirim lagi. Draft Anda tetap tersimpan.
+                                        </p>
+                                    )}
                                     <p className="mt-1 text-xs text-brand-muted-dark">
                                         {data.content.length}/500 karakter
                                     </p>
@@ -398,7 +416,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
 
                                 <div className="flex gap-3 pt-4">
                                     <Link
-                                        href={student.courses.chatSpaces.url({ course: course.id })}
+                                        href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id })}
                                         className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all"
                                         style={{ 
                                             background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%)',
