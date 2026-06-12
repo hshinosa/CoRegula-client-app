@@ -222,7 +222,7 @@ export default function Register() {
                         </div>
 
                         <div className="pt-1">
-                            <PrimaryButton className="w-full justify-center" disabled={processing}>
+                            <PrimaryButton type="submit" className="w-full justify-center" disabled={processing}>
                                 {processing ? (
                                     <span className="flex items-center justify-center gap-2">
                                         <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">

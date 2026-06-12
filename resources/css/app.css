@@ -105,6 +105,10 @@ body.dark {
 
 :root,
 html {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
     --dm-bg: #E8EDF8;
     --dm-surface: rgba(255, 255, 255, 0.95);
     --dm-surface-solid: #ffffff;
@@ -125,6 +129,33 @@ html {
     --dm-sidebar-bg: rgba(255, 255, 255, 0.98);
     --dm-sidebar-divider: rgba(255, 255, 255, 0.5);
     --dm-sidebar-user-bg: rgba(255, 255, 255, 0.4);
+}
+
+* {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.touch-target {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+}
+
+button:active,
+a:active,
+[role="button"]:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
 }
 
 .dark {
@@ -507,3 +538,7 @@ html {
 .dark .focus\:ring-\[\#88161c\]\/20:focus { --tw-ring-color: rgba(248, 113, 113, 0.2) !important; }
 .dark .focus\:ring-\[\#88161c\]\/30:focus { --tw-ring-color: rgba(248, 113, 113, 0.3) !important; }
 .dark .focus\:border-\[\#88161c\]:focus { border-color: var(--dm-accent) !important; }
+
+.chat-messages-scroll {
+    overscroll-behavior: contain;
+}

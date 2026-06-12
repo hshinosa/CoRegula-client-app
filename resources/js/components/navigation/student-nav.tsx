@@ -43,7 +43,7 @@ type ActivePage = 'courses' | 'reflections' | 'ai-chat' | 'course-detail' | 'gro
 export function useStudentNav(activePage: ActivePage, context?: StudentNavContext): NavItem[] {
     const navItems: NavItem[] = [
         {
-            name: 'Mata Kuliah Saya',
+            name: 'Kelas Saya',
             href: student.courses.index.url(),
             icon: Icons.courses,
             active: ['courses', 'course-detail', 'groups', 'chat-spaces', 'chat-room', 'goals'].includes(activePage),
@@ -66,18 +66,21 @@ export function useStudentNav(activePage: ActivePage, context?: StudentNavContex
     if (context?.courseId && ['course-detail', 'groups', 'chat-spaces', 'chat-room', 'goals'].includes(activePage)) {
         navItems[0].subItems = [
             {
-                name: 'Semua Mata Kuliah',
+                name: 'Semua Kelas',
                 href: student.courses.index.url(),
             },
             {
                 name: 'Detail Kelas',
                 href: student.courses.show.url({ course: context.courseId }),
             },
-            {
-                name: 'Sesi Diskusi',
-                href: student.courses.chatSpaces.url({ course: context.courseId }),
-            },
         ];
+
+        if (context.groupId) {
+            navItems[0].subItems.push({
+                name: 'Kelompok Saya',
+                href: student.groups.show.url({ group: context.groupId }),
+            });
+        }
     }
 
     return navItems;

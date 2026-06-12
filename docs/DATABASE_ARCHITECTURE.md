@@ -57,6 +57,9 @@ DB_PASSWORD=123hshi
 
 | Table | Description |
 |-------|-------------|
+| `material_modules` | Legacy module cards (evolving to `course_weeks` per ADR 001) |
+| `course_materials` | Course material pool + files (Laravel-owned) |
+| `material_views` | Student material view tracking |
 | `password_reset_tokens` | Laravel password reset functionality |
 | `sessions` | Laravel session management |
 | `cache` | Laravel caching |
@@ -189,3 +192,4 @@ php artisan migrate
 3. **Use API calls for user data** - Don't query users table directly from Laravel
 4. **Test migrations in development** - Before running in production
 5. **Document schema changes** - Update this file when modifying tables
+6. **Course weeks / materials** - See `docs/adr/001-course-weeks-materials-architecture.md` (repo root) for week SoT, `ChatSpace.week_id`, and KB link contract

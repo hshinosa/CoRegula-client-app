@@ -5,6 +5,7 @@ import type {
     ChatDisplayMessage as DisplayMessage,
     ChatSocketMessage as SocketChatMessage,
 } from '@/types/chat';
+import { mapSocketToDisplayMessage } from '@/hooks/mapSocketDisplayMessage';
 
 export type { SocketChatMessage };
 
@@ -35,6 +36,7 @@ interface UseSocketRoomOptions {
     onMessageEdited?: (messageId: string, newContent: string, editedAt: string) => void;
     onMessagePinned?: (pinnedMessage: { messageId: string; conversationId: string; content: string; sender_name: string; pinned_at: string }) => void;
     onMessageUnpinned?: (messageId: string) => void;
+    onMessageClassified?: (classifications: Array<{ messageId: string; isRelevant: boolean }>) => void;
 }
 
 interface UseSocketRoomReturn {
@@ -69,6 +71,7 @@ export function useSocketRoom({
     onMessageEdited,
     onMessagePinned,
     onMessageUnpinned,
+    onMessageClassified,
 }: UseSocketRoomOptions): UseSocketRoomReturn {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -90,6 +93,7 @@ export function useSocketRoom({
     const onMessageEditedRef = useRef(onMessageEdited);
     const onMessagePinnedRef = useRef(onMessagePinned);
     const onMessageUnpinnedRef = useRef(onMessageUnpinned);
+    const onMessageClassifiedRef = useRef(onMessageClassified);
 
     onSessionClosedRef.current = onSessionClosed;
     onSessionReopenedRef.current = onSessionReopened;
@@ -100,6 +104,7 @@ export function useSocketRoom({
     onMessageEditedRef.current = onMessageEdited;
     onMessagePinnedRef.current = onMessagePinned;
     onMessageUnpinnedRef.current = onMessageUnpinned;
+    onMessageClassifiedRef.current = onMessageClassified;
 
     useEffect(() => {
         if (!jwtToken) return;
@@ -115,12 +120,35 @@ export function useSocketRoom({
             auth: { token: jwtToken },
             transports: ['polling', 'websocket'],
             reconnection: true,
-            reconnectionAttempts: 5,
+            reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,
+            reconnectionDelayMax: 30000,
+            randomizationFactor: 0.5,
         });
+
+        const handleVisibilityChange = () => {
+            if (!socketRef.current) {
+                return;
+            }
+
+            if (document.hidden) {
+                setConnectionStatus('disconnected');
+                setIsConnected(false);
+                socketRef.current.disconnect();
+                return;
+            }
+
+            if (!socketRef.current.connected) {
+                setConnectionStatus('reconnecting');
+                socketRef.current.connect();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         socketRef.current.on('connect', () => {
             setConnectionError(null);
+            setIsConnected(true);
             setConnectionStatus('connected');
             socketRef.current?.emit('join_room', { courseId, groupId, chatSpaceId });
             setTypingUsers([]);
@@ -131,6 +159,7 @@ export function useSocketRoom({
         });
 
         socketRef.current.on('reconnect', () => {
+            setIsConnected(true);
             setConnectionStatus('connected');
         });
 
@@ -176,41 +205,19 @@ export function useSocketRoom({
         });
 
         socketRef.current.on('chat_history', (data: { messages: SocketChatMessage[] }) => {
-            const historyMessages: DisplayMessage[] = data.messages.map((msg) => ({
-                id: msg.id,
-                sender_id: msg.senderId,
-                sender_type: msg.senderType,
-                sender_name: msg.senderName,
-                content: msg.content,
-                created_at: msg.createdAt,
-                is_intervention: msg.isIntervention,
-                reply_to: msg.replyTo,
-                attachments: msg.attachments,
-                mentions: msg.mentions,
-            }));
+            const historyMessages: DisplayMessage[] = data.messages.map(mapSocketToDisplayMessage);
             onMessagesLoadedRef.current?.(historyMessages);
         });
 
         socketRef.current.on('chat_history_page', (data: { messages: SocketChatMessage[]; hasMore: boolean }) => {
-            const pageMessages: DisplayMessage[] = data.messages.map((msg) => ({
-                id: msg.id,
-                sender_id: msg.senderId,
-                sender_type: msg.senderType,
-                sender_name: msg.senderName,
-                content: msg.content,
-                created_at: msg.createdAt,
-                is_intervention: msg.isIntervention,
-                reply_to: msg.replyTo,
-                attachments: msg.attachments,
-                mentions: msg.mentions,
-            }));
+            const pageMessages: DisplayMessage[] = data.messages.map(mapSocketToDisplayMessage);
             setHasMoreMessages(data.hasMore);
             onMessagesPageLoadedRef.current?.(pageMessages, data.hasMore);
         });
 
         socketRef.current.on('disconnect', () => {
             setIsConnected(false);
-            setConnectionStatus('reconnecting');
+            setConnectionStatus('disconnected');
         });
 
         socketRef.current.on('server_error', (data: { message: string }) => {
@@ -227,18 +234,7 @@ export function useSocketRoom({
         });
 
         socketRef.current.on('receive_message', (message: SocketChatMessage) => {
-            const displayMessage: DisplayMessage = {
-                id: message.id,
-                sender_id: message.senderId,
-                sender_type: message.senderType,
-                sender_name: message.senderName,
-                content: message.content,
-                created_at: message.createdAt,
-                is_intervention: message.isIntervention,
-                reply_to: message.replyTo,
-                attachments: message.attachments,
-                mentions: message.mentions,
-            };
+            const displayMessage = mapSocketToDisplayMessage(message);
             onMessageReceivedRef.current?.(displayMessage, message);
         });
 
@@ -258,6 +254,10 @@ export function useSocketRoom({
             onMessageUnpinnedRef.current?.(data.messageId);
         });
 
+        socketRef.current.on('message_classified', (data: { classifications: Array<{ messageId: string; isRelevant: boolean }> }) => {
+            onMessageClassifiedRef.current?.(data.classifications);
+        });
+
         socketRef.current.on('user_typing', (data: { userId: string; userName: string; isTyping: boolean }) => {
             setTypingUsers((prev) => {
                 if (data.isTyping) {
@@ -267,8 +267,8 @@ export function useSocketRoom({
             });
         });
 
-        socketRef.current.on('online_users', (data: { users: OnlineUser[] }) => {
-            setOnlineUsers(data.users);
+        socketRef.current.on('online_users', (data: { users: Array<{ userId: string; userName: string }> }) => {
+            setOnlineUsers((data.users || []).map((u) => ({ odId: u.userId, userName: u.userName })));
         });
 
         socketRef.current.on('user_joined', (data: { userId: string; userName: string }) => {
@@ -307,6 +307,7 @@ export function useSocketRoom({
         });
 
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (qualityTimerRef.current) {
                 clearTimeout(qualityTimerRef.current);
                 qualityTimerRef.current = null;
@@ -322,6 +323,7 @@ export function useSocketRoom({
             socketRef.current?.off('message_edited');
             socketRef.current?.off('message_pinned');
             socketRef.current?.off('message_unpinned');
+            socketRef.current?.off('message_classified');
             socketRef.current?.emit('leave_room', chatSpaceId);
             socketRef.current?.disconnect();
         };

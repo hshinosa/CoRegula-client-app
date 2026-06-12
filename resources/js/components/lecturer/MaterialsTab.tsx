@@ -174,14 +174,21 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
 
     return (
         <div className="space-y-6">
+            <div
+                className="rounded-2xl border border-amber-200/80 bg-amber-50/70 px-4 py-3 text-sm text-amber-950"
+                role="status"
+            >
+                Pengelolaan silabus per minggu pindah ke tab <strong>Minggu</strong>. Tab ini hanya untuk upload ke{' '}
+                <strong>pool materi</strong> dan arsip modul lama; assign ke minggu lakukan di tab Minggu.
+            </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
                         <BookOpen className="h-5 w-5" style={{ color: '#88161c' }} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold" style={headingStyle}>Materi Perkuliahan</h3>
-                        <p className={bodyTextClass}>{totalMaterials} materi · {totalViews} total views</p>
+                        <h3 className="text-lg font-semibold" style={headingStyle}>Pool materi (upload)</h3>
+                        <p className={bodyTextClass}>{totalMaterials} file · {totalViews} total views</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -266,14 +273,33 @@ export default function MaterialsTab({ courseId }: MaterialsTabProps) {
                             <input
                                 ref={fileInputRef}
                                 type="file"
-                                required
+                                accept=".pdf,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.zip"
                                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-brand-primary/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-primary"
+                                className="sr-only"
+                                tabIndex={-1}
+                                aria-hidden
                             />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-brand-primary/35 bg-white/70 px-4 py-4 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary/5"
+                            >
+                                <Upload className="h-4 w-4" />
+                                {uploadFile ? uploadFile.name : 'Pilih berkas (PDF, DOCX, …)'}
+                            </button>
+                            {!uploadFile && (
+                                <p className="mt-2 text-xs text-brand-muted-dark">
+                                    Isi judul materi lalu pilih file. Setelah upload, assign ke minggu di tab <strong>Minggu</strong>.
+                                </p>
+                            )}
                         </div>
                         <div className="flex gap-2 sm:col-span-2">
-                            <button type="submit" disabled={uploading} className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50">
-                                {uploading ? 'Mengunggah...' : 'Upload'}
+                            <button
+                                type="submit"
+                                disabled={uploading || !uploadFile || !uploadForm.title.trim()}
+                                className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {uploading ? 'Mengunggah...' : 'Upload ke pool'}
                             </button>
                             <button type="button" onClick={() => setShowUploadForm(false)} className="rounded-xl px-5 py-2.5 text-sm font-medium" style={glassPanelStyle}>
                                 Batal

@@ -1,11 +1,9 @@
-import { router } from '@inertiajs/react';
 import { BarChart3, BookOpen, CalendarCheck } from 'lucide-react';
-import { useState } from 'react';
 
 const tabs = [
     { id: 'aktivitas', label: 'Aktivitas', icon: BarChart3 },
     { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
-    { id: 'materials', label: 'Materials', icon: BookOpen },
+    { id: 'materi', label: 'Materi', icon: BookOpen },
 ] as const;
 
 export type TabId = (typeof tabs)[number]['id'];
@@ -18,7 +16,7 @@ interface CourseDetailTabsProps {
 
 export default function CourseDetailTabs({ courseId, activeTab, onTabChange }: CourseDetailTabsProps) {
     return (
-        <div className="flex gap-1 rounded-2xl p-1.5" style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.6)' }}>
+        <div className="flex flex-wrap gap-1 rounded-2xl p-1.5" style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.6)' }}>
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (

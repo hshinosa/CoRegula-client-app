@@ -465,7 +465,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={closeTemplateModal} className="flex-1">Cancel</SecondaryButton>
+                        <SecondaryButton onClick={closeTemplateModal} className="flex-1">Batal</SecondaryButton>
                         <PrimaryButton className="flex-1" disabled={templateProcessing}>
                             {templateProcessing ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Saving...</span> : 'Save Template'}
                         </PrimaryButton>
@@ -518,7 +518,7 @@ background: 'var(--dm-accent-bg)',
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={closeCreateCourseModal} className="flex-1">Cancel</SecondaryButton>
+                        <SecondaryButton onClick={closeCreateCourseModal} className="flex-1">Batal</SecondaryButton>
                         <PrimaryButton className="flex-1" disabled={createCourseProcessing}>
                             {createCourseProcessing ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Creating...</span> : 'Create Course'}
                         </PrimaryButton>

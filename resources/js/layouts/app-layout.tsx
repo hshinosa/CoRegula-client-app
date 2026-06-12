@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PropsWithChildren, useState, useMemo } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { Menu, Search, X } from 'lucide-react';
 
 import { SharedData } from '@/types';
@@ -11,6 +11,7 @@ import { KeyboardShortcutsHelpModal } from '@/components/ui/KeyboardShortcutsHel
 import ProfileDropdown from '@/components/ui/ProfileDropdown';
 import { useKeyboardShortcuts, KeyboardShortcutMap } from '@/hooks/useKeyboardShortcuts';
 import { useDarkMode } from '@/hooks/useDarkMode';
+import { useSwipe } from '@/hooks/useSwipe';
 import { adminShortcuts } from '@/config/shortcuts/admin';
 import { studentShortcuts } from '@/config/shortcuts/student';
 import { lecturerShortcuts } from '@/config/shortcuts/lecturer';
@@ -44,6 +45,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
     });
     const [searchOpen, setSearchOpen] = useState(false);
     const [helpOpen, setHelpOpen] = useState(false);
+    const [isMobileViewport, setIsMobileViewport] = useState(false);
 
     const user = authData?.user;
     void title;
@@ -62,6 +64,36 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
         setSearchOpen,
         helpOpen,
         setHelpOpen,
+    });
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 767px)');
+        const updateViewport = () => {
+            setIsMobileViewport(mediaQuery.matches);
+        };
+
+        updateViewport();
+        mediaQuery.addEventListener('change', updateViewport);
+
+        return () => {
+            mediaQuery.removeEventListener('change', updateViewport);
+        };
+    }, []);
+
+    const mainSwipeHandlers = useSwipe({
+        onSwipeRight: () => {
+            if (isMobileViewport && !sidebarOpen) {
+                setSidebarOpen(true);
+            }
+        },
+    });
+
+    const sidebarSwipeHandlers = useSwipe({
+        onSwipeLeft: () => {
+            if (isMobileViewport) {
+                setSidebarOpen(false);
+            }
+        },
     });
 
     const toggleExpanded = (itemName: string) => {
@@ -85,8 +117,9 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
             return (
                 <div key={item.name}>
                     <button
+                        type="button"
                         onClick={() => toggleExpanded(item.name)}
-                        className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                        className={`touch-target flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                             item.active
                                 ? 'text-[var(--dm-accent)]'
                                 : 'text-[var(--dm-text)] hover:text-[var(--dm-accent)]'
@@ -130,7 +163,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                             key={subItem.name}
                                             href={subItem.href}
                                             onClick={isMobile ? () => setSidebarOpen(false) : undefined}
-                                            className={`block rounded-lg px-3 py-2 text-sm transition-all ${
+                                            className={`touch-target block rounded-lg px-3 py-2 text-sm transition-all ${
                                                 isSubItemActive(subItem.href)
                                                     ? 'font-medium text-[var(--dm-accent)]'
                                                     : 'text-[var(--dm-text-secondary)] hover:text-[var(--dm-text)]'
@@ -152,7 +185,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                 key={item.name}
                 href={item.href}
                 onClick={isMobile ? () => setSidebarOpen(false) : undefined}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                className={`touch-target flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                     item.active
                         ? 'text-[var(--dm-accent)]'
                         : 'text-[var(--dm-text)] hover:text-[var(--dm-accent)]'
@@ -201,6 +234,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                     backdropFilter: 'blur(40px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                     borderRight: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(255, 255, 255, 0.5)',
+                    paddingLeft: 'var(--safe-left)',
                 }}
             >
                 <div className="flex h-full flex-col">
@@ -238,8 +272,9 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
 
                         {user?.role === 'admin' && (
                             <button
+                                type="button"
                                 onClick={() => setSearchOpen(true)}
-                                className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
+                                className="touch-target mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
                                 style={{
                                     background: 'rgba(136,22,28,0.04)',
                                     border: '1px solid rgba(136,22,28,0.08)',
@@ -310,6 +345,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
                             onClick={() => setSidebarOpen(false)}
+                            {...sidebarSwipeHandlers}
                             className="fixed inset-0 z-40 bg-black lg:hidden"
                         />
                         <motion.aside
@@ -317,12 +353,16 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             animate={{ x: 0 }}
                             exit={{ x: -288 }}
                             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+                            {...sidebarSwipeHandlers}
                             className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
                             style={{
                                 background: darkMode ? 'rgba(17, 17, 22, 0.98)' : 'rgba(255, 255, 255, 0.9)',
                                 backdropFilter: 'blur(40px) saturate(180%)',
                                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                                 borderRight: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(255, 255, 255, 0.5)',
+                                paddingLeft: 'var(--safe-left)',
+                                paddingTop: 'var(--safe-top)',
+                                paddingBottom: 'var(--safe-bottom)',
                             }}
                         >
                             <div className="flex h-full flex-col">
@@ -351,10 +391,11 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                             <p className="text-xs text-[var(--dm-text-secondary)]">Platform Kolaborasi</p>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => setSidebarOpen(false)}
-                                        className="rounded-lg p-2 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)]"
-                                    >
+                                     <button
+                                        type="button"
+                                         onClick={() => setSidebarOpen(false)}
+                                         className="touch-target rounded-lg p-2 text-[var(--dm-text-secondary)] hover:text-[var(--dm-accent)]"
+                                     >
                                         <X className="h-5 w-5" />
                                     </button>
                                 </div>
@@ -371,9 +412,10 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
                                     )}
 
                                     {user?.role === 'admin' && (
-                                        <button
-                                            onClick={() => { setSearchOpen(true); setSidebarOpen(false); }}
-                                            className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
+                                         <button
+                                             type="button"
+                                             onClick={() => { setSearchOpen(true); setSidebarOpen(false); }}
+                                             className="touch-target mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all text-brand-muted-dark hover:text-brand-primary"
                                             style={{
                                                 background: 'rgba(136,22,28,0.04)',
                                                 border: '1px solid rgba(136,22,28,0.08)',
@@ -429,40 +471,32 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
             </AnimatePresence>
 
             {/* Main Content */}
-            <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex flex-1 flex-col overflow-hidden" {...(isMobileViewport ? mainSwipeHandlers : {})}>
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 pb-6 sm:pb-8 lg:pb-12">
+                <main
+                    className="flex-1 overflow-y-auto p-3 pb-6 sm:p-4 sm:pb-8 lg:p-8 lg:pb-12"
+                    style={{
+                        paddingTop: 'max(var(--safe-top), 0.75rem)',
+                        paddingBottom: 'max(var(--safe-bottom), 1.5rem)',
+                        paddingLeft: 'max(var(--safe-left), 0.75rem)',
+                        paddingRight: 'max(var(--safe-right), 0.75rem)',
+                    }}
+                >
                     <div className="mb-4 flex items-center gap-2 lg:hidden">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[var(--dm-text)] transition-all"
-                            style={{
-                                background: 'var(--dm-surface-transparent)',
-                                border: `1px solid var(--dm-surface-transparent-strong)`,
-                                boxShadow: `0 2px 8px var(--dm-shadow)`,
-                            }}
-                        >
-                            <Menu className="h-5 w-5" />
-                            Menu
-                        </button>
-                        <button
-                            onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-brand-muted-dark transition-all"
-                            style={{
-                                background: 'var(--dm-surface-transparent)',
-                                border: `1px solid var(--dm-surface-transparent-strong)`,
-                            }}
-                        >
-                            <Search className="h-4 w-4" />
-                        </button>
-                        {user && (
-                            <ProfileDropdown
-                                user={{ name: user.name, email: user.email, role: user.role }}
-                                darkMode={darkMode}
-                                onToggleDarkMode={toggleDarkMode}
-                            />
-                        )}
-                    </div>
+                          <button
+                             type="button"
+                              onClick={() => setSidebarOpen(true)}
+                              className="touch-target flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[var(--dm-text)] transition-all"
+                              style={{
+                                  background: 'var(--dm-surface-transparent)',
+                                  border: `1px solid var(--dm-surface-transparent-strong)`,
+                                 boxShadow: `0 2px 8px var(--dm-shadow)`,
+                             }}
+                         >
+                             <Menu className="h-5 w-5" />
+                             Menu
+                         </button>
+                     </div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}

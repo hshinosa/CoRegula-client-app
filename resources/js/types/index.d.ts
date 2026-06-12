@@ -55,6 +55,13 @@ export interface Course {
     name: string;
     owner_id: string;
     join_code: string;
+    min_members_per_group?: number;
+    max_members_per_group?: number;
+    ai_guardrail_preset?: 'strict' | 'balanced' | 'relaxed';
+    ai_guardrail_allow_rewrite?: boolean;
+    ai_guardrail_allow_flag_only?: boolean;
+    ai_scaffolding_level?: 'early' | 'late' | 'auto';
+    ai_scaffolding_enabled?: boolean;
     semester?: string;
     academic_year?: string;
     engagement_count?: number;
@@ -101,6 +108,7 @@ export interface PaginatedResponse<T> {
 export interface KnowledgeBase {
     id: string;
     course_id?: string;
+    course_material_id?: string;
     file_name: string;
     file_url?: string;
     uploaded_by?: string;
@@ -500,6 +508,16 @@ export interface MaterialModule {
     sort_order: number;
     materials?: CourseMaterial[];
     created_at: string;
+}
+
+export interface CourseWeek {
+    id: string;
+    course_id: string;
+    week_index: number;
+    title: string;
+    sort_order?: number;
+    materials?: CourseMaterial[];
+    created_at?: string;
 }
 
 export interface CourseMaterial {

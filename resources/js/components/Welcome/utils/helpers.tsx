@@ -147,12 +147,14 @@ export function PrimaryButton({
     onClick,
     className = '',
     disabled = false,
+    type = 'button',
 }: {
     children: React.ReactNode;
     href?: string;
     onClick?: () => void;
     className?: string;
     disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
 }) {
     const ref = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
     const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -210,6 +212,10 @@ export function PrimaryButton({
     const isInternalLink = href && href.startsWith('/') && !href.startsWith('#');
     
     const handleClick = (e: React.MouseEvent) => {
+        if (disabled) {
+            e.preventDefault();
+            return;
+        }
         if (href && href.startsWith('#')) {
             e.preventDefault();
             document.getElementById(href.substring(1))?.scrollIntoView({ behavior: 'smooth' });
@@ -222,13 +228,13 @@ export function PrimaryButton({
         onClick: handleClick,
         style: baseStyle,
         className: `${className} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`,
-        onMouseMove: handleMouseMove,
-        onMouseEnter: () => setHovered(true),
+        onMouseMove: disabled ? undefined : handleMouseMove,
+        onMouseEnter: () => !disabled && setHovered(true),
         onMouseLeave: () => {
             setHovered(false);
             setPressed(false);
         },
-        onMouseDown: () => setPressed(true),
+        onMouseDown: () => !disabled && setPressed(true),
         onMouseUp: () => !disabled && setPressed(false),
         onFocus: () => setFocused(true),
         onBlur: () => {
@@ -254,7 +260,11 @@ export function PrimaryButton({
         return <a href={href} {...commonProps}>{content}</a>;
     }
     
-    return <button disabled={disabled} {...commonProps}>{content}</button>;
+    return (
+        <button type={type} disabled={disabled} {...commonProps}>
+            {content}
+        </button>
+    );
 }
 
 // Secondary CTA button (glass/transparent) with spotlight hover
@@ -265,6 +275,7 @@ export function SecondaryButton({
     lightMode = true,
     className = '',
     disabled = false,
+    type = 'button',
 }: {
     children: React.ReactNode;
     href?: string;
@@ -272,6 +283,7 @@ export function SecondaryButton({
     lightMode?: boolean;
     className?: string;
     disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
 }) {
     const ref = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
     const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -383,7 +395,11 @@ export function SecondaryButton({
         return <a href={href} {...commonProps}>{content}</a>;
     }
     
-    return <button disabled={disabled} {...commonProps}>{content}</button>;
+    return (
+        <button type={type} disabled={disabled} {...commonProps}>
+            {content}
+        </button>
+    );
 }
 
 // Hook to detect prefers-reduced-motion
@@ -506,6 +522,32 @@ export function LiquidGlassCard({
                     borderRadius: '24px',
                 }}
             />
+            {children}
+        </div>
+    );
+}
+
+// Solid white modal content card (single source of truth for confirmation / form modals)
+const whiteModalBaseStyle = {
+    background: '#ffffff',
+    border: '1px solid rgba(226,232,240,0.95)',
+    boxShadow: '0 28px 80px rgba(15,23,42,0.18)',
+} as const;
+
+export function WhiteModal({
+    children,
+    className = '',
+    ...props
+}: {
+    children: React.ReactNode;
+    className?: string;
+} & React.HTMLAttributes<HTMLDivElement>) {
+    return (
+        <div
+            className={`w-full rounded-3xl p-6 ${className}`}
+            style={whiteModalBaseStyle}
+            {...props}
+        >
             {children}
         </div>
     );

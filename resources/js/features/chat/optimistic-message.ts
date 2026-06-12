@@ -63,6 +63,13 @@ export function mapSocketMessageToDisplayMessage(message: ChatSocketMessage): Ch
     mentions: message.mentions ?? [],
     deliveryStatus: 'sent',
     isOptimistic: false,
+    guardrail_outcome: message.guardrailOutcome,
+    guardrail_reason: message.guardrailReason,
+    intervention_type: message.interventionType,
+    intervention_reason: message.interventionReason,
+    scaffolding_level: message.scaffoldingLevel,
+    is_relevant: message.isRelevant,
+    citations: message.citations,
   };
 }
 
@@ -92,8 +99,17 @@ export function markMessageFailed(list: ChatDisplayMessage[], clientId: string):
   );
 }
 
-export function markMessageSending(list: ChatDisplayMessage[], clientId: string): ChatDisplayMessage[] {
-  return list.map((m) => (m.clientId === clientId && m.isOptimistic ? { ...m, deliveryStatus: 'sending' } : m));
+export function markMessageSending(
+  list: ChatDisplayMessage[],
+  clientId: string,
+  deliveryStatus: ChatDisplayMessage['deliveryStatus'] = 'sending',
+  retryCount?: number,
+): ChatDisplayMessage[] {
+  return list.map((m) =>
+    m.clientId === clientId && m.isOptimistic
+      ? { ...m, deliveryStatus, ...(retryCount === undefined ? {} : { retryCount }) }
+      : m,
+  );
 }
 
 export function toSocketPayload(message: ChatDisplayMessage, context: SocketPayloadContext) {

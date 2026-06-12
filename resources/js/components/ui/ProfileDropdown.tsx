@@ -2,7 +2,6 @@ import { Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { LogOut, Moon, Settings, Sun, ChevronUp } from 'lucide-react';
 
-import NotificationCenter from '@/components/dashboard/NotificationCenter';
 import auth from '@/routes/auth';
 
 interface ProfileDropdownProps {
@@ -72,10 +71,6 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                             <p className="text-xs font-medium text-[var(--dm-text-muted)] uppercase tracking-wider">Akun</p>
                         </div>
 
-                        <div className="px-1.5 pb-1.5">
-                            <NotificationCenter />
-                        </div>
-
                         <button
                             type="button"
                             onClick={onToggleDarkMode}
@@ -96,7 +91,9 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                         </button>
 
                         <Link
-                            href="/settings/profile"
+                            href="/settings"
+                            as="button"
+                            onClick={() => setIsOpen(false)}
                             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--dm-text)] transition-colors"
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = 'var(--dm-surface-hover)';

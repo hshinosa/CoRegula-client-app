@@ -17,6 +17,9 @@ export interface ChatSpaceItem {
     name: string;
     description?: string;
     isDefault: boolean;
+    weekTitle?: string | null;
+    weekIndex?: number | null;
+    hasPreReadCompleted?: boolean;
     isClosed?: boolean;
     closedAt?: string;
     myGoal?: ChatSpaceGoal | null;
@@ -96,6 +99,13 @@ export function SpaceCard({ space, courseId, getChatSpaceUrl, index = 0 }: Space
                                     {space.description}
                                 </p>
                             )}
+
+                            {space.weekTitle ? (
+                                <p className="mt-1 text-xs font-medium" style={{ color: '#88161c' }}>
+                                    {space.weekIndex != null ? `Minggu ${space.weekIndex}: ` : ''}
+                                    {space.weekTitle}
+                                </p>
+                            ) : null}
 
                             <div className="mt-2">
                                 <ActivityPreview

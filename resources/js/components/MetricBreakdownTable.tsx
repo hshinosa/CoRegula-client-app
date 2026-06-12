@@ -8,6 +8,7 @@ interface MetricBreakdownTableProps {
     comparisonMetrics?: number[];
     comparisonLabel?: string;
     metricDefinitions?: Record<string, string>;
+    showDelta?: boolean;
 }
 
 const formatScore = (n: number) => n.toFixed(1);
@@ -31,6 +32,7 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
     comparisonMetrics,
     comparisonLabel,
     metricDefinitions,
+    showDelta = true,
 }) => {
     const showComparison = comparisonMetrics && comparisonMetrics.length === metrics.length;
 
@@ -50,9 +52,11 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
                                 {comparisonLabel ?? 'Pembanding'}
                             </th>
                         )}
-                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
-                            Δ vs Kelas
-                        </th>
+                        {showDelta && (
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
+                                Δ vs Kelas
+                            </th>
+                        )}
                     </tr>
                 </thead>
                 <tbody>
@@ -81,14 +85,16 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
                                         {formatScore(compValue)}
                                     </td>
                                 )}
-                                <td className="px-4 py-3 text-right">
-                                    <span
-                                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                                        style={{ color: tone.color, background: tone.background }}
-                                    >
-                                        {formatDelta(delta)}
-                                    </span>
-                                </td>
+                                {showDelta && (
+                                    <td className="px-4 py-3 text-right">
+                                        <span
+                                            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                                            style={{ color: tone.color, background: tone.background }}
+                                        >
+                                            {formatDelta(delta)}
+                                        </span>
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}

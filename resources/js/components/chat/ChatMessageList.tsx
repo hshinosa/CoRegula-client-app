@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ChatDisplayMessage } from '@/types/chat';
 import { sanitizeText } from '@/utils/sanitize';
+import { RelevanceBadge } from './RelevanceBadge';
 
 export type ChatMessage = ChatDisplayMessage;
 
@@ -86,6 +87,38 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                             >
                                 <p className="whitespace-pre-wrap break-words">{sanitizeText(message.content)}</p>
 
+                                {isAI && (message.intervention_type || message.guardrail_outcome || message.scaffolding_level) && (
+                                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                                        {message.intervention_type && (
+                                            <span
+                                                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                                style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
+                                                title={message.intervention_reason || message.guardrail_reason || undefined}
+                                            >
+                                                {message.intervention_type === 'scaffolding' ? 'Scaffolding' : message.intervention_type === 'redirection' ? 'Diarahkan' : message.intervention_type}
+                                            </span>
+                                        )}
+                                        {message.scaffolding_level && (
+                                            <span
+                                                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                                style={{ background: 'rgba(37,99,235,0.08)', color: '#1e40af', border: '1px solid rgba(37,99,235,0.15)' }}
+                                                title={`Level scaffolding: ${message.scaffolding_level}`}
+                                            >
+                                                AI membantu
+                                            </span>
+                                        )}
+                                        {!message.intervention_type && message.guardrail_outcome && (
+                                            <span
+                                                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                                style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
+                                                title={message.guardrail_reason || undefined}
+                                            >
+                                                Guardrail: {message.guardrail_outcome}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
                                 {message.attachments && message.attachments.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                         {message.attachments.map((att) => (
@@ -116,9 +149,12 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
                             <div className="mt-0.5 flex items-center gap-2">
                                 {message.showTime && (
-                                    <span className="text-xs text-gray-400">
-                                        {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
+                                    <>
+                                        <span className="text-xs text-gray-400">
+                                            {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        <RelevanceBadge isRelevant={message.isRelevant} />
+                                    </>
                                 )}
                                 {onReply && !isSystem && (
                                     <button

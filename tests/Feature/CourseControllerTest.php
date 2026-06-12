@@ -2,15 +2,35 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CourseControllerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Schema::dropIfExists('user_avatars');
+        Schema::create('user_avatars', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('user_id')->unique();
+            $table->string('original_path', 500)->nullable();
+            $table->string('thumbnail_path', 500)->nullable();
+            $table->string('medium_path', 500)->nullable();
+            $table->string('large_path', 500)->nullable();
+            $table->string('original_filename', 255)->nullable();
+            $table->string('mime_type', 50)->nullable();
+            $table->unsignedInteger('file_size')->default(0);
+            $table->timestamps();
+        });
+    }
+
     private function authenticatedSession(string $role = 'lecturer'): self
     {
         return $this->withSession([
-            'jwt' => 'test-token',
+            'jwt' => $this->createFakeJwt(['sub' => 'user-1']),
             'user' => [
                 'id' => 'user-1',
                 'name' => 'Test User',
@@ -79,7 +99,7 @@ class CourseControllerTest extends TestCase
                 && $request->method() === 'POST'
                 && $request['code'] === 'AI101'
                 && $request['name'] === 'AI Fundamentals'
-                && $request->hasHeader('Authorization', 'Bearer test-token');
+                && str_starts_with((string) $request->header('Authorization')[0] ?? '', 'Bearer ');
         });
     }
 
@@ -114,5 +134,36 @@ class CourseControllerTest extends TestCase
             ->component('lecturer/courses/index')
             ->where('courses', [])
         );
+    }
+
+    public function test_knowledge_base_index_returns_snake_case_rows(): void
+    {
+        Http::fake([
+            'http://localhost:3000/api/courses/course-1/knowledge-base' => Http::response([
+                'data' => [
+                    [
+                        'id' => 'kb-1',
+                        'courseMaterialId' => 'mat-99',
+                        'fileName' => 'slide.pdf',
+                        'fileSize' => 1024,
+                        'mimeType' => 'application/pdf',
+                        'vectorStatus' => 'ready',
+                        'uploadedAt' => '2026-06-01T00:00:00.000Z',
+                        'processedAt' => '2026-06-01T00:01:00.000Z',
+                        'errorMessage' => null,
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->authenticatedSession('lecturer')->getJson(
+            route('lecturer.courses.knowledge-base.index', 'course-1')
+        );
+
+        $response->assertOk();
+        $response->assertJsonPath('data.0.id', 'kb-1');
+        $response->assertJsonPath('data.0.file_name', 'slide.pdf');
+        $response->assertJsonPath('data.0.vector_status', 'ready');
+        $response->assertJsonPath('data.0.course_material_id', 'mat-99');
     }
 }

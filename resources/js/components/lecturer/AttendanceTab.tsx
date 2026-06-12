@@ -183,7 +183,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                         style={{ ...glassPanelStyle, color: '#4A4A4A' }}
                     >
                         <Download className="h-4 w-4" />
-                        Export CSV
+                        Export XES CSV
                     </button>
                     {viewMode === 'sessions' && (
                         <button

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('notifications_chat')->default(true);
             $table->boolean('notifications_groups')->default(true);
             $table->string('language', 10)->default('id');
-            $table->string('theme', 20)->default('system');
+            $table->string('theme', 20)->default('light');
             $table->string('font_size', 20)->default('normal');
             $table->timestamps();
 
