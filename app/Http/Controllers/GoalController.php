@@ -117,9 +117,33 @@ class GoalController extends Controller
         }
 
         try {
+            // Fetch week context from local MySQL if chat_space has weekId
+            $weekContext = null;
+            try {
+                $chatSpaceResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$validated['chat_space_id']}");
+                if ($chatSpaceResponse->successful()) {
+                    $chatSpaceData = $chatSpaceResponse->json('data');
+                    $weekId = $chatSpaceData['weekId'] ?? null;
+                    
+                    if ($weekId) {
+                        $week = \App\Models\CourseWeek::with('materials')->find($weekId);
+                        if ($week) {
+                            $weekContext = [
+                                'week_title' => $week->title,
+                                'week_index' => $week->week_index,
+                                'material_titles' => $week->materials->pluck('title')->toArray(),
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch week context', ['error' => $e->getMessage()]);
+            }
+
             $response = $this->apiRequest()->post($this->apiUrl() . '/api/goals', [
                 'chat_space_id' => $validated['chat_space_id'],
                 'content' => $validated['content'],
+                'week_context' => $weekContext,
             ]);
 
             if ($response->successful()) {
