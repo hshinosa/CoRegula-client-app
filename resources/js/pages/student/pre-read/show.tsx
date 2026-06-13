@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, ChevronDown, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, ChevronDown, FileText } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -186,8 +186,8 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                                     boxShadow: '0 8px 32px rgba(136,22,28,0.35)',
                                 }}
                             >
-                                <ArrowLeft className="h-4 w-4" />
-                                Kembali ke penetapan tujuan
+                                Lanjut ke penetapan tujuan
+                                <ArrowRight className="h-4 w-4" />
                             </Link>
                         </div>
                     ) : (
