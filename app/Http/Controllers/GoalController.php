@@ -167,8 +167,18 @@ class GoalController extends Controller
             Log::error('Goal creation failed', ['error' => $e->getMessage()]);
             return back()->withErrors(['content' => 'Unable to save goal']);
         } catch (RequestException $e) {
-            Log::error('Goal creation failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['content' => 'Unable to save goal']);
+            // Extract error message from core-api response
+            $response = $e->response;
+            $body = $response?->json() ?? [];
+            $message = $body['error']['message'] ?? $body['message'] ?? 'Failed to save goal';
+            $details = $body['error']['details'] ?? [];
+            $hint = is_array($details) ? ($details['socratic_hint'] ?? null) : null;
+            if (is_string($hint) && $hint !== '') {
+                $message = $hint;
+            }
+
+            Log::error('Goal creation failed', ['error' => $e->getMessage(), 'message' => $message]);
+            return back()->withInput()->withErrors(['content' => $message]);
         }
     }
 }
