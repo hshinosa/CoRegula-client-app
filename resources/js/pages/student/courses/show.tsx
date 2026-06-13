@@ -1,5 +1,4 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormEvent, useState, useMemo, useEffect } from 'react';
 import { MessageSquare, Check, KeyRound, Plus, Users, X, Search, ArrowUpDown } from 'lucide-react';
@@ -43,25 +42,8 @@ interface Props {
     sessions: ChatSpace[];
 }
 
-interface ReadingRecommendation {
-    knowledgeBaseId: string;
-    sourceTitle: string;
-    snippet: string;
-    rationale: string;
-    suggestedAction: string;
-    page?: number;
-    relevanceScore: number;
-}
-
 export default function StudentCourseShow({ course, myGroup, availableGroups, sessions }: Props) {
     const navItems = useStudentNav('course-detail', { courseId: course.id, groupId: myGroup?.id });
-    
-    // Recommendation state
-    const [topic, setTopic] = useState('');
-    const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
-    const [recommendationError, setRecommendationError] = useState('');
-    const [recommendationFallback, setRecommendationFallback] = useState<{ message: string; suggestedNextStep: string } | null>(null);
-    const [recommendations, setRecommendations] = useState<ReadingRecommendation[]>([]);
 
     // Modal state
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
@@ -121,35 +103,6 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
 
         return result;
     }, [sessions, sessionSearch, sessionSort]);
-
-    const handleRecommendationSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-        if (!topic.trim()) {
-            setRecommendationError('Masukkan topik yang ingin kamu dalami.');
-            return;
-        }
-
-        setIsLoadingRecommendations(true);
-        setRecommendationError('');
-
-        try {
-            const response = await axios.post(`/student/courses/${course.id}/reading-recommendations`, {
-                topic,
-                limit: 3,
-                source_scope: 'course_knowledge_base',
-            });
-
-            setRecommendations(response.data.recommendations ?? []);
-            setRecommendationFallback(response.data.fallback ?? null);
-        } catch (error: unknown) {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            setRecommendationError(axiosError.response?.data?.message ?? 'Gagal mengambil rekomendasi bacaan.');
-            setRecommendations([]);
-            setRecommendationFallback(null);
-        } finally {
-            setIsLoadingRecommendations(false);
-        }
-    };
 
     const handleCreateGroup = (e: FormEvent) => {
         e.preventDefault();
@@ -507,74 +460,6 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                         </LiquidGlassCard>
                     </motion.div>
                 )}
-
-                {/* Reading Recommendations */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                >
-                    <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-lg font-semibold text-brand-dark">Rekomendasi bacaan lanjutan</h3>
-                                <p className="mt-1 text-sm text-brand-muted-dark">
-                                    Masukkan topik dari materi kuliah ini, lalu Kolabri akan memilih bacaan relevan dari knowledge base course.
-                                </p>
-                            </div>
-
-                            <form onSubmit={handleRecommendationSubmit} className="flex flex-col gap-3 md:flex-row">
-                                <input
-                                    type="text"
-                                    value={topic}
-                                    onChange={(e) => setTopic(e.target.value)}
-                                    placeholder="Contoh: transformer, regresi linear, normalisasi data"
-                                    className="flex-1 rounded-2xl border border-white/50 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm outline-none"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoadingRecommendations}
-                                    className="rounded-2xl bg-brand-primary px-5 py-3 text-sm font-semibold text-white transition disabled:opacity-60"
-                                >
-                                    {isLoadingRecommendations ? 'Mencari...' : 'Cari rekomendasi'}
-                                </button>
-                            </form>
-
-                            {recommendationError && (
-                                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                                    {recommendationError}
-                                </div>
-                            )}
-
-                            {recommendationFallback && (
-                                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                                    <p className="font-medium">{recommendationFallback.message}</p>
-                                    <p className="mt-1">{recommendationFallback.suggestedNextStep}</p>
-                                </div>
-                            )}
-
-                            {recommendations.length > 0 && (
-                                <div className="grid gap-4">
-                                    {recommendations.map((item) => (
-                                        <div key={`${item.knowledgeBaseId}-${item.page ?? 'na'}`} className="rounded-3xl border border-white/50 bg-white/75 p-4 shadow-brand-sm">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <p className="text-sm font-semibold text-brand-dark">{item.sourceTitle}</p>
-                                                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-brand-muted-dark">
-                                                        Skor relevansi {item.relevanceScore.toFixed(2)}{item.page ? ` • Hal. ${item.page}` : ''}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <p className="mt-3 text-sm leading-6 text-brand-dark">{item.snippet}</p>
-                                            <p className="mt-3 text-sm text-brand-muted-dark"><span className="font-semibold text-brand-dark">Kenapa direkomendasikan:</span> {item.rationale}</p>
-                                            <p className="mt-2 text-sm text-brand-muted-dark"><span className="font-semibold text-brand-dark">Langkah berikutnya:</span> {item.suggestedAction}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </LiquidGlassCard>
-                </motion.div>
             </div>
 
             {/* Create Group Modal */}
