@@ -21,13 +21,13 @@ import { normalizeDroppedFile, useDragDrop } from '@/features/chat/useDragDrop';
 import { focusFirstElement, trapFocusWithin } from '@/lib/focus-management';
 import { Toast } from '@/components/chat/Toast';
 import { ConnectionBanner } from '@/components/chat/ConnectionBanner';
-import { DiscussionProgressBar } from '@/components/chat/DiscussionProgressBar';
-import { HealthScoreCard } from '@/components/chat/HealthScoreCard';
-import { RelevanceBadge } from '@/components/chat/RelevanceBadge';
 import { SessionSummaryModal } from '@/components/chat/SessionSummaryModal';
 import { ChatWeekMaterialsPanel } from '@/components/course/ChatWeekMaterialsPanel';
 import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
 import { ChatSkeleton } from '@/components/ui/skeletons';
+import ReactMarkdown from 'react-markdown';
+import { formatAiOutput } from '@/lib/formatAiOutput';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useOfflineQueue } from '@/features/chat/use-offline-queue';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import {
@@ -388,44 +388,19 @@ const MessageItem = memo(function MessageItem({
                                     : '1px solid rgba(255,255,255,0.5)',
                             }}
                         >
-                            <p className={`whitespace-pre-wrap text-sm ${isDeleted ? 'italic opacity-60' : ''}`}>
-                                {renderMessageContent(message.content, message.mentions)}
-                            </p>
+                            {(isAIMessage(message) || isBotMessage(message)) ? (
+                                <div className={`prose prose-sm max-w-none text-sm ${isDeleted ? 'italic opacity-60' : ''}`}>
+                                    <ReactMarkdown>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
+                                </div>
+                            ) : (
+                                <p className={`whitespace-pre-wrap text-sm ${isDeleted ? 'italic opacity-60' : ''}`}>
+                                    {renderMessageContent(message.content, message.mentions)}
+                                </p>
+                            )}
                             {message.edited_at && !isDeleted && (
                                 <p className="mt-0.5 text-[10px] opacity-50">
                                     Diedit
                                 </p>
-                            )}
-                            {isAIMessage(message) && (message.intervention_type || message.guardrail_outcome || message.scaffolding_level) && (
-                                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                                    {message.intervention_type && (
-                                        <span
-                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                                            style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
-                                            title={message.intervention_reason || message.guardrail_reason || undefined}
-                                        >
-                                            {message.intervention_type === 'scaffolding' ? 'Scaffolding' : message.intervention_type === 'redirection' ? 'Diarahkan' : message.intervention_type}
-                                        </span>
-                                    )}
-                                    {message.scaffolding_level && (
-                                        <span
-                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                                            style={{ background: 'rgba(37,99,235,0.08)', color: '#1e40af', border: '1px solid rgba(37,99,235,0.15)' }}
-                                            title={`Level scaffolding: ${message.scaffolding_level}`}
-                                        >
-                                            AI membantu
-                                        </span>
-                                    )}
-                                    {!message.intervention_type && message.guardrail_outcome && (
-                                        <span
-                                            className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                                            style={{ background: 'rgba(180,83,9,0.10)', color: '#92400e', border: '1px solid rgba(180,83,9,0.18)' }}
-                                            title={message.guardrail_reason || undefined}
-                                        >
-                                            Guardrail: {message.guardrail_outcome}
-                                        </span>
-                                    )}
-                                </div>
                             )}
                             {isAIMessage(message) && (message.citations?.length ?? 0) > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -485,7 +460,6 @@ const MessageItem = memo(function MessageItem({
                         <span className="text-xs text-brand-muted-dark">
                             {formatTime(message.created_at)}
                         </span>
-                        <RelevanceBadge isRelevant={message.isRelevant} />
                     </div>
                 )}
 
@@ -544,46 +518,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         initialSessionClosed ? 'Sesi diskusi ini telah ditutup.' : null
     );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
-    const relevantCount = useMemo(() => messages.filter(m => m.isRelevant === true).length, [messages]);
-    const offTopicCount = useMemo(() => messages.filter(m => m.isRelevant === false).length, [messages]);
-    const discussionHealthScore = useMemo(() => {
-        if (!hasGoal || messages.length === 0) {
-            return 0;
-        }
-        const studentMessages = messages.filter(
-            (m) => m.senderType === 'student' || m.senderType === 'lecturer'
-        );
-        const total = studentMessages.length;
-        if (total === 0) {
-            return 0;
-        }
-        const relevant = studentMessages.filter((m) => m.isRelevant === true).length;
-        const relevanceRatio = relevant / total;
-        const contributions: Record<string, number> = {};
-        for (const m of studentMessages) {
-            const key = m.senderId || m.senderName || 'unknown';
-            contributions[key] = (contributions[key] || 0) + 1;
-        }
-        const counts = Object.values(contributions);
-        const n = counts.length;
-        let participationBalance = 1;
-        if (n > 1) {
-            const totalMsgs = counts.reduce((a, b) => a + b, 0);
-            let entropy = 0;
-            for (const c of counts) {
-                const p = c / totalMsgs;
-                if (p > 0) {
-                    entropy -= p * Math.log2(p);
-                }
-            }
-            const maxEntropy = Math.log2(n);
-            participationBalance = maxEntropy === 0 ? 1 : entropy / maxEntropy;
-        }
-        const goalProgress = Math.min(total / 20, 1);
-        const score =
-            relevanceRatio * 0.4 + participationBalance * 0.3 + goalProgress * 0.3;
-        return Math.round(score * 100);
-    }, [hasGoal, messages]);
     const [isInitialMessagesLoading, setIsInitialMessagesLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const { clear: clearDraft } = useDraftAutosave(chatSpace.id, newMessage, setNewMessage);
@@ -1848,13 +1782,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             {chatSpace.weekTitle}
                                         </p>
                                     )}
-                                    {hasGoal && messages.length > 0 && (
-                                        <p className="mt-1 text-xs text-brand-muted-dark">
-                                            <span className="text-green-600 font-medium">{relevantCount} Relevan</span>
-                                            {' • '}
-                                            <span className="text-red-600 font-medium">{offTopicCount} Off-topic</span>
-                                        </p>
-                                    )}
                                     {sessionClosed && (
                                         <span 
                                             className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
@@ -1940,13 +1867,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                         </div>
 
                     </LiquidGlassCard>
-
-                    {hasGoal && (
-                        <div className="mb-2 space-y-2">
-                            <DiscussionProgressBar messages={messages} learningGoal={goal?.content} />
-                            {messages.length > 0 && <HealthScoreCard score={discussionHealthScore} />}
-                        </div>
-                    )}
 
                     {isSummaryVisible && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
