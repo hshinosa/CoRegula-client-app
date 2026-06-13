@@ -227,7 +227,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <Link
-                            href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id })}
+                            href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id }) + '?review=1'}
                             className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all"
                             style={{ 
                                 background: 'rgba(255,255,255,0.6)', 
@@ -416,7 +416,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
 
                                 <div className="flex gap-3 pt-4">
                                     <Link
-                                        href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id })}
+                                        href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id }) + '?review=1'}
                                         className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all"
                                         style={{ 
                                             background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%)',

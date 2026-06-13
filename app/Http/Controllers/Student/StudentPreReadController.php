@@ -7,6 +7,7 @@ use App\Services\WeekMaterialAccessService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,18 +18,20 @@ class StudentPreReadController extends Controller
         private readonly WeekMaterialAccessService $access
     ) {}
 
-    public function show(string $course, string $chatSpace): Response|RedirectResponse
+    public function show(Request $request, string $course, string $chatSpace): Response|RedirectResponse
     {
         $chat = $this->fetchChatSpace($chatSpace);
         if (! $chat) {
             abort(404, 'Chat space not found');
         }
 
-        if ($this->shouldSkipPreRead($chat)) {
+        $isReview = $request->boolean('review');
+
+        if (! $isReview && $this->shouldSkipPreRead($chat)) {
             return $this->redirectAfterPreRead($course, $chatSpace, $chat);
         }
 
-        if (! empty($chat['hasPreReadCompleted'])) {
+        if (! $isReview && ! empty($chat['hasPreReadCompleted'])) {
             return $this->redirectAfterPreRead($course, $chatSpace, $chat);
         }
 
@@ -80,6 +83,7 @@ class StudentPreReadController extends Controller
                 'groupId' => $chat['groupId'] ?? null,
             ],
             'materials' => $materialsPayload,
+            'isReview' => $isReview,
         ]);
     }
 

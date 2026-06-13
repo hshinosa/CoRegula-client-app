@@ -1,11 +1,12 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { BookOpen, ChevronDown, FileText } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronDown, FileText } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course } from '@/types';
+import student from '@/routes/student';
 import { LiquidGlassCard, PrimaryButton } from '@/components/Welcome/utils/helpers';
 import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
 
@@ -40,6 +41,7 @@ interface Props {
         earlier: MaterialRow[];
         message?: string | null;
     };
+    isReview?: boolean;
 }
 
 const headingStyle = { color: 'var(--color-brand-dark)' } as const;
@@ -51,7 +53,7 @@ function formatSize(bytes?: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function PreReadShow({ course, chatSpace, materials }: Props) {
+export default function PreReadShow({ course, chatSpace, materials, isReview }: Props) {
     const navItems = useStudentNav('course-detail', { courseId: course.id });
     const [earlierOpen, setEarlierOpen] = useState(false);
     const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
@@ -158,11 +160,30 @@ export default function PreReadShow({ course, chatSpace, materials }: Props) {
                         </section>
                     )}
 
-                    <form onSubmit={handleContinue}>
-                        <PrimaryButton type="submit" disabled={processing} className="w-full sm:w-auto">
-                            {processing ? 'Menyimpan...' : 'Lanjut ke tujuan pembelajaran'}
-                        </PrimaryButton>
-                    </form>
+                    {isReview ? (
+                        <div className="space-y-3">
+                            <p className="text-sm text-brand-muted-dark">
+                                Kamu sudah menyelesaikan pre-read untuk sesi ini.
+                            </p>
+                            <Link
+                                href={student.goals.create.url({ course: course.id, chatSpace: chatSpace.id })}
+                                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white transition-all"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
+                                    boxShadow: '0 8px 32px rgba(136,22,28,0.35)',
+                                }}
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                Kembali ke penetapan tujuan
+                            </Link>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleContinue}>
+                            <PrimaryButton type="submit" disabled={processing} className="w-full sm:w-auto">
+                                {processing ? 'Menyimpan...' : 'Lanjut ke tujuan pembelajaran'}
+                            </PrimaryButton>
+                        </form>
+                    )}
                 </motion.div>
             </div>
 
