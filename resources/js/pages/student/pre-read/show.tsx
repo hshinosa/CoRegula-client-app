@@ -58,6 +58,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
     const [earlierOpen, setEarlierOpen] = useState(false);
     const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
     const { post, processing, errors } = useForm({});
+    const formErrors = errors as Record<string, string>;
 
     const handleContinue = (e: FormEvent) => {
         e.preventDefault();
@@ -74,6 +75,18 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
 
             <div className="relative mx-auto max-w-3xl px-4 py-8">
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                    <Link
+                        href={student.courses.show.url({ course: course.id })}
+                        className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all"
+                        style={{
+                            background: 'rgba(255,255,255,0.6)',
+                            border: '1px solid rgba(255,255,255,0.8)',
+                            color: 'var(--color-brand-muted-dark)'
+                        }}
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Kembali ke Detail Kelas
+                    </Link>
                     <div className="mb-6 flex items-center gap-3">
                         <div
                             className="flex h-12 w-12 items-center justify-center rounded-xl"
@@ -105,8 +118,8 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                         <p className="mb-4 text-sm text-amber-700">{materials.message}</p>
                     )}
 
-                    {errors.pre_read && (
-                        <p className="mb-4 text-sm text-red-600">{errors.pre_read}</p>
+                    {formErrors.pre_read && (
+                        <p className="mb-4 text-sm text-red-600">{formErrors.pre_read}</p>
                     )}
 
                     <section className="mb-6">
