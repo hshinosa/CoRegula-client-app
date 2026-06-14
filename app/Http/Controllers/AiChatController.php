@@ -85,7 +85,7 @@ class AiChatController extends Controller
                 $chat = $response->json('data');
 
                 if ($request->wantsJson()) {
-                    return response()->json(['id' => $chat['id']]);
+                    return response()->json(['data' => $this->normalizeChat($chat)]);
                 }
 
                 if (!empty($validated['first_message'])) {
@@ -231,16 +231,32 @@ class AiChatController extends Controller
                     'Accept: text/event-stream',
                 ],
                 CURLOPT_RETURNTRANSFER => false,
-                CURLOPT_WRITEFUNCTION => function ($ch, $data) {
+                CURLOPT_WRITEFUNCTION => function ($curlHandle, $data) {
+                    if (! $curlHandle) {
+                        return 0;
+                    }
+
                     echo $data;
                     flush();
                     return strlen($data);
                 },
                 CURLOPT_TIMEOUT => 120,
+                CURLOPT_CONNECTTIMEOUT => 10,
             ]);
 
-            curl_exec($ch);
-            curl_close($ch);
+            $result = curl_exec($ch);
+
+            if ($result === false) {
+                $error = curl_error($ch);
+                $errno = curl_errno($ch);
+                Log::error('Stream proxy cURL failed', [
+                    'error' => $error, 
+                    'errno' => $errno, 
+                    'url' => $url,
+                ]);
+                echo "data: " . json_encode(['type' => 'error', 'content' => 'Stream connection failed: ' . $error]) . "\n\n";
+                flush();
+            }
         }, 200, [
             'Content-Type' => 'text/event-stream',
             'Cache-Control' => 'no-cache',
