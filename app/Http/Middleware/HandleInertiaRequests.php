@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\UserAvatar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -20,7 +21,7 @@ class HandleInertiaRequests extends Middleware
         $user = session('user');
         $avatarUrls = null;
 
-        if ($user && isset($user['id'])) {
+        if ($user && isset($user['id']) && Schema::hasTable('user_avatars')) {
             $avatar = UserAvatar::where('user_id', $user['id'])->first();
             if ($avatar) {
                 $avatarUrls = $avatar->getUrls();
