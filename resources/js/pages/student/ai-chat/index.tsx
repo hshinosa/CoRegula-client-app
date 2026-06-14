@@ -1,12 +1,15 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
+import { Bookmark, CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
 import { useStudentNav } from '@/components/navigation/student-nav';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { ChatSkeleton } from '@/components/ui/skeletons';
 import { AiMessage, SharedData } from '@/types';
@@ -14,8 +17,7 @@ import { usePage } from '@inertiajs/react';
 import { formatAiOutput } from '@/lib/formatAiOutput';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { SearchBar, BookmarkPanel, TemplatePanel } from './components';
-import { useAiChatSync } from '@/hooks/useAiChatSync';
+import { SearchBar, SavedMaterialsPanel } from './components';
 
 
 interface AiChat {
@@ -78,6 +80,8 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const [loadedMessages, setLoadedMessages] = useState<AiMessage[]>([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [streamingCitations, setStreamingCitations] = useState<Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>>([]);
+    const [savedMaterialIds, setSavedMaterialIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!activeChat?.id) {
@@ -94,80 +98,28 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     }, [activeChat?.id]);
     const [editingChatId, setEditingChatId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!activeChat?.id) {
-            setBookmarkedMessageIds(new Set());
-            return;
-        }
+    const [savedMaterialsPanelOpen, setSavedMaterialsPanelOpen] = useState(false);
 
-        const messageIds = loadedMessages.map((m) => m.id);
-        if (messageIds.length === 0) return;
-
-        fetch('/ai-chat/bookmarks/check', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message_ids: messageIds }),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.data) {
-                    setBookmarkedMessageIds(new Set(data.data));
-                }
-            })
-            .catch(() => {});
-    }, [activeChat?.id, loadedMessages]);
-
-    const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false);
-    const [templatePanelOpen, setTemplatePanelOpen] = useState(false);
-    const [bookmarkedMessageIds, setBookmarkedMessageIds] = useState<Set<string>>(new Set());
-    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
-
-    const { broadcast } = useAiChatSync({
-        onBookmarkToggled: (messageId, bookmarked) => {
-            setBookmarkedMessageIds((prev) => {
+    const handleSaveMaterial = useCallback(async (courseMaterialId: string) => {
+        try {
+            const resp = await fetch('/student/ai-chat/saved-materials/toggle', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courseMaterialId }),
+            });
+            if (!resp.ok) return;
+            const { saved } = await resp.json() as { saved: boolean };
+            setSavedMaterialIds((prev) => {
                 const next = new Set(prev);
-                if (bookmarked) {
-                    next.add(messageId);
+                if (saved) {
+                    next.add(courseMaterialId);
                 } else {
-                    next.delete(messageId);
+                    next.delete(courseMaterialId);
                 }
                 return next;
             });
-        },
-        onTemplateUpdated: () => {
-            if (templatePanelOpen) {
-                router.reload({ only: [] });
-            }
-        },
-        onTemplateDeleted: () => {
-            if (templatePanelOpen) {
-                router.reload({ only: [] });
-            }
-        },
-    });
-
-    const handleBookmarkToggle = useCallback((messageId: string, bookmarked: boolean) => {
-        setBookmarkedMessageIds((prev) => {
-            const next = new Set(prev);
-            if (bookmarked) {
-                next.add(messageId);
-            } else {
-                next.delete(messageId);
-            }
-            return next;
-        });
-        broadcast({ type: 'bookmark:toggled', messageId, bookmarked });
-    }, [broadcast]);
-
-    const handleNavigateToMessage = useCallback((conversationId: string, messageId: string) => {
-        setBookmarkPanelOpen(false);
-        router.visit(student.aiChat.show.url({ chat: conversationId }), {
-            onSuccess: () => {
-                setHighlightedMessageId(messageId);
-                setTimeout(() => setHighlightedMessageId(null), 3000);
-            },
-        });
+        } catch { /* ignore */ }
     }, []);
 
     const handleSearchSelect = useCallback((chatId: string) => {
@@ -269,7 +221,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         };
     }, []);
 
-    const readStream = async (resp: Response, onChunk: (text: string) => void) => {
+    const readStream = async (resp: Response, onChunk: (text: string) => void, onCitations?: (citations: Array<{ source: string; page?: number; snippet?: string }>) => void) => {
         if (!resp.body) return;
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
@@ -285,6 +237,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 if (payload === '[DONE]') continue;
                 try {
                     const parsed = JSON.parse(payload);
+                    if (parsed.type === 'citations' && parsed.citations && onCitations) {
+                        onCitations(parsed.citations);
+                        continue;
+                    }
                     if (parsed.content) {
                         accumulated += parsed.content;
                         onChunk(accumulated);
@@ -323,9 +279,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setIsStreaming(true);
         setStreamingContent('');
         setDisplayedStreamingContent('');
+        setStreamingCitations([]);
 
         try {
-            const resp = await fetch(`/ai-chat/${chatId}/messages/stream`, {
+            const resp = await fetch(`/student/ai-chat/${chatId}/messages/stream`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
@@ -342,6 +299,8 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             await readStream(resp, (text) => {
                 finalText = text;
                 setStreamingContent(text);
+            }, (citations) => {
+                setStreamingCitations(citations);
             });
 
             await waitForRevealToCatchUp(finalText);
@@ -378,9 +337,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setIsStreaming(true);
         setStreamingContent('');
         setDisplayedStreamingContent('');
+        setStreamingCitations([]);
 
         try {
-            const createResp = await fetch('/ai-chat', {
+            const createResp = await fetch('/student/ai-chat', {
                 method: 'POST',
                 credentials: 'include',
                 headers: apiHeaders,
@@ -396,7 +356,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             const { data: newChat } = await createResp.json();
             const chatId = newChat.id;
 
-            const streamResp = await fetch(`/ai-chat/${chatId}/messages/stream`, {
+            const streamResp = await fetch(`/student/ai-chat/${chatId}/messages/stream`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
@@ -414,6 +374,8 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             await readStream(streamResp, (text) => {
                 finalText = text;
                 setStreamingContent(text);
+            }, (citations) => {
+                setStreamingCitations(citations);
             });
 
             await waitForRevealToCatchUp(finalText);
@@ -545,9 +507,12 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         });
     };
 
+    const breadcrumbItems = [{ label: 'Chat dengan AI' }];
+
     return (
         <AppLayout title="Chat dengan AI" navItems={navItems}>
             <Head title="Chat dengan AI" />
+            <Breadcrumbs items={breadcrumbItems} />
 
             <div className="flex h-[calc(100vh-100px)] flex-col">
                 <div className="flex items-center justify-end mb-3 gap-2">
@@ -595,7 +560,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             id={`message-${message.id}`}
-                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''} ${highlightedMessageId === message.id ? 'ring-2 ring-brand-primary/30 rounded-2xl bg-brand-primary/5 -mx-2 px-2 py-1 transition-all duration-500' : ''}`}
+                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                                         >
                                             <div
                                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
@@ -629,8 +594,8 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                 }}
                                             >
                                                 {message.role === 'assistant' ? (
-                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
-                                                        <ReactMarkdown>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
+                                                    <div className="prose prose-sm max-w-none max-h-[60vh] overflow-y-auto text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1">
+                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm whitespace-pre-wrap leading-7 text-white">
@@ -651,14 +616,58 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             </div>
                                             <div className="max-w-[84%] rounded-[24px] px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.82)', boxShadow: '0 12px 26px rgba(148,163,184,0.10)' }}>
                                                 {displayedStreamingContent ? (
-                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3">
-                                                        <ReactMarkdown>{sanitizeHtml(formatAiOutput(displayedStreamingContent))}</ReactMarkdown>
+                                                    <div className="prose prose-sm max-w-none max-h-[60vh] overflow-y-auto text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1">
+                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeHtml(formatAiOutput(displayedStreamingContent))}</ReactMarkdown>
                                                     </div>
                                                 ) : (
                                                     <div className="flex gap-1 py-1">
                                                         <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '0ms' }} />
                                                         <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '150ms' }} />
                                                         <span className="h-2 w-2 animate-bounce rounded-full bg-brand-muted-dark" style={{ animationDelay: '300ms' }} />
+                                                    </div>
+                                                )}
+                                                {streamingCitations.length > 0 && (
+                                                    <div className="mt-2 border-t border-gray-200 pt-2">
+                                                        <p className="mb-1 text-xs font-medium text-[#6B7280]">Sumber referensi:</p>
+                                                        <div className="space-y-1">
+                                                            {streamingCitations.map((c, i) => {
+                                                                const docUrl = c.course_id && c.course_material_id
+                                                                    ? `/courses/${c.course_id}/materials/${c.course_material_id}/stream`
+                                                                    : null;
+                                                                const isSaved = c.course_material_id ? savedMaterialIds.has(c.course_material_id) : false;
+
+                                                                return (
+                                                                    <div key={i} className="flex items-center gap-1">
+                                                                        {docUrl ? (
+                                                                            <a
+                                                                                href={docUrl}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-brand-primary hover:bg-brand-primary/10 transition-colors"
+                                                                            >
+                                                                                <FileText className="h-2.5 w-2.5" />
+                                                                                {c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-[#4B5563]">
+                                                                                <FileText className="h-2.5 w-2.5" />
+                                                                                {c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                                                                            </span>
+                                                                        )}
+                                                                        {c.course_material_id && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => handleSaveMaterial(c.course_material_id!)}
+                                                                                className="flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:bg-brand-primary/10"
+                                                                                title={isSaved ? 'Hapus dari simpanan' : 'Simpan materi ini'}
+                                                                            >
+                                                                                <Bookmark className={`h-2.5 w-2.5 ${isSaved ? 'fill-brand-primary text-brand-primary' : 'text-[#9CA3AF]'}`} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 )}
                                                 {displayedStreamingContent ? null : (
@@ -750,11 +759,11 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setTemplatePanelOpen(true)}
+                                            onClick={() => setSavedMaterialsPanelOpen(true)}
                                             className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-brand-muted-dark transition-colors hover:bg-[#f3f4f6] hover:text-brand-primary"
-                                            title="Pilih template"
+                                            title="Materi tersimpan"
                                         >
-                                            <FileText className="h-4.5 w-4.5" />
+                                            <Bookmark className="h-4.5 w-4.5" />
                                         </button>
                                         <textarea
                                             ref={inputRef}
@@ -1008,27 +1017,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 )}
             </AnimatePresence>
 
-            <BookmarkPanel
-                isOpen={bookmarkPanelOpen}
-                onClose={() => setBookmarkPanelOpen(false)}
-                onNavigateToMessage={handleNavigateToMessage}
-                onBookmarkDeleted={(bookmarkId) => {
-                    broadcast({ type: 'bookmark:deleted', bookmarkId });
-                }}
-            />
-
-            <TemplatePanel
-                isOpen={templatePanelOpen}
-                onClose={() => setTemplatePanelOpen(false)}
-                onSelectTemplate={(promptBody) => {
-                    setInputValue(promptBody);
-                    requestAnimationFrame(() => {
-                        inputRef.current?.focus({ preventScroll: true });
-                    });
-                }}
-                onTemplateCreated={(templateId) => broadcast({ type: 'template:created', templateId })}
-                onTemplateUpdated={(templateId) => broadcast({ type: 'template:updated', templateId })}
-                onTemplateDeleted={(templateId) => broadcast({ type: 'template:deleted', templateId })}
+            <SavedMaterialsPanel
+                isOpen={savedMaterialsPanelOpen}
+                onClose={() => setSavedMaterialsPanelOpen(false)}
             />
         </AppLayout>
     );

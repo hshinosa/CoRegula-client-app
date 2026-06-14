@@ -38,7 +38,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
             if (searchQuery) params.set('q', searchQuery);
             if (bookmarkedOnly) params.set('bookmarked', 'true');
 
-            const response = await fetch(`/ai-chat/search?${params.toString()}`, {
+            const response = await fetch(`/student/ai-chat/search?${params.toString()}`, {
                 credentials: 'include',
             });
 
