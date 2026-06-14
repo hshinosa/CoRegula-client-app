@@ -512,8 +512,8 @@ HTML;
     {
         $apiBaseUrl = rtrim(config('services.api.base_url', 'http://localhost:3000'), '/');
         $credentials = [
-            ['email' => 'budi.santoso@univ.ac.id', 'password' => 'password123'],
-            ['email' => 'siti.rahayu@univ.ac.id', 'password' => 'password123'],
+            ['email' => 'lecturer@kolabri.edu', 'password' => 'password123'],
+            ['email' => 'sari@kolabri.edu', 'password' => 'password123'],
         ];
 
         CourseWeekMaterial::query()->delete();

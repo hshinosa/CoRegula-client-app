@@ -15,7 +15,7 @@ class AttendanceDemoSeeder extends Seeder
         $apiBaseUrl = rtrim(config('services.api.base_url', 'http://localhost:3000'), '/');
 
         $loginResponse = Http::post($apiBaseUrl . '/api/auth/login', [
-            'email' => 'budi.santoso@univ.ac.id',
+            'email' => 'lecturer@kolabri.edu',
             'password' => 'password123',
         ]);
 

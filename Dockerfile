@@ -94,8 +94,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application from vendor stage
-COPY --from=vendor /app /var/www/html
+# Copy application from frontend stage (includes Vite build assets)
+COPY --from=frontend /app /var/www/html
 
 # Copy nginx and supervisor configs
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
