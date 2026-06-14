@@ -9,6 +9,7 @@ import { InputLabel } from '@/components/ui/input-label';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { Course, Reflection, ReflectionTemplate } from '@/types';
 import { Skeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -289,9 +290,12 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
 
     const hasActiveFilters = searchQuery || selectedTags.length > 0 || dateFrom || dateTo;
 
+    const breadcrumbItems = [{ label: 'Refleksi Saya' }];
+
     return (
         <AppLayout title="Refleksi Saya" navItems={navItems}>
             <Head title="Refleksi Saya" />
+            <Breadcrumbs items={breadcrumbItems} />
 
             {isInitialLoading ? (
                 <div className="space-y-6">

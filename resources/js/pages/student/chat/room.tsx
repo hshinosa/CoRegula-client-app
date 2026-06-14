@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, SharedData } from '@/types';
 import student from '@/routes/student';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
@@ -1741,9 +1742,17 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     // Injected helpers for sending messages exist in the early block; remove the duplicate here
 
+    const breadcrumbItems = [
+        { label: 'Kelas', href: student.courses.index.url() },
+        { label: course.name, href: student.courses.show.url(course.id) },
+        { label: group.name, href: student.groups.show.url(group.id) },
+        { label: chatSpace.name },
+    ];
+
     return (
         <AppLayout title={`${chatSpace.name} - ${group.name}`} navItems={navItems}>
             <Head title={`${chatSpace.name} - ${course.name}`} />
+            <Breadcrumbs items={breadcrumbItems} />
             <ConnectionBanner status={connectionStatus} />
             {toastMessage && (
                 <Toast

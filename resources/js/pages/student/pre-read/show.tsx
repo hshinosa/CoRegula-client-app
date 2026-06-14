@@ -8,6 +8,7 @@ import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard, PrimaryButton } from '@/components/Welcome/utils/helpers';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
 
 interface MaterialRow {
@@ -127,7 +128,11 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                             Materi minggu ini
                         </h2>
                         {materials.primary.length === 0 ? (
-                            <p className="text-sm text-brand-muted-dark">Belum ada materi untuk minggu ini.</p>
+                            <EmptyState
+                                icon={BookOpen}
+                                title="Belum ada materi"
+                                description="Materi untuk minggu ini belum tersedia. Hubungi dosen jika diperlukan."
+                            />
                         ) : (
                             <ul className="space-y-2">
                                 {materials.primary.map((row) => (

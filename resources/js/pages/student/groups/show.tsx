@@ -7,6 +7,9 @@ import axios from 'axios';
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
+import { EmptyState } from '@/components/ui/EmptyState';
+import student from '@/routes/student';
 import { LeaveGroupButton } from './components/LeaveGroupButton';
 import type { SharedData, User } from '@/types';
 
@@ -58,9 +61,16 @@ export default function StudentGroupShow({ group }: Props) {
         }
     }, [group.id]);
 
+    const breadcrumbItems = [
+        { label: 'Kelas', href: student.courses.index.url() },
+        { label: group.course.name, href: student.courses.show.url(group.course.id) },
+        { label: group.name },
+    ];
+
     return (
         <AppLayout title={group.name} navItems={navItems}>
             <Head title={group.name} />
+            <Breadcrumbs items={breadcrumbItems} />
 
             <div className="space-y-6">
                 {/* Group Info */}
@@ -156,12 +166,11 @@ export default function StudentGroupShow({ group }: Props) {
                         </h3>
 
                         {members.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8">
-                                <Users className="mb-3 h-10 w-10 text-gray-300" />
-                                <p className="text-sm text-brand-muted-dark">
-                                    Belum ada anggota dalam grup ini
-                                </p>
-                            </div>
+                            <EmptyState
+                                icon={Users}
+                                title="Belum ada anggota"
+                                description="Anggota grup akan muncul setelah bergabung melalui kode undangan."
+                            />
                         ) : (
                             <div className="space-y-2">
                                 {members.map((member) => {

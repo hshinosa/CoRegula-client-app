@@ -12,6 +12,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course } from '@/types';
 import student from '@/routes/student';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { room as chatRoom } from '@/routes/student/courses/chat';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
 import { Skeleton } from '@/components/ui/skeletons';
@@ -228,9 +229,16 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
     const showFilterEmpty = filteredSpaces.length === 0 && hasActiveFilters && !filters.q;
     const showSearchEmpty = filteredSpaces.length === 0 && filters.q.length > 0;
 
+    const breadcrumbItems = [
+        { label: 'Kelas', href: student.courses.index.url() },
+        { label: course.name, href: student.courses.show.url(course.id) },
+        { label: 'Sesi Diskusi' },
+    ];
+
     return (
         <AppLayout title={`Diskusi - ${group.name}`} navItems={navItems}>
             <Head title={`Diskusi - ${course.name}`} />
+            <Breadcrumbs items={breadcrumbItems} />
 
             {isInitialLoading ? (
                 <div className="space-y-6">

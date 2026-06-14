@@ -7,10 +7,12 @@ import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, User } from '@/types';
 import student from '@/routes/student';
+import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
 import { Skeleton } from '@/components/ui/skeletons';
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 interface ChatSpace {
     id: string;
@@ -137,9 +139,15 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
 
     const memberRangeLabel = `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per grup`;
 
+    const breadcrumbItems = [
+        { label: 'Kelas', href: student.courses.index.url() },
+        { label: course.name },
+    ];
+
     return (
         <AppLayout title={course.name} navItems={navItems}>
             <Head title={course.name} />
+            <Breadcrumbs items={breadcrumbItems} />
 
             <div className="space-y-6">
                 {/* Section 1: Course Header */}
@@ -346,12 +354,11 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
 
                                 {/* Empty state */}
                                 {availableGroups.length === 0 && (
-                                    <div className="text-center py-8">
-                                        <Users className="mx-auto h-12 w-12 mb-3" style={{ color: '#9CA3AF' }} />
-                                        <p className="text-sm text-brand-muted-dark">
-                                            Belum ada grup. Buat grup baru untuk memulai.
-                                        </p>
-                                    </div>
+                                    <EmptyState
+                                        icon={Users}
+                                        title="Belum ada grup"
+                                        description="Buat grup baru untuk memulai diskusi dan kolaborasi."
+                                    />
                                 )}
                             </>
                         )}
@@ -444,12 +451,11 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                                     })}
                                 </div>
                             ) : sessions.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <MessageSquare className="mx-auto h-12 w-12 mb-3" style={{ color: '#9CA3AF' }} />
-                                    <p className="text-sm text-brand-muted-dark">
-                                        Belum ada sesi diskusi
-                                    </p>
-                                </div>
+                                <EmptyState
+                                    icon={MessageSquare}
+                                    title="Belum ada sesi diskusi"
+                                    description="Sesi diskusi akan muncul setelah grup membuat ruang chat."
+                                />
                             ) : (
                                 <div className="text-center py-8">
                                     <p className="text-sm text-brand-muted-dark">
