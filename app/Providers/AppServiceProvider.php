@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,6 +17,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Http::globalOptions([
+            'version' => '2.0',
+            'curl' => [
+                CURLOPT_TCP_KEEPALIVE => 1,
+                CURLOPT_TCP_KEEPIDLE => 120,
+                CURLOPT_TCP_KEEPINTVL => 60,
+            ],
+        ]);
         RateLimiter::for('login', function (Request $request) {
             return [
                 Limit::perMinutes(5, 5)->by($request->ip()),
