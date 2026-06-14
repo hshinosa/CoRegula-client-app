@@ -37,10 +37,6 @@ function applyTheme(theme: string) {
     localStorage.setItem('kolabri_theme', theme);
 }
 
-function applyLanguage(language: string) {
-    localStorage.setItem('kolabri_language', language);
-}
-
 function applyFontSize(fontSize: string) {
     const root = document.documentElement;
     root.classList.remove('text-sm', 'text-base', 'text-lg');
@@ -104,9 +100,8 @@ export function usePreferences(initial: PreferencesData): UsePreferencesReturn {
             return;
         }
         applyTheme(preferences.theme);
-        applyLanguage(preferences.language);
         applyFontSize(preferences.font_size);
-    }, [preferences.theme, preferences.language, preferences.font_size]);
+    }, [preferences.theme, preferences.font_size]);
 
     const savePreferences = useCallback(async (): Promise<boolean> => {
         setSaving(true);

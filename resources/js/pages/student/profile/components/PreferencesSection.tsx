@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Globe, Type, Loader2, CheckCircle } from 'lucide-react';
+import { Bell, Type, Loader2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useDebounce } from '@/hooks/useDebounce';
 import NotificationPrefs from './NotificationPrefs';
-import LanguagePrefs from './LanguagePrefs';
 import ThemePrefs from './ThemePrefs';
 
 interface Notifications {
@@ -43,10 +42,6 @@ function applyTheme(theme: string) {
         (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     root.classList.toggle('dark', resolved);
     localStorage.setItem('kolabri_theme', theme);
-}
-
-function applyLanguage(language: string) {
-    localStorage.setItem('kolabri_language', language);
 }
 
 function applyFontSize(fontSize: string) {
@@ -97,9 +92,8 @@ export default function PreferencesSection({ preferences: initial }: Props) {
             return;
         }
         applyTheme(prefs.theme);
-        applyLanguage(prefs.language);
         applyFontSize(prefs.font_size);
-    }, [prefs.theme, prefs.language, prefs.font_size]);
+    }, [prefs.theme, prefs.font_size]);
 
     useEffect(() => {
         if (isInitialMount.current) return;
@@ -147,21 +141,6 @@ export default function PreferencesSection({ preferences: initial }: Props) {
                     <NotificationPrefs
                         notifications={prefs.notifications}
                         onToggle={updateNotification}
-                    />
-                </div>
-            </div>
-
-            <div>
-                <div className="mb-4 flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Bahasa
-                    </h2>
-                </div>
-                <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                    <LanguagePrefs
-                        language={prefs.language}
-                        onChange={(v) => updateField('language', v)}
                     />
                 </div>
             </div>
