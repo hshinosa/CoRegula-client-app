@@ -4,6 +4,7 @@ use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AiChatSearchController;
 use App\Http\Controllers\AiChatTemplateController;
 use App\Http\Controllers\AiChatBookmarkController;
+use App\Http\Controllers\SavedMaterialController;
 use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuditLogController;
@@ -512,6 +513,12 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/ai-chat/bookmarks/toggle', [AiChatBookmarkController::class, 'toggle'])->name('ai-chat.bookmarks.toggle');
         Route::post('/ai-chat/bookmarks/check', [AiChatBookmarkController::class, 'check'])->name('ai-chat.bookmarks.check');
         Route::delete('/ai-chat/bookmarks/{bookmark}', [AiChatBookmarkController::class, 'destroy'])->name('ai-chat.bookmarks.destroy');
+
+        // AI Chat Saved Materials (must be before wildcard {chat})
+        Route::get('/ai-chat/saved-materials', [SavedMaterialController::class, 'index'])->name('ai-chat.saved-materials.index');
+        Route::post('/ai-chat/saved-materials/toggle', [SavedMaterialController::class, 'toggle'])->name('ai-chat.saved-materials.toggle');
+        Route::post('/ai-chat/saved-materials/check', [SavedMaterialController::class, 'check'])->name('ai-chat.saved-materials.check');
+        Route::delete('/ai-chat/saved-materials/{id}', [SavedMaterialController::class, 'destroy'])->name('ai-chat.saved-materials.destroy');
 
         // AI Chat wildcard routes
         Route::get('/ai-chat/{chat}', [AiChatController::class, 'show'])->name('ai-chat.show');
