@@ -24,7 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'student/ai-chat/*/messages/stream',
+            'student/ai-chat',
+            'student/ai-chat/*',
+            'student/ai-chat/*/*',
+            'student/ai-chat/*/*/*',
+            'student/ai-chat/*/*/*/*',
         ]);
 
         $middleware->alias([
