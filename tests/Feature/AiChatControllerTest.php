@@ -121,6 +121,51 @@ class AiChatControllerTest extends TestCase
         });
     }
 
+    public function test_store_returns_chat_under_data_key_for_json_requests(): void
+    {
+        Http::fake([
+            'http://localhost:3000/api/ai-chats' => Http::response([
+                'data' => [
+                    'id' => 'chat-123',
+                    'title' => 'Pesan pertama',
+                    'createdAt' => '2026-03-19T10:00:00.000Z',
+                    'updatedAt' => '2026-03-19T10:00:00.000Z',
+                ],
+            ], 201),
+        ]);
+
+        $response = $this
+            ->withSession($this->sessionData)
+            ->postJson(route('student.ai-chat.store'), [
+                'title' => 'Pesan pertama',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.id', 'chat-123')
+            ->assertJsonPath('data.created_at', '2026-03-19T10:00:00.000Z')
+            ->assertJsonPath('data.updated_at', '2026-03-19T10:00:00.000Z');
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'http://localhost:3000/api/ai-chats'
+                && $request->method() === 'POST'
+                && $request['title'] === 'Pesan pertama';
+        });
+    }
+
+    public function test_stream_route_reaches_controller_for_authenticated_json_requests(): void
+    {
+        $response = $this
+            ->withSession($this->sessionData)
+            ->postJson(route('student.ai-chat.messages.stream', 'chat-123'), [
+                'content' => '',
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonPath('error', 'Content is required');
+    }
+
     public function test_update_renames_chat_title(): void
     {
         Http::fake([
