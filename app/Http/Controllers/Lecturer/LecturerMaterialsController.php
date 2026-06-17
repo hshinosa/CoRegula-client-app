@@ -18,6 +18,21 @@ class LecturerMaterialsController extends Controller
     public function __construct(
         private readonly CoreApiInternalClient $coreApiInternal
     ) {}
+
+    private function resolveCoreApiFilePath(string $relativePath, string $disk): string
+    {
+        $relativePath = ltrim($relativePath, '/');
+
+        if ($disk === 'private' && is_dir('/shared-storage-private')) {
+            return '/shared-storage-private/' . $relativePath;
+        }
+
+        if ($disk === 'public' && is_dir('/shared-storage')) {
+            return '/shared-storage/' . $relativePath;
+        }
+
+        return Storage::disk($disk)->path($relativePath);
+    }
     /**
      * List modules with materials for a course.
      */
@@ -162,9 +177,7 @@ class LecturerMaterialsController extends Controller
                 ->max('sort_order') ?? 0) + 1,
         ]);
 
-        $absolutePath = is_dir('/shared-storage')
-            ? '/shared-storage/' . ltrim($path, '/')
-            : Storage::disk('private')->path($path);
+        $absolutePath = $this->resolveCoreApiFilePath($path, 'private');
         $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
         $queuePayload = [
             'course_id' => $course,
@@ -181,12 +194,13 @@ class LecturerMaterialsController extends Controller
         if ($request->boolean('perform_ocr')) {
             $queuePayload['perform_ocr'] = true;
         }
-        $this->coreApiInternal->queueCourseMaterial($queuePayload);
+        $queueTriggered = $this->coreApiInternal->queueCourseMaterial($queuePayload);
 
         return response()->json([
             'data' => $material,
             'meta' => [
                 'ai_index_configured' => $this->coreApiInternal->isConfigured(),
+                'ai_index_queued' => $queueTriggered,
             ],
         ], 201);
     }
@@ -300,12 +314,10 @@ class LecturerMaterialsController extends Controller
             return response()->json(['message' => 'File tidak ditemukan di storage.'], 404);
         }
 
-        $absolutePath = is_dir('/shared-storage')
-            ? '/shared-storage/' . ltrim($material->file_path, '/')
-            : Storage::disk($disk)->path($material->file_path);
+        $absolutePath = $this->resolveCoreApiFilePath($material->file_path, $disk);
         $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
 
-        $this->coreApiInternal->queueCourseMaterial([
+        $queueTriggered = $this->coreApiInternal->queueCourseMaterial([
             'course_id' => $course,
             'course_material_id' => $material->id,
             'file_path' => $absolutePath,
@@ -315,9 +327,16 @@ class LecturerMaterialsController extends Controller
             'uploaded_by' => $uploaderId,
         ]);
 
+        if (! $queueTriggered) {
+            return response()->json([
+                'message' => 'Antrian indeks gagal dikirim.',
+                'meta' => ['ai_index_configured' => $this->coreApiInternal->isConfigured(), 'ai_index_queued' => false],
+            ], 502);
+        }
+
         return response()->json([
             'message' => 'Antrian indeks berhasil dikirim.',
-            'meta' => ['ai_index_configured' => $this->coreApiInternal->isConfigured()],
+            'meta' => ['ai_index_configured' => $this->coreApiInternal->isConfigured(), 'ai_index_queued' => true],
         ]);
     }
 

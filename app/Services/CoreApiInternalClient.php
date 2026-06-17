@@ -38,18 +38,32 @@ class CoreApiInternalClient
         return $this->secret() !== '';
     }
 
-    public function queueCourseMaterial(array $payload): void
+    public function queueCourseMaterial(array $payload): bool
     {
         if ($this->secret() === '') {
             Log::warning('CORE_API_INTERNAL_SECRET missing; skip KB queue');
 
-            return;
+            return false;
         }
 
         try {
-            $this->request()->post($this->baseUrl().'/api/internal/knowledge-base/queue-course-material', $payload);
+            $response = $this->request()->post($this->baseUrl().'/api/internal/knowledge-base/queue-course-material', $payload);
+
+            if ($response->failed()) {
+                Log::error('KB queue hook rejected', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'course_material_id' => $payload['course_material_id'] ?? null,
+                ]);
+
+                return false;
+            }
+
+            return true;
         } catch (\Throwable $e) {
             Log::error('KB queue hook failed', ['error' => $e->getMessage(), 'course_material_id' => $payload['course_material_id'] ?? null]);
+
+            return false;
         }
     }
 

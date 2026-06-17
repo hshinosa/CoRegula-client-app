@@ -102,6 +102,11 @@ COPY --from=frontend /app /var/www/html
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# PHP upload limits
+RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Set permissions and create necessary directories
 WORKDIR /var/www/html
 RUN mkdir -p storage/framework/{sessions,views,cache} \

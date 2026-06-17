@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useId, useRef } from 'react';
 
 type Size = 'sm' | 'md' | 'lg' | 'xl';
@@ -34,12 +34,22 @@ export function BaseModal({
     const labelId = useId();
     const dialogRef = useRef<HTMLDivElement>(null);
     const lastActiveRef = useRef<HTMLElement | null>(null);
+    const onCloseRef = useRef(onClose);
+    const closeOnEscRef = useRef(closeOnEsc);
+
+    // Keep onClose ref updated without triggering useEffect re-run
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+    useEffect(() => {
+        closeOnEscRef.current = closeOnEsc;
+    }, [closeOnEsc]);
 
     useEffect(() => {
         if (!open) return;
         lastActiveRef.current = document.activeElement as HTMLElement | null;
         const onKeyDown = (e: KeyboardEvent) => {
-            if (closeOnEsc && e.key === 'Escape') onClose();
+            if (closeOnEscRef.current && e.key === 'Escape') onCloseRef.current();
             if (e.key !== 'Tab') return;
             const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -58,12 +68,11 @@ export function BaseModal({
             document.body.style.overflow = '';
             lastActiveRef.current?.focus?.();
         };
-    }, [open, closeOnEsc, onClose]);
+    }, [open]);
 
     if (!open) return null;
 
     return (
-        <AnimatePresence>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -87,6 +96,5 @@ export function BaseModal({
                     {children}
                 </motion.div>
             </motion.div>
-        </AnimatePresence>
     );
 }

@@ -20,6 +20,7 @@ class LecturerMaterialKbHooksTest extends TestCase
         parent::setUp();
         $this->createSchema();
         Storage::fake('public');
+        Storage::fake('private');
         config([
             'services.api.base_url' => 'http://localhost:3000',
             'services.api.internal_secret' => 'test-internal-secret',
@@ -94,7 +95,7 @@ class LecturerMaterialKbHooksTest extends TestCase
 
         $response->assertCreated();
         $response->assertJsonPath('meta.ai_index_configured', true);
-
+        $response->assertJsonPath('meta.ai_index_queued', true);
         Http::assertSent(function ($request) {
             if ($request->url() !== 'http://localhost:3000/api/internal/knowledge-base/queue-course-material') {
                 return false;
@@ -126,7 +127,27 @@ class LecturerMaterialKbHooksTest extends TestCase
 
         $response->assertCreated();
         $response->assertJsonPath('meta.ai_index_configured', false);
-        Http::assertNothingSent();
+        $response->assertJsonPath('meta.ai_index_queued', false);
+    }
+
+    public function test_upload_reports_queue_not_triggered_when_internal_api_rejects(): void
+    {
+        Http::fake([
+            'http://localhost:3000/api/internal/knowledge-base/queue-course-material' => Http::response(['message' => 'bad gateway'], 502),
+        ]);
+
+        $file = UploadedFile::fake()->create('reject.pdf', 10, 'application/pdf');
+
+        $response = $this->lecturerSession()->postJson(
+            route('lecturer.courses.materials.store', ['course' => $this->courseId]),
+            [
+                'file' => $file,
+            ]
+        );
+
+        $response->assertCreated();
+        $response->assertJsonPath('meta.ai_index_configured', true);
+        $response->assertJsonPath('meta.ai_index_queued', false);
     }
 
     public function test_destroy_posts_delete_course_material_kb(): void

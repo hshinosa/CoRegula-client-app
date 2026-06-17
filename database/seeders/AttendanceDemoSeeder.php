@@ -14,12 +14,24 @@ class AttendanceDemoSeeder extends Seeder
     {
         $apiBaseUrl = rtrim(config('services.api.base_url', 'http://localhost:3000'), '/');
 
-        $loginResponse = Http::timeout(30)->connectTimeout(5)->post($apiBaseUrl . '/api/auth/login', [
-            'email' => 'lecturer@kolabri.edu',
-            'password' => 'password123',
-        ]);
+        $loginResponse = null;
+        foreach ([
+            'budi.santoso@univ.ac.id',
+            'siti.rahayu@univ.ac.id',
+            'lecturer@kolabri.edu',
+        ] as $email) {
+            $candidate = Http::timeout(30)->connectTimeout(5)->post($apiBaseUrl . '/api/auth/login', [
+                'email' => $email,
+                'password' => 'password123',
+            ]);
 
-        if (!$loginResponse->successful()) {
+            if ($candidate->successful()) {
+                $loginResponse = $candidate;
+                break;
+            }
+        }
+
+        if (!$loginResponse || !$loginResponse->successful()) {
             $this->command?->error('Failed to login to Core API for attendance demo seed.');
             return;
         }

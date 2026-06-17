@@ -3,6 +3,7 @@ import { CourseMaterial, CourseWeek, VectorStatus } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, BookOpen, ChevronDown, ChevronUp, GripVertical, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from '@/components/ui/toaster';
 
 const bodyTextClass = 'text-sm text-brand-muted-dark';
 const headingStyle = { color: '#4A4A4A' } as const;
@@ -229,12 +230,17 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                     body: formData,
                 });
+                const payload = await res.json().catch(() => null);
                 if (res.ok) {
                     setUploadProgress((p) => ({ ...p, [key]: 'done' }));
                     anySuccess = true;
+                    if (payload?.meta?.ai_index_queued === false) {
+                        toast.error(payload?.message ?? 'Dokumen tersimpan, tetapi antrian indeks gagal dikirim.');
+                    }
                 } else {
                     setUploadProgress((p) => ({ ...p, [key]: 'error' }));
                     anyError = true;
+                    toast.error(payload?.message ?? 'Upload dokumen gagal.');
                 }
             } catch {
                 setUploadProgress((p) => ({ ...p, [key]: 'error' }));
@@ -271,15 +277,21 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
     const handleReindex = async (materialId: string) => {
         setReindexingId(materialId);
         try {
-            await fetch(`/lecturer/courses/${courseId}/materials/${materialId}/reindex`, {
+            const res = await fetch(`/lecturer/courses/${courseId}/materials/${materialId}/reindex`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken },
             });
+            const payload = await res.json().catch(() => null);
+            if (!res.ok) {
+                toast.error(payload?.message ?? 'Gagal mengirim ulang antrian indeks.');
+                return;
+            }
+            toast.success(payload?.message ?? 'Antrian indeks berhasil dikirim.');
             setForcePolling(true);
             await fetchHub();
             window.setTimeout(() => setForcePolling(false), 15000);
         } catch {
-            /* */
+            toast.error('Gagal mengirim ulang antrian indeks.');
         } finally {
             setReindexingId(null);
         }

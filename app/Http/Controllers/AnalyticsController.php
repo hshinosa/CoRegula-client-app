@@ -433,21 +433,47 @@ class AnalyticsController extends Controller
     {
         try {
             $params = array_filter([
+                'page' => 1,
+                'perPage' => 500,
+                'sortBy' => $request->get('sort_by', 'quality_score'),
+                'sortDir' => $request->get('sort_dir', 'desc'),
+                'search' => $request->get('search'),
+                'minScore' => $request->get('min_score'),
+                'maxScore' => $request->get('max_score'),
                 'startDate' => $request->get('start_date'),
                 'endDate' => $request->get('end_date'),
                 'preset' => $request->get('preset'),
             ]);
 
             $response = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/analytics/courses/{$course}/students/{$student}",
+                $this->apiUrl() . "/api/analytics/courses/{$course}/students",
                 $params
             );
 
             if ($response->successful()) {
-                return $this->proxyResponse($response);
+                $students = $response->json('data', []);
+                $studentData = collect($students)->firstWhere('id', $student);
+
+                if ($studentData) {
+                    return response()->json([
+                        'data' => [
+                            'student' => [
+                                'id' => $studentData['id'],
+                                'name' => $studentData['name'],
+                                'email' => $studentData['email'],
+                            ],
+                            'qualityScore' => $studentData['qualityScore'],
+                            'hotPercentage' => $studentData['hotPercentage'] ?? 0,
+                            'messageCount' => $studentData['messageCount'] ?? 0,
+                            'engagementDistribution' => [],
+                            'trends' => [],
+                            'recommendations' => [],
+                        ],
+                    ]);
+                }
             }
 
-            return response()->json(['error' => 'Student not found'], 404);
+            return response()->json(['data' => null, 'error' => 'Student not found'], 404);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Failed to fetch message details', ['error' => $e->getMessage()]);
             return response()->json([

@@ -579,10 +579,10 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={() => setShowCreateModal(false)} className="flex-1 justify-center">
+                        <SecondaryButton type="button" onClick={() => setShowCreateModal(false)} className="flex-1 justify-center">
                             Batal
                         </SecondaryButton>
-                        <PrimaryButton disabled={createForm.processing} className="flex-1 justify-center">
+                        <PrimaryButton type="submit" disabled={createForm.processing} className="flex-1 justify-center">
                             {createForm.processing ? 'Membuat...' : 'Buat'}
                         </PrimaryButton>
                     </div>
@@ -654,10 +654,11 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                     <InputError message={assignForm.errors.member_ids} />
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={() => setShowAssignModal(null)} className="flex-1 justify-center">
+                        <SecondaryButton type="button" onClick={() => setShowAssignModal(null)} className="flex-1 justify-center">
                             Batal
                         </SecondaryButton>
                         <PrimaryButton
+                            type="submit"
                             disabled={assignForm.processing || assignForm.data.member_ids.length === 0}
                             className="flex-1 justify-center"
                         >
@@ -768,10 +769,10 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
+                        <SecondaryButton type="button" onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
                             Batal
                         </SecondaryButton>
-                        <PrimaryButton disabled={chatSpaceForm.processing} className="flex-1 justify-center">
+                        <PrimaryButton type="submit" disabled={chatSpaceForm.processing} className="flex-1 justify-center">
                             {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
                         </PrimaryButton>
                     </div>

@@ -103,10 +103,15 @@ class GroupController extends Controller
             'name' => 'required|string|max:100',
         ]);
 
+        $startTime = microtime(true);
+
         try {
             $response = $this->apiRequest()->post($this->apiUrl() . "/api/courses/{$course}/groups", [
                 'name' => $validated['name'],
             ]);
+
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            Log::info('Group creation completed', ['course_id' => $course, 'duration_ms' => $duration]);
 
             if ($response->successful()) {
                 return back()->with('success', 'Grup berhasil dibuat!');
@@ -114,7 +119,8 @@ class GroupController extends Controller
 
             return back()->withErrors(['name' => $response->json('message', 'Gagal membuat grup')]);
         } catch (ConnectionException | RequestException $e) {
-            Log::error('Failed to create group', ['error' => $e->getMessage()]);
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            Log::error('Failed to create group', ['course_id' => $course, 'duration_ms' => $duration, 'error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Failed to create group']);
         }
     }
@@ -188,8 +194,13 @@ class GroupController extends Controller
             'member_ids.*' => 'string',
         ]);
 
+        $startTime = microtime(true);
+
         try {
             $response = $this->apiRequest()->post($this->apiUrl() . "/api/courses/{$course}/groups/{$group}/members", ['member_ids' => $validated['member_ids']]);
+
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            Log::info('Add members completed', ['course_id' => $course, 'group_id' => $group, 'duration_ms' => $duration]);
 
             if ($response->successful()) {
                 return back()->with('success', 'Anggota berhasil ditambahkan!');
@@ -197,8 +208,9 @@ class GroupController extends Controller
 
             return back()->withErrors(['member_ids' => $response->json('message', 'Gagal menambahkan anggota')]);
         } catch (ConnectionException | RequestException $e) {
-            Log::error('Failed to join group', ['error' => $e->getMessage()]);
-            return back()->withErrors(['error' => 'Failed to join group']);
+            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            Log::error('Failed to add members', ['course_id' => $course, 'group_id' => $group, 'duration_ms' => $duration, 'error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to add members']);
         }
     }
 

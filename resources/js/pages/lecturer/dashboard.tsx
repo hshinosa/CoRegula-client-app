@@ -1,21 +1,18 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Activity, BookOpen, Plus, Users, AlertTriangle, BarChart3, Wifi, WifiOff, ShieldAlert, CheckCircle } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import { Activity, BookOpen, Plus, Users, AlertTriangle, BarChart3, Wifi, WifiOff } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { EnhancedStatCard } from '@/components/dashboard/EnhancedStatCard';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
-import { SkeletonStatCard } from '@/components/ui/skeletons';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course, SharedData } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { toast } from '@/components/ui/toaster';
-import { DiscussionHealthWidget } from '@/components/lecturer/DiscussionHealthWidget';
 
 interface DashboardStats {
     totalCourses: number;
@@ -75,7 +72,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
     const [liveActivity, setLiveActivity] = useState<ActivityItem[]>(recentActivity);
     const [isConnected, setIsConnected] = useState(false);
     const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const [escalations, setEscalations] = useState<any[]>([]);
     const maxLiveItems = 5;
 
     useEffect(() => {
@@ -114,25 +110,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
         return () => { socket.disconnect(); };
     }, [jwtToken]);
 
-    const fetchEscalations = useCallback(async () => {
-        try {
-            const res = await axios.get('/api/lecturer/escalations', { params: { stage: 'flag-lecturer' } });
-            setEscalations(res.data.data || []);
-        } catch {
-            toast.error('Gagal memuat eskalasi');
-        }
-    }, []);
-
-    useEffect(() => { fetchEscalations(); }, [fetchEscalations]);
-
-    const handleResolveEscalation = async (id: string) => {
-        try {
-            await axios.post(`/api/lecturer/escalations/${id}/resolve`, { reason: 'Resolved from dashboard' });
-            setEscalations(prev => prev.filter(e => e._id !== id));
-        } catch {
-            toast.error('Gagal menyelesaikan eskalasi');
-        }
-    };
 
     const statCards = [
         { label: 'Kelas Aktif', value: stats.totalCourses, icon: BookOpen, color: '#88161c' },
@@ -280,57 +257,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                 )}
                             </LiquidGlassCard>
 
-                            <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <ShieldAlert className="h-5 w-5 text-amber-600" />
-                                    <h2 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Eskalasi Aktif
-                                    </h2>
-                                    {escalations.length > 0 && (
-                                        <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                            {escalations.length}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {escalations.length === 0 ? (
-                                    <div className="text-center py-6">
-                                        <CheckCircle className="mx-auto h-10 w-10 text-green-400 opacity-60" />
-                                        <p className="mt-3 text-sm text-brand-muted-dark">Tidak ada eskalasi aktif</p>
-                                        <p className="text-xs text-brand-muted-dark mt-1">Semua diskusi berjalan baik</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {escalations.map((esc) => (
-                                            <div key={esc._id} className="rounded-xl border border-amber-100 bg-amber-50/50 p-3">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="text-sm font-medium text-brand-dark">
-                                                            {esc.issueType === 'silence' ? 'Diskusi sepi' : esc.issueType === 'low_quality' ? 'Kualitas rendah' : 'Blocker belum terselesaikan'}
-                                                        </p>
-                                                        {esc.history && Array.isArray(esc.history) && esc.history.length > 0 && esc.history[esc.history.length - 1]?.reason && (
-                                                            <p className="text-xs text-brand-muted-dark mt-0.5 truncate">
-                                                                {esc.history[esc.history.length - 1].reason}
-                                                            </p>
-                                                        )}
-                                                        <p className="text-xs text-brand-muted-dark mt-0.5">
-                                                            Grup {esc.groupId?.slice(-4)} · {new Date(esc.updatedAt).toLocaleDateString('id-ID')}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => handleResolveEscalation(esc._id)}
-                                                        className="ml-2 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700"
-                                                    >
-                                                        Selesaikan
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </LiquidGlassCard>
-
-                            <DiscussionHealthWidget />
                             </div>
                         </motion.div>
 
