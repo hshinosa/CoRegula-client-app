@@ -10,6 +10,7 @@ import { Check, KeyRound, Plus, Users, X } from 'lucide-react';
 
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
+import { FormModal } from '@/components/ui/FormModal';
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, User } from '@/types';
@@ -420,40 +421,8 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
             )}
 
             {/* Create Group Modal */}
-            <AnimatePresence>
-                {showCreateModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
-                                <div className="flex items-center justify-between">
-                                    <h3
-                                        className="text-lg font-semibold font-sans text-brand-dark"
-                                    >
-                                        Buat Grup Baru
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowCreateModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                    Kode unik akan dibuat otomatis untuk teman bergabung
-                                </p>
-                                <form onSubmit={handleCreateGroup} className="mt-6 space-y-4">
+            <FormModal open={showCreateModal} title="Buat Grup Baru" description="Kode unik akan dibuat otomatis untuk teman bergabung" onClose={() => setShowCreateModal(false)} maxWidth="max-w-md">
+                                <form onSubmit={handleCreateGroup} className="space-y-4">
                                     <div>
                                         <InputLabel htmlFor="group_name" required>
                                             Nama Grup
@@ -463,7 +432,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             type="text"
                                             value={createForm.data.name}
                                             onChange={(e) => createForm.setData('name', e.target.value)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                             placeholder="misalnya, Kelompok A"
                                             autoFocus
                                         />
@@ -484,47 +453,11 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </FormModal>
 
             {/* Join Group Modal */}
-            <AnimatePresence>
-                {showJoinModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowJoinModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-md p-6" lightMode={true}>
-                                <div className="flex items-center justify-between">
-                                    <h3
-                                        className="text-lg font-semibold font-sans text-brand-dark"
-                                    >
-                                        Gabung dengan Kode
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowJoinModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                    Masukkan kode grup 6 karakter yang diberikan kepada Anda
-                                </p>
-                                <form onSubmit={handleJoinGroup} className="mt-6 space-y-4">
+            <FormModal open={showJoinModal} title="Gabung dengan Kode" description="Masukkan kode grup 6 karakter yang diberikan kepada Anda" onClose={() => setShowJoinModal(false)} maxWidth="max-w-md">
+                                <form onSubmit={handleJoinGroup} className="space-y-4">
                                     <div>
                                         <InputLabel htmlFor="join_code" required>
                                             Kode Grup
@@ -534,7 +467,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                             type="text"
                                             value={joinForm.data.join_code}
                                             onChange={(e) => joinForm.setData('join_code', e.target.value.toUpperCase())}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-center font-mono text-xl tracking-widest font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
+                className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-center font-mono text-xl tracking-widest font-sans text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                                             placeholder="XXXXXX"
                                             maxLength={6}
                                             autoFocus
@@ -556,11 +489,7 @@ export default function StudentGroupsIndex({ course, groups, myGroup }: Props) {
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </FormModal>
         </AppLayout>
     );
 }

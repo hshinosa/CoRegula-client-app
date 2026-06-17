@@ -22,6 +22,7 @@ import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { toast } from '@/components/ui/toaster';
 import CourseExportButton from '@/components/CourseExportButton';
 
 interface GroupAnalytics {
@@ -210,7 +211,10 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
     }, []);
 
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
+        getAuthToken().then(setJwtToken).catch((err) => {
+            console.error(err);
+            toast.error('Gagal mengambil token autentikasi. Silakan muat ulang halaman.');
+        });
     }, []);
 
     useEffect(() => {
@@ -277,6 +281,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
             }
         } catch (error) {
             console.error('Failed to refresh analytics:', error);
+            toast.error('Gagal memuat analitik');
         }
     }, [course.id, dateRange, activePreset]);
 
@@ -305,6 +310,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
             }
         } catch (error) {
             console.error('Failed to fetch trends:', error);
+            toast.error('Gagal memuat tren');
         } finally {
             const elapsed = Date.now() - startTime;
             const remaining = Math.max(0, 300 - elapsed);

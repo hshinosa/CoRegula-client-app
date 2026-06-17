@@ -73,7 +73,7 @@ const getQualityLabel = (score: number | null) => {
 };
 
 export default function AnalyticsDetail({ course, analytics }: Props) {
-    useLecturerNav('analytics');
+    const navItems = useLecturerNav('analytics');
 
     const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
     const [preset, setPreset] = useState<string>('');
@@ -115,7 +115,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
     ];
 
     return (
-        <AppLayout>
+        <AppLayout navItems={navItems}>
             <Head title={`Analytics Detail - ${course.name}`} />
 
             <div className="relative min-h-screen overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAFBFC 0%, #F5F0EB 50%, #FFF8F5 100%)' }}>
@@ -123,7 +123,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                 <OrganicBlob className="absolute -bottom-24 -left-24 h-72 w-72 opacity-20" color="rgba(71,85,105,0.06)" />
 
                 <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6">
-                    <nav className="mb-6 flex items-center gap-1.5 text-sm text-[#9CA3AF]">
+                    <nav className="mb-6 flex items-center gap-1.5 text-sm text-gray-600">
                         <Link href="/lecturer/courses" className="transition-colors hover:text-brand-dark">
                             Kelas
                         </Link>
@@ -183,7 +183,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                         <span className="text-xs text-brand-muted-dark">{card.label}</span>
                                     </div>
                                     <p className="mt-3 text-2xl font-bold" style={{ color: card.color }}>{card.value}</p>
-                                    <p className="mt-0.5 text-xs text-[#9CA3AF]">{card.detail}</p>
+                                    <p className="mt-0.5 text-xs text-gray-600">{card.detail}</p>
                                 </LiquidGlassCard>
                             </motion.div>
                         ))}
@@ -215,7 +215,48 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                 className="flex h-48 items-center justify-center rounded-2xl"
                                 style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' }}
                             >
-                                <p className="text-sm text-[#9CA3AF]">Belum ada data trend. Data akan muncul setelah ada aktivitas diskusi.</p>
+                                <p className="text-sm text-gray-600">Belum ada data trend. Data akan muncul setelah ada aktivitas diskusi.</p>
+                            </div>
+                        )}
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-6">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h2 className="text-base font-semibold" style={headingStyle}>Breakdown per Kelompok</h2>
+                        </div>
+                        {safeAnalytics.groups && safeAnalytics.groups.length > 0 ? (
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {safeAnalytics.groups.map((group) => (
+                                    <div
+                                        key={group.id}
+                                        className="rounded-2xl p-4 transition-shadow hover:shadow-md"
+                                        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' }}
+                                    >
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <h3 className="text-sm font-semibold" style={headingStyle}>{group.name}</h3>
+                                            <span
+                                                className="rounded-full px-2 py-0.5 text-xs font-medium"
+                                                style={{
+                                                    background: group.qualityScore !== null && group.qualityScore >= 70 ? 'rgba(22,101,52,0.1)' : 'rgba(220,38,38,0.1)',
+                                                    color: group.qualityScore !== null && group.qualityScore >= 70 ? '#166534' : '#dc2626',
+                                                }}
+                                            >
+                                                {group.qualityScore !== null ? group.qualityScore.toFixed(1) : 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                                            <Users className="h-3.5 w-3.5" />
+                                            <span>{group.memberCount} anggota</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className="flex h-32 items-center justify-center rounded-2xl"
+                                style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' }}
+                            >
+                                <p className="text-sm text-gray-600">Belum ada data kelompok.</p>
                             </div>
                         )}
                     </motion.div>

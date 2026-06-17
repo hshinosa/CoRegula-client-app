@@ -14,6 +14,7 @@ import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course, SharedData } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { toast } from '@/components/ui/toaster';
 import { DiscussionHealthWidget } from '@/components/lecturer/DiscussionHealthWidget';
 
 interface DashboardStats {
@@ -78,7 +79,9 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
     const maxLiveItems = 5;
 
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(() => {});
+        getAuthToken().then(setJwtToken).catch(() => {
+            toast.error('Gagal mengambil token autentikasi. Silakan muat ulang halaman.');
+        });
     }, []);
 
     useEffect(() => {
@@ -115,7 +118,9 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
         try {
             const res = await axios.get('/api/lecturer/escalations', { params: { stage: 'flag-lecturer' } });
             setEscalations(res.data.data || []);
-        } catch {}
+        } catch {
+            toast.error('Gagal memuat eskalasi');
+        }
     }, []);
 
     useEffect(() => { fetchEscalations(); }, [fetchEscalations]);
@@ -124,7 +129,9 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
         try {
             await axios.post(`/api/lecturer/escalations/${id}/resolve`, { reason: 'Resolved from dashboard' });
             setEscalations(prev => prev.filter(e => e._id !== id));
-        } catch {}
+        } catch {
+            toast.error('Gagal menyelesaikan eskalasi');
+        }
     };
 
     const statCards = [
@@ -340,7 +347,7 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                         {isConnected ? (
                                             <Wifi className="h-3.5 w-3.5 text-green-500" />
                                         ) : (
-                                            <WifiOff className="h-3.5 w-3.5 text-gray-400" />
+                                            <WifiOff className="h-3.5 w-3.5 text-gray-600" />
                                         )}
                                         <span className="text-[10px] text-brand-muted-dark">{isConnected ? 'Live' : 'Offline'}</span>
                                     </div>

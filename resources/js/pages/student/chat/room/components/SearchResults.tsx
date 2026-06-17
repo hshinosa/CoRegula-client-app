@@ -48,7 +48,7 @@ export function SearchResults({
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700"
+                    className="flex h-5 w-5 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700"
                     aria-label="Tutup hasil pencarian"
                 >
                     <X className="h-3.5 w-3.5" />
@@ -69,13 +69,13 @@ export function SearchResults({
                                 onClick={() => onResultClick(result.id)}
                                 className="flex w-full items-start gap-2 px-3 py-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
                             >
-                                <MessageSquare className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                                <MessageSquare className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-600" />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-600">
                                             {result.sender_name}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                        <span className="text-[10px] text-gray-600 dark:text-gray-500">
                                             {new Date(result.created_at).toLocaleTimeString([], {
                                                 hour: '2-digit',
                                                 minute: '2-digit',

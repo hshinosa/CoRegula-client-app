@@ -46,6 +46,7 @@ class LecturerMaterialsHubController extends Controller
         try {
             $response = Http::withToken(session('jwt'))
                 ->timeout(10)
+                ->connectTimeout(5)
                 ->get(config('services.api.base_url', 'http://localhost:3000')."/api/courses/{$course}/knowledge-base");
             if ($response->successful()) {
                 foreach ($response->json('data', []) as $row) {

@@ -10,6 +10,7 @@ import student from '@/routes/student';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { toast } from '@/components/ui/toaster';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
 import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
 import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
@@ -25,6 +26,8 @@ import { ConnectionBanner } from '@/components/chat/ConnectionBanner';
 import { SessionSummaryModal } from '@/components/chat/SessionSummaryModal';
 import { ChatWeekMaterialsPanel } from '@/components/course/ChatWeekMaterialsPanel';
 import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
+import { BaseModal } from '@/components/ui/BaseModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ChatSkeleton } from '@/components/ui/skeletons';
 import ReactMarkdown from 'react-markdown';
 import { formatAiOutput } from '@/lib/formatAiOutput';
@@ -523,7 +526,10 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     const [newMessage, setNewMessage] = useState('');
     const { clear: clearDraft } = useDraftAutosave(chatSpace.id, newMessage, setNewMessage);
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
+        getAuthToken().then(setJwtToken).catch((err) => {
+            console.error(err);
+            toast.error('Gagal mengambil token autentikasi. Chat mungkin tidak terhubung.');
+        });
     }, []);
 
     useEffect(() => {
@@ -740,7 +746,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         refreshPinned();
     }, [refreshPinned]);
 
-    const { state: summaryState } = useChatSummary({
+    const { state: summaryState, retry: retrySummary } = useChatSummary({
         courseId: course.id,
         chatSpaceId: chatSpace.id,
         enabled: isSummaryVisible,
@@ -958,7 +964,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         if (pendingFiles.length > 0) {
             setIsUploading(true);
             try {
-                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file));
+                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, chatSpace.id);
                 attachments = uploaded.map((u, i) => ({
                     id: pendingFiles[i].id,
                     name: u.name,
@@ -969,6 +975,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 }));
             } catch (error) {
                 console.error('File upload failed:', error);
+                toast.error('Gagal mengunggah file');
             }
             setIsUploading(false);
         }
@@ -1462,6 +1469,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             // Capture summary from close response (Core API returns it inline)
             const responseData = await response.json().catch(() => null);
             const summaryText = responseData?.data?.summary;
+            const summaryError = responseData?.data?.summaryError;
+
             if (typeof summaryText === 'string' && summaryText.trim().length > 0) {
                 const lines = summaryText.split('\n').filter((l: string) => l.trim().length > 0);
                 setInitialSummary({
@@ -1471,6 +1480,45 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     detailedSummary: summaryText,
                     generatedAt: new Date().toISOString(),
                 });
+            } else if (summaryError) {
+                // Auto-retry: regenerate summary when initial generation failed
+                console.warn('Summary generation failed during close, auto-retrying:', summaryError);
+                setToastMessage({ message: 'Ringkasan sedang dibuat ulang...', type: 'info' });
+
+                try {
+                    const retryResponse = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/regenerate-summary`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+                        },
+                    });
+
+                    if (retryResponse.ok) {
+                        const retryData = await retryResponse.json().catch(() => null);
+                        const retrySummary = retryData?.data?.summary;
+                        if (typeof retrySummary === 'string' && retrySummary.trim().length > 0) {
+                            const lines = retrySummary.split('\n').filter((l: string) => l.trim().length > 0);
+                            setInitialSummary({
+                                roomId: chatSpace.id,
+                                headline: lines[0]?.replace(/^#+\s*/, '').slice(0, 120) || 'Ringkasan diskusi',
+                                keyPoints: lines.slice(1).filter((l: string) => l.startsWith('-') || l.startsWith('*')).map((l: string) => l.replace(/^[-*]\s*/, '')).slice(0, 5),
+                                detailedSummary: retrySummary,
+                                generatedAt: new Date().toISOString(),
+                            });
+                            setToastMessage({ message: 'Ringkasan berhasil dibuat!', type: 'success' });
+                        } else {
+                            setToastMessage({ message: 'Ringkasan tidak tersedia. Silakan coba lagi nanti.', type: 'error' });
+                        }
+                    } else {
+                        setToastMessage({ message: 'Gagal membuat ringkasan. Silakan coba lagi nanti.', type: 'error' });
+                    }
+                } catch (retryError) {
+                    console.error('Summary retry failed:', retryError);
+                    setToastMessage({ message: 'Gagal membuat ringkasan. Silakan coba lagi nanti.', type: 'error' });
+                }
             }
 
             // Close the confirmation modal on successful session close.
@@ -1514,6 +1562,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     })
                     .catch((err) => {
                         console.error('Failed to generate AI summary', err);
+                        toast.error('Gagal membuat ringkasan AI');
                     })
                     .finally(() => {
                         setAiSummaryLoading(false);
@@ -1879,7 +1928,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                     {isSummaryVisible && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-                            <ChatSummaryCard state={summaryState} onOpenDetail={() => {}} />
+                            <ChatSummaryCard state={summaryState} onOpenDetail={() => {}} onRetry={retrySummary} />
                         </motion.div>
                     )}
 
@@ -2997,29 +3046,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             </AnimatePresence>
 
             {/* Session Reflection Modal */}
-            <AnimatePresence>
-                {showReflectionModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                        onClick={() => !isSubmittingReflection && closeReflectionModal()}
-                    >
-                        <motion.div
-                            ref={reflectionModalRef}
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            role="dialog"
-                            aria-modal="true"
-                            aria-label="Refleksi sesi"
-                            tabIndex={-1}
-                            onKeyDown={(event) => handleDialogKeyDown(event, closeReflectionModal, !isSubmittingReflection)}
-                            className="w-full max-w-lg rounded-2xl border border-white/50 p-6 shadow-xl"
-                            style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
+            <BaseModal open={showReflectionModal} title="Refleksi Sesi" onClose={() => !isSubmittingReflection && closeReflectionModal()} size="lg" className="w-full max-w-lg rounded-2xl border border-white/50 p-6 shadow-xl" closeOnBackdropClick={!isSubmittingReflection}>
+                        <div>
                             <div className="mb-4 flex items-center gap-3">
                                 <div 
                                     className="flex h-10 w-10 items-center justify-center rounded-full"
@@ -3120,92 +3148,20 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                     )}
                                 </button>
                             </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </div>
+            </BaseModal>
 
             {/* Close Session Confirmation Modal */}
-            <AnimatePresence>
-                {showCloseConfirmModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                        onClick={() => !isClosingSession && closeCloseConfirmModal()}
-                    >
-                        <motion.div
-                            ref={closeConfirmModalRef}
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            role="dialog"
-                            aria-modal="true"
-                            aria-label="Konfirmasi tutup sesi diskusi"
-                            tabIndex={-1}
-                            onKeyDown={(event) => handleDialogKeyDown(event, closeCloseConfirmModal, !isClosingSession)}
-                            className="w-full max-w-md rounded-2xl border border-white/50 p-6 shadow-xl"
-                            style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)' }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="mb-4 flex items-center gap-3">
-                                <div 
-                                    className="flex h-10 w-10 items-center justify-center rounded-full"
-                                    style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}
-                                >
-                                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-brand-dark" style={headingStyle}>
-                                        Tutup Sesi Diskusi?
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <p className="mb-6 text-sm text-brand-muted-dark">
-                                Anda akan menutup sesi diskusi <span className="font-medium text-brand-dark">"{chatSpace.name}"</span>. 
-                                Setelah ditutup, anggota grup tidak dapat mengirim pesan lagi sampai dosen membuka kembali sesi ini.
-                            </p>
-
-                            <div className="flex items-center justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={closeCloseConfirmModal}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium text-brand-muted-dark transition-colors hover:bg-white/50"
-                                    disabled={isClosingSession}
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={handleCloseSession}
-                                    disabled={isClosingSession}
-                                    className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                    style={{ 
-                                        background: 'linear-gradient(135deg, rgba(245,158,11,0.92) 0%, rgba(217,119,6,0.96) 100%)',
-                                        boxShadow: '0 8px 32px rgba(245,158,11,0.4)',
-                                    }}
-                                >
-                                    {isClosingSession ? (
-                                        <>
-                                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                            </svg>
-                                            <span>Menutup...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Lock className="h-4 w-4" />
-                                            <span>Ya, Tutup Sesi</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <ConfirmDialog
+                open={showCloseConfirmModal}
+                title="Tutup Sesi Diskusi?"
+                message={`Anda akan menutup sesi diskusi "${chatSpace.name}". Setelah ditutup, anggota grup tidak dapat mengirim pesan lagi sampai dosen membuka kembali sesi ini.`}
+                confirmLabel={isClosingSession ? 'Menutup...' : 'Ya, Tutup Sesi'}
+                cancelLabel="Batal"
+                onConfirm={handleCloseSession}
+                onClose={closeCloseConfirmModal}
+                variant="warning"
+            />
 
             {/* AI Discussion Direction Summary Modal (NFR-USABILITY-04) */}
             {showAiSummaryModal && (

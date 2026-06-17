@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/components/ui/toaster';
 
 interface SearchResult {
     id: string;
@@ -49,6 +50,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
             }
         } catch (error) {
             console.error('Search failed:', error);
+            toast.error('Gagal mencari');
         } finally {
             setIsLoading(false);
         }
@@ -100,7 +102,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
     return (
         <div ref={containerRef} className={`relative ${className}`}>
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
                 <input
                     type="text"
                     value={query}
@@ -109,7 +111,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                         if (results.length > 0) setIsOpen(true);
                     }}
                     placeholder={bookmarkedOnly ? "Cari bookmark..." : "Cari percakapan..."}
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2.5 pl-10 pr-10 text-sm text-brand-dark placeholder-[#9CA3AF] backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
+                    className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2.5 pl-10 pr-10 text-sm text-brand-dark placeholder:text-gray-600 backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
                 />
                 {isLoading && (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-primary animate-spin" />
@@ -121,7 +123,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                             setResults([]);
                             setIsOpen(false);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] hover:text-brand-dark transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600 hover:text-brand-dark transition-colors"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -159,7 +161,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                                     </p>
                                 )}
                                 {result.updated_at && (
-                                    <span className="text-[10px] text-[#9CA3AF]">
+                                    <span className="text-[10px] text-gray-600">
                                         {new Date(result.updated_at).toLocaleDateString('id-ID', {
                                             day: 'numeric',
                                             month: 'short',
@@ -181,7 +183,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                         className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-[#E5E7EB] bg-white/95 p-4 text-center shadow-lg backdrop-blur-md"
                     >
                         <p className="text-sm text-brand-muted-dark">Tidak ada percakapan yang cocok</p>
-                        <p className="mt-1 text-xs text-[#9CA3AF]">Coba kata kunci lain atau hapus filter</p>
+                        <p className="mt-1 text-xs text-gray-600">Coba kata kunci lain atau hapus filter</p>
                     </motion.div>
                 )}
             </AnimatePresence>

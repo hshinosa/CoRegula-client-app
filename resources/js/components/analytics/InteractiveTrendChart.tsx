@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+    Area,
+    AreaChart,
     Bar,
     BarChart,
     Brush,
     CartesianGrid,
     Legend,
     Line,
-    LineChart,
     ReferenceLine,
     ResponsiveContainer,
     Tooltip,
@@ -135,7 +136,7 @@ export default function InteractiveTrendChart({
         );
     }
 
-    const Chart = activeChartType === 'bar' ? BarChart : LineChart;
+    const Chart = activeChartType === 'bar' ? BarChart : AreaChart;
 
     return (
         <div
@@ -155,7 +156,7 @@ export default function InteractiveTrendChart({
                         </h3>
                     )}
                     {benchmark?.sampleSize !== undefined && showBenchmark && (
-                        <p className="mt-0.5 text-xs text-[#9CA3AF]">
+                        <p className="mt-0.5 text-xs text-gray-600">
                             Benchmark: {benchmark.sampleSize} kelompok
                             {benchmark.sampleSize < 10 && (
                                 <span className="ml-1 text-amber-500">(sampel kecil)</span>
@@ -261,13 +262,15 @@ export default function InteractiveTrendChart({
 
                     {filteredMetrics.map((metric) =>
                         activeChartType === 'line' ? (
-                            <Line
+                            <Area
                                 key={metric.value}
                                 type="monotone"
                                 dataKey={metric.value}
                                 name={metric.label}
                                 stroke={metric.color}
                                 strokeWidth={2}
+                                fill={metric.color}
+                                fillOpacity={0.1}
                                 dot={{ r: 3, fill: metric.color }}
                                 activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff' }}
                             />
@@ -297,7 +300,7 @@ export default function InteractiveTrendChart({
                 </Chart>
             </ResponsiveContainer>
 
-            <p className="mt-2 text-center text-[10px] text-[#9CA3AF]">
+            <p className="mt-2 text-center text-[10px] text-gray-600">
                 Geser brush di bawah chart untuk zoom area tertentu
             </p>
         </div>

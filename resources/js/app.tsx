@@ -25,6 +25,7 @@ const queryClient = new QueryClient({
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 axios.defaults.withCredentials = true;
+axios.defaults.timeout = 30000;
 if (csrfToken) {
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 }

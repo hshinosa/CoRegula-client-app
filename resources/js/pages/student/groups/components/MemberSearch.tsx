@@ -59,7 +59,7 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
         <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                     <input
                         type="text"
                         placeholder="Cari anggota berdasarkan nama atau email..."
@@ -69,7 +69,7 @@ export function MemberSearch({ groupId, currentUserId, isOwner, onRoleChange, on
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-gray-400" />
+                    <Filter className="h-4 w-4 text-gray-600" />
                     <select
                         value={roleFilter}
                         onChange={(e) => handleRoleFilter(e.target.value as GroupMemberRole | '')}

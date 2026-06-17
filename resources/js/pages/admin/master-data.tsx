@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Archive,
     BookOpen,
@@ -20,14 +20,14 @@ import {
     ShieldAlert,
     Trash2,
     Users,
-    X,
 } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { AdminPagination } from '@/components/ui/AdminPagination';
+import { FormModal } from '@/components/ui/FormModal';
 import { InputError } from '@/components/ui/input-error';
-import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 import { TableRowSkeleton } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { exportToCSV, parseCSV, validateCSVColumns, type CsvRecord } from '@/lib/csv-utils';
@@ -235,87 +235,6 @@ function getCreatedAt(course: CourseItem) {
 
 function getTemplateCreatedAt(template: CourseTemplateItem) {
     return template.createdAt ?? template.created_at ?? null;
-}
-
-function FormModal({
-    open,
-    title,
-    description,
-    children,
-    onClose,
-    maxWidth = 'max-w-lg',
-}: {
-    open: boolean;
-    title: string;
-    description: string;
-    children: React.ReactNode;
-    onClose: () => void;
-    maxWidth?: string;
-}) {
-    if (!open) return null;
-
-    return (
-        <AnimatePresence>
-            <>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 bg-black"
-                    onClick={onClose}
-                    style={{
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
-                    }}
-                />
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                >
-                    <div
-                        className={`w-full ${maxWidth} rounded-3xl p-6 shadow-2xl`}
-                        style={{
-                            background: 'var(--dm-surface)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            border: '1px solid var(--dm-border-strong)',
-                        }}
-                    >
-                        <div
-                            className="flex items-start justify-between gap-4 pb-4"
-                            style={{ borderBottom: '1px solid var(--dm-border)' }}
-                        >
-                            <div>
-                                <h3 className="text-lg font-semibold" style={headingStyle}>
-                                    {title}
-                                </h3>
-                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
-                                style={{
-                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-                        <div className="mt-6 space-y-4">{children}</div>
-                    </div>
-                </motion.div>
-            </>
-        </AnimatePresence>
-    );
 }
 
 function CourseCard({
@@ -1256,10 +1175,6 @@ background: 'var(--dm-accent-bg)',
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <SecondaryButton onClick={() => void router.visit('/admin/templates')} className="px-4 py-2 text-sm">
-                                    <FolderArchive className="h-4 w-4" />
-                                    Template Library
-                                </SecondaryButton>
                                 {!isArchivedView && (
                                     <>
                                         <SecondaryButton onClick={() => void handleExportCourses()} className="px-4 py-2 text-sm">
@@ -1316,7 +1231,7 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 disabled
-                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm text-slate-400"
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm text-gray-600"
                             >
                                 <Users className="h-4 w-4" />
                                 Categories (Phase 2)
@@ -1328,7 +1243,7 @@ background: 'var(--dm-accent-bg)',
                                 <div>
                                     <label className="text-sm font-medium text-brand-dark">Search</label>
                                     <div className="relative mt-1.5">
-                                        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                         <input
                                             type="text"
                                             value={searchInput}
@@ -1624,9 +1539,6 @@ background: 'var(--dm-accent-bg)',
                                         <h3 className="text-base font-semibold text-brand-dark">Template Library</h3>
                                         <p className="mt-1 text-sm text-slate-500">Simpan struktur course tanpa konten, lalu buat course baru lebih cepat.</p>
                                     </div>
-                                    <SecondaryButton onClick={() => void router.visit('/admin/templates')} className="px-4 py-2 text-sm">
-                                        Open Full Library
-                                    </SecondaryButton>
                                 </div>
 
                                 {templatesLoading ? (

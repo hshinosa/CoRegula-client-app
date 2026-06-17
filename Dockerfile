@@ -60,7 +60,8 @@ COPY package*.json ./
 RUN npm ci
 
 # Build frontend assets
-RUN npm run build
+RUN npm run build \
+    && rm -f public/hot
 
 # Stage 3: Production image with PHP-FPM and Nginx
 FROM php:8.3-fpm AS production
@@ -107,6 +108,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
     && mkdir -p /var/log/supervisor \
+    && rm -f /var/www/html/public/hot \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
     && ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage

@@ -21,7 +21,7 @@ class AutoCloseInactiveSessions implements ShouldQueue
     {
         try {
             $apiUrl = config('services.core_api.url', 'http://localhost:3000');
-            $response = Http::timeout(30)
+            $response = Http::timeout(30)->connectTimeout(5)
                 ->post("{$apiUrl}/api/learning-sessions/auto-close-inactive");
 
             if ($response->successful()) {

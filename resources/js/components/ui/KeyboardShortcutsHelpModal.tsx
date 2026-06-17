@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Keyboard, X } from 'lucide-react';
 import { KeyboardShortcutMap } from '@/hooks/useKeyboardShortcuts';
 
@@ -85,105 +85,62 @@ export function KeyboardShortcutsHelpModal({ open, onClose, shortcuts }: Keyboar
     const shortcutGroups = buildShortcutGroups(shortcuts);
 
     return (
-        <AnimatePresence>
-            {open && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
-                        onClick={onClose}
-                    />
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl p-6"
+        <BaseModal open={open} title="Pintasan Keyboard" onClose={onClose} size="lg" className="max-h-[80vh] overflow-y-auto p-6">
+            <div className="w-full rounded-2xl" style={{ background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)' }}>
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
                             style={{
-                                background: 'rgba(255,255,255,0.98)',
-                                backdropFilter: 'blur(20px)',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
+                                background: 'linear-gradient(135deg, var(--dm-accent) 0%, var(--dm-accent-dark) 100%)',
                             }}
-                            onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                                        style={{
-                                            background: 'linear-gradient(135deg, var(--dm-accent) 0%, var(--dm-accent-dark) 100%)',
-                                        }}
-                                    >
-                                        <Keyboard className="w-5 h-5 text-white" />
-                                    </div>
-                                    <h2
-                                        className="text-xl font-bold"
-                                        style={{
-                                            color: 'var(--dm-text)',
-                                        }}
-                                    >
-                                        Pintasan Keyboard
-                                    </h2>
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
-                                    style={{
-                                        background: 'var(--dm-surface)',
-                                        color: 'var(--dm-text-secondary)',
-                                    }}
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
+                            <Keyboard className="w-5 h-5 text-white" />
+                        </div>
+                        <h2 className="text-xl font-bold" style={{ color: 'var(--dm-text)' }}>
+                            Pintasan Keyboard
+                        </h2>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                        style={{
+                            background: 'var(--dm-surface)',
+                            color: 'var(--dm-text-secondary)',
+                        }}
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
 
-                            <div className="space-y-6">
-                                {shortcutGroups.map((group, groupIndex) => (
-                                    <div key={groupIndex}>
-                                        <h3
-                                            className="text-sm font-semibold mb-3 uppercase tracking-wider"
-                                            style={{
-                                                color: 'var(--dm-text-secondary)',
-                                            }}
-                                        >
-                                            {group.label}
-                                        </h3>
-                                        <div className="space-y-2">
-                                            {group.shortcuts.map((shortcut, shortcutIndex) => (
-                                                <div
-                                                    key={shortcutIndex}
-                                                    className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.02]"
-                                                    style={{
-                                                        background: 'var(--dm-surface)',
-                                                    }}
-                                                >
-                                                    <span
-                                                        className="text-sm font-medium"
-                                                        style={{
-                                                            color: 'var(--dm-text)',
-                                                        }}
-                                                    >
-                                                        {shortcut.description}
-                                                    </span>
-                                                    <div className="flex items-center gap-1">
-                                                        {shortcut.keys.map((key, keyIndex) => (
-                                                            <KeyBadge key={keyIndex}>{key}</KeyBadge>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                <div className="space-y-6">
+                    {shortcutGroups.map((group, groupIndex) => (
+                        <div key={groupIndex}>
+                            <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--dm-text-secondary)' }}>
+                                {group.label}
+                            </h3>
+                            <div className="space-y-2">
+                                {group.shortcuts.map((shortcut, shortcutIndex) => (
+                                    <div
+                                        key={shortcutIndex}
+                                        className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.02]"
+                                        style={{ background: 'var(--dm-surface)' }}
+                                    >
+                                        <span className="text-sm font-medium" style={{ color: 'var(--dm-text)' }}>
+                                            {shortcut.description}
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                            {shortcut.keys.map((key, keyIndex) => (
+                                                <KeyBadge key={keyIndex}>{key}</KeyBadge>
                                             ))}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        </motion.div>
-                    </div>
-                </>
-            )}
-        </AnimatePresence>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </BaseModal>
     );
 }

@@ -1,7 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-    AlertTriangle,
     Check,
     Copy,
     FolderKanban,
@@ -11,13 +10,15 @@ import {
     Trash2,
     UserPlus,
     Users,
-    X,
 } from 'lucide-react';
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
-import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
+import { LiquidGlassCard, OrganicBlob, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { FormModal } from '@/components/ui/FormModal';
 import { InputError } from '@/components/ui/input-error';
+import { toast } from '@/components/ui/toaster';
 import { InputLabel } from '@/components/ui/input-label';
 import { EmptyState } from '@/components/ui/EmptyState';
 import AppLayout from '@/layouts/app-layout';
@@ -84,13 +85,6 @@ const modalSectionStyle = {
     border: '1px solid rgba(226,232,240,0.95)',
 } as const;
 
-const modalCloseButtonStyle = {
-    background: '#f8fafc',
-    border: '1px solid rgba(226,232,240,0.95)',
-} as const;
-
-const modalBackdropClass = 'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm';
-
 const getGoalChipStyle = (group: GroupWithDetails): CSSProperties => {
     if (group.has_goal) {
         return {
@@ -141,7 +135,10 @@ export default function GroupsIndex({ course, groups, students }: Props) {
         fetch(`/lecturer/courses/${course.id}/weeks`)
             .then((res) => res.json())
             .then((json) => setWeekOptions(json.weeks || []))
-            .catch(() => setWeekOptions([]))
+            .catch(() => {
+                toast.error('Gagal memuat minggu');
+                setWeekOptions([]);
+            })
             .finally(() => setWeeksLoading(false));
     }, [showChatSpaceModal, course.id]);
 
@@ -558,405 +555,242 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                 </div>
             </div>
 
-            <AnimatePresence>
-                {showCreateModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateModal(false)}
-                            className={modalBackdropClass}
+            <FormModal
+                open={showCreateModal}
+                title="Buat Grup Baru"
+                description="Kode unik akan dibuat otomatis untuk mahasiswa bergabung."
+                onClose={() => setShowCreateModal(false)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleCreateGroup} className="space-y-4">
+                    <div>
+                        <InputLabel htmlFor="group_name" required>
+                            Nama Grup
+                        </InputLabel>
+                        <input
+                            id="group_name"
+                            type="text"
+                            value={createForm.data.name}
+                            onChange={(event) => createForm.setData('name', event.target.value)}
+                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20 sm:text-sm sm:leading-6"
+                            placeholder="misalnya, Grup A"
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <WhiteModal className="max-w-md">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Buat Grup Baru
-                                        </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Kode unik akan dibuat otomatis untuk mahasiswa bergabung.
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateModal(false)}
-                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
-                                        style={modalCloseButtonStyle}
-                                    >
-                                        <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
-                                    </button>
-                                </div>
+                        <InputError message={createForm.errors.name} />
+                    </div>
 
-                                <form onSubmit={handleCreateGroup} className="mt-6 space-y-4">
-                                    <div>
-                                        <InputLabel htmlFor="group_name" required>
-                                            Nama Grup
-                                        </InputLabel>
-                                        <input
-                                            id="group_name"
-                                            type="text"
-                                            value={createForm.data.name}
-                                            onChange={(event) => createForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20 sm:text-sm sm:leading-6"
-                                            placeholder="misalnya, Grup A"
-                                        />
-                                        <InputError message={createForm.errors.name} />
-                                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <SecondaryButton onClick={() => setShowCreateModal(false)} className="flex-1 justify-center">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton disabled={createForm.processing} className="flex-1 justify-center">
+                            {createForm.processing ? 'Membuat...' : 'Buat'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
 
-                                    <div className="flex gap-3 pt-2">
-                                        <SecondaryButton onClick={() => setShowCreateModal(false)} className="flex-1 justify-center">
-                                            Batal
-                                        </SecondaryButton>
-                                         <PrimaryButton disabled={createForm.processing} className="flex-1 justify-center">
-                                             {createForm.processing ? 'Membuat...' : 'Buat'}
-                                         </PrimaryButton>
-                                     </div>
-                                 </form>
-                             </WhiteModal>
-                         </motion.div>
-                     </>
-                 )}
-             </AnimatePresence>
-
-            <AnimatePresence>
-                {showAssignModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowAssignModal(null)}
-                            className={modalBackdropClass}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <WhiteModal className="max-w-lg">
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Tugaskan Mahasiswa
-                                        </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            {selectedGroup ? `Pilih mahasiswa untuk dimasukkan ke ${selectedGroup.name}.` : 'Pilih mahasiswa untuk dimasukkan ke grup ini.'}
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAssignModal(null)}
-                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
-                                        style={modalCloseButtonStyle}
-                                    >
-                                        <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleAssignMembers} className="mt-6 space-y-4">
-                                    <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl p-2" style={modalSectionStyle}>
-                                        {unassignedStudents.length === 0 ? (
-                                            <div className="rounded-[24px] bg-white px-6 py-10 text-center ring-1 ring-slate-200">
-                                                <div
-                                                    className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
-                                                    style={{
-                                                        background: 'rgba(34,197,94,0.10)',
-                                                        border: '1px solid rgba(34,197,94,0.18)',
-                                                    }}
-                                                >
-                                                    <Check className="h-7 w-7" style={{ color: '#166534' }} />
-                                                </div>
-                                                <p className="mt-4 text-sm font-medium" style={{ color: '#4A4A4A' }}>
-                                                    Semua mahasiswa telah ditugaskan
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            unassignedStudents.map((student) => {
-                                                const checked = assignForm.data.member_ids.includes(student.id);
-
-                                                return (
-                                                    <label
-                                                        key={student.id}
-                                                        className="flex cursor-pointer items-center gap-3 rounded-2xl p-4 transition-all"
-                                                        style={{
-                                                            background: checked ? 'rgba(136,22,28,0.08)' : '#ffffff',
-                                                            border: checked
-                                                                ? '1px solid rgba(136,22,28,0.18)'
-                                                                : '1px solid rgba(226,232,240,0.95)',
-                                                            boxShadow: checked ? '0 10px 30px rgba(136,22,28,0.08)' : '0 6px 20px rgba(15,23,42,0.04)',
-                                                        }}
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={checked}
-                                                            onChange={() => toggleMember(student.id)}
-                                                            className="h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500"
-                                                        />
-                                                        <div
-                                                            className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium"
-                                                            style={checked ? brandChipStyle : neutralChipStyle}
-                                                        >
-                                                            {student.name.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <span className="text-sm" style={{ color: '#4A4A4A' }}>
-                                                            {student.name}
-                                                        </span>
-                                                    </label>
-                                                );
-                                            })
-                                        )}
-                                    </div>
-
-                                    <InputError message={assignForm.errors.member_ids} />
-
-                                    <div className="flex gap-3 pt-2">
-                                        <SecondaryButton onClick={() => setShowAssignModal(null)} className="flex-1 justify-center">
-                                            Batal
-                                        </SecondaryButton>
-                                         <PrimaryButton
-                                             disabled={assignForm.processing || assignForm.data.member_ids.length === 0}
-                                             className="flex-1 justify-center"
-                                         >
-                                             {assignForm.processing ? 'Menugaskan...' : 'Tugaskan'}
-                                         </PrimaryButton>
-                                     </div>
-                                 </form>
-                             </WhiteModal>
-                         </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {selectedGroupJoinCode && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setSelectedGroupJoinCode(null)}
-                            className={modalBackdropClass}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <WhiteModal className="max-w-sm text-center">
+            <FormModal
+                open={!!showAssignModal}
+                title="Tugaskan Mahasiswa"
+                description={selectedGroup ? `Pilih mahasiswa untuk dimasukkan ke ${selectedGroup.name}.` : 'Pilih mahasiswa untuk dimasukkan ke grup ini.'}
+                onClose={() => setShowAssignModal(null)}
+                maxWidth="max-w-lg"
+                scrollable
+            >
+                <form onSubmit={handleAssignMembers} className="space-y-4">
+                    <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl p-2" style={modalSectionStyle}>
+                        {unassignedStudents.length === 0 ? (
+                            <div className="rounded-[24px] bg-white px-6 py-10 text-center ring-1 ring-slate-200">
                                 <div
                                     className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
                                     style={{
-                                        background: 'rgba(136,22,28,0.08)',
-                                        border: '1px solid rgba(136,22,28,0.12)',
+                                        background: 'rgba(34,197,94,0.10)',
+                                        border: '1px solid rgba(34,197,94,0.18)',
                                     }}
                                 >
-                                    <Copy className="h-6 w-6" style={{ color: '#88161c' }} />
+                                    <Check className="h-7 w-7" style={{ color: '#166534' }} />
                                 </div>
-                                <h3 className="mt-4 text-lg font-semibold" style={headingStyle}>
-                                    Kode Bergabung Grup
-                                </h3>
-                                <p className={`mt-2 ${bodyTextClass}`}>
-                                    Bagikan kode ini kepada mahasiswa untuk masuk ke grup yang tepat.
+                                <p className="mt-4 text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    Semua mahasiswa telah ditugaskan
                                 </p>
+                            </div>
+                        ) : (
+                            unassignedStudents.map((student) => {
+                                const checked = assignForm.data.member_ids.includes(student.id);
 
-                                <div className="my-6 rounded-[28px] px-4 py-6" style={modalSectionStyle}>
-                                    <span className="font-mono text-3xl font-semibold tracking-[0.35em]" style={{ color: '#88161c' }}>
-                                        {selectedGroupJoinCode}
-                                    </span>
-                                </div>
-
-                                <PrimaryButton onClick={() => copyJoinCode(selectedGroupJoinCode)} className="w-full justify-center">
-                                    {copiedCode === selectedGroupJoinCode ? (
-                                        <>
-                                            <Check className="h-4 w-4" />
-                                            Tersalin!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="h-4 w-4" />
-                                            Salin Kode
-                                        </>
-                                    )}
-                                </PrimaryButton>
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedGroupJoinCode(null)}
-                                    className="mt-3 w-full text-sm text-brand-muted-dark transition-colors hover:text-brand-dark"
-                                >
-                                     Tutup
-                                 </button>
-                             </WhiteModal>
-                         </motion.div>
-                     </>
-                 )}
-             </AnimatePresence>
-
-            <AnimatePresence>
-                {showChatSpaceModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowChatSpaceModal(null)}
-                            className={modalBackdropClass}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <WhiteModal className="max-w-md">
-                                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Buat Chat Space Baru
-                                        </h3>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Tambahkan ruang diskusi terpisah di dalam grup untuk topik tertentu.
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowChatSpaceModal(null)}
-                                        className="rounded-full p-2 transition-colors hover:bg-slate-100"
-                                        style={modalCloseButtonStyle}
-                                    >
-                                        <X className="h-4 w-4" style={{ color: '#4A4A4A' }} />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleCreateChatSpace} className="mt-6 space-y-4">
-                                    <div>
-                                        <InputLabel htmlFor="chat_space_name" required>
-                                            Nama Chat Space
-                                        </InputLabel>
-                                        <input
-                                            id="chat_space_name"
-                                            type="text"
-                                            value={chatSpaceForm.data.name}
-                                            onChange={(event) => chatSpaceForm.setData('name', event.target.value)}
-                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm placeholder:text-slate-400 focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm sm:leading-6"
-                                            placeholder="misalnya, Diskusi BAB 1"
-                                        />
-                                        <InputError message={chatSpaceForm.errors.name} />
-                                    </div>
-
-                                    <div>
-                                        <InputLabel htmlFor="chat_space_week" required>
-                                            Minggu kuliah
-                                        </InputLabel>
-                                        <select
-                                            id="chat_space_week"
-                                            value={chatSpaceForm.data.week_id}
-                                            onChange={(event) => chatSpaceForm.setData('week_id', event.target.value)}
-                                            required
-                                            disabled={weeksLoading || weekOptions.length === 0}
-                                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm"
-                                        >
-                                            <option value="">
-                                                {weeksLoading
-                                                    ? 'Memuat minggu…'
-                                                    : weekOptions.length === 0
-                                                      ? 'Buat minggu di tab Minggu kelas dulu'
-                                                      : 'Pilih minggu'}
-                                            </option>
-                                            {weekOptions.map((w) => (
-                                                <option key={w.id} value={w.id}>
-                                                    Minggu {w.week_index}: {w.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError message={chatSpaceForm.errors.week_id} />
-                                    </div>
-
-                                     <div className="flex gap-3 pt-2">
-                                         <SecondaryButton onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
-                                             Batal
-                                         </SecondaryButton>
-                                         <PrimaryButton disabled={chatSpaceForm.processing} className="flex-1 justify-center">
-                                             {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
-                                         </PrimaryButton>
-                                     </div>
-                                 </form>
-                             </WhiteModal>
-                         </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {deleteGroupId && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setDeleteGroupId(null)}
-                            className={modalBackdropClass}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <WhiteModal className="max-w-md">
-                                <div className="flex items-start gap-4">
-                                    <div
-                                        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl"
+                                return (
+                                    <label
+                                        key={student.id}
+                                        className="flex cursor-pointer items-center gap-3 rounded-2xl p-4 transition-all"
                                         style={{
-                                            background: 'rgba(239,68,68,0.10)',
-                                            border: '1px solid rgba(239,68,68,0.16)',
+                                            background: checked ? 'rgba(136,22,28,0.08)' : '#ffffff',
+                                            border: checked
+                                                ? '1px solid rgba(136,22,28,0.18)'
+                                                : '1px solid rgba(226,232,240,0.95)',
+                                            boxShadow: checked ? '0 10px 30px rgba(136,22,28,0.08)' : '0 6px 20px rgba(15,23,42,0.04)',
                                         }}
                                     >
-                                        <AlertTriangle className="h-6 w-6" style={{ color: '#b91c1c' }} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold" style={headingStyle}>
-                                            Hapus Grup
-                                        </h3>
-                                        <p className={`mt-2 ${bodyTextClass}`}>
-                                            {deleteGroup
-                                                ? `Anda akan menghapus ${deleteGroup.name}. Semua anggota, sesi diskusi, dan data terkait akan hilang permanen.`
-                                                : 'Semua anggota, sesi diskusi, dan data terkait akan dihapus secara permanen.'}
-                                        </p>
-
-                                        <div className="mt-5 flex gap-3">
-                                            <SecondaryButton onClick={() => setDeleteGroupId(null)} className="flex-1 justify-center">
-                                                Batal
-                                            </SecondaryButton>
-                                            <button
-                                                type="button"
-                                                onClick={handleDeleteGroup}
-                                                disabled={deleteForm.processing}
-                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-4 text-sm font-medium text-white transition-all disabled:cursor-not-allowed disabled:opacity-60"
-                                                style={{
-                                                    background: 'linear-gradient(135deg, rgba(220,38,38,0.92) 0%, rgba(185,28,28,0.96) 100%)',
-                                                    boxShadow: '0 10px 30px rgba(185,28,28,0.28)',
-                                                }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                {deleteForm.processing ? 'Menghapus...' : 'Hapus Grup'}
-                                            </button>
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => toggleMember(student.id)}
+                                            className="h-4 w-4 rounded border-zinc-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <div
+                                            className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium"
+                                            style={checked ? brandChipStyle : neutralChipStyle}
+                                        >
+                                            {student.name.charAt(0).toUpperCase()}
                                         </div>
-                                    </div>
-                                </div>
-                            </WhiteModal>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                                        <span className="text-sm" style={{ color: '#4A4A4A' }}>
+                                            {student.name}
+                                        </span>
+                                    </label>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    <InputError message={assignForm.errors.member_ids} />
+
+                    <div className="flex gap-3 pt-2">
+                        <SecondaryButton onClick={() => setShowAssignModal(null)} className="flex-1 justify-center">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton
+                            disabled={assignForm.processing || assignForm.data.member_ids.length === 0}
+                            className="flex-1 justify-center"
+                        >
+                            {assignForm.processing ? 'Menugaskan...' : 'Tugaskan'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
+
+            <FormModal
+                open={!!selectedGroupJoinCode}
+                title="Kode Bergabung Grup"
+                description="Bagikan kode ini kepada mahasiswa untuk masuk ke grup yang tepat."
+                onClose={() => setSelectedGroupJoinCode(null)}
+                maxWidth="max-w-sm"
+            >
+                <div className="text-center">
+                    <div
+                        className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
+                        style={{
+                            background: 'rgba(136,22,28,0.08)',
+                            border: '1px solid rgba(136,22,28,0.12)',
+                        }}
+                    >
+                        <Copy className="h-6 w-6" style={{ color: '#88161c' }} />
+                    </div>
+
+                    <div className="my-6 rounded-[28px] px-4 py-6" style={modalSectionStyle}>
+                        <span className="font-mono text-3xl font-semibold tracking-[0.35em]" style={{ color: '#88161c' }}>
+                            {selectedGroupJoinCode}
+                        </span>
+                    </div>
+
+                    {selectedGroupJoinCode && (
+                        <PrimaryButton onClick={() => copyJoinCode(selectedGroupJoinCode)} className="w-full justify-center">
+                            {copiedCode === selectedGroupJoinCode ? (
+                                <>
+                                    <Check className="h-4 w-4" />
+                                    Tersalin!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="h-4 w-4" />
+                                    Salin Kode
+                                </>
+                            )}
+                        </PrimaryButton>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => setSelectedGroupJoinCode(null)}
+                        className="mt-3 w-full text-sm text-brand-muted-dark transition-colors hover:text-brand-dark"
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </FormModal>
+
+            <FormModal
+                open={!!showChatSpaceModal}
+                title="Buat Chat Space Baru"
+                description="Tambahkan ruang diskusi terpisah di dalam grup untuk topik tertentu."
+                onClose={() => setShowChatSpaceModal(null)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleCreateChatSpace} className="space-y-4">
+                    <div>
+                        <InputLabel htmlFor="chat_space_name" required>
+                            Nama Chat Space
+                        </InputLabel>
+                        <input
+                            id="chat_space_name"
+                            type="text"
+                            value={chatSpaceForm.data.name}
+                            onChange={(event) => chatSpaceForm.setData('name', event.target.value)}
+                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm placeholder:text-gray-600 focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm sm:leading-6"
+                            placeholder="misalnya, Diskusi BAB 1"
+                        />
+                        <InputError message={chatSpaceForm.errors.name} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="chat_space_week" required>
+                            Minggu kuliah
+                        </InputLabel>
+                        <select
+                            id="chat_space_week"
+                            value={chatSpaceForm.data.week_id}
+                            onChange={(event) => chatSpaceForm.setData('week_id', event.target.value)}
+                            required
+                            disabled={weeksLoading || weekOptions.length === 0}
+                            className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm"
+                        >
+                            <option value="">
+                                {weeksLoading
+                                    ? 'Memuat minggu…'
+                                    : weekOptions.length === 0
+                                      ? 'Buat minggu di tab Minggu kelas dulu'
+                                      : 'Pilih minggu'}
+                            </option>
+                            {weekOptions.map((w) => (
+                                <option key={w.id} value={w.id}>
+                                    Minggu {w.week_index}: {w.title}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError message={chatSpaceForm.errors.week_id} />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <SecondaryButton onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton disabled={chatSpaceForm.processing} className="flex-1 justify-center">
+                            {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
+
+            <ConfirmDialog
+                open={!!deleteGroupId}
+                title="Hapus Grup"
+                message={deleteGroup
+                    ? `Anda akan menghapus ${deleteGroup.name}. Semua anggota, sesi diskusi, dan data terkait akan hilang permanen.`
+                    : 'Semua anggota, sesi diskusi, dan data terkait akan dihapus secara permanen.'}
+                confirmLabel={deleteForm.processing ? 'Menghapus...' : 'Hapus Grup'}
+                cancelLabel="Batal"
+                variant="danger"
+                isProcessing={deleteForm.processing}
+                onCancel={() => setDeleteGroupId(null)}
+                onConfirm={handleDeleteGroup}
+            />
         </AppLayout>
     );
 }

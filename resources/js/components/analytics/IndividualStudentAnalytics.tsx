@@ -79,7 +79,7 @@ export default function IndividualStudentAnalytics({
     if (loading) {
         return (
             <div className="flex items-center justify-center py-16">
-                <div className="text-sm text-[#9CA3AF]">Memuat data mahasiswa...</div>
+                <div className="text-sm text-gray-600">Memuat data mahasiswa...</div>
             </div>
         );
     }
@@ -87,7 +87,7 @@ export default function IndividualStudentAnalytics({
     if (!data) {
         return (
             <div className="flex flex-col items-center gap-3 py-16">
-                <p className="text-sm text-[#9CA3AF]">Data mahasiswa tidak ditemukan</p>
+                <p className="text-sm text-gray-600">Data mahasiswa tidak ditemukan</p>
                 <button
                     type="button"
                     onClick={onBack}
@@ -134,7 +134,7 @@ export default function IndividualStudentAnalytics({
                     <ArrowLeft className="h-4 w-4 text-brand-muted-dark" />
                 </button>
                 <div>
-                    <nav className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                    <nav className="flex items-center gap-1 text-xs text-gray-600">
                         <button type="button" onClick={onBack} className="hover:text-brand-dark hover:underline">
                             Mahasiswa
                         </button>
@@ -174,7 +174,7 @@ export default function IndividualStudentAnalytics({
                         <p className="mt-2 text-2xl font-bold" style={{ color: card.color }}>
                             {card.value}
                         </p>
-                        <p className="mt-0.5 text-xs text-[#9CA3AF]">{card.detail}</p>
+                        <p className="mt-0.5 text-xs text-gray-600">{card.detail}</p>
                     </div>
                 ))}
             </div>

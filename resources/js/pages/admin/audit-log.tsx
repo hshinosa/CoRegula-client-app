@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { AdminPagination } from '@/components/ui/AdminPagination';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TableRowSkeleton } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
@@ -92,8 +93,8 @@ function ChangesModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
-            <div className="w-full max-w-5xl rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
+        <BaseModal open={Boolean(log)} title="Audit Changes" onClose={onClose} size="xl" className="max-h-[90vh] overflow-y-auto rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
+            <div>
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <h3 className="text-lg font-semibold text-brand-dark">Audit Changes</h3>
@@ -121,7 +122,7 @@ function ChangesModal({
                     </div>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 }
 
@@ -316,7 +317,7 @@ background: 'var(--dm-accent-bg)',
                             <div>
                                 <label className="text-sm font-medium text-brand-dark">User ID</label>
                                 <div className="relative mt-1.5">
-                                    <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                     <input
                                         type="text"
                                         value={searchUser}

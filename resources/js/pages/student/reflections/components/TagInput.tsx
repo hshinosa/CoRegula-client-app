@@ -116,7 +116,7 @@ export function TagInput({ tags, onChange, maxTags = 10, reflectionId }: TagInpu
                         onKeyDown={handleKeyDown}
                         onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                         placeholder={tags.length === 0 ? 'Tambah tag...' : ''}
-                        className="min-w-[80px] flex-1 border-0 bg-transparent p-0 text-xs text-brand-dark placeholder:text-[#9ca3af] focus:outline-none focus:ring-0"
+                        className="min-w-[80px] flex-1 border-0 bg-transparent p-0 text-xs text-brand-dark placeholder:text-gray-600 focus:outline-none focus:ring-0"
                     />
                 )}
             </div>

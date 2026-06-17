@@ -6,18 +6,18 @@ import { BookOpen, ChevronDown, Lightbulb, MessageSquare, Pencil, Plus, X } from
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
+import { FormModal } from '@/components/ui/FormModal';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import { Course, Reflection, ReflectionTemplate } from '@/types';
+import { Course, Reflection } from '@/types';
 import { Skeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { toast } from '@/components/ui/toaster';
 
 import { ReflectionSearchBar } from './components/ReflectionSearchBar';
 import { FilterChips } from './components/FilterChips';
-import { TemplatePanel } from './components/TemplatePanel';
-
 import { TagInput } from './components/TagInput';
 import { TagBadge } from './components/TagBadge';
 
@@ -172,7 +172,9 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
         fetch('/student/reflections/tags', { headers: { 'Accept': 'application/json' } })
             .then((r) => r.ok ? r.json() : { data: [] })
             .then((d) => setAvailableTags((d.data ?? []).map((t: { tag: string }) => t.tag)))
-            .catch(() => {});
+            .catch(() => {
+                toast.error('Gagal memuat tag refleksi. Silakan coba lagi.');
+            });
     }, []);
 
     const fetchTagsForReflection = useCallback(async (reflectionId: string) => {
@@ -253,11 +255,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                 setCurrentTags([]);
             },
         });
-    };
-
-    const handleTemplateSelect = (template: ReflectionTemplate) => {
-        setData('content', template.content_template);
-        setShowCreateModal(true);
     };
 
     const formatDate = (date?: string) => {
@@ -614,43 +611,8 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                      </div>
                  )}
 
-            <AnimatePresence>
-                {showCreateModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-lg p-6" lightMode={true}>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div>
-                                            <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                                Refleksi Mingguan Baru
-                                            </h3>
-                                            <p className="mt-1 text-sm text-brand-muted-dark">
-                                                Refleksikan pengalaman pembelajaran mingguan Anda.
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowCreateModal(false)}
-                                            className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-white/50 hover:text-brand-dark"
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    </div>
-
-                                    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <FormModal open={showCreateModal} title="Refleksi Mingguan Baru" description="Refleksikan pengalaman pembelajaran mingguan Anda." onClose={() => setShowCreateModal(false)} maxWidth="max-w-lg" scrollable={true}>
+                                    <form onSubmit={handleSubmit} className="space-y-4">
                                         <div>
                                             <InputLabel htmlFor="course_id" required>
                                                 Kelas
@@ -679,7 +641,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                 id="content"
                                                 value={data.content}
                                                 onChange={(e) => setData('content', e.target.value)}
-                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-[var(--color-brand-primary)]/30"
+                                                className="mt-1 block min-h-[150px] w-full rounded-2xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-[var(--color-brand-primary)]/30"
                                                 placeholder="Apa yang Anda pelajari hari ini? Tantangan apa yang Anda hadapi? Bagaimana Anda mengatasinya?"
                                                 rows={5}
                                             />
@@ -726,12 +688,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             </PrimaryButton>
                                         </div>
                                     </form>
-                                </div>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </FormModal>
         </AppLayout>
     );
 }

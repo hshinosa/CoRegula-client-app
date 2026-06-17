@@ -100,7 +100,7 @@ export default function AnalyticsOverview({ courses }: Props) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                             >
-                                <Link href={lecturer.analytics.index.url({ course: course.courseId })} className="group block">
+                                <Link href={lecturer.analytics.detail.url({ course: course.courseId })} className="group block">
                                     <LiquidGlassCard
                                         intensity="light"
                                         className="p-6 transition-all duration-300 group-hover:shadow-lg"

@@ -38,7 +38,7 @@ export function ActivityPreview({ lastMessage, lastMessageAt, lastMessageSender 
 
     if (!hasActivity) {
         return (
-            <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af]">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
                 <MessageCircle className="h-3 w-3" />
                 <span>Belum ada aktivitas</span>
             </div>
@@ -59,7 +59,7 @@ export function ActivityPreview({ lastMessage, lastMessageAt, lastMessageSender 
             )}
 
             {lastMessageAt && (
-                <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af]">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
                     <Clock className="h-3 w-3" />
                     <span>{formatRelativeTime(lastMessageAt)}</span>
                 </div>

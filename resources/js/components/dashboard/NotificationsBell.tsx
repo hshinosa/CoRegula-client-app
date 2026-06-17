@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from '@/components/ui/toaster';
 
 export interface Notification {
     id: string;
@@ -75,7 +76,9 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
                     setNotifications(items);
                     setUnreadCount(items.filter((n) => !n.read).length);
                 }
-            } catch {}
+            } catch {
+                toast.error('Gagal memuat notifikasi');
+            }
         };
 
         fetchNotifications();
@@ -115,7 +118,9 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
         setUnreadCount((prev) => Math.max(0, prev - 1));
         try {
             await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
-        } catch {}
+        } catch {
+            toast.error('Gagal menandai notifikasi');
+        }
     };
 
     const markAllAsRead = async () => {
@@ -123,7 +128,9 @@ export default function NotificationsBell({ lightMode = true }: NotificationsBel
         setUnreadCount(0);
         try {
             await fetch('/api/notifications/read-all', { method: 'POST' });
-        } catch {}
+        } catch {
+            toast.error('Gagal menandai semua notifikasi');
+        }
     };
 
     const formatTimestamp = (ts: string) => {

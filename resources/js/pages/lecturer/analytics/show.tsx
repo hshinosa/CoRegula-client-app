@@ -13,6 +13,7 @@ import { CSSProperties, useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import { LiquidGlassCard, OrganicBlob, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import MetricBreakdownTable from '@/components/MetricBreakdownTable';
 import MetricsRadarChart from '@/components/MetricsRadarChart';
@@ -20,6 +21,7 @@ import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { toast } from '@/components/ui/toaster';
 
 interface Member {
     id: string;
@@ -301,7 +303,10 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
     const navItems = useLecturerNav('analytics-group');
 
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
+        getAuthToken().then(setJwtToken).catch((err) => {
+            console.error(err);
+            toast.error('Gagal mengambil token autentikasi. Silakan muat ulang halaman.');
+        });
     }, []);
 
     useEffect(() => {
@@ -489,7 +494,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                   <span className="text-4xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
                                                       {liveQuality?.toFixed(1) ?? '—'}
                                                   </span>
-                                                  <span className="pb-1 text-sm text-[#9CA3AF]">/ 100</span>
+                                                  <span className="pb-1 text-sm text-gray-600">/ 100</span>
                                               </div>
                                               <p className="mt-2 text-xs text-brand-muted-dark">Status: {getQualityLabel(liveQuality)}</p>
                                           </div>
@@ -519,7 +524,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         <span className="text-6xl font-semibold" style={{ ...headingStyle, color: getQualityAccent(liveQuality) }}>
                                             {liveQuality?.toFixed(1) ?? '—'}
                                         </span>
-                                        <span className="pb-2 text-lg text-[#9CA3AF]">/100</span>
+                                        <span className="pb-2 text-lg text-gray-600">/100</span>
                                     </div>
                                     {safeAnalytics.recommendation && (
                                         <div className="mt-4 rounded-[24px] p-4" style={glassPanelStyle}>
@@ -665,7 +670,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                         <p className="text-xs font-medium capitalize" style={{ color: info.chipStyle.color as string }}>
                                                             {type}
                                                         </p>
-                                                        <p className="mt-0.5 text-xs text-[#9CA3AF]">{info.description}</p>
+                                                        <p className="mt-0.5 text-xs text-gray-600">{info.description}</p>
                                                     </div>
 
                                                     <div className="flex flex-1 items-center gap-3">
@@ -861,7 +866,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                     </div>
 
                                                     <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{activity.content}</p>
-                                                    <p className="mt-2 text-xs text-[#9CA3AF]">{formatDateTime(activity.createdAt)}</p>
+                                                    <p className="mt-2 text-xs text-gray-600">{formatDateTime(activity.createdAt)}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -873,26 +878,8 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                 </div>
             </div>
 
-            <AnimatePresence>
-                {showMemberModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 bg-black/50"
-                            onClick={() => setShowMemberModal(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <div
-                                className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
-                                onClick={(e) => e.stopPropagation()}
-                            >
+            <BaseModal open={showMemberModal} title={`Daftar Anggota (${safeMembers.length})`} onClose={() => setShowMemberModal(false)} size="md" className="rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+                            <div>
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
@@ -936,31 +923,10 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </BaseModal>
 
-            <AnimatePresence>
-                {showSessionModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 bg-black/50"
-                            onClick={() => setShowSessionModal(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <div
-                                className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
-                                onClick={(e) => e.stopPropagation()}
-                            >
+            <BaseModal open={showSessionModal} title={`Sesi Diskusi (${safeChatSpaces.length})`} onClose={() => setShowSessionModal(false)} size="md" className="rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+                            <div>
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
@@ -1011,10 +977,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </BaseModal>
         </AppLayout>
     );
 }

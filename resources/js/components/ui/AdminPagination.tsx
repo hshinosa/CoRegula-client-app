@@ -84,7 +84,7 @@ export function AdminPagination({
 
                 {pages.map((page, i) =>
                     page === '...' ? (
-                        <span key={`ellipsis-${i}`} className="px-1 text-sm text-slate-400">
+                        <span key={`ellipsis-${i}`} className="px-1 text-sm text-gray-600">
                             ...
                         </span>
                     ) : (

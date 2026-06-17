@@ -105,7 +105,7 @@ export default function TemplateEditor({ template, onSave, onCancel }: Props) {
           {template?.id ? 'Edit Template' : 'Create Template'}
         </h3>
         {onCancel && (
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-500">
+          <button onClick={onCancel} className="text-gray-600 hover:text-gray-500">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -184,7 +184,7 @@ export default function TemplateEditor({ template, onSave, onCancel }: Props) {
                 <button
                   type="button"
                   onClick={() => handleRemoveRule(index)}
-                  className="text-gray-400 hover:text-red-500"
+                  className="text-gray-600 hover:text-red-500"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Download,
     Filter,
@@ -14,13 +14,13 @@ import {
     Trash2,
     UserCog,
     UserPen,
-    X,
 } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { AdminPagination } from '@/components/ui/AdminPagination';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FormModal } from '@/components/ui/FormModal';
 import { InputError } from '@/components/ui/input-error';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 import { TableRowSkeleton } from '@/components/ui/skeletons';
@@ -130,85 +130,6 @@ function normalizeUserRole(value: string): UserRole | null {
     }
 
     return null;
-}
-
-function FormModal({
-    open,
-    title,
-    description,
-    children,
-    onClose,
-}: {
-    open: boolean;
-    title: string;
-    description: string;
-    children: React.ReactNode;
-    onClose: () => void;
-}) {
-    if (!open) return null;
-
-    return (
-        <AnimatePresence>
-            <>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 bg-black"
-                    onClick={onClose}
-                    style={{
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
-                    }}
-                />
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                >
-                    <div
-                        className="w-full max-w-lg rounded-3xl p-6 shadow-2xl"
-                        style={{
-                            background: 'var(--dm-surface)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            border: '1px solid var(--dm-border-strong)',
-                        }}
-                    >
-                        <div
-                            className="flex items-start justify-between gap-4 pb-4"
-                            style={{ borderBottom: '1px solid var(--dm-border)' }}
-                        >
-                            <div>
-                                <h3 className="text-lg font-semibold" style={headingStyle}>
-                                    {title}
-                                </h3>
-                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
-                                style={{
-                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-                        <div className="mt-6 space-y-4">{children}</div>
-                    </div>
-                </motion.div>
-            </>
-        </AnimatePresence>
-    );
 }
 
 function UserCard({
@@ -850,7 +771,7 @@ background: 'var(--dm-accent-bg)',
                                 <div>
                                     <label className="text-sm font-medium text-brand-dark">Search</label>
                                     <div className="relative mt-1.5">
-                                        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                         <input
                                             type="text"
                                             value={searchInput}

@@ -104,9 +104,9 @@ class ProfileController extends Controller
                 $stats['active_courses'] = count(array_filter($courses, fn($c) => ($c['status'] ?? '') === 'aktif'));
             }
         } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::debug('Profile stats: courses failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Profile stats: courses failed', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::debug('Profile stats: courses failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Profile stats: courses failed', ['error' => $e->getMessage()]);
         }
 
         try {
@@ -115,9 +115,9 @@ class ProfileController extends Controller
                 $stats['total_reflections'] = $response->json('meta.total', count($response->json('data', [])));
             }
         } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::debug('Profile stats: reflections failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Profile stats: reflections failed', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::debug('Profile stats: reflections failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Profile stats: reflections failed', ['error' => $e->getMessage()]);
         }
 
         return $stats;

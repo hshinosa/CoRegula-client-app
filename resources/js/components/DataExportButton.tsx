@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import axios from 'axios';
+import { getAuthToken } from '@/lib/getAuthToken';
 
 export default function DataExportButton({ className = '' }: { className?: string }) {
     const [isExporting, setIsExporting] = useState(false);
     const [status, setStatus] = useState<'idle' | 'pending' | 'processing' | 'completed' | 'failed'>('idle');
-    const [jobId, setJobId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -15,7 +15,7 @@ export default function DataExportButton({ className = '' }: { className?: strin
             setError(null);
             setStatus('pending');
 
-            const token = localStorage.getItem('auth_token');
+            const token = await getAuthToken();
             const response = await axios.post(
                 '/api/user/data-export',
                 {},
@@ -27,7 +27,6 @@ export default function DataExportButton({ className = '' }: { className?: strin
             );
 
             const newJobId = response.data.jobId;
-            setJobId(newJobId);
             startPolling(newJobId);
         } catch (err: any) {
             setError(err.response?.data?.error?.message || 'Export gagal dimulai');
@@ -51,7 +50,7 @@ export default function DataExportButton({ className = '' }: { className?: strin
 
     const checkStatus = async (jobId: string) => {
         try {
-            const token = localStorage.getItem('auth_token');
+            const token = await getAuthToken();
             const response = await axios.get(`/api/user/data-export/${jobId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -67,7 +66,6 @@ export default function DataExportButton({ className = '' }: { className?: strin
                 setTimeout(() => {
                     setStatus('idle');
                     setIsExporting(false);
-                    setJobId(null);
                 }, 2000);
             } else if (newStatus === 'failed' || newStatus === 'expired') {
                 stopPolling();
@@ -84,7 +82,7 @@ export default function DataExportButton({ className = '' }: { className?: strin
 
     const downloadFile = async (jobId: string) => {
         try {
-            const token = localStorage.getItem('auth_token');
+            const token = await getAuthToken();
             const response = await axios.get(`/api/user/data-export/${jobId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,

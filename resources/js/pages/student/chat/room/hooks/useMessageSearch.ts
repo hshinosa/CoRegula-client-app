@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import type { SearchResult } from '../components/SearchResults';
+import { toast } from '@/components/ui/toaster';
 
 interface UseMessageSearchOptions {
     conversationId: string;
@@ -56,6 +57,7 @@ export function useMessageSearch({
                 setTotalResults(data.data?.length || 0);
             } catch (error) {
                 console.error('Search failed:', error);
+                toast.error('Gagal mencari pesan');
                 setResults([]);
                 setHasMore(false);
                 setTotalResults(0);
@@ -88,6 +90,7 @@ export function useMessageSearch({
             setTotalResults((prev) => prev + (data.data?.length || 0));
         } catch (error) {
             console.error('Load more failed:', error);
+            toast.error('Gagal memuat lebih banyak hasil');
         } finally {
             setIsLoading(false);
         }

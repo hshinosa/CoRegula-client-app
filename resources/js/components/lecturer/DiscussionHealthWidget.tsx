@@ -99,7 +99,7 @@ export const DiscussionHealthWidget: React.FC = () => {
 
             {chatSpaces.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 py-12">
-                    <MessageSquare className="h-12 w-12 text-gray-400" />
+                    <MessageSquare className="h-12 w-12 text-gray-600" />
                     <p className="mt-4 text-sm font-medium text-gray-600">Tidak ada diskusi aktif</p>
                     <p className="mt-1 text-xs text-gray-500">Diskusi dengan tujuan pembelajaran akan muncul di sini</p>
                 </div>

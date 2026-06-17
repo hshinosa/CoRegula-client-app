@@ -72,28 +72,28 @@ export function SearchBar({
         <div className="flex items-center gap-2">
             {isExpanded ? (
                 <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800/80">
-                    <Search className="h-4 w-4 text-gray-400" />
+                    <Search className="h-4 w-4 text-gray-600" />
                     <input
                         ref={inputRef}
                         type="text"
                         value={query}
                         onChange={handleChange}
                         placeholder="Cari pesan..."
-                        className="w-48 border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 dark:text-gray-100 sm:w-64"
+                        className="w-48 border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-0 dark:text-gray-100 sm:w-64"
                         aria-label="Cari pesan dalam ruang chat"
                     />
                     {isSearching && (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
                     )}
                     {isActive && !isSearching && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-600">
                             {resultCount} hasil
                         </span>
                     )}
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                        className="flex h-5 w-5 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                         aria-label="Tutup pencarian"
                     >
                         <X className="h-3 w-3" />
@@ -103,7 +103,7 @@ export function SearchBar({
                 <button
                     type="button"
                     onClick={handleToggle}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200 dark:text-gray-600 dark:hover:bg-gray-700"
                     aria-label="Buka pencarian"
                 >
                     <Search className="h-4 w-4" />

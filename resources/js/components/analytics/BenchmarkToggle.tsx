@@ -78,7 +78,7 @@ export default function BenchmarkToggle({
                 {enabled ? (
                     <ToggleRight className="h-5 w-5 text-brand-primary" />
                 ) : (
-                    <ToggleLeft className="h-5 w-5 text-[#9CA3AF]" />
+                    <ToggleLeft className="h-5 w-5 text-gray-600" />
                 )}
                 <span className="text-xs font-medium" style={{ color: enabled ? '#4A4A4A' : '#9CA3AF' }}>
                     Benchmark
@@ -109,7 +109,7 @@ export default function BenchmarkToggle({
             )}
 
             {enabled && loading && (
-                <span className="text-xs text-[#9CA3AF]">Memuat benchmark...</span>
+                <span className="text-xs text-gray-600">Memuat benchmark...</span>
             )}
         </div>
     );

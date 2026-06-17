@@ -1,5 +1,4 @@
 import { router } from '@inertiajs/react';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
     BookOpen,
     FileText,
@@ -10,6 +9,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BaseModal } from '@/components/ui/BaseModal';
 
 interface SearchResultItem {
     id: string;
@@ -155,30 +155,11 @@ export function GlobalSearchModal({
     if (!open) return null;
 
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
-                {/* Backdrop */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                    onClick={onClose}
-                />
-
-                {/* Modal */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                    className="relative w-full max-w-2xl mx-4"
-                >
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <BaseModal open={open} title="Global Search" onClose={onClose} size="lg" className="overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
                         {/* Search Input */}
                         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <Search className="h-5 w-5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                            <Search className="h-5 w-5 text-gray-600 dark:text-gray-500 flex-shrink-0" />
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -195,7 +176,7 @@ export function GlobalSearchModal({
                                 onClick={onClose}
                                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                             >
-                                <X className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                <X className="h-5 w-5 text-gray-600 dark:text-gray-500" />
                             </button>
                         </div>
 
@@ -205,11 +186,11 @@ export function GlobalSearchModal({
                             className="max-h-[60vh] overflow-y-auto"
                         >
                             {!debouncedQuery.trim() || debouncedQuery.trim().length < 2 ? (
-                                <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-600 text-sm">
                                     Type at least 2 characters to search
                                 </div>
                             ) : results.length === 0 && !isLoading ? (
-                                <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-600 text-sm">
                                     No results found
                                 </div>
                             ) : (
@@ -219,7 +200,7 @@ export function GlobalSearchModal({
                                             {/* Group Header */}
                                             <div className="px-4 py-2 flex items-center gap-2">
                                                 <GroupIcon type={group.type} />
-                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                                                     {group.label}
                                                 </span>
                                             </div>
@@ -246,7 +227,7 @@ export function GlobalSearchModal({
                                                                 className={`flex-shrink-0 ${
                                                                     globalIndex === selectedIndex
                                                                         ? 'text-blue-600 dark:text-blue-400'
-                                                                        : 'text-gray-400 dark:text-gray-500'
+                                                                        : 'text-gray-600 dark:text-gray-500'
                                                                 }`}
                                                             >
                                                                 <ItemIcon type={item.type} />
@@ -261,7 +242,7 @@ export function GlobalSearchModal({
                                                                 >
                                                                     {item.title}
                                                                 </div>
-                                                                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                <div className="text-xs text-gray-500 dark:text-gray-600 truncate">
                                                                     {item.subtitle}
                                                                 </div>
                                                             </div>
@@ -276,7 +257,7 @@ export function GlobalSearchModal({
                         </div>
 
                         {/* Footer */}
-                        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-600">
                             <div className="flex items-center gap-4">
                                 <span className="flex items-center gap-1">
                                     <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
@@ -298,9 +279,7 @@ export function GlobalSearchModal({
                                 </span>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
             </div>
-        </AnimatePresence>
+        </BaseModal>
     );
 }

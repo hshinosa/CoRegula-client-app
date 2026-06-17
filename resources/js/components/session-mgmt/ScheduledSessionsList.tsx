@@ -80,7 +80,7 @@ export default function ScheduledSessionsList({ sessions, onCancel, onActivate }
   if (sessions.length === 0) {
     return (
       <div className="text-center py-12">
-        <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+        <Calendar className="mx-auto h-12 w-12 text-gray-600" />
         <h3 className="mt-2 text-sm font-medium text-gray-900">No scheduled sessions</h3>
         <p className="mt-1 text-sm text-gray-500">
           Schedule a session to see it here.

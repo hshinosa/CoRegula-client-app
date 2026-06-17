@@ -19,6 +19,7 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import { useCallback, useEffect, useState } from 'react';
 
 import { LiquidGlassCard, SecondaryButton, OrganicBlob } from '@/components/Welcome/utils/helpers';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { SkeletonDashboard, SkeletonStatCard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
 import { connectWebSocket } from '@/lib/websocket';
@@ -290,13 +291,9 @@ function DateRangeModal({
     onClose: () => void;
     onApply: () => void;
 }) {
-    if (!open) {
-        return null;
-    }
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
-            <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
+        <BaseModal open={open} title="Custom date range" onClose={onClose} size="md" className="rounded-3xl border border-white/70 bg-white/95 p-6 shadow-2xl">
+            <div>
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <h3 className="text-lg font-semibold text-brand-dark">Custom date range</h3>
@@ -341,7 +338,7 @@ function DateRangeModal({
                     </button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     );
 }
 
@@ -777,19 +774,19 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Most Active Course</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Most Active Course</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveCourse?.name ?? 'No data yet'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Most Active User</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Most Active User</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveUser?.name ?? 'No data yet'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Course Messages</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Course Messages</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveCourse
                                                 ? `${formatNumber(safeStats.engagement.mostActiveCourse.messageCount)} messages`
@@ -797,7 +794,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">User Messages</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">User Messages</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveUser
                                                 ? `${formatNumber(safeStats.engagement.mostActiveUser.messageCount)} messages`
@@ -811,7 +808,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                 <div className="rounded-2xl border border-white/70 bg-white/60 p-4">
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
-                                            <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">Date Range</p>
+                                            <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Date Range</p>
                                             <p className="mt-2 text-sm font-semibold text-brand-dark">{getPresetLabel(dateRange.preset)}</p>
                                         </div>
                                         <button
@@ -1046,7 +1043,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                                             ) : null}
                                                         </div>
                                                         <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{activity.description}</p>
-                                                        <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-[#9CA3AF]">
+                                                        <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-gray-600">
                                                             {formatRelativeTime(activity.timestamp)}
                                                         </p>
                                                     </div>

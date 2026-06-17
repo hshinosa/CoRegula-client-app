@@ -108,27 +108,34 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('api.notifications.read-all');
     
     Route::post('/api/chat/upload', [ChatUploadController::class, 'store'])
-        ->middleware('throttle:30,5')
+        ->middleware(['assert.chat.membership', 'throttle:30,5'])
         ->name('chat.upload');
 
     // Chat Message Edit/Delete
     Route::patch('/api/chat/messages/{messageId}/edit', [MessageController::class, 'edit'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.edit');
     Route::delete('/api/chat/messages/{messageId}', [MessageController::class, 'destroy'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.delete');
     Route::get('/api/chat/messages/{messageId}/audit', [MessageController::class, 'audit'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.audit');
 
     // Chat Message Search
     Route::get('/api/chat/messages/search', [MessageSearchController::class, 'index'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.search');
 
     // Chat Message Pin/Unpin
     Route::post('/api/chat/messages/{messageId}/pin', [PinnedMessageController::class, 'store'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.pin');
     Route::delete('/api/chat/messages/{messageId}/pin', [PinnedMessageController::class, 'destroy'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.unpin');
     Route::get('/api/chat/messages/pinned', [PinnedMessageController::class, 'index'])
+        ->middleware('assert.chat.membership')
         ->name('chat.messages.pinned');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -201,14 +208,11 @@ Route::middleware('auth.jwt')->group(function () {
         });
 
         Route::prefix('course-templates')->name('course-templates.')->group(function () {
-            Route::get('/', [MasterDataController::class, 'templatesPage'])->name('page');
             Route::post('/', [MasterDataController::class, 'storeTemplate'])->name('store');
             Route::get('/list', [MasterDataController::class, 'listTemplates'])->name('index');
             Route::get('/{id}', [MasterDataController::class, 'showTemplate'])->name('show');
             Route::delete('/{id}', [MasterDataController::class, 'destroyTemplate'])->name('destroy');
         });
-
-        Route::get('/templates', [MasterDataController::class, 'templatesPage'])->name('templates');
 
         Route::prefix('ai-settings')->name('ai-settings.')->group(function () {
             Route::get('/', [AISettingsController::class, 'index'])->name('index');
@@ -471,6 +475,9 @@ Route::middleware('auth.jwt')->group(function () {
             ->middleware('throttle:10,5')
             ->name('chat-spaces.reflection');
         Route::get('/courses/{course}/chat-spaces/{chatSpace}/summary', [StudentCourseController::class, 'chatSpaceSummary'])->name('chat-spaces.summary');
+        Route::post('/courses/{course}/chat-spaces/{chatSpace}/regenerate-summary', [StudentCourseController::class, 'regenerateSummary'])
+            ->middleware('throttle:10,5')
+            ->name('chat-spaces.regenerate-summary');
 
         // Reflections
         Route::get('/reflections', [ReflectionController::class, 'index'])->name('reflections.index');

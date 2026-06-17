@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Trash2, Upload, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { BaseModal } from '@/components/ui/BaseModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useAvatarUpload } from '../hooks/useAvatarUpload';
 import { getInitials, validateAvatarFile } from '../utils/avatar-helpers';
 
@@ -216,20 +218,8 @@ export default function AvatarSection({ avatar, userName, onAvatarChange }: Prop
                 onChange={handleFileSelect}
             />
 
-            <AnimatePresence>
-                {showCropModal && previewUrl && (
-                    <motion.div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <motion.div
-                            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                        >
+            <BaseModal open={showCropModal && Boolean(previewUrl)} title="Potong Avatar" onClose={handleCloseCrop} size="lg" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800">
+                        <div>
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     Potong Avatar
@@ -322,49 +312,19 @@ export default function AvatarSection({ avatar, userName, onAvatarChange }: Prop
                                     Potong & Unggah
                                 </button>
                             </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </div>
+            </BaseModal>
 
-            <AnimatePresence>
-                {showDeleteConfirm && (
-                    <motion.div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <motion.div
-                            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                        >
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                                Hapus Avatar?
-                            </h3>
-                            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-                                Foto profil Anda akan dihapus dan diganti dengan inisial nama.
-                            </p>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    className="flex-1 rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
-                                >
-                                    Hapus
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <ConfirmDialog
+                open={showDeleteConfirm}
+                title="Hapus Avatar?"
+                message="Foto profil Anda akan dihapus dan diganti dengan inisial nama."
+                confirmLabel="Hapus"
+                cancelLabel="Batal"
+                onConfirm={handleDelete}
+                onClose={() => setShowDeleteConfirm(false)}
+                variant="danger"
+            />
         </div>
     );
 }

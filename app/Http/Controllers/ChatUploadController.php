@@ -6,6 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+// H3 file-upload hardening decision:
+// Chat attachments remain on the 'public' disk because chat messages (including
+// inline image previews) are served via Storage::url() directly to the browser.
+// Moving them to 'private' would break embedded previews for all existing messages
+// and require a streaming proxy for every image — disproportionate cost for
+// ephemeral chat attachments that are already behind auth.jwt + assert.chat.membership
+// middleware at the route level.
 class ChatUploadController extends Controller
 {
     public function store(Request $request)

@@ -102,33 +102,6 @@ class MasterDataControllerTest extends TestCase
         $response->assertJsonPath('message', 'Deleted');
     }
 
-    public function test_templates_page_renders(): void
-    {
-        Http::fake([
-            'http://localhost:3000/api/admin/course-templates' => Http::response([
-                'data' => [
-                    ['id' => 'template-1', 'name' => 'Template A'],
-                ],
-            ], 200),
-            'http://localhost:3000/api/admin/users*' => Http::response([
-                'data' => [
-                    'users' => [
-                        ['id' => 'lecturer-1', 'name' => 'Dr. Smith'],
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $response = $this->authenticatedSession()->get(route('admin.templates'));
-
-        $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
-            ->component('admin/templates')
-            ->where('templates.0.id', 'template-1')
-            ->where('lecturers.0.id', 'lecturer-1')
-        );
-    }
-
     public function test_handles_api_error(): void
     {
         Http::fake([

@@ -143,7 +143,8 @@ class LecturerCourseWeeksController extends Controller
             'sort_order' => $validated['sort_order'] ?? ($maxSort + 1),
         ]);
 
-        $disk = Storage::disk('public')->exists($material->file_path) ? 'public' : 'local';
+        $disk = Storage::disk('private')->exists($material->file_path) ? 'private'
+              : (Storage::disk('public')->exists($material->file_path) ? 'public' : 'local');
         $absolutePath = Storage::disk($disk)->path($material->file_path);
         $this->coreApiInternal->linkCourseMaterial([
             'course_id' => $course,

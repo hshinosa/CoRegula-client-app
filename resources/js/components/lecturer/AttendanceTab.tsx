@@ -1,7 +1,8 @@
 import { AttendanceSession, AttendanceStatus, AttendanceStudentRecord, AttendanceStudentSummary } from '@/types';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { CalendarCheck, CheckCircle2, Download, Minus, Plus, XCircle, X, Clock } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from '@/components/ui/toaster';
 
 const headingStyle = {
     color: '#4A4A4A',
@@ -84,7 +85,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                 setNewSession({ title: '', session_date: '', session_number: '', notes: '' });
                 fetchSessions();
             }
-        } catch {}
+        } catch {
+            toast.error('Gagal membuat sesi kehadiran');
+        }
     };
 
     const startMarking = async (sessionId: string) => {
@@ -94,7 +97,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
             setMarkingRecords(data.students || []);
             setMarkingSession(sessionId);
             setViewMode('marking');
-        } catch {}
+        } catch {
+            toast.error('Gagal memuat data kehadiran');
+        }
     };
 
     const toggleStatus = (studentId: string) => {
@@ -123,7 +128,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                 setMarkingSession(null);
                 fetchSessions();
             }
-        } catch {}
+        } catch {
+            toast.error('Gagal menyimpan kehadiran');
+        }
     };
 
     const deleteSession = async (sessionId: string) => {
@@ -134,7 +141,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
             });
             fetchSessions();
-        } catch {}
+        } catch {
+            toast.error('Gagal menghapus sesi');
+        }
     };
 
     const handleExport = () => {

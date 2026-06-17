@@ -70,7 +70,7 @@ export function MemberCard({ member, index = 0, currentUserId, isOwner, onRoleCh
                         {member.user.name}
                     </h4>
                     {isCurrentUser && (
-                        <span className="text-xs text-gray-400">(Anda)</span>
+                        <span className="text-xs text-gray-600">(Anda)</span>
                     )}
                 </div>
                 <p className="truncate text-xs text-brand-muted-dark">{member.user.email}</p>

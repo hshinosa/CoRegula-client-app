@@ -512,8 +512,8 @@ HTML;
     {
         $apiBaseUrl = rtrim(config('services.api.base_url', 'http://localhost:3000'), '/');
         $credentials = [
-            ['email' => 'lecturer@kolabri.edu', 'password' => 'password123'],
-            ['email' => 'sari@kolabri.edu', 'password' => 'password123'],
+            ['email' => 'budi.santoso@univ.ac.id', 'password' => 'password123'],
+            ['email' => 'siti.rahayu@univ.ac.id', 'password' => 'password123'],
         ];
 
         CourseWeekMaterial::query()->delete();
@@ -528,11 +528,11 @@ HTML;
         $seenCourses = [];
 
         foreach ($credentials as $credential) {
-            $loginResponse = Http::post($apiBaseUrl . '/api/auth/login', $credential);
+            $loginResponse = Http::timeout(30)->connectTimeout(5)->post($apiBaseUrl . '/api/auth/login', $credential);
             if (!$loginResponse->successful()) continue;
 
             $token = $loginResponse->json('data.accessToken');
-            $coursesResponse = Http::withToken($token)->get($apiBaseUrl . '/api/courses/my');
+            $coursesResponse = Http::withToken($token)->timeout(30)->connectTimeout(5)->get($apiBaseUrl . '/api/courses/my');
             $courses = $coursesResponse->successful() ? $coursesResponse->json('data', []) : [];
 
             foreach ($courses as $course) {

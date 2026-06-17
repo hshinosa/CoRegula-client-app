@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import type { PinnedMessage } from '../components/PinnedMessages';
+import { toast } from '@/components/ui/toaster';
 
 interface UsePinnedMessagesOptions {
     conversationId: string;
@@ -30,6 +31,7 @@ export function usePinnedMessages({
             setPinnedMessages(response.data.data || []);
         } catch (error) {
             console.error('Failed to fetch pinned messages:', error);
+            toast.error('Gagal memuat pesan disematkan');
         }
     }, [conversationId]);
 

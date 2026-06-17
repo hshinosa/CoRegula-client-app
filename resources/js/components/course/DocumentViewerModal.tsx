@@ -1,6 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { BaseModal } from '@/components/ui/BaseModal';
 
 export interface DocumentViewerTarget {
     title: string;
@@ -27,37 +26,11 @@ function isImage(fileType?: string | null, fileName?: string): boolean {
 }
 
 export function DocumentViewerModal({ open, target, onClose }: DocumentViewerModalProps) {
-    useEffect(() => {
-        if (!open) return;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [open, onClose]);
-
     return (
-        <AnimatePresence>
-            {open && target && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-2 sm:p-4"
-                    onClick={onClose}
-                    role="presentation"
-                >
-                    <motion.div
-                        initial={{ scale: 0.96, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.96, opacity: 0 }}
-                        onClick={(e) => e.stopPropagation()}
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label={target.title}
-                        className="flex h-[min(90vh,800px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/40 bg-white shadow-xl"
-                    >
-                        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
+        <BaseModal open={open && !!target} title={target?.title ?? 'Document'} onClose={onClose} size="xl" className="flex h-[min(90vh,800px)] flex-col border border-white/40">
+            {target && (
+                <>
+                    <header className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
                             <div className="min-w-0">
                                 <p className="truncate font-semibold text-brand-dark">{target.title}</p>
                                 <p className="truncate text-xs text-brand-muted-dark">{target.fileName}</p>
@@ -70,8 +43,8 @@ export function DocumentViewerModal({ open, target, onClose }: DocumentViewerMod
                             >
                                 <X className="h-5 w-5" />
                             </button>
-                        </header>
-                        <div className="min-h-0 flex-1 bg-gray-50">
+                    </header>
+                    <div className="min-h-0 flex-1 bg-gray-50">
                             {isPdf(target.fileType, target.fileName) ? (
                                 <iframe
                                     title={target.title}
@@ -101,10 +74,9 @@ export function DocumentViewerModal({ open, target, onClose }: DocumentViewerMod
                                     </a>
                                 </div>
                             )}
-                        </div>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </>
             )}
-        </AnimatePresence>
+        </BaseModal>
     );
 }

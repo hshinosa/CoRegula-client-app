@@ -14,7 +14,7 @@ class AttendanceDemoSeeder extends Seeder
     {
         $apiBaseUrl = rtrim(config('services.api.base_url', 'http://localhost:3000'), '/');
 
-        $loginResponse = Http::post($apiBaseUrl . '/api/auth/login', [
+        $loginResponse = Http::timeout(30)->connectTimeout(5)->post($apiBaseUrl . '/api/auth/login', [
             'email' => 'lecturer@kolabri.edu',
             'password' => 'password123',
         ]);
@@ -30,7 +30,7 @@ class AttendanceDemoSeeder extends Seeder
             return;
         }
 
-        $coursesResponse = Http::withToken($token)->get($apiBaseUrl . '/api/courses/my');
+        $coursesResponse = Http::withToken($token)->timeout(30)->connectTimeout(5)->get($apiBaseUrl . '/api/courses/my');
         $courses = $coursesResponse->successful() ? $coursesResponse->json('data', []) : [];
 
         AttendanceRecord::query()->delete();
@@ -45,7 +45,7 @@ class AttendanceDemoSeeder extends Seeder
                 continue;
             }
 
-            $studentsResponse = Http::withToken($token)->get($apiBaseUrl . "/api/courses/{$courseId}/students");
+            $studentsResponse = Http::withToken($token)->timeout(30)->connectTimeout(5)->get($apiBaseUrl . "/api/courses/{$courseId}/students");
             $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
 
             if (count($students) === 0) {

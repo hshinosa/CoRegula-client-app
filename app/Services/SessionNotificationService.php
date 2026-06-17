@@ -17,7 +17,7 @@ class SessionNotificationService
     public function sendAutoCloseWarning(string $sessionId, int $minutesRemaining): bool
     {
         try {
-            $response = Http::timeout(10)->post("{$this->apiUrl}/api/notifications/session-auto-close-warning", [
+            $response = Http::timeout(10)->connectTimeout(5)->post("{$this->apiUrl}/api/notifications/session-auto-close-warning", [
                 'session_id' => $sessionId,
                 'minutes_remaining' => $minutesRemaining,
             ]);
@@ -35,7 +35,7 @@ class SessionNotificationService
     public function sendSessionActivated(string $sessionId): bool
     {
         try {
-            $response = Http::timeout(10)->post("{$this->apiUrl}/api/notifications/session-activated", [
+            $response = Http::timeout(10)->connectTimeout(5)->post("{$this->apiUrl}/api/notifications/session-activated", [
                 'session_id' => $sessionId,
             ]);
 
@@ -52,7 +52,7 @@ class SessionNotificationService
     public function sendSessionClosed(string $sessionId, string $reason): bool
     {
         try {
-            $response = Http::timeout(10)->post("{$this->apiUrl}/api/notifications/session-closed", [
+            $response = Http::timeout(10)->connectTimeout(5)->post("{$this->apiUrl}/api/notifications/session-closed", [
                 'session_id' => $sessionId,
                 'reason' => $reason,
             ]);

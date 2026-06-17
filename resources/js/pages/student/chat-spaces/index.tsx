@@ -4,9 +4,9 @@
  * See: resources/js/pages/student/courses/show.tsx
  */
 import { Head, useForm } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState, FormEvent, useMemo, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
@@ -14,10 +14,12 @@ import { Course } from '@/types';
 import student from '@/routes/student';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { room as chatRoom } from '@/routes/student/courses/chat';
-import { LiquidGlassCard, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
+import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { FormModal } from '@/components/ui/FormModal';
 import { Skeleton } from '@/components/ui/skeletons';
 
 import { useSpaceFilters } from '@/hooks/useSpaceFilters';
+import { toast } from '@/components/ui/toaster';
 import { SearchBar } from '@/components/chat-spaces/SearchBar';
 import { SortDropdown } from '@/components/chat-spaces/SortDropdown';
 import { SpaceCard } from '@/components/chat-spaces/SpaceCard';
@@ -101,12 +103,6 @@ interface Props {
     chatSpaceMeta?: ChatSpaceMeta | null;
 }
 
-const headingStyle = {
-                                color: 'var(--color-brand-dark)',
-} as const;
-
-const bodyTextClass = 'text-sm text-brand-muted-dark';
-
 export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -131,7 +127,10 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
         fetch(`/student/courses/${course.id}/weeks`)
             .then((res) => res.json())
             .then((json) => setWeekOptions(json.weeks || []))
-            .catch(() => setWeekOptions([]))
+            .catch(() => {
+                toast.error('Gagal memuat minggu');
+                setWeekOptions([]);
+            })
             .finally(() => setWeeksLoading(false));
     }, [showCreateModal, course.id]);
 
@@ -368,121 +367,77 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
             </>
             )}
 
-            <AnimatePresence>
-                {showCreateModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            <FormModal
+                open={showCreateModal}
+                title="Buat Sesi Diskusi Baru"
+                description="Buat sesi diskusi baru untuk topik tertentu."
+                onClose={() => setShowCreateModal(false)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Nama Sesi <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder="Contoh: Diskusi Bab 3"
+                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                            required
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-brand-dark">Deskripsi (Opsional)</label>
+                        <textarea
+                            value={data.description}
+                            onChange={(e) => setData('description', e.target.value)}
+                            placeholder="Jelaskan topik yang akan dibahas..."
+                            rows={3}
+                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Minggu kuliah <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
+                        </label>
+                        <select
+                            value={data.week_id}
+                            onChange={(e) => setData('week_id', e.target.value)}
+                            required
+                            disabled={weeksLoading || weekOptions.length === 0}
+                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm"
                         >
-                            <WhiteModal className="max-w-md">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                            Buat Sesi Diskusi Baru
-                                        </h3>
-                                        <p className="mt-1 text-sm text-brand-muted-dark">
-                                            Buat sesi diskusi baru untuk topik tertentu.
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateModal(false)}
-                                         className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-slate-100"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
+                            <option value="">
+                                {weeksLoading
+                                    ? 'Memuat minggu…'
+                                    : weekOptions.length === 0
+                                      ? 'Belum ada minggu (minta dosen)'
+                                      : 'Pilih minggu'}
+                            </option>
+                            {weekOptions.map((w) => (
+                                <option key={w.id} value={w.id}>
+                                    Minggu {w.week_index}: {w.title}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.week_id && <p className="mt-1 text-xs text-red-600">{errors.week_id}</p>}
+                    </div>
 
-                                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-brand-dark">
-                                            Nama Sesi <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            placeholder="Contoh: Diskusi Bab 3"
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
-                                            required
-                                        />
-                                        {errors.name && (
-                                            <p className="mt-1 text-xs text-red-600">{errors.name}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-brand-dark">
-                                            Deskripsi (Opsional)
-                                        </label>
-                                        <textarea
-                                            value={data.description}
-                                            onChange={(e) => setData('description', e.target.value)}
-                                            placeholder="Jelaskan topik yang akan dibahas..."
-                                            rows={3}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm sm:leading-6"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-brand-dark">
-                                            Minggu kuliah <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
-                                        </label>
-                                        <select
-                                            value={data.week_id}
-                                            onChange={(e) => setData('week_id', e.target.value)}
-                                            required
-                                            disabled={weeksLoading || weekOptions.length === 0}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30 sm:text-sm"
-                                        >
-                                            <option value="">
-                                                {weeksLoading
-                                                    ? 'Memuat minggu…'
-                                                    : weekOptions.length === 0
-                                                      ? 'Belum ada minggu (minta dosen)'
-                                                      : 'Pilih minggu'}
-                                            </option>
-                                            {weekOptions.map((w) => (
-                                                <option key={w.id} value={w.id}>
-                                                    Minggu {w.week_index}: {w.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.week_id && (
-                                            <p className="mt-1 text-xs text-red-600">{errors.week_id}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-3 pt-4">
-                                        <SecondaryButton
-                                            onClick={() => setShowCreateModal(false)}
-                                            className="flex-1"
-                                        >
-                                            Batal
-                                        </SecondaryButton>
-                                        <PrimaryButton
-                                            disabled={processing || !data.name.trim() || !data.week_id}
-                                            className="flex-1"
-                                        >
-                                            {processing ? 'Membuat...' : 'Buat Sesi'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </WhiteModal>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                    <div className="flex gap-3 pt-4">
+                        <SecondaryButton onClick={() => setShowCreateModal(false)} className="flex-1">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton disabled={processing || !data.name.trim() || !data.week_id} className="flex-1">
+                            {processing ? 'Membuat...' : 'Buat Sesi'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
         </AppLayout>
     );
 }

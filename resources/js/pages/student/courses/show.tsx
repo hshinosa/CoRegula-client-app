@@ -1,18 +1,19 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FormEvent, useState, useMemo, useEffect } from 'react';
-import { MessageSquare, Check, KeyRound, Plus, Users, X, Search, ArrowUpDown } from 'lucide-react';
+import { MessageSquare, Check, KeyRound, Plus, Users, Search } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, User } from '@/types';
 import student from '@/routes/student';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
-import { LiquidGlassCard, PrimaryButton, SecondaryButton, WhiteModal } from '@/components/Welcome/utils/helpers';
-import { Skeleton } from '@/components/ui/skeletons';
+import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { FormModal } from '@/components/ui/FormModal';
 import { InputError } from '@/components/ui/input-error';
 import { InputLabel } from '@/components/ui/input-label';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { toast } from '@/components/ui/toaster';
 
 interface ChatSpace {
     id: string;
@@ -77,7 +78,10 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
         fetch(`/student/courses/${course.id}/weeks`)
             .then((res) => res.json())
             .then((json) => setWeekOptions(json.weeks || []))
-            .catch(() => setWeekOptions([]))
+            .catch(() => {
+                toast.error('Gagal memuat minggu');
+                setWeekOptions([]);
+            })
             .finally(() => setWeeksLoading(false));
     }, [showCreateSessionModal, course.id, myGroup]);
 
@@ -392,7 +396,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                                             value={sessionSearch}
                                             onChange={(e) => setSessionSearch(e.target.value)}
                                             placeholder="Cari sesi..."
-                                            className="w-full rounded-xl border-0 bg-white/60 pl-10 pr-4 py-2.5 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
+                className="w-full rounded-xl border-0 bg-white/60 pl-10 pr-4 py-2.5 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
                                         />
                                     </div>
                                     <select
@@ -468,251 +472,143 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                 )}
             </div>
 
-            {/* Create Group Modal */}
-            <AnimatePresence>
-                {showCreateGroupModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateGroupModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            <FormModal
+                open={showCreateGroupModal}
+                title="Buat Grup Baru"
+                description="Kode unik akan dibuat otomatis untuk teman bergabung"
+                onClose={() => setShowCreateGroupModal(false)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleCreateGroup} className="space-y-4">
+                    <div>
+                        <InputLabel htmlFor="group_name" required>
+                            Nama Grup
+                        </InputLabel>
+                        <input
+                            id="group_name"
+                            type="text"
+                            value={createGroupForm.data.name}
+                            onChange={(e) => createGroupForm.setData('name', e.target.value)}
+                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 font-sans text-brand-dark placeholder:text-gray-600 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm sm:leading-6"
+                            placeholder="misalnya, Kelompok A"
+                            autoFocus
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl border border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Buat Grup Baru
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowCreateGroupModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-gray-100 hover:text-brand-dark"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                    Kode unik akan dibuat otomatis untuk teman bergabung
-                                </p>
-                                <form onSubmit={handleCreateGroup} className="mt-6 space-y-4">
-                                    <div>
-                                        <InputLabel htmlFor="group_name" required>
-                                            Nama Grup
-                                        </InputLabel>
-                                        <input
-                                            id="group_name"
-                                            type="text"
-                                            value={createGroupForm.data.name}
-                                            onChange={(e) => createGroupForm.setData('name', e.target.value)}
-                                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 font-sans text-brand-dark placeholder:text-[#9ca3af] focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm sm:leading-6"
-                                            placeholder="misalnya, Kelompok A"
-                                            autoFocus
-                                        />
-                                        <InputError message={createGroupForm.errors.name} />
-                                    </div>
-                                    <div className="flex gap-3 pt-2">
-                                        <SecondaryButton
-                                            onClick={() => setShowCreateGroupModal(false)}
-                                            className="flex-1"
-                                        >
-                                            Batal
-                                        </SecondaryButton>
-                                        <PrimaryButton
-                                            type="submit"
-                                            disabled={createGroupForm.processing}
-                                            className="flex-1"
-                                        >
-                                            {createGroupForm.processing ? 'Membuat...' : 'Buat Grup'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                        <InputError message={createGroupForm.errors.name} />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <SecondaryButton onClick={() => setShowCreateGroupModal(false)} className="flex-1">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton type="submit" disabled={createGroupForm.processing} className="flex-1">
+                            {createGroupForm.processing ? 'Membuat...' : 'Buat Grup'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
 
-            {/* Join Group Modal */}
-            <AnimatePresence>
-                {showJoinGroupModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowJoinGroupModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            <FormModal
+                open={showJoinGroupModal}
+                title="Gabung dengan Kode"
+                description="Masukkan kode grup 8 karakter yang diberikan kepada Anda"
+                onClose={() => setShowJoinGroupModal(false)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleJoinGroup} className="space-y-4">
+                    <div>
+                        <InputLabel htmlFor="join_code" required>
+                            Kode Grup
+                        </InputLabel>
+                        <input
+                            id="join_code"
+                            type="text"
+                            value={joinGroupForm.data.join_code}
+                            onChange={(e) => joinGroupForm.setData('join_code', e.target.value.toUpperCase())}
+                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center font-mono text-xl tracking-widest font-sans text-brand-dark placeholder:text-gray-600 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+                            placeholder="XXXXXXXX"
+                            maxLength={8}
+                            autoFocus
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        <InputError message={joinGroupForm.errors.join_code} />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <SecondaryButton onClick={() => setShowJoinGroupModal(false)} className="flex-1">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton
+                            type="submit"
+                            disabled={joinGroupForm.processing || joinGroupForm.data.join_code.length < 8}
+                            className="flex-1"
                         >
-                            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl border border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                        Gabung dengan Kode
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowJoinGroupModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-gray-100 hover:text-brand-dark"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                    Masukkan kode grup 8 karakter yang diberikan kepada Anda
-                                </p>
-                                <form onSubmit={handleJoinGroup} className="mt-6 space-y-4">
-                                    <div>
-                                        <InputLabel htmlFor="join_code" required>
-                                            Kode Grup
-                                        </InputLabel>
-                                        <input
-                                            id="join_code"
-                                            type="text"
-                                            value={joinGroupForm.data.join_code}
-                                            onChange={(e) => joinGroupForm.setData('join_code', e.target.value.toUpperCase())}
-                                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center font-mono text-xl tracking-widest font-sans text-brand-dark placeholder:text-[#9ca3af] focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-                                            placeholder="XXXXXXXX"
-                                            maxLength={8}
-                                            autoFocus
-                                        />
-                                        <InputError message={joinGroupForm.errors.join_code} />
-                                    </div>
-                                    <div className="flex gap-3 pt-2">
-                                        <SecondaryButton
-                                            onClick={() => setShowJoinGroupModal(false)}
-                                            className="flex-1"
-                                        >
-                                            Batal
-                                        </SecondaryButton>
-                                        <PrimaryButton
-                                            type="submit"
-                                            disabled={joinGroupForm.processing || joinGroupForm.data.join_code.length < 8}
-                                            className="flex-1"
-                                        >
-                                            {joinGroupForm.processing ? 'Bergabung...' : 'Gabung'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                            {joinGroupForm.processing ? 'Bergabung...' : 'Gabung'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
 
-            {/* Create Session Modal */}
-            <AnimatePresence>
-                {showCreateSessionModal && myGroup && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowCreateSessionModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            <FormModal
+                open={showCreateSessionModal && !!myGroup}
+                title="Buat Sesi Diskusi Baru"
+                description="Buat sesi diskusi baru untuk topik tertentu."
+                onClose={() => setShowCreateSessionModal(false)}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleCreateSession} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Nama Sesi <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={createSessionForm.data.name}
+                            onChange={(e) => createSessionForm.setData('name', e.target.value)}
+                            placeholder="Contoh: Diskusi Bab 3"
+                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-brand-dark placeholder:text-gray-600 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm sm:leading-6"
+                            required
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        {createSessionForm.errors.name && <p className="mt-1 text-xs text-red-600">{createSessionForm.errors.name}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-brand-dark">
+                            Minggu kuliah <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
+                        </label>
+                        <select
+                            value={createSessionForm.data.week_id}
+                            onChange={(e) => createSessionForm.setData('week_id', e.target.value)}
+                            required
+                            disabled={weeksLoading || weekOptions.length === 0}
+                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-brand-dark focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm"
                         >
-                            <WhiteModal className="max-w-md">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-semibold font-sans text-brand-dark">
-                                            Buat Sesi Diskusi Baru
-                                        </h3>
-                                        <p className="mt-1 text-sm text-brand-muted-dark">
-                                            Buat sesi diskusi baru untuk topik tertentu.
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateSessionModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark transition-colors hover:bg-slate-100"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
+                            <option value="">
+                                {weeksLoading
+                                    ? 'Memuat minggu…'
+                                    : weekOptions.length === 0
+                                      ? 'Belum ada minggu (minta dosen)'
+                                      : 'Pilih minggu'}
+                            </option>
+                            {weekOptions.map((w) => (
+                                <option key={w.id} value={w.id}>
+                                    Minggu {w.week_index}: {w.title}
+                                </option>
+                            ))}
+                        </select>
+                        {createSessionForm.errors.week_id && <p className="mt-1 text-xs text-red-600">{createSessionForm.errors.week_id}</p>}
+                    </div>
 
-                                <form onSubmit={handleCreateSession} className="mt-6 space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-brand-dark">
-                                            Nama Sesi <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={createSessionForm.data.name}
-                                            onChange={(e) => createSessionForm.setData('name', e.target.value)}
-                                            placeholder="Contoh: Diskusi Bab 3"
-                                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-brand-dark placeholder:text-[#9ca3af] focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm sm:leading-6"
-                                            required
-                                        />
-                                        {createSessionForm.errors.name && (
-                                            <p className="mt-1 text-xs text-red-600">{createSessionForm.errors.name}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-brand-dark">
-                                            Minggu kuliah <span style={{ color: 'var(--color-brand-primary)' }}>*</span>
-                                        </label>
-                                        <select
-                                            value={createSessionForm.data.week_id}
-                                            onChange={(e) => createSessionForm.setData('week_id', e.target.value)}
-                                            required
-                                            disabled={weeksLoading || weekOptions.length === 0}
-                                            className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-brand-dark focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 sm:text-sm"
-                                        >
-                                            <option value="">
-                                                {weeksLoading
-                                                    ? 'Memuat minggu…'
-                                                    : weekOptions.length === 0
-                                                      ? 'Belum ada minggu (minta dosen)'
-                                                      : 'Pilih minggu'}
-                                            </option>
-                                            {weekOptions.map((w) => (
-                                                <option key={w.id} value={w.id}>
-                                                    Minggu {w.week_index}: {w.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {createSessionForm.errors.week_id && (
-                                            <p className="mt-1 text-xs text-red-600">{createSessionForm.errors.week_id}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-3 pt-4">
-                                        <SecondaryButton
-                                            onClick={() => setShowCreateSessionModal(false)}
-                                            className="flex-1"
-                                        >
-                                            Batal
-                                        </SecondaryButton>
-                                        <PrimaryButton
-                                            type="submit"
-                                            disabled={createSessionForm.processing || !createSessionForm.data.name.trim() || !createSessionForm.data.week_id}
-                                            className="flex-1"
-                                        >
-                                            {createSessionForm.processing ? 'Membuat...' : 'Buat Sesi'}
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            </WhiteModal>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                    <div className="flex gap-3 pt-4">
+                        <SecondaryButton onClick={() => setShowCreateSessionModal(false)} className="flex-1">
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton
+                            type="submit"
+                            disabled={createSessionForm.processing || !createSessionForm.data.name.trim() || !createSessionForm.data.week_id}
+                            className="flex-1"
+                        >
+                            {createSessionForm.processing ? 'Membuat...' : 'Buat Sesi'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </FormModal>
         </AppLayout>
     );
 }

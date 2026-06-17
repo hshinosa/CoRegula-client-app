@@ -29,7 +29,7 @@ export default function ThemePrefs({ theme, onChange }: Props) {
                         className={`mb-2 h-6 w-6 ${
                             theme === value
                                 ? 'text-blue-500 dark:text-blue-400'
-                                : 'text-gray-400 dark:text-gray-500'
+                                : 'text-gray-600 dark:text-gray-500'
                         }`}
                     />
                     <span
@@ -41,7 +41,7 @@ export default function ThemePrefs({ theme, onChange }: Props) {
                     >
                         {label}
                     </span>
-                    <span className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    <span className="mt-1 text-xs text-gray-600 dark:text-gray-500">
                         {description}
                     </span>
                 </button>

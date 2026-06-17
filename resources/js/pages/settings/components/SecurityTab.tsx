@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Key, Trash2, AlertTriangle, X, Save } from 'lucide-react';
 import { useState } from 'react';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { InputError } from '@/components/ui/input-error';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
@@ -179,25 +180,12 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                 </motion.button>
             </LiquidGlassCard>
 
-            <AnimatePresence>
-                {showDeleteModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                        onClick={() => setShowDeleteModal(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-                        >
+            <BaseModal open={showDeleteModal} title="Konfirmasi Penghapusan Akun" onClose={() => setShowDeleteModal(false)} size="md" className="rounded-2xl bg-white p-6 shadow-2xl">
+                        <div>
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-neutral-800">Konfirmasi Penghapusan Akun</h3>
                                 <button
+                                    type="button"
                                     onClick={() => setShowDeleteModal(false)}
                                     className="rounded-lg p-1 transition-colors hover:bg-neutral-100"
                                 >
@@ -266,10 +254,8 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                                     {saving ? 'Menghapus...' : 'Hapus Akun'}
                                 </motion.button>
                             </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </div>
+            </BaseModal>
         </div>
     );
 }

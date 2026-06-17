@@ -225,6 +225,10 @@ export function useSocketRoom({
             setIsConnected(false);
         });
 
+        socketRef.current.on('intervention_error', (data: { message?: string }) => {
+            setConnectionError(data.message || 'AI intervention unavailable right now.');
+        });
+
         socketRef.current.on('session_closed', (payload: { closedAt?: string; message?: string }) => {
             onSessionClosedRef.current?.(payload);
         });

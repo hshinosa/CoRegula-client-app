@@ -18,7 +18,14 @@ import { formatAiOutput } from '@/lib/formatAiOutput';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { SearchBar, SavedMaterialsPanel } from './components';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
+function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}): Promise<Response> {
+    const { timeout = 30000, ...fetchOptions } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    return fetch(url, { ...fetchOptions, signal: controller.signal }).finally(() => clearTimeout(id));
+}
 
 interface AiChat {
     id: string;
@@ -37,7 +44,7 @@ const headingStyle = {
     color: 'var(--color-brand-dark)',
 } as const;
 
-const bodyTextClass = 'text-sm text-[#4B5563]';
+const bodyTextClass = 'text-sm text-gray-600';
 
 const emptyStateCards = [
     {
@@ -340,11 +347,12 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setStreamingCitations([]);
 
         try {
-            const createResp = await fetch('/student/ai-chat', {
+            const createResp = await fetchWithTimeout('/student/ai-chat', {
                 method: 'POST',
                 credentials: 'include',
                 headers: apiHeaders,
                 body: JSON.stringify({ title: content.substring(0, 50) }),
+                timeout: 60000,
             });
 
             if (!createResp.ok) {
@@ -661,7 +669,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                                                 className="flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:bg-brand-primary/10"
                                                                                 title={isSaved ? 'Hapus dari simpanan' : 'Simpan materi ini'}
                                                                             >
-                                                                                <Bookmark className={`h-2.5 w-2.5 ${isSaved ? 'fill-brand-primary text-brand-primary' : 'text-[#9CA3AF]'}`} />
+                                                                                <Bookmark className={`h-2.5 w-2.5 ${isSaved ? 'fill-brand-primary text-brand-primary' : 'text-gray-600'}`} />
                                                                             </button>
                                                                         )}
                                                                     </div>
@@ -961,61 +969,16 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             </AnimatePresence>
 
             {/* Delete Confirmation Modal */}
-            <AnimatePresence>
-                {showDeleteModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowDeleteModal(null)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <LiquidGlassCard intensity="heavy" className="w-full max-w-sm text-center" lightMode={true}>
-                                <div onClick={(e) => e.stopPropagation()} className="p-5">
-                                    <div 
-                                        className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full"
-                                        style={{
-                                            background: 'rgba(220,38,38,0.08)',
-                                            border: '1px solid rgba(220,38,38,0.15)',
-                                        }}
-                                    >
-                                        <Trash2 className="h-5 w-5 text-red-600" />
-                                    </div>
-                                    <h3 className="text-base font-semibold font-sans text-brand-dark">
-                                        Hapus Percakapan?
-                                    </h3>
-                                    <p className="mt-2 text-sm text-brand-muted-dark">
-                                        Percakapan ini akan dihapus secara permanen dan tidak dapat dikembalikan.
-                                    </p>
-                                    <div className="mt-5 flex gap-2.5">
-                                        <SecondaryButton onClick={() => setShowDeleteModal(null)} className="flex-1">
-                                            Batal
-                                        </SecondaryButton>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDeleteChat(showDeleteModal)}
-                                            className="flex-1 rounded-full px-6 py-4 text-sm font-medium text-white shadow-[0_12px_28px_rgba(185,28,28,0.28)] transition-transform hover:-translate-y-0.5"
-                                            style={{
-                                                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                                                border: '1px solid rgba(255,255,255,0.16)',
-                                            }}
-                                        >
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </div>
-                            </LiquidGlassCard>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            <ConfirmDialog
+                open={Boolean(showDeleteModal)}
+                title="Hapus Percakapan?"
+                message="Percakapan ini akan dihapus secara permanen dan tidak dapat dikembalikan."
+                confirmLabel="Hapus"
+                cancelLabel="Batal"
+                onConfirm={() => showDeleteModal && handleDeleteChat(showDeleteModal)}
+                onClose={() => setShowDeleteModal(null)}
+                variant="danger"
+            />
 
             <SavedMaterialsPanel
                 isOpen={savedMaterialsPanelOpen}

@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -8,7 +8,6 @@ import {
     ChevronDown,
     ChevronUp,
     Clock,
-    Copy,
     Download,
     Edit3,
     Eye,
@@ -28,10 +27,10 @@ import {
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { toast } from '@/components/ui/toaster';
 import { SkeletonCard } from '@/components/ui/skeletons';
 import AppLayout from '@/layouts/app-layout';
-import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 
 const headingStyle = {
     color: 'var(--color-brand-dark)',
@@ -161,26 +160,6 @@ const TabButton = ({ label, icon, active, onClick }: { label: string; icon: Reac
     </button>
 );
 
-const Modal = ({ open, title, onClose, children, maxWidth = 'max-w-2xl' }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode; maxWidth?: string }) => {
-    if (!open) return null;
-    return (
-        <AnimatePresence>
-            <>
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black" onClick={onClose} />
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className={`w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl`}>
-                        <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold" style={headingStyle}>{title}</h3>
-                            <button onClick={onClose} className="rounded-full p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button>
-                        </div>
-                        {children}
-                    </div>
-                </motion.div>
-            </>
-        </AnimatePresence>
-    );
-};
-
 const previewRateInfo = { max: 10, windowMinutes: 5, remaining: null as number | null };
 
 function PreviewTab({ courses }: { courses: Course[] }) {
@@ -280,7 +259,7 @@ function PreviewTab({ courses }: { courses: Course[] }) {
                     )}
 
                     <div className="flex items-center justify-between">
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-gray-600">
                             Rate limit: {previewRateInfo.max} requests per {previewRateInfo.windowMinutes} min
                             {rateRemaining !== null && ` (${rateRemaining} remaining)`}
                         </div>
@@ -297,7 +276,7 @@ function PreviewTab({ courses }: { courses: Course[] }) {
                     <LiquidGlassCard className="p-6">
                         <div className="mb-3 flex items-center justify-between">
                             <h4 className="font-semibold" style={headingStyle}>AI Response</h4>
-                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
                                 <span>{result.provider}</span>
                                 <span>•</span>
                                 <span>{result.model}</span>
@@ -306,7 +285,7 @@ function PreviewTab({ courses }: { courses: Course[] }) {
                             </div>
                         </div>
                         <div className="whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{result.response}</div>
-                        <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
+                        <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-600">
                             <span>Prompt tokens: {result.promptTokens}</span>
                             <span>Completion tokens: {result.completionTokens}</span>
                             <span>Total: {result.totalTokens}</span>
@@ -439,7 +418,7 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
         <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -475,8 +454,8 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                                         {preset.is_shared && <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 flex items-center gap-1"><Globe className="h-3 w-3" />Shared</span>}
                                     </div>
                                     {preset.description && <p className="mt-1 text-sm text-slate-500 truncate">{preset.description}</p>}
-                                    <p className="mt-2 text-xs text-slate-400 truncate max-w-lg">{preset.system_prompt}</p>
-                                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400">
+                                    <p className="mt-2 text-xs text-gray-600 truncate max-w-lg">{preset.system_prompt}</p>
+                                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
                                         <span>T: {preset.temperature}</span>
                                         <span>Tokens: {preset.max_tokens}</span>
                                         {preset.model && <span>Model: {preset.model}</span>}
@@ -484,13 +463,13 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1 ml-3">
-                                    <button onClick={() => openEdit(preset)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Edit">
+                                    <button onClick={() => openEdit(preset)} className="rounded-lg p-2 text-gray-600 hover:bg-slate-100 hover:text-slate-600" title="Edit">
                                         <Edit3 className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => handleExport(preset.id)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Export">
+                                    <button onClick={() => handleExport(preset.id)} className="rounded-lg p-2 text-gray-600 hover:bg-slate-100 hover:text-slate-600" title="Export">
                                         <Download className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => handleDelete(preset.id)} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" title="Delete">
+                                    <button onClick={() => handleDelete(preset.id)} className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-500" title="Delete">
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 </div>
@@ -500,7 +479,11 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                 </div>
             )}
 
-            <Modal open={showEditor} title={editingPreset ? 'Edit Preset' : 'Create Preset'} onClose={() => setShowEditor(false)}>
+            <BaseModal open={showEditor} title={editingPreset ? 'Edit Preset' : 'Create Preset'} onClose={() => setShowEditor(false)} size="lg" className="max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold" style={headingStyle}>{editingPreset ? 'Edit Preset' : 'Create Preset'}</h3>
+                    <button type="button" onClick={() => setShowEditor(false)} className="rounded-full p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button>
+                </div>
                 <form onSubmit={handleSave} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700">Name</label>
@@ -548,9 +531,13 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                         </PrimaryButton>
                     </div>
                 </form>
-            </Modal>
+            </BaseModal>
 
-            <Modal open={showImport} title="Import Preset" onClose={() => { setShowImport(false); setImportData(''); }}>
+            <BaseModal open={showImport} title="Import Preset" onClose={() => { setShowImport(false); setImportData(''); }} size="lg" className="max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold" style={headingStyle}>Import Preset</h3>
+                    <button type="button" onClick={() => { setShowImport(false); setImportData(''); }} className="rounded-full p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button>
+                </div>
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700">Paste JSON</label>
@@ -567,7 +554,7 @@ function PresetsTab({ presets: initialPresets, courses, department }: { presets:
                         <PrimaryButton onClick={handleImport} disabled={!importData.trim()}>Import</PrimaryButton>
                     </div>
                 </div>
-            </Modal>
+            </BaseModal>
         </div>
     );
 }
@@ -665,10 +652,10 @@ function HistoryTab({ courses }: { courses: Course[] }) {
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-slate-800">{record.provider} — {record.model}</p>
-                                            <p className="text-xs text-slate-400">{formatDate(record.createdAt)}</p>
+                                            <p className="text-xs text-gray-600">{formatDate(record.createdAt)}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                                    <div className="flex items-center gap-4 text-xs text-gray-600">
                                         <span>{record.totalTokens} tokens</span>
                                         <span>${record.estimatedCost.toFixed(4)}</span>
                                         {expandedId === record.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -677,12 +664,12 @@ function HistoryTab({ courses }: { courses: Course[] }) {
                                 {expandedId === record.id && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-3 border-t border-slate-100 pt-3">
                                         <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                                            <div><span className="text-slate-400">Prompt Tokens:</span> <span className="font-medium">{record.promptTokens}</span></div>
-                                            <div><span className="text-slate-400">Completion:</span> <span className="font-medium">{record.completionTokens}</span></div>
-                                            <div><span className="text-slate-400">Latency:</span> <span className="font-medium">{record.latencyMs}ms</span></div>
-                                            <div><span className="text-slate-400">Cost:</span> <span className="font-medium">${record.estimatedCost.toFixed(6)}</span></div>
-                                            <div><span className="text-slate-400">User ID:</span> <span className="font-medium font-mono text-xs">{record.userId}</span></div>
-                                            <div><span className="text-slate-400">Course ID:</span> <span className="font-medium font-mono text-xs">{record.courseId ?? '-'}</span></div>
+                                            <div><span className="text-gray-600">Prompt Tokens:</span> <span className="font-medium">{record.promptTokens}</span></div>
+                                            <div><span className="text-gray-600">Completion:</span> <span className="font-medium">{record.completionTokens}</span></div>
+                                            <div><span className="text-gray-600">Latency:</span> <span className="font-medium">{record.latencyMs}ms</span></div>
+                                            <div><span className="text-gray-600">Cost:</span> <span className="font-medium">${record.estimatedCost.toFixed(6)}</span></div>
+                                            <div><span className="text-gray-600">User ID:</span> <span className="font-medium font-mono text-xs">{record.userId}</span></div>
+                                            <div><span className="text-gray-600">Course ID:</span> <span className="font-medium font-mono text-xs">{record.courseId ?? '-'}</span></div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -829,7 +816,7 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
                                         <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[test.status]}`}>{test.status}</span>
                                     </div>
                                     {test.description && <p className="mt-1 text-sm text-slate-500">{test.description}</p>}
-                                    <p className="mt-1 text-xs text-slate-400">Results: {test._count?.results ?? 0} • Created: {formatDate(test.createdAt)}</p>
+                                    <p className="mt-1 text-xs text-gray-600">Results: {test._count?.results ?? 0} • Created: {formatDate(test.createdAt)}</p>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     {test.status === 'draft' && (
@@ -852,10 +839,10 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
                                             <BarChart3 className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <button onClick={() => handleViewStats(test.id)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" title="View Stats">
+                                    <button onClick={() => handleViewStats(test.id)} className="rounded-lg p-2 text-gray-600 hover:bg-slate-100" title="View Stats">
                                         <Beaker className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => handleDelete(test.id)} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" title="Delete">
+                                    <button onClick={() => handleDelete(test.id)} className="rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-500" title="Delete">
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 </div>
@@ -905,7 +892,11 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
                 <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-brand-primary" /></div>
             )}
 
-            <Modal open={showCreator} title="Create A/B Test" onClose={() => setShowCreator(false)} maxWidth="max-w-3xl">
+            <BaseModal open={showCreator} title="Create A/B Test" onClose={() => setShowCreator(false)} size="xl" className="max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold" style={headingStyle}>Create A/B Test</h3>
+                    <button type="button" onClick={() => setShowCreator(false)} className="rounded-full p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button>
+                </div>
                 <form onSubmit={handleCreate} className="space-y-4">
                     <div className="flex flex-wrap gap-4">
                         <div className="min-w-[200px] flex-1">
@@ -948,7 +939,7 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
                         </PrimaryButton>
                     </div>
                 </form>
-            </Modal>
+            </BaseModal>
         </div>
     );
 }
@@ -956,7 +947,6 @@ function ABTestingTab({ courses }: { courses: Course[] }) {
 export default function LecturerAISettings({ presets, courses, department }: PageProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('preview');
-    const navItems = useLecturerNav('ai-settings');
 
     useEffect(() => {
         setIsLoading(false);

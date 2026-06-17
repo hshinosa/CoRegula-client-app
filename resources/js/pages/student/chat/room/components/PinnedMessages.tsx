@@ -53,9 +53,9 @@ export function PinnedMessages({
                     </span>
                 </div>
                 {isExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-gray-400" />
+                    <ChevronUp className="h-4 w-4 text-gray-600" />
                 ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                    <ChevronDown className="h-4 w-4 text-gray-600" />
                 )}
             </button>
 
@@ -80,10 +80,10 @@ export function PinnedMessages({
                                         className="min-w-0 flex-1 text-left"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                            <span className="text-xs font-medium text-gray-600 dark:text-gray-600">
                                                 {msg.sender_name}
                                             </span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                                            <span className="text-xs text-gray-600 dark:text-gray-500">
                                                 {new Date(msg.pinned_at).toLocaleTimeString([], {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
@@ -101,7 +101,7 @@ export function PinnedMessages({
                                                 e.stopPropagation();
                                                 onUnpin(msg.message_id);
                                             }}
-                                            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300"
+                                            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300"
                                             aria-label={`Lepas sematan pesan dari ${msg.sender_name}`}
                                         >
                                             <X className="h-3 w-3" />

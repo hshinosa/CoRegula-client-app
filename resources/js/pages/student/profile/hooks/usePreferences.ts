@@ -11,7 +11,6 @@ interface Notifications {
 
 interface PreferencesData {
     notifications: Notifications;
-    language: string;
     theme: string;
     font_size: string;
 }
@@ -113,7 +112,11 @@ export function usePreferences(initial: PreferencesData): UsePreferencesReturn {
                     Accept: 'application/json',
                     'X-CSRF-TOKEN': csrfToken(),
                 },
-                body: JSON.stringify(preferences),
+                body: JSON.stringify({
+                    notifications: preferences.notifications,
+                    theme: preferences.theme,
+                    font_size: preferences.font_size,
+                }),
             });
 
             if (res.ok) {

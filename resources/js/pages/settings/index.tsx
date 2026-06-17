@@ -27,7 +27,6 @@ interface NotificationPrefs {
 
 interface Preferences {
     theme: string;
-    language: string;
     notifications: NotificationPrefs;
 }
 
@@ -43,7 +42,7 @@ interface Props {
     preferences: Preferences;
 }
 
-type TabId = 'profile' | 'notifications' | 'appearance' | 'security' | 'privacy';
+type TabId = 'profile' | 'notifications' | 'appearance' | 'security' | 'privacy' | 'retensi-data';
 
 export default function SettingsPage({ profile, preferences }: Props) {
     const { auth } = usePage<SharedData>().props;
@@ -59,7 +58,6 @@ export default function SettingsPage({ profile, preferences }: Props) {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [theme, setTheme] = useState(preferences.theme);
-    const [language, setLanguage] = useState(preferences.language);
     const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(preferences.notifications);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -144,11 +142,6 @@ export default function SettingsPage({ profile, preferences }: Props) {
         }
 
         handlePreferencesSave({ theme: newTheme });
-    };
-
-    const handleLanguageChange = (newLang: string) => {
-        setLanguage(newLang);
-        handlePreferencesSave({ language: newLang });
     };
 
     const handleNotifToggle = (key: keyof NotificationPrefs) => {
@@ -327,9 +320,7 @@ export default function SettingsPage({ profile, preferences }: Props) {
                                     {activeTab === 'appearance' && (
                                         <AppearanceTab
                                             theme={theme}
-                                            language={language}
                                             onThemeChange={handleThemeChange}
-                                            onLanguageChange={handleLanguageChange}
                                         />
                                     )}
 

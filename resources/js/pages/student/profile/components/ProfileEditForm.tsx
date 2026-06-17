@@ -125,7 +125,7 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                                 Nama Lengkap
                             </label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                 <input
                                     type="text"
                                     value={form.name}
@@ -149,7 +149,7 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                                 Email
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                 <input
                                     type="email"
                                     value={form.email}
@@ -173,7 +173,7 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                                 NIM
                             </label>
                             <div className="relative">
-                                <Hash className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Hash className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                 <input
                                     type="text"
                                     value={profile.nim}
@@ -181,7 +181,7 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                                     className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 py-2.5 pl-10 pr-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-400">NIM tidak dapat diubah</p>
+                            <p className="mt-1 text-xs text-gray-600">NIM tidak dapat diubah</p>
                         </div>
 
                         <div className="flex gap-3 pt-2">
@@ -190,7 +190,7 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleCancel}
                                 disabled={saving}
-                                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-600 dark:hover:bg-gray-700"
                             >
                                 <X className="h-4 w-4" />
                                 Batal
@@ -220,27 +220,27 @@ export default function ProfileEditForm({ profile, onProfileUpdate }: Props) {
                         className="space-y-4"
                     >
                         <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                            <User className="h-5 w-5 text-gray-400" />
+                            <User className="h-5 w-5 text-gray-600" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Nama</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-600">Nama</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {sanitizeText(profile.name)}
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                            <Mail className="h-5 w-5 text-gray-400" />
+                            <Mail className="h-5 w-5 text-gray-600" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-600">Email</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {sanitizeText(profile.email)}
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                            <Hash className="h-5 w-5 text-gray-400" />
+                            <Hash className="h-5 w-5 text-gray-600" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">NIM</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-600">NIM</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {sanitizeText(profile.nim || '-')}
                                 </p>

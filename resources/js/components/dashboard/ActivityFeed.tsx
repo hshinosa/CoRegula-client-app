@@ -108,7 +108,7 @@ export default function ActivityFeed({ activities, lightMode = true, maxItems = 
                                 {actor && (
                                     <span className="font-medium">{actor} </span>
                                 )}
-                                <span className={lightMode ? 'text-brand-muted-dark' : 'text-gray-400'}>{label}</span>
+                                <span className={lightMode ? 'text-brand-muted-dark' : 'text-gray-600'}>{label}</span>
                             </p>
                             {(item.groupName || item.courseName) && (
                                 <p className="mt-0.5 text-xs" style={{ color: lightMode ? '#9ca3af' : '#6b7280' }}>

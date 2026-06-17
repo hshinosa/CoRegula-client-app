@@ -26,6 +26,7 @@ class MessageController extends Controller
         $clientVersion = $validated['version'] ?? 0;
 
         $lastAction = ChatMessageAudit::forMessage($messageId)
+            ->where('conversation_id', $conversationId)
             ->orderByDesc('created_at')
             ->first();
 
@@ -52,6 +53,7 @@ class MessageController extends Controller
         }
 
         $editCount = ChatMessageAudit::forMessage($messageId)
+            ->where('conversation_id', $conversationId)
             ->where('action', 'edit')
             ->count();
         $currentVersion = $editCount;
@@ -103,6 +105,7 @@ class MessageController extends Controller
         $content = $validated['content'];
 
         $lastAction = ChatMessageAudit::forMessage($messageId)
+            ->where('conversation_id', $conversationId)
             ->orderByDesc('created_at')
             ->first();
 
@@ -151,7 +154,12 @@ class MessageController extends Controller
 
     public function audit(Request $request, string $messageId): JsonResponse
     {
+        $validated = $request->validate([
+            'conversation_id' => 'required|string',
+        ]);
+
         $audits = ChatMessageAudit::forMessage($messageId)
+            ->where('conversation_id', $validated['conversation_id'])
             ->orderByDesc('created_at')
             ->get();
 

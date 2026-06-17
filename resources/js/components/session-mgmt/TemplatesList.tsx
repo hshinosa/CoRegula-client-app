@@ -67,7 +67,7 @@ export default function TemplatesList({ templates, onEdit, onDelete, onApply }: 
   if (templates.length === 0) {
     return (
       <div className="text-center py-12">
-        <FileText className="mx-auto h-12 w-12 text-gray-400" />
+        <FileText className="mx-auto h-12 w-12 text-gray-600" />
         <h3 className="mt-2 text-sm font-medium text-gray-900">No templates</h3>
         <p className="mt-1 text-sm text-gray-500">
           Save a session as a template to reuse configurations.
@@ -102,14 +102,14 @@ export default function TemplatesList({ templates, onEdit, onDelete, onApply }: 
               <div className="flex items-center gap-1 ml-2">
                 <button
                   onClick={() => onEdit?.(template)}
-                  className="p-1 text-gray-400 hover:text-gray-600"
+                  className="p-1 text-gray-600 hover:text-gray-600"
                   title="Edit"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(template.id)}
-                  className="p-1 text-gray-400 hover:text-red-600"
+                  className="p-1 text-gray-600 hover:text-red-600"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -144,7 +144,7 @@ export default function TemplatesList({ templates, onEdit, onDelete, onApply }: 
             )}
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-600">
                 Created {new Date(template.created_at).toLocaleDateString()}
               </span>
 

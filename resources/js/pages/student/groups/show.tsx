@@ -1,7 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback } from 'react';
-import { Users, ArrowLeft, Copy, Check, Crown, UserMinus, AlertTriangle, Loader2 } from 'lucide-react';
+import { Users, Copy, Check, Crown, UserMinus, AlertTriangle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 import AppLayout from '@/layouts/app-layout';
@@ -79,14 +79,6 @@ export default function StudentGroupShow({ group }: Props) {
                     animate={{ opacity: 1, y: 0 }}
                 >
                     <LiquidGlassCard intensity="light" className="p-6" lightMode={true}>
-                        <button
-                            onClick={() => router.visit(`/student/courses/${group.course.id}`)}
-                            className="mb-3 flex items-center gap-1.5 text-xs text-brand-muted-dark transition-colors hover:text-brand-dark"
-                        >
-                            <ArrowLeft className="h-3.5 w-3.5" />
-                            Kembali ke Detail Kelas
-                        </button>
-
                         <div className="flex items-center gap-2">
                             <span
                                 className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -146,7 +138,7 @@ export default function StudentGroupShow({ group }: Props) {
                                     {copiedCode ? (
                                         <Check className="h-3.5 w-3.5 text-green-500" />
                                     ) : (
-                                        <Copy className="h-3.5 w-3.5 text-gray-400" />
+                                        <Copy className="h-3.5 w-3.5 text-gray-600" />
                                     )}
                                 </button>
                             </div>
@@ -230,7 +222,7 @@ export default function StudentGroupShow({ group }: Props) {
                                                 {canKick && (
                                                     <button
                                                         onClick={() => setConfirmKickId(member.id)}
-                                                        className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                                                        className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-500"
                                                         title="Keluarkan anggota"
                                                     >
                                                         <UserMinus className="h-4 w-4" />

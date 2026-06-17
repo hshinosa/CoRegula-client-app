@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, type DragEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, ZoomIn, ZoomOut, RotateCcw, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { useAvatarUpload } from '../hooks/useAvatarUpload';
 import { validateAvatarFile } from '../utils/avatar-helpers';
 
@@ -180,15 +181,15 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                                 transition={{ duration: 0.3 }}
                             />
                         </div>
-                        <p className="text-xs text-gray-400">{progress}%</p>
+                        <p className="text-xs text-gray-600">{progress}%</p>
                     </div>
                 ) : (
                     <>
-                        <Upload className="mb-3 h-10 w-10 text-gray-400 transition-colors group-hover:text-blue-500" />
+                        <Upload className="mb-3 h-10 w-10 text-gray-600 transition-colors group-hover:text-blue-500" />
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                             Klik atau seret file ke sini
                         </p>
-                        <p className="mt-1 text-xs text-gray-400">
+                        <p className="mt-1 text-xs text-gray-600">
                             JPEG, PNG, WebP · Maks 2MB
                         </p>
                     </>
@@ -202,29 +203,15 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                 />
             </div>
 
-            <AnimatePresence>
-                {showCrop && previewUrl && (
-                    <motion.div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={handleCloseCrop}
-                    >
-                        <motion.div
-                            className="relative mx-4 max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
+            <BaseModal open={showCrop && Boolean(previewUrl)} title="Sesuaikan Foto" onClose={handleCloseCrop} size="xl" className="relative mx-4 max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+                        <div>
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     Sesuaikan Foto
                                 </h3>
                                 <button
                                     onClick={handleCloseCrop}
-                                    className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700"
+                                    className="rounded-lg p-1 text-gray-600 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
@@ -284,7 +271,7 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                                 )}
                             </div>
 
-                            <p className="mt-2 text-center text-xs text-gray-400">
+                            <p className="mt-2 text-center text-xs text-gray-600">
                                 Geser untuk menyesuaikan posisi. Gunakan zoom untuk memperbesar/memperkecil.
                             </p>
 
@@ -302,10 +289,8 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                                     Simpan
                                 </button>
                             </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </div>
+            </BaseModal>
         </>
     );
 }

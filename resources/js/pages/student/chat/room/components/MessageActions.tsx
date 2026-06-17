@@ -85,7 +85,7 @@ export function MessageActions({
                 aria-haspopup="menu"
                 aria-expanded={isOpen}
             >
-                <MoreHorizontal className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                <MoreHorizontal className="h-3.5 w-3.5 text-gray-500 dark:text-gray-600" />
             </button>
 
             <AnimatePresence>

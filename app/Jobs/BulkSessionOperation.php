@@ -26,7 +26,7 @@ class BulkSessionOperation implements ShouldQueue
     {
         try {
             $apiUrl = config('services.core_api.url', 'http://localhost:3000');
-            $response = Http::timeout(60)->post("{$apiUrl}/api/learning-sessions/bulk/{$this->operation}", [
+            $response = Http::timeout(60)->connectTimeout(5)->post("{$apiUrl}/api/learning-sessions/bulk/{$this->operation}", [
                 'session_ids' => $this->sessionIds,
             ]);
 

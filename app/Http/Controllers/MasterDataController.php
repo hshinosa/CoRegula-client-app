@@ -40,17 +40,6 @@ class MasterDataController extends Controller
         return Inertia::render('admin/master-data', $responsePayload);
     }
 
-    public function templatesPage()
-    {
-        $templates = $this->fetchTemplates();
-        $lecturers = $this->fetchLecturers();
-
-        return Inertia::render('admin/templates', [
-            'templates' => $templates,
-            'lecturers' => $lecturers,
-        ]);
-    }
-
     public function show($id)
     {
         try {

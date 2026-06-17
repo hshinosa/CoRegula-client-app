@@ -126,7 +126,7 @@ export default function StudentBreakdownList({
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
+                        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-600" />
                         <input
                             type="text"
                             placeholder="Cari mahasiswa..."
@@ -177,13 +177,13 @@ export default function StudentBreakdownList({
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#9CA3AF]">
+                                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-600">
                                     Memuat data...
                                 </td>
                             </tr>
                         ) : students.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#9CA3AF]">
+                                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-600">
                                     Tidak ada data mahasiswa
                                 </td>
                             </tr>
@@ -203,7 +203,7 @@ export default function StudentBreakdownList({
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-[#1F2937]">{s.name}</p>
-                                                <p className="text-xs text-[#9CA3AF]">{s.email}</p>
+                                                <p className="text-xs text-gray-600">{s.email}</p>
                                             </div>
                                         </div>
                                     </td>

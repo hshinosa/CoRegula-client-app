@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { BaseModal } from '@/components/ui/BaseModal';
 
 interface SessionSummaryModalProps {
     goalAchieved: boolean;
@@ -20,18 +20,8 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
     onClose,
 }) => {
     return (
-        <div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-        >
-            <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-2xl rounded-2xl border border-white/50 bg-white/95 p-6 shadow-xl backdrop-blur-md"
-                style={{ maxHeight: '90vh', overflowY: 'auto' }}
-            >
+        <BaseModal open={true} title="Ringkasan Sesi Diskusi" onClose={onClose} size="lg" className="border border-white/50 p-6" closeOnOverlayClick>
+            <div className="relative w-full rounded-2xl bg-white/95 shadow-xl backdrop-blur-md" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <button
                     onClick={onClose}
                     className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
@@ -152,8 +142,8 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
                         </div>
                     </div>
                 )}
-            </motion.div>
-        </div>
+            </div>
+        </BaseModal>
     );
 };
 

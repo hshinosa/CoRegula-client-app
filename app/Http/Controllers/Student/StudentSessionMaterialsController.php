@@ -142,11 +142,13 @@ class StudentSessionMaterialsController extends Controller
 
         $material = CourseMaterial::where('course_id', $course)->findOrFail($materialId);
 
-        if (! Storage::disk('public')->exists($material->file_path)) {
+        // Check 'private' disk first (new uploads), then fall back to 'public' (legacy files)
+        $disk = Storage::disk('private')->exists($material->file_path) ? 'private' : 'public';
+        if (! Storage::disk($disk)->exists($material->file_path)) {
             return response()->json(['message' => 'File tidak ditemukan.'], 404);
         }
 
-        return Storage::disk('public')->response(
+        return Storage::disk($disk)->response(
             $material->file_path,
             $material->file_name,
             ['Content-Type' => $material->file_type ?? 'application/octet-stream']

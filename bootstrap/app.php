@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Middleware\GuestMiddleware;
+use App\Http\Middleware\AssertChatMembership;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\JwtAuthMiddleware;
 use App\Http\Middleware\RememberMeMiddleware;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\RequestIdMiddleware;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->use([TrustProxies::class, RequestIdMiddleware::class]);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -32,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'assert.chat.membership' => AssertChatMembership::class,
             'auth.jwt' => JwtAuthMiddleware::class,
             'role' => RoleMiddleware::class,
             'guest' => GuestMiddleware::class,

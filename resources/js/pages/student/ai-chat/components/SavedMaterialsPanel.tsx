@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Bookmark, X, Trash2, ExternalLink, Loader2, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
+import { toast } from '@/components/ui/toaster';
 
 interface SavedMaterialItem {
     id: string;
@@ -42,6 +43,7 @@ export function SavedMaterialsPanel({ isOpen, onClose }: SavedMaterialsPanelProp
             }
         } catch (error) {
             console.error('Failed to fetch saved materials:', error);
+            toast.error('Gagal memuat materi tersimpan');
         } finally {
             setIsLoading(false);
         }
@@ -62,6 +64,7 @@ export function SavedMaterialsPanel({ isOpen, onClose }: SavedMaterialsPanelProp
             }
         } catch (error) {
             console.error('Failed to delete saved material:', error);
+            toast.error('Gagal menghapus materi');
         } finally {
             setDeletingId(null);
         }
@@ -119,7 +122,7 @@ export function SavedMaterialsPanel({ isOpen, onClose }: SavedMaterialsPanelProp
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
                                         <Bookmark className="h-12 w-12 text-[#E5E7EB]" />
                                         <p className="mt-4 text-sm font-medium text-brand-dark">Belum ada materi tersimpan</p>
-                                        <p className="mt-1 text-xs text-[#9CA3AF]">
+                                        <p className="mt-1 text-xs text-gray-600">
                                             Simpan materi penting dari sitasi AI chat dengan menekan ikon bookmark
                                         </p>
                                     </div>
@@ -145,7 +148,7 @@ export function SavedMaterialsPanel({ isOpen, onClose }: SavedMaterialsPanelProp
                                                                 </p>
                                                             </div>
                                                             {material.course_name && (
-                                                                <p className="mt-0.5 text-[10px] text-[#9CA3AF] truncate">
+                                                                <p className="mt-0.5 text-[10px] text-gray-600 truncate">
                                                                     {material.course_name}
                                                                 </p>
                                                             )}
@@ -154,7 +157,7 @@ export function SavedMaterialsPanel({ isOpen, onClose }: SavedMaterialsPanelProp
                                                                     {material.note}
                                                                 </p>
                                                             )}
-                                                            <p className="mt-1 text-[10px] text-[#9CA3AF]">
+                                                            <p className="mt-1 text-[10px] text-gray-600">
                                                                 {formatDate(material.created_at)}
                                                             </p>
                                                         </div>

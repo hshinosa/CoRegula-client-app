@@ -51,9 +51,9 @@ class ProfileStatsController extends Controller
                 $stats['active_courses'] = count(array_filter($courses, fn($c) => ($c['status'] ?? '') === 'aktif'));
             }
         } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: courses fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: courses fetch failed', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: courses fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: courses fetch failed', ['error' => $e->getMessage()]);
         }
 
         try {
@@ -65,9 +65,9 @@ class ProfileStatsController extends Controller
                 $stats['completed_tasks'] = $response->json('meta.total', 0);
             }
         } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: submissions fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: submissions fetch failed', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: submissions fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: submissions fetch failed', ['error' => $e->getMessage()]);
         }
 
         try {
@@ -79,9 +79,9 @@ class ProfileStatsController extends Controller
                 $stats['total_reflections'] = $response->json('meta.total', count($response->json('data', [])));
             }
         } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: reflections fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: reflections fetch failed', ['error' => $e->getMessage()]);
         } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::debug('Stats: reflections fetch failed', ['error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Stats: reflections fetch failed', ['error' => $e->getMessage()]);
         }
 
         return $stats;

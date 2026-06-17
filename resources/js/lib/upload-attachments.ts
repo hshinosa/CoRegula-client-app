@@ -43,10 +43,14 @@ export function validateFile(file: File): FileValidation {
 async function uploadOne(
     file: File,
     onProgress?: (progress: UploadProgress) => void,
+    conversationId?: string,
 ): Promise<UploadedAttachment> {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
     const formData = new FormData();
     formData.append('file', file);
+    if (conversationId) {
+        formData.append('conversation_id', conversationId);
+    }
 
     return new Promise<UploadedAttachment>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -71,6 +75,8 @@ async function uploadOne(
         xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.withCredentials = true;
+        xhr.timeout = 120000;
+        xhr.ontimeout = () => reject(new Error('Upload timed out'));
         xhr.send(formData);
     });
 }
@@ -100,6 +106,7 @@ async function withConcurrency<T, R>(
 export async function uploadAttachments(
     files: readonly File[],
     onProgress?: (progress: UploadProgress) => void,
+    conversationId?: string,
 ): Promise<UploadedAttachment[]> {
     for (const file of files) {
         const validation = validateFile(file);
@@ -108,5 +115,5 @@ export async function uploadAttachments(
         }
     }
 
-    return withConcurrency(files, MAX_PARALLEL, (file) => uploadOne(file, onProgress));
+    return withConcurrency(files, MAX_PARALLEL, (file) => uploadOne(file, onProgress, conversationId));
 }

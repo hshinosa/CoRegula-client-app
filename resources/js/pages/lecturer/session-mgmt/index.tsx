@@ -14,6 +14,7 @@ import {
 import { useState, useCallback, useEffect } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
+import { FormModal } from '@/components/ui/FormModal';
 import lecturer from '@/routes/lecturer';
 import { SharedData } from '@/types';
 import { TableSkeleton } from '@/components/ui/skeletons';
@@ -195,7 +196,7 @@ export default function SessionManagementPage({ sessions, filters }: Props) {
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-5 h-5" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -300,7 +301,7 @@ export default function SessionManagementPage({ sessions, filters }: Props) {
                   {filteredSessions.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center">
-                        <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                        <Calendar className="mx-auto h-12 w-12 text-gray-600" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">No sessions</h3>
                         <p className="mt-1 text-sm text-gray-500">
                           Get started by creating a new session.
@@ -353,7 +354,7 @@ export default function SessionManagementPage({ sessions, filters }: Props) {
                               {new Date(session.scheduled_at).toLocaleString()}
                             </div>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-600">-</span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -363,7 +364,7 @@ export default function SessionManagementPage({ sessions, filters }: Props) {
                               {session.auto_close_timeout_minutes}m
                             </div>
                           ) : (
-                            <span className="text-gray-400">Off</span>
+                            <span className="text-gray-600">Off</span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -480,26 +481,8 @@ function CreateSessionModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Create New Session</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <FormModal open={true} title="Create New Session" description="Set up a discussion session draft or schedule it for later." onClose={onClose} maxWidth="max-w-lg" scrollable={true}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Session Name *
@@ -585,7 +568,6 @@ function CreateSessionModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </form>
-      </motion.div>
-    </motion.div>
+    </FormModal>
   );
 }

@@ -60,6 +60,7 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
     const [reorderingWeeks, setReorderingWeeks] = useState(false);
     const [reindexingId, setReindexingId] = useState<string | null>(null);
     const [poolPickerWeekId, setPoolPickerWeekId] = useState<string | null>(null);
+    const [forcePolling, setForcePolling] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -100,13 +101,13 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
     }, [kbByMaterial]);
 
     useEffect(() => {
-        if (!hasKbInFlight) {
+        if (!hasKbInFlight && !forcePolling) {
             return;
         }
         void fetchHub();
         const id = window.setInterval(() => void fetchHub(), 3000);
         return () => window.clearInterval(id);
-    }, [hasKbInFlight, fetchHub]);
+    }, [hasKbInFlight, forcePolling, fetchHub]);
 
     const stats = useMemo(() => {
         const materials = hub?.materials ?? [];
@@ -240,7 +241,11 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
                 anyError = true;
             }
         }
-        if (anySuccess) await fetchHub();
+        if (anySuccess) {
+            setForcePolling(true);
+            await fetchHub();
+            window.setTimeout(() => setForcePolling(false), 15000);
+        }
         setUploading(false);
         if (anySuccess && !anyError) {
             setUploadFiles([]);
@@ -270,7 +275,9 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken },
             });
+            setForcePolling(true);
             await fetchHub();
+            window.setTimeout(() => setForcePolling(false), 15000);
         } catch {
             /* */
         } finally {

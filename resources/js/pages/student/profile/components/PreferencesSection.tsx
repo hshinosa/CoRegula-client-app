@@ -17,7 +17,6 @@ interface Notifications {
 
 interface PreferencesData {
     notifications: Notifications;
-    language: string;
     theme: string;
     font_size: string;
 }
@@ -108,7 +107,11 @@ export default function PreferencesSection({ preferences: initial }: Props) {
                         Accept: 'application/json',
                         'X-CSRF-TOKEN': csrfToken(),
                     },
-                    body: JSON.stringify(prefs),
+                    body: JSON.stringify({
+                        notifications: prefs.notifications,
+                        theme: prefs.theme,
+                        font_size: prefs.font_size,
+                    }),
                 });
 
                 if (res.ok) {
@@ -132,7 +135,7 @@ export default function PreferencesSection({ preferences: initial }: Props) {
         <div className="space-y-8">
             <div>
                 <div className="mb-4 flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                    <Bell className="h-5 w-5 text-gray-500 dark:text-gray-600" />
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Notifikasi
                     </h2>
@@ -147,14 +150,14 @@ export default function PreferencesSection({ preferences: initial }: Props) {
 
             <div>
                 <div className="mb-4 flex items-center gap-2">
-                    <Type className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                    <Type className="h-5 w-5 text-gray-500 dark:text-gray-600" />
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Tampilan
                     </h2>
                 </div>
                 <div className="space-y-4">
                     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                        <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
+                        <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-600">
                             Tema
                         </h3>
                         <ThemePrefs
@@ -164,7 +167,7 @@ export default function PreferencesSection({ preferences: initial }: Props) {
                     </div>
 
                     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                        <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
+                        <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-600">
                             Ukuran Font
                         </h3>
                         <div className="flex gap-2">
@@ -196,7 +199,7 @@ export default function PreferencesSection({ preferences: initial }: Props) {
                 {saving && (
                     <>
                         <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        <span className="text-gray-500 dark:text-gray-400">Menyimpan...</span>
+                        <span className="text-gray-500 dark:text-gray-600">Menyimpan...</span>
                     </>
                 )}
                 {!saving && saved && (

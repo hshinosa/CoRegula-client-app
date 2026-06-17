@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     CheckCircle2,
     Eye,
@@ -13,12 +13,12 @@ import {
     TestTube2,
     Trash2,
     UserPen,
-    X,
 } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
+import { FormModal } from '@/components/ui/FormModal';
 import { InputError } from '@/components/ui/input-error';
 import { SkeletonCard } from '@/components/ui/skeletons';
 import { toast } from '@/components/ui/toaster';
@@ -121,87 +121,6 @@ function normalizeErrors(error: unknown): Record<string, string> {
     return {};
 }
 
-function FormModal({
-    open,
-    title,
-    description,
-    children,
-    onClose,
-    maxWidth = 'max-w-2xl',
-}: {
-    open: boolean;
-    title: string;
-    description: string;
-    children: React.ReactNode;
-    onClose: () => void;
-    maxWidth?: string;
-}) {
-    if (!open) return null;
-
-    return (
-        <AnimatePresence>
-            <>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 bg-black"
-                    onClick={onClose}
-                    style={{
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
-                    }}
-                />
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                >
-                    <div
-                        className={`w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl`}
-                        style={{
-                            background: 'var(--dm-surface)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            border: '1px solid var(--dm-border-strong)',
-                        }}
-                    >
-                        <div
-                            className="flex items-start justify-between gap-4 pb-4"
-                            style={{ borderBottom: '1px solid var(--dm-border)' }}
-                        >
-                            <div>
-                                <h3 className="text-lg font-semibold" style={headingStyle}>
-                                    {title}
-                                </h3>
-                                <p className="mt-1 text-sm text-brand-muted-dark">{description}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="rounded-lg p-2 text-brand-muted-dark transition-all duration-150"
-                                style={{
-                                    ['--hover-bg' as string]: 'var(--dm-surface-hover)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'var(--dm-surface-hover)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                }}
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-                        <div className="mt-6 space-y-4">{children}</div>
-                    </div>
-                </motion.div>
-            </>
-        </AnimatePresence>
-    );
-}
-
 function ToggleSwitch({ checked, disabled, onChange }: { checked: boolean; disabled?: boolean; onChange: () => void }) {
     return (
         <button
@@ -289,7 +208,7 @@ function ProviderCard({
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         <p className="text-sm font-semibold text-brand-dark dark:text-gray-100">{provider.displayName}</p>
-                        <p className="mt-1 truncate text-xs text-slate-600 dark:text-gray-400">{provider.name}</p>
+                        <p className="mt-1 truncate text-xs text-slate-600 dark:text-gray-600">{provider.name}</p>
                     </div>
                     <span
                         className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
@@ -302,7 +221,7 @@ function ProviderCard({
                     </span>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-slate-600 dark:text-gray-400">
+                <div className="space-y-1.5 text-xs text-slate-600 dark:text-gray-600">
                     <p>
                         <span className="font-medium text-brand-dark dark:text-gray-200">Model:</span> {getProviderModel(provider)}
                     </p>
@@ -708,17 +627,17 @@ background: 'var(--dm-accent-bg)',
 
                         <div className="mt-5 grid gap-4 md:grid-cols-3">
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Total Providers</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Total Providers</p>
                                 <p className="mt-2 text-2xl font-semibold text-brand-dark dark:text-gray-100">{providerList.length}</p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Active Provider</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Active Provider</p>
                                 <p className="mt-2 text-lg font-semibold text-brand-dark dark:text-gray-100">
                                     {activeProvider ? activeProvider.displayName : 'Belum ada'}
                                 </p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-400">Security</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Security</p>
                                 <p className="mt-2 text-sm font-medium text-brand-dark dark:text-gray-100">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
                             </div>
                         </div>
@@ -745,7 +664,7 @@ background: 'var(--dm-accent-bg)',
                             <>
                                 <div className="hidden overflow-x-auto md:block">
                                     <table className="min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
-                                        <thead className="bg-white/60 text-left text-brand-muted-dark dark:bg-white/5 dark:text-gray-400">
+                                        <thead className="bg-white/60 text-left text-brand-muted-dark dark:bg-white/5 dark:text-gray-600">
                                             <tr>
                                                 <th className="px-6 py-4 font-medium">Name</th>
                                                 <th className="px-6 py-4 font-medium">Status</th>
@@ -765,7 +684,7 @@ background: 'var(--dm-accent-bg)',
                                                             </div>
                                                             <div>
                                                                 <p className="font-semibold text-brand-dark dark:text-gray-100">{provider.displayName}</p>
-                                                                <p className="text-xs text-brand-muted-dark dark:text-gray-400">{provider.name}</p>
+                                                                <p className="text-xs text-brand-muted-dark dark:text-gray-600">{provider.name}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -789,13 +708,13 @@ background: 'var(--dm-accent-bg)',
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 align-top text-brand-dark dark:text-gray-200">{provider.baseUrl || '-'}</td>
-                                                    <td className="px-6 py-4 align-top font-mono text-xs text-brand-muted-dark dark:text-gray-400">{provider.apiKeyMasked}</td>
-                                                    <td className="px-6 py-4 align-top text-brand-muted-dark dark:text-gray-400">{formatDate(provider.updatedAt)}</td>
+                                                    <td className="px-6 py-4 align-top font-mono text-xs text-brand-muted-dark dark:text-gray-600">{provider.apiKeyMasked}</td>
+                                                    <td className="px-6 py-4 align-top text-brand-muted-dark dark:text-gray-600">{formatDate(provider.updatedAt)}</td>
                                                     <td className="relative px-6 py-4 align-top text-right">
                                                         <button
                                                             type="button"
                                                             onClick={() => setOpenActionsFor(openActionsFor === provider.id ? null : provider.id)}
-                                                            className="rounded-lg p-2 text-brand-muted-dark transition hover:bg-black/5 hover:text-brand-dark dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
+                                                            className="rounded-lg p-2 text-brand-muted-dark transition hover:bg-black/5 hover:text-brand-dark dark:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-200"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
@@ -881,7 +800,7 @@ background: 'var(--dm-accent-bg)',
                                 <div key={provider.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 dark:border-white/20 dark:bg-white/5">
                                     <div>
                                         <p className="font-medium text-brand-dark dark:text-gray-100">{index + 1}. {provider.displayName}</p>
-                                        <p className="text-xs text-brand-muted-dark dark:text-gray-400">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
+                                        <p className="text-xs text-brand-muted-dark dark:text-gray-600">{provider.name} {provider.isActive ? '• active' : '• standby'}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -913,6 +832,7 @@ background: 'var(--dm-accent-bg)',
                 title="Add AI Provider"
                 description="Tambahkan provider baru lengkap dengan API key, base URL, dan advanced config JSON."
                 onClose={closeCreateModal}
+                scrollable
             >
                 <form onSubmit={handleCreateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -951,7 +871,7 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowCreateApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-400"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-600"
                             >
                                 {showCreateApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -997,6 +917,7 @@ background: 'var(--dm-accent-bg)',
                 title="Edit AI Provider"
                 description="Perbarui display name, API key, base URL, atau advanced config untuk provider ini."
                 onClose={closeEditModal}
+                scrollable
             >
                 <form onSubmit={handleUpdateProvider} className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1028,12 +949,12 @@ background: 'var(--dm-accent-bg)',
                             <button
                                 type="button"
                                 onClick={() => setShowEditApiKey((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-400"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted-dark dark:text-gray-600"
                             >
                                 {showEditApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                         </div>
-                        <p className="mt-2 text-xs text-brand-muted-dark dark:text-gray-400">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
+                        <p className="mt-2 text-xs text-brand-muted-dark dark:text-gray-600">Current key: {selectedProvider?.apiKeyMasked ?? '-'}</p>
                         <InputError message={editErrors.apiKey} className="mt-2" />
                     </div>
 
@@ -1083,6 +1004,7 @@ background: 'var(--dm-accent-bg)',
                 description="Provider yang dihapus tidak bisa dikembalikan. Pastikan provider ini memang tidak lagi dipakai."
                 onClose={closeDeleteModal}
                 maxWidth="max-w-lg"
+                scrollable
             >
                 <div className="space-y-5">
                     <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400">
@@ -1112,6 +1034,7 @@ background: 'var(--dm-accent-bg)',
                 description="Jalankan real connection test ke provider yang dipilih untuk memastikan API key, model, dan konfigurasi fallback siap dipakai."
                 onClose={closeTestModal}
                 maxWidth="max-w-xl"
+                scrollable
             >
                 <div className="space-y-4">
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-brand-dark dark:border-white/20 dark:bg-white/5 dark:text-gray-200">

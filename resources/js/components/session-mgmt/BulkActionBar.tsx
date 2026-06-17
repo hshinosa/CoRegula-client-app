@@ -118,7 +118,7 @@ export default function BulkActionBar({
 
           <button
             onClick={onClearSelection}
-            className="p-1.5 text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 text-gray-600 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

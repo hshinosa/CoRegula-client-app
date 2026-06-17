@@ -43,7 +43,7 @@ export function FilterChips({ activeStatus, onToggleStatus, filterCounts, isFetc
                                 inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1 py-0.5 text-xs
                                 ${isActive
                                     ? 'bg-white/20 text-white'
-                                    : 'bg-slate-100 text-[#9CA3AF]'
+            : 'bg-slate-100 text-gray-600'
                                 }
                             `}
                         >

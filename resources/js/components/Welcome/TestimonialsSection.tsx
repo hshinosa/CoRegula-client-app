@@ -248,7 +248,7 @@ export default function TestimonialsSection({ lightMode }: Props) {
                                                 <p className="text-sm text-brand-muted-dark">
                                                     {current.role}
                                                 </p>
-                                                <p className="text-xs text-[#9ca3af]">
+                                                <p className="text-xs text-gray-600">
                                                     {current.university}
                                                 </p>
                                             </div>

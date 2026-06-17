@@ -62,7 +62,7 @@ export default function StatCard({
                     <Icon className="h-5 w-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <p className="truncate text-xs font-medium text-gray-500 dark:text-gray-600">
                         {label}
                     </p>
                     <p className={`text-2xl font-bold ${textColor}`}>
@@ -72,7 +72,7 @@ export default function StatCard({
                             value
                         )}
                         {suffix && (
-                            <span className="ml-1 text-sm font-normal text-gray-400">
+                            <span className="ml-1 text-sm font-normal text-gray-600">
                                 {suffix}
                             </span>
                         )}

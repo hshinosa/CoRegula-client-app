@@ -79,7 +79,7 @@ export function MessageEditor({
                         onKeyDown={handleKeyDown}
                         disabled={isSaving}
                         rows={1}
-                        className="flex-1 resize-none rounded-lg border-0 bg-white/80 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:bg-gray-800/80 dark:text-gray-100"
+                        className="flex-1 resize-none rounded-lg border-0 bg-white/80 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:bg-gray-800/80 dark:text-gray-100"
                         placeholder="Edit pesan..."
                     />
                     <div className="flex gap-1">
@@ -87,7 +87,7 @@ export function MessageEditor({
                             type="button"
                             onClick={onCancel}
                             disabled={isSaving}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-200 dark:text-gray-600 dark:hover:bg-gray-700"
                             aria-label="Batal edit"
                         >
                             <X className="h-4 w-4" />

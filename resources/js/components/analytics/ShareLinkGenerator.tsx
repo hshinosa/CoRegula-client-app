@@ -128,7 +128,7 @@ export default function ShareLinkGenerator({
                         </button>
                     </div>
                     {expiresAt && (
-                        <p className="text-[10px] text-[#9CA3AF]">
+                        <p className="text-[10px] text-gray-600">
                             Link berlaku hingga {formatExpiry(expiresAt)}
                         </p>
                     )}

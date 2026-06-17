@@ -67,7 +67,7 @@ export default function CreateCourse() {
                                         type="text"
                                         value={data.code}
                                         onChange={(e) => setData('code', e.target.value.toUpperCase())}
-                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-mono tracking-wider text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 font-mono tracking-wider text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         placeholder="misalnya, CS401"
                                         maxLength={50}
                                     />
@@ -84,7 +84,7 @@ export default function CreateCourse() {
                                         type="text"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                        className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         placeholder="misalnya, Interaksi Manusia-Komputer"
                                         maxLength={255}
                                     />
@@ -100,7 +100,7 @@ export default function CreateCourse() {
                                             min={1}
                                             value={data.min_members_per_group}
                                             onChange={(e) => setData('min_members_per_group', Number(e.target.value) || 1)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         />
                                         <InputError message={errors.min_members_per_group} />
                                     </div>
@@ -112,14 +112,14 @@ export default function CreateCourse() {
                                             min={1}
                                             value={data.max_members_per_group}
                                             onChange={(e) => setData('max_members_per_group', Number(e.target.value) || 1)}
-                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-[#9ca3af] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
+                                            className="mt-1 block w-full rounded-xl border-0 bg-white/60 px-4 py-3 text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 sm:text-sm sm:leading-6"
                                         />
                                         <InputError message={errors.max_members_per_group} />
                                     </div>
                                 </div>
 
                                 <div className="pt-2">
-                                    <PrimaryButton disabled={processing} className="w-full justify-center sm:w-auto">
+                                    <PrimaryButton type="submit" disabled={processing} className="w-full justify-center sm:w-auto">
                                         {processing ? (
                                             <span className="flex items-center justify-center gap-2">
                                                 <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">

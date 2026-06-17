@@ -444,4 +444,10 @@ class StudentCourseController extends Controller
         }
         return $this->proxyResponse($response);
     }
+
+    public function regenerateSummary(string $course, string $chatSpace)
+    {
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/regenerate-summary");
+        return $this->proxyResponse($response);
+    }
 }

@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 import { InputError } from '@/components/ui/input-error';
+import { FormModal } from '@/components/ui/FormModal';
 import AppLayout from '@/layouts/app-layout';
 import { useStudentNav } from '@/components/navigation/student-nav';
 import student from '@/routes/student';
@@ -233,48 +234,8 @@ export default function StudentCoursesIndex() {
             </div>
 
             {/* Join Course Modal */}
-            <AnimatePresence>
-                {showJoinModal && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.5 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowJoinModal(false)}
-                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                        >
-                            <div
-                                className="w-full max-w-md rounded-3xl p-6 shadow-2xl"
-                                style={{
-                                    background: 'rgba(255,255,255,0.95)',
-                                    backdropFilter: 'blur(24px)',
-                                    WebkitBackdropFilter: 'blur(24px)',
-                                    border: '1px solid rgba(255,255,255,0.6)',
-                                }}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h3
-                                        className="text-lg font-semibold font-sans text-brand-dark"
-                                    >
-                                        Gabung Kelas
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowJoinModal(false)}
-                                        className="rounded-lg p-2 text-brand-muted-dark hover:text-brand-dark hover:bg-black/5 transition-colors"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <p className="mt-2 text-sm text-brand-muted-dark">
-                                    Masukkan kode gabung yang diberikan oleh dosen Anda
-                                </p>
-                                <form onSubmit={handleJoin} className="mt-6 space-y-4">
+            <FormModal open={showJoinModal} title="Gabung Kelas" description="Masukkan kode gabung yang diberikan oleh dosen Anda" onClose={() => setShowJoinModal(false)} maxWidth="max-w-md">
+                                <form onSubmit={handleJoin} className="space-y-4">
                                     <div>
                                         <input
                                             type="text"
@@ -303,11 +264,7 @@ export default function StudentCoursesIndex() {
                                         </PrimaryButton>
                                     </div>
                                 </form>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            </FormModal>
         </AppLayout>
     );
 }

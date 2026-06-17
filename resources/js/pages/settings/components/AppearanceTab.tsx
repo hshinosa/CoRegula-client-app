@@ -4,21 +4,14 @@ import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 
 interface AppearanceTabProps {
     theme: string;
-    language: string;
     onThemeChange: (theme: string) => void;
-    onLanguageChange: (lang: string) => void;
 }
 
-export function AppearanceTab({ theme, language, onThemeChange, onLanguageChange }: AppearanceTabProps) {
+export function AppearanceTab({ theme, onThemeChange }: AppearanceTabProps) {
     const themeOptions = [
         { id: 'light', label: 'Terang', icon: Sun, description: 'Tema terang untuk siang hari' },
         { id: 'dark', label: 'Gelap', icon: Moon, description: 'Tema gelap untuk malam hari' },
         { id: 'system', label: 'Ikuti Sistem', icon: Monitor, description: 'Otomatis sesuai pengaturan perangkat' },
-    ];
-
-    const languageOptions = [
-        { id: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
-        { id: 'en', label: 'English', flag: '🇬🇧' },
     ];
 
     return (
@@ -63,39 +56,6 @@ export function AppearanceTab({ theme, language, onThemeChange, onLanguageChange
                 </div>
             </LiquidGlassCard>
 
-            <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                <h2 className="mb-6 text-lg font-semibold text-neutral-800">
-                    Bahasa
-                </h2>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                    {languageOptions.map((option) => (
-                        <motion.button
-                            key={option.id}
-                            onClick={() => onLanguageChange(option.id)}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`flex items-center gap-4 rounded-xl border-2 p-4 transition-all ${
-                                language === option.id
-                                    ? 'border-primary-600 bg-primary-50'
-                                    : 'border-neutral-200 bg-white hover:border-primary-300'
-                            }`}
-                        >
-                            <span className="text-3xl">{option.flag}</span>
-                            <p className="font-medium text-neutral-800">{option.label}</p>
-                            {language === option.id && (
-                                <div className="ml-auto h-2 w-2 rounded-full bg-primary-600" />
-                            )}
-                        </motion.button>
-                    ))}
-                </div>
-
-                <div className="mt-6 rounded-xl bg-caution-50 p-4">
-                    <p className="text-sm text-caution-800">
-                        <strong>Catatan:</strong> Perubahan bahasa akan diterapkan pada seluruh antarmuka aplikasi.
-                    </p>
-                </div>
-            </LiquidGlassCard>
         </div>
     );
 }

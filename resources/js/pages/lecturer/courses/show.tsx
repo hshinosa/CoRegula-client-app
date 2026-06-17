@@ -177,7 +177,7 @@ export default function ShowCourse({ course }: Props) {
                                         <FolderKanban className="h-4 w-4" />
                                         Kelola Grup
                                     </SecondaryButton>
-                                    <PrimaryButton href={lecturer.analytics.index.url({ course: course.id })} className="min-w-[170px]">
+                                    <PrimaryButton href={lecturer.analytics.detail.url({ course: course.id })} className="min-w-[170px]">
                                         <BarChart3 className="h-4 w-4" />
                                         Analytics
                                     </PrimaryButton>

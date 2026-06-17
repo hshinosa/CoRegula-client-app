@@ -27,7 +27,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
     if (isLoading) {
         return (
             <div className="flex flex-1 items-center justify-center">
-                <div className="animate-pulse text-gray-400 text-sm">Memuat pesan...</div>
+                <div className="animate-pulse text-gray-600 text-sm">Memuat pesan...</div>
             </div>
         );
     }
@@ -35,7 +35,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
     if (messages.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center">
-                <p className="text-gray-400 text-sm">{emptyText}</p>
+                <p className="text-gray-600 text-sm">{emptyText}</p>
             </div>
         );
     }
@@ -150,7 +150,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                             <div className="mt-0.5 flex items-center gap-2">
                                 {message.showTime && (
                                     <>
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-gray-600">
                                             {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         <RelevanceBadge isRelevant={message.isRelevant} />
@@ -159,7 +159,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                                 {onReply && !isSystem && (
                                     <button
                                         onClick={() => onReply(message)}
-                                        className="text-xs text-gray-400 opacity-0 transition-opacity hover:text-brand-primary group-hover:opacity-100"
+                                        className="text-xs text-gray-600 opacity-0 transition-opacity hover:text-brand-primary group-hover:opacity-100"
                                     >
                                         Balas
                                     </button>

@@ -229,7 +229,7 @@ export default function Login() {
 
                     <div className="my-5 flex items-center gap-3">
                         <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-                        <span className="text-xs text-slate-400 dark:text-slate-500">atau</span>
+                        <span className="text-xs text-gray-600 dark:text-slate-500">atau</span>
                         <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                     </div>
 

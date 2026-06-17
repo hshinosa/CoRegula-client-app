@@ -242,6 +242,9 @@ class CourseController extends Controller
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/msword', // .doc (legacy Word)
+            'application/vnd.ms-excel', // .xls (legacy Excel)
+            'application/vnd.ms-powerpoint', // .ppt (legacy PowerPoint)
             'text/plain',
             'text/markdown',
             'image/png',

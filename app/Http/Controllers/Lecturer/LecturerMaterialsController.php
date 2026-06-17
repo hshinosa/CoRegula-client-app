@@ -117,6 +117,11 @@ class LecturerMaterialsController extends Controller
         return response()->json(['message' => 'Urutan modul berhasil diperbarui.']);
     }
 
+    // STORAGE MIGRATION STRATEGY (H3 file-upload hardening):
+    // - NEW uploads go to the 'private' disk (not web-accessible).
+    // - Legacy files remain on 'public' disk; do NOT migrate in-place (would break URLs).
+    // - Read paths (destroy, reindex, streaming) check 'private' first, fall back to 'public'.
+    // - Chat attachments stay on 'public' (see ChatUploadController).
     /**
      * Upload a material.
      */
@@ -136,7 +141,7 @@ class LecturerMaterialsController extends Controller
         $fileSize = $file->getSize();
 
         // Store file
-        $path = $file->store("materials/{$course}", 'public');
+        $path = $file->store("materials/{$course}", 'private');
 
         $title = $validated['title'] ?? null;
         if (empty($title)) {
@@ -157,7 +162,9 @@ class LecturerMaterialsController extends Controller
                 ->max('sort_order') ?? 0) + 1,
         ]);
 
-        $absolutePath = Storage::disk('public')->path($path);
+        $absolutePath = is_dir('/shared-storage')
+            ? '/shared-storage/' . ltrim($path, '/')
+            : Storage::disk('private')->path($path);
         $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
         $queuePayload = [
             'course_id' => $course,
@@ -212,8 +219,10 @@ class LecturerMaterialsController extends Controller
         // Delete file from storage
         $this->coreApiInternal->deleteCourseMaterialKb($course, $materialId);
 
-        if (Storage::disk('public')->exists($material->file_path)) {
-            Storage::disk('public')->delete($material->file_path);
+        // Check both 'private' (new) and 'public' (legacy) disks
+        $disk = Storage::disk('private')->exists($material->file_path) ? 'private' : 'public';
+        if (Storage::disk($disk)->exists($material->file_path)) {
+            Storage::disk($disk)->delete($material->file_path);
         }
 
         $material->delete();
@@ -285,11 +294,15 @@ class LecturerMaterialsController extends Controller
     {
         $material = CourseMaterial::where('course_id', $course)->findOrFail($materialId);
 
-        if (! Storage::disk('public')->exists($material->file_path)) {
+        // Check both 'private' (new) and 'public' (legacy) disks
+        $disk = Storage::disk('private')->exists($material->file_path) ? 'private' : 'public';
+        if (! Storage::disk($disk)->exists($material->file_path)) {
             return response()->json(['message' => 'File tidak ditemukan di storage.'], 404);
         }
 
-        $absolutePath = Storage::disk('public')->path($material->file_path);
+        $absolutePath = is_dir('/shared-storage')
+            ? '/shared-storage/' . ltrim($material->file_path, '/')
+            : Storage::disk($disk)->path($material->file_path);
         $uploaderId = (string) (session('user.id') ?? '00000000-0000-0000-0000-000000000000');
 
         $this->coreApiInternal->queueCourseMaterial([

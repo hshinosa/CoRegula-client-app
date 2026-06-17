@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class MessageSearchController extends Controller
 {
@@ -25,28 +24,26 @@ class MessageSearchController extends Controller
         $limit = $validated['limit'] ?? 20;
         $cursor = $validated['cursor'] ?? null;
 
-        $messagesQuery = ChatMessage::where('conversation_id', $conversationId)
-            ->where('is_deleted', false);
+        $sanitizedQuery = preg_replace('/[+\-\>\<\(\)\~\*"\@]/', ' ', $query);
+        $sanitizedQuery = preg_replace('/\s+/', ' ', trim((string) $sanitizedQuery));
 
-        try {
-            $messagesQuery->whereRaw(
-                'MATCH(content) AGAINST(? IN BOOLEAN MODE)',
-                [$query . '*']
-            );
-        } catch (ConnectionException $e) {
-            $messagesQuery->where('content', 'LIKE', '%' . $query . '%');
-        } catch (RequestException $e) {
-            $messagesQuery->where('content', 'LIKE', '%' . $query . '%');
+        if ($sanitizedQuery !== '') {
+            try {
+                $messages = $this->baseQuery($conversationId, $cursor)
+                    ->whereRaw(
+                        'MATCH(content) AGAINST(? IN BOOLEAN MODE)',
+                        [$sanitizedQuery . '*']
+                    )
+                    ->orderByDesc('created_at')
+                    ->limit($limit + 1)
+                    ->get();
+            } catch (QueryException $e) {
+                report($e);
+                $messages = $this->fallbackSearch($conversationId, $query, $cursor, $limit);
+            }
+        } else {
+            $messages = $this->fallbackSearch($conversationId, $query, $cursor, $limit);
         }
-
-        if ($cursor) {
-            $messagesQuery->where('id', '<', $cursor);
-        }
-
-        $messages = $messagesQuery
-            ->orderByDesc('created_at')
-            ->limit($limit + 1)
-            ->get();
 
         $hasMore = $messages->count() > $limit;
         if ($hasMore) {
@@ -80,5 +77,26 @@ class MessageSearchController extends Controller
                 'next_cursor' => $nextCursor,
             ],
         ]);
+    }
+
+    private function baseQuery(string $conversationId, ?string $cursor)
+    {
+        $query = ChatMessage::where('conversation_id', $conversationId)
+            ->where('is_deleted', false);
+
+        if ($cursor !== null) {
+            $query->where('id', '<', $cursor);
+        }
+
+        return $query;
+    }
+
+    private function fallbackSearch(string $conversationId, string $query, ?string $cursor, int $limit)
+    {
+        return $this->baseQuery($conversationId, $cursor)
+            ->where('content', 'LIKE', '%' . $query . '%')
+            ->orderByDesc('created_at')
+            ->limit($limit + 1)
+            ->get();
     }
 }

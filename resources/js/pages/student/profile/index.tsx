@@ -148,11 +148,11 @@ export default function StudentProfile({ profile, avatar, stats, preferences }: 
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {currentProfile.name}
                             </h1>
-                            <p className="mt-1 text-gray-500 dark:text-gray-400">
+                            <p className="mt-1 text-gray-500 dark:text-gray-600">
                                 {currentProfile.email}
                             </p>
                             {currentProfile.nim && (
-                                <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-500">
                                     NIM: {currentProfile.nim}
                                 </p>
                             )}

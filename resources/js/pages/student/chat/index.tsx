@@ -9,6 +9,7 @@ import { Course, SharedData, LearningGoal } from '@/types';
 import student from '@/routes/student';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { getAuthToken } from '@/lib/getAuthToken';
+import { toast } from '@/components/ui/toaster';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import {
@@ -146,7 +147,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const confirmDeliveredRef = useRef<(clientId?: string) => Promise<void>>(async () => {});
 
     useEffect(() => {
-        getAuthToken().then(setJwtToken).catch(console.error);
+        getAuthToken().then(setJwtToken).catch((err) => {
+            console.error(err);
+            toast.error('Gagal mengambil token autentikasi. Chat mungkin tidak terhubung.');
+        });
     }, []);
     
     // Get active chat space
@@ -589,7 +593,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         if (pendingFiles.length > 0) {
             setIsUploading(true);
             try {
-                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file));
+                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, activeChatSpace?.id);
                 attachments = uploaded.map((u, i) => ({
                     id: pendingFiles[i].id,
                     name: u.name,
@@ -600,6 +604,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                 }));
             } catch (error) {
                 console.error('File upload failed:', error);
+                toast.error('Gagal mengunggah file');
             }
             setIsUploading(false);
         }
@@ -1040,7 +1045,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
                                                             {/* Time - only on last message of group */}
                                                             {message.showTime && (
-                                                                <span className="mt-1 text-xs text-[#9CA3AF]">
+                            <span className="mt-1 text-xs text-gray-600">
                                                                     {formatTime(message.created_at)}
                                                                 </span>
                                                             )}
@@ -1267,7 +1272,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         )}
                                     </button>
                                 </form>
-                                <p className="mt-2 text-center text-xs text-[#9CA3AF]">
+                            <p className="mt-2 text-center text-xs text-gray-600">
                                     Tips: Sebut <span className="font-medium text-brand-primary">@agent</span> untuk memberikan tugas atau merangkum diskusi.
                                 </p>
                             </div>
@@ -1339,7 +1344,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                 Anggota
                             </h3>
-                            <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
+                                                <span className="text-xs text-gray-600">{group.members?.length || 0}</span>
                         </div>
                         <div className="space-y-2">
                             {group.members?.map((member) => {
@@ -1361,7 +1366,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             <p className="truncate text-sm font-medium text-brand-dark">
                                                 {member.name}
                                                 {member.id === auth.user?.id && (
-                                                    <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
+                                                    <span className="ml-1 text-xs text-gray-600">(kamu)</span>
                                                 )}
                                             </p>
                                             <p className="truncate text-xs text-brand-muted-dark">
@@ -1508,7 +1513,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         <h3 className="text-xs font-semibold uppercase tracking-wider text-brand-muted-dark">
                                             Anggota
                                         </h3>
-                                        <span className="text-xs text-[#9CA3AF]">{group.members?.length || 0}</span>
+                                                <span className="text-xs text-gray-600">{group.members?.length || 0}</span>
                                     </div>
                                     <div className="space-y-2">
                                         {group.members?.map((member) => {
@@ -1530,7 +1535,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                                         <p className="truncate text-sm font-medium text-brand-dark">
                                                             {member.name}
                                                             {member.id === auth.user?.id && (
-                                                                <span className="ml-1 text-xs text-[#9CA3AF]">(kamu)</span>
+                                                    <span className="ml-1 text-xs text-gray-600">(kamu)</span>
                                                             )}
                                                         </p>
                                                         <p className="truncate text-xs text-brand-muted-dark">

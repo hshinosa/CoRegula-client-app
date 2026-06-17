@@ -52,7 +52,7 @@ export function SearchBar({ value, onChange, placeholder = 'Cari kelas...' }: Se
     return (
         <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <Search className="h-4.5 w-4.5 text-[#9CA3AF]" />
+            <Search className="h-4.5 w-4.5 text-gray-600" />
             </div>
             <input
                 type="text"
@@ -64,7 +64,7 @@ export function SearchBar({ value, onChange, placeholder = 'Cari kelas...' }: Se
             {localValue && (
                 <button
                     onClick={handleClear}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#9CA3AF] transition-colors hover:text-brand-dark"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 transition-colors hover:text-brand-dark"
                     type="button"
                 >
                     <X className="h-4 w-4" />
