@@ -402,7 +402,66 @@ Seeded 6 attendance sessions and 0 records.
    npm run seed
    ```
 
-### Issue 6: "PDF generation timeout"
+### Issue 7: "Tables not found after migration" (Schema Issue)
+
+**Symptoms:**
+```
+ERROR: relation "attendance_sessions" does not exist
+ERROR: relation "course_materials" does not exist
+```
+
+**Root Cause:**
+Laravel migrations may create tables in the `app` schema instead of `public` schema, especially when using custom database configurations or when migrations are run in different contexts.
+
+**Diagnosis:**
+```bash
+# Check which schema tables are in
+docker exec kolabri-postgres psql -U postgres -d kolabri-db \
+  -c "SELECT schemaname, tablename FROM pg_tables WHERE tablename LIKE '%attend%' OR tablename LIKE '%material%' ORDER BY schemaname, tablename;"
+```
+
+**Solution 1: Query with Schema Prefix**
+```sql
+# Use app. prefix in queries
+SELECT COUNT(*) FROM app.attendance_sessions;
+SELECT COUNT(*) FROM app.course_materials;
+SELECT COUNT(*) FROM app.attendance_records;
+```
+
+**Solution 2: Set Default Search Path**
+```bash
+# Set search_path to include app schema
+docker exec kolabri-postgres psql -U postgres -d kolabri-db \
+  -c "ALTER DATABASE \"kolabri-db\" SET search_path TO app, public;"
+
+# Or set for current session
+SET search_path TO app, public;
+```
+
+**Solution 3: Move Tables to Public Schema**
+```bash
+# Move tables from app to public
+docker exec kolabri-postgres psql -U postgres -d kolabri-db << 'EOF'
+ALTER TABLE app.attendance_sessions SET SCHEMA public;
+ALTER TABLE app.attendance_records SET SCHEMA public;
+ALTER TABLE app.course_materials SET SCHEMA public;
+ALTER TABLE app.course_weeks SET SCHEMA public;
+ALTER TABLE app.material_modules SET SCHEMA public;
+DROP SCHEMA IF EXISTS app;
+EOF
+```
+
+**Prevention:**
+Check `config/database.php` in Laravel:
+```php
+'pgsql' => [
+    'driver' => 'pgsql',
+    'search_path' => 'public',  // Ensure this is set
+    // ...
+],
+```
+
+### Issue 8: "PDF generation timeout"
 
 **Symptoms:**
 ```
