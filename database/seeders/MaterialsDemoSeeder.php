@@ -569,7 +569,7 @@ HTML;
                         }
 
                         $material = CourseMaterial::create([
-                            'id' => (string) Str::uuid(), 'course_id' => $courseId, 'module_id' => $module->id,
+                            'id' => (string) Str::uuid(), 'course_id' => $courseId,
                             'title' => $topic, 'description' => "Materi {$courseName} minggu {$weekNum}: {$topic}. Baca sebelum sesi diskusi kelompok.",
                             'file_name' => $fileName, 'file_path' => 'demo-materials/' . $fileName,
                             'file_type' => 'application/pdf', 'file_size' => filesize($filePath),
