@@ -356,16 +356,18 @@ class AnalyticsController extends Controller
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Failed to fetch group trends', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch trends data',
-            ], 500);
+            return Inertia::render('lecturer/analytics/detail', [
+                'course' => null,
+                'analytics' => ['summary' => ['totalGroups' => 0, 'averageQualityScore' => null, 'totalMessages' => 0, 'groupsNeedingAttention' => 0], 'groups' => [], 'trends' => null],
+                'socketUrl' => config('services.api.socket_url', 'http://localhost:3000'),
+            ]);
         } catch (\Illuminate\Http\Client\RequestException $e) {
             Log::error('Failed to fetch group trends', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch trends data',
-            ], 500);
+            return Inertia::render('lecturer/analytics/detail', [
+                'course' => null,
+                'analytics' => ['summary' => ['totalGroups' => 0, 'averageQualityScore' => null, 'totalMessages' => 0, 'groupsNeedingAttention' => 0], 'groups' => [], 'trends' => null],
+                'socketUrl' => config('services.api.socket_url', 'http://localhost:3000'),
+            ]);
         }
 
         if (!$courseData) {
