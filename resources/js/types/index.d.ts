@@ -406,6 +406,7 @@ export interface AiMessage {
     conversation_id?: string;
     role: 'user' | 'assistant';
     content: string;
+    citations?: Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>;
     created_at: string;
 }
 

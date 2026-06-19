@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
+import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search, Copy, ArrowDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -19,6 +19,125 @@ import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { SearchBar } from './components';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+
+// --- Memoized sub-components ---
+
+interface CopyButtonProps { text: string; className?: string; }
+function CopyButtonBase({ text, className = '' }: CopyButtonProps) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
+    }, [text]);
+    return (
+        <button type="button" onClick={handleCopy} aria-label={copied ? 'Tersalin' : 'Salin pesan'}
+            className={`inline-flex items-center gap-1 rounded-lg p-1 text-brand-muted-dark transition-colors hover:bg-white/80 hover:text-brand-primary ${className}`}>
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+        </button>
+    );
+}
+const CopyButton = memo(CopyButtonBase);
+
+interface CitationListProps { citations: Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>; }
+function CitationListBase({ citations }: CitationListProps) {
+    if (citations.length === 0) return null;
+    return (
+        <div className="mt-2 border-t border-gray-200 pt-2">
+            <p className="mb-1 text-xs font-medium text-[#6B7280]">Sumber referensi:</p>
+            <div className="space-y-1">
+                {citations.map((c, i) => {
+                    const docUrl = c.course_id && c.course_material_id ? `/courses/${c.course_id}/materials/${c.course_material_id}/stream` : null;
+                    return (
+                        <div key={i} className="flex items-center gap-1">
+                            {docUrl ? (
+                                <a href={docUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-brand-primary hover:bg-brand-primary/10 transition-colors">
+                                    <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                                </a>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-[#4B5563]">
+                                    <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                                </span>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+const CitationList = memo(CitationListBase);
+
+const PROSE_CLASS = "prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1 [&_a]:text-brand-primary [&_a]:underline";
+
+interface MessageItemProps {
+    message: { id: string; role: 'user' | 'assistant'; content: string; created_at: string; citations?: Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }> };
+    userInitial: string;
+    formatTime: (dateString: string) => string;
+}
+
+function MessageItemBase({ message, userInitial, formatTime }: MessageItemProps) {
+    const isAssistant = message.role === 'assistant';
+    const isUser = message.role === 'user';
+    const [codeCopied, setCodeCopied] = useState<string | null>(null);
+    const handleCodeCopy = useCallback(async (code: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try { await navigator.clipboard.writeText(code); setCodeCopied(code); setTimeout(() => setCodeCopied(null), 2000); } catch {}
+    }, []);
+
+    const markdownComponents = useMemo(() => ({
+        pre({ children, ...props }: any) {
+            let codeText = '';
+            const extract = (n: any): string => { if (typeof n === 'string') return n; if (n?.props?.children) return extract(n.props.children); if (Array.isArray(n)) return n.map(extract).join(''); return ''; };
+            codeText = extract(children);
+            return (
+                <div className="group relative">
+                    <button type="button" onClick={(e) => handleCodeCopy(codeText, e)} aria-label="Salin kode"
+                        className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-lg bg-gray-200/80 p-1 text-xs text-gray-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300">
+                        {codeCopied === codeText ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                    </button>
+                    <pre {...props}>{children}</pre>
+                </div>
+            );
+        },
+    }), [codeCopied, handleCodeCopy]);
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} id={`message-${message.id}`} className={`flex gap-2.5 group ${isUser ? 'flex-row-reverse' : ''}`}>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
+                style={{ background: isUser ? 'linear-gradient(135deg, var(--color-brand-primary) 0%, #a41219 100%)' : 'rgba(136,22,28,0.08)', border: isUser ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(136,22,28,0.12)' }}>
+                {isUser ? <span className="text-sm font-bold text-white">{userInitial}</span> : <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--color-brand-primary)' }} />}
+            </div>
+            <div className="max-w-[84%] rounded-[24px] px-4 py-3.5"
+                style={{ background: isUser ? 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)' : 'rgba(255,255,255,0.82)', border: isUser ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(255,255,255,0.82)', boxShadow: '0 12px 26px rgba(148,163,184,0.10)' }}>
+                {isAssistant ? (
+                    <div className={PROSE_CLASS}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
+                    </div>
+                ) : (
+                    <p className="text-sm whitespace-pre-wrap leading-7 text-white">{message.content}</p>
+                )}
+                <div className="mt-1 flex items-center justify-between gap-2">
+                    <p className={`text-xs ${isUser ? 'text-white/70' : 'text-brand-muted-dark'}`}>{formatTime(message.created_at)}</p>
+                    {isAssistant && <div className="opacity-0 transition-opacity group-hover:opacity-100"><CopyButton text={message.content} /></div>}
+                </div>
+                {isAssistant && message.citations && message.citations.length > 0 && <CitationList citations={message.citations} />}
+            </div>
+        </motion.div>
+    );
+}
+const MessageItem = memo(MessageItemBase);
+
+function formatDateSeparator(dateString: string): string {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '';
+    const today = new Date(); const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === today.toDateString()) return 'Hari Ini';
+    if (date.toDateString() === yesterday.toDateString()) return 'Kemarin';
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function shouldShowDateSeparator(prev: string, curr: string): boolean {
+    return new Date(prev).toDateString() !== new Date(curr).toDateString();
+}
 
 function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}): Promise<Response> {
     const { timeout = 30000, ...fetchOptions } = options;
@@ -88,6 +207,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [streamingCitations, setStreamingCitations] = useState<Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>>([]);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const [showScrollBtn, setShowScrollBtn] = useState(false);
+    const [lastFailedPrompt, setLastFailedPrompt] = useState<string | null>(null);
 
     useEffect(() => {
         if (!activeChat?.id) {
@@ -185,18 +307,19 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         const container = messagesContainerRef.current;
         if (!container) return;
 
+        let rafPending = false;
         const handleScroll = () => {
-            setIsMessagesScrolling(true);
-
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
-
-            scrollTimeoutRef.current = setTimeout(() => {
-                setIsMessagesScrolling(false);
-            }, 900);
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(() => {
+                setIsMessagesScrolling(true);
+                const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 80;
+                setShowScrollBtn(!isNearBottom);
+                if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+                scrollTimeoutRef.current = setTimeout(() => setIsMessagesScrolling(false), 900);
+                rafPending = false;
+            });
         };
-
         container.addEventListener('scroll', handleScroll, { passive: true });
 
         return () => {
@@ -261,6 +384,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     }, [displayedStreamingContent]);
 
     const doStream = async (chatId: string, content: string) => {
+        setLastFailedPrompt(null);
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
         setOptimisticMessages([{ id: `opt-user-${Date.now()}`, role: 'user', content, created_at: new Date().toISOString() }]);
         setIsStreaming(true);
         setStreamingContent('');
@@ -273,6 +399,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
                 body: JSON.stringify({ content }),
+                signal: controller.signal,
             });
 
             if (!resp.ok || !resp.body) {
@@ -290,9 +417,27 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             });
 
             await waitForRevealToCatchUp(finalText);
-        } catch {
-            setOptimisticMessages((prev) => [...prev, { id: `opt-err-${Date.now()}`, role: 'assistant', content: 'Maaf, koneksi terputus. Silakan coba lagi.', created_at: new Date().toISOString() }]);
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') {
+                setIsStreaming(false);
+                setOptimisticMessages((prev) => {
+                    const userMessage = prev.find((message) => message.role === 'user');
+                    const partialContent = displayedStreamingContentRef.current || streamingContent;
+                    if (!userMessage) return prev;
+                    if (partialContent) {
+                        return [
+                            { ...userMessage, id: `sent-user-${Date.now()}` },
+                            { id: `sent-assistant-${Date.now()}`, role: 'assistant', content: partialContent + '\n\n_(Dihentikan oleh pengguna)_', created_at: new Date().toISOString() },
+                        ];
+                    }
+                    return [{ ...userMessage, id: `sent-user-${Date.now()}` }];
+                });
+            } else {
+                setLastFailedPrompt(content);
+                setOptimisticMessages((prev) => [...prev, { id: `opt-err-${Date.now()}`, role: 'assistant', content: 'Maaf, koneksi terputus. Silakan coba lagi.', created_at: new Date().toISOString() }]);
+            }
         } finally {
+            abortControllerRef.current = null;
             setIsStreaming(false);
             setOptimisticMessages((prev) => {
                 const userMessage = prev.find((message) => message.role === 'user');
@@ -319,6 +464,9 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     };
 
     const doCreateAndStream = async (content: string) => {
+        setLastFailedPrompt(null);
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
         setOptimisticMessages([{ id: `opt-user-${Date.now()}`, role: 'user', content, created_at: new Date().toISOString() }]);
         setIsStreaming(true);
         setStreamingContent('');
@@ -348,6 +496,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 credentials: 'include',
                 headers: { ...apiHeaders, 'Accept': 'text/event-stream' },
                 body: JSON.stringify({ content }),
+                signal: controller.signal,
             });
 
             if (!streamResp.ok || !streamResp.body) {
@@ -389,9 +538,16 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                     setDisplayedStreamingContent('');
                 },
             });
-        } catch {
-            setOptimisticMessages((prev) => [...prev, { id: `opt-err-${Date.now()}`, role: 'assistant', content: 'Maaf, koneksi terputus.', created_at: new Date().toISOString() }]);
-            setIsStreaming(false);
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') {
+                setIsStreaming(false);
+            } else {
+                setLastFailedPrompt(content);
+                setOptimisticMessages((prev) => [...prev, { id: `opt-err-${Date.now()}`, role: 'assistant', content: 'Maaf, koneksi terputus.', created_at: new Date().toISOString() }]);
+                setIsStreaming(false);
+            }
+        } finally {
+            abortControllerRef.current = null;
         }
     };
 
@@ -462,11 +618,17 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage(e);
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); }
     };
+    const handleStopGeneration = useCallback(() => {
+        if (abortControllerRef.current) { abortControllerRef.current.abort(); abortControllerRef.current = null; }
+        setIsStreaming(false);
+    }, []);
+    const handleRetry = useCallback(() => {
+        if (!lastFailedPrompt) return;
+        setLastFailedPrompt(null); setInputValue(lastFailedPrompt);
+        requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+    }, [lastFailedPrompt]);
 
     const formatTime = (dateString: string) => {
         return new Date(dateString).toLocaleTimeString('id-ID', {
@@ -501,9 +663,12 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
 
     const prefillPrompt = (prompt: string) => {
         setInputValue(prompt);
-        requestAnimationFrame(() => {
-            inputRef.current?.focus({ preventScroll: true });
-        });
+        requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+    };
+    const handleCardClick = (prompt: string) => {
+        if (isStreaming) return;
+        setInputValue('');
+        if (!activeChat) doCreateAndStream(prompt); else doStream(activeChat.id, prompt);
     };
 
     const breadcrumbItems = [{ label: 'Chat dengan AI' }];
@@ -553,61 +718,26 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                 >
                                     {isLoadingMessages && optimisticMessages.length === 0 ? (
                                         <ChatSkeleton messageCount={4} />
-                                    ) : messages.map((message) => (
-                                        <motion.div
-                                            key={message.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            id={`message-${message.id}`}
-                                            className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
-                                        >
-                                            <div
-                                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
-                                                style={{
-                                                    background: message.role === 'user'
-                                                        ? 'linear-gradient(135deg, var(--color-brand-primary) 0%, #a41219 100%)'
-                                                        : 'rgba(136,22,28,0.08)',
-                                                    border: message.role === 'user'
-                                                        ? '1px solid rgba(255,255,255,0.18)'
-                                                        : '1px solid rgba(136,22,28,0.12)',
-                                                }}
-                                            >
-                                                {message.role === 'user' ? (
-                                                    <span className="text-sm font-bold text-white">
-                                                        {authData.user?.name?.charAt(0).toUpperCase() || 'U'}
-                                                    </span>
-                                                ) : (
-                                                        <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--color-brand-primary)' }} />
-                                                )}
-                                            </div>
-                                            <div
-                                                className="max-w-[84%] rounded-[24px] px-4 py-3.5"
-                                                style={{
-                                                    background: message.role === 'user'
-                                                        ? 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)'
-                                                        : 'rgba(255,255,255,0.82)',
-                                                    border: message.role === 'user'
-                                                        ? '1px solid rgba(255,255,255,0.18)'
-                                                        : '1px solid rgba(255,255,255,0.82)',
-                                                    boxShadow: '0 12px 26px rgba(148,163,184,0.10)',
-                                                }}
-                                            >
-                                                {message.role === 'assistant' ? (
-                                                    <div className="prose prose-sm max-w-none max-h-[60vh] overflow-y-auto text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1">
-                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeHtml(formatAiOutput(message.content))}</ReactMarkdown>
+                                    ) : messages.map((message, index) => {
+                                        const prevMessage = index > 0 ? messages[index - 1] : null;
+                                        const showDateSep = !prevMessage || shouldShowDateSeparator(prevMessage.created_at, message.created_at);
+                                        return (
+                                            <div key={message.id}>
+                                                {showDateSep && (
+                                                    <div className="flex items-center justify-center py-2">
+                                                        <span className="rounded-full bg-white/60 px-3 py-1 text-[11px] font-medium text-brand-muted-dark" style={{ border: '1px solid rgba(226,232,240,0.6)' }}>
+                                                            {formatDateSeparator(message.created_at)}
+                                                        </span>
                                                     </div>
-                                                ) : (
-                                                    <p className="text-sm whitespace-pre-wrap leading-7 text-white">
-                                                        {message.content}
-                                                    </p>
                                                 )}
-                                                <p className={`mt-1 text-xs ${message.role === 'user' ? 'text-white/70' : 'text-brand-muted-dark'}`}>
-                                                    {formatTime(message.created_at)}
-                                                </p>
-
+                                                <MessageItem
+                                                    message={message}
+                                                    userInitial={authData.user?.name?.charAt(0).toUpperCase() || 'U'}
+                                                    formatTime={formatTime}
+                                                />
                                             </div>
-                                        </motion.div>
-                                    ))}
+                                        );
+                                    })}
                                     {!isLoadingMessages && isStreaming && (
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2.5">
                                             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full" style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.12)' }}>
@@ -615,7 +745,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             </div>
                                             <div className="max-w-[84%] rounded-[24px] px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.82)', boxShadow: '0 12px 26px rgba(148,163,184,0.10)' }}>
                                                 {displayedStreamingContent ? (
-                                                    <div className="prose prose-sm max-w-none max-h-[60vh] overflow-y-auto text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1">
+                                                    <div className="prose prose-sm max-w-none text-[#374151] leading-7 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:text-[#1f2937] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-brand-primary [&_pre]:rounded-xl [&_pre]:bg-gray-50 [&_pre]:p-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1">
                                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeHtml(formatAiOutput(displayedStreamingContent))}</ReactMarkdown>
                                                     </div>
                                                 ) : (
@@ -665,10 +795,45 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                         </motion.div>
                                     )}
                                     <div ref={messagesEndRef} />
+
+                                        {showScrollBtn && !isStreaming && (
+
+                                            <button
+
+                                                type="button"
+
+                                                onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+
+                                                aria-label="Scroll ke bawah"
+
+                                                className="sticky bottom-4 left-1/2 z-10 mx-auto flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white text-brand-primary shadow-[0_8px_20px_rgba(148,163,184,0.18)] transition-colors hover:bg-brand-primary/5"
+
+                                                style={{ border: '1px solid rgba(136,22,28,0.12)' }}
+
+                                            >
+
+                                                <ArrowDown className="h-4 w-4" />
+
+                                            </button>
+
+                                        )}
                                 </div>
                             </LiquidGlassCard>
                         )}
 
+                        {lastFailedPrompt && !isStreaming && (
+                            <div className="mt-2 flex items-center justify-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleRetry}
+                                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12"
+                                    style={{ background: 'rgba(136,22,28,0.08)', border: '1px solid rgba(136,22,28,0.14)' }}
+                                >
+                                    <RefreshCw className="h-3 w-3" />
+                                    Coba ulangi pesan
+                                </button>
+                            </div>
+                        )}
                         {fetchError && (
                             <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
                                 <div className="flex items-start gap-3">
@@ -722,7 +887,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             <button
                                                 key={`${item.eyebrow}-${index}`}
                                                 type="button"
-                                                onClick={() => prefillPrompt(item.prompt)}
+                                                onClick={() => handleCardClick(item.prompt)}
                                                 className="rounded-full px-3 py-1.5 text-xs font-medium shadow-[0_8px_22px_rgba(148,163,184,0.08)] transition-colors hover:bg-[rgba(136,22,28,0.10)] sm:text-sm"
                                                 style={{
                                                     color: 'var(--color-brand-primary)',
@@ -752,32 +917,39 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             onKeyDown={handleKeyDown}
                                             placeholder={isEmptyState ? 'Tanyakan apa saja tentang tugas, ide, atau rencana belajarmu' : 'Ketik pesan...'}
                                             rows={1}
-                                            className="min-h-[40px] flex-1 resize-none overflow-hidden bg-transparent px-1 py-2.5 text-sm leading-6 text-[#374151] placeholder-[#7B8494] focus:outline-none"
+                                            className="min-h-[40px] max-h-[120px] flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-sm leading-6 text-[#374151] placeholder-[#7B8494] focus:outline-none"
+                                            aria-label="Input pesan AI chat"
                                             style={{ height: '40px' }}
                                             onInput={(e) => {
                                                 const target = e.target as HTMLTextAreaElement;
                                                 target.style.height = 'auto';
-                                                target.style.height = target.scrollHeight + 'px';
+                                                target.style.height = Math.min(target.scrollHeight, 120) + 'px';
                                             }}
                                         />
-                                        <button
-                                            type="submit"
-                                            disabled={!inputValue.length || isStreaming}
-                                            className="flex h-10 w-10 flex-shrink-0 items-center justify-center self-center rounded-full text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                                            style={{
-                                                background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
-                                                boxShadow: '0 10px 20px rgba(136,22,28,0.16)',
-                                            }}
-                                        >
-                                            {isStreaming ? (
-                                                <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                                </svg>
-                                            ) : (
-                                                    <Send className="h-4.5 w-4.5" />
-                                            )}
-                                        </button>
+                                        {isStreaming ? (
+                                            <button
+                                                type="button"
+                                                onClick={handleStopGeneration}
+                                                aria-label="Hentikan generasi"
+                                                className="flex h-10 w-10 flex-shrink-0 items-center justify-center self-center rounded-full text-white transition-all"
+                                                style={{ background: 'linear-gradient(135deg, rgba(220,38,38,0.92) 0%, rgba(185,28,28,0.96) 100%)', boxShadow: '0 10px 20px rgba(220,38,38,0.16)' }}
+                                            >
+                                                <span className="h-3.5 w-3.5 rounded-sm bg-white" />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="submit"
+                                                disabled={!inputValue.length}
+                                                aria-label="Kirim pesan"
+                                                className="flex h-10 w-10 flex-shrink-0 items-center justify-center self-center rounded-full text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                                                style={{
+                                                    background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
+                                                    boxShadow: '0 10px 20px rgba(136,22,28,0.16)',
+                                                }}
+                                            >
+                                                <Send className="h-4.5 w-4.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <p className="mt-3 text-center text-[11px] text-[#748091] sm:text-xs">
