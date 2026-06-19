@@ -49,11 +49,20 @@ class ReflectionController extends Controller
     {
         $validated = $request->validate([
             'goal_id' => 'nullable|string',
-            'content' => 'required|string|min:10',
+            'course_id' => 'nullable|string',
+            'type' => 'nullable|in:session,weekly',
+            'content' => 'required|string|min:20',
         ]);
 
+        $payload = array_filter([
+            'goalId' => $validated['goal_id'] ?? null,
+            'courseId' => $validated['course_id'] ?? null,
+            'type' => $validated['type'] ?? 'weekly',
+            'content' => $validated['content'],
+        ], static fn ($v) => $v !== null);
+
         try {
-            $response = $this->apiRequest()->post($this->apiUrl() . '/api/reflections', $validated);
+            $response = $this->apiRequest()->post($this->apiUrl() . '/api/reflections', $payload);
 
             if ($response->successful()) {
                 return back()->with('success', 'Reflection saved successfully!');
