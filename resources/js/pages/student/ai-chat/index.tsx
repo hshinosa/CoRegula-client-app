@@ -98,7 +98,12 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setIsLoadingMessages(true);
         setFetchError(null);
         fetchChatMessages(activeChat.id)
-            .then(setLoadedMessages)
+            .then((msgs) => {
+                setLoadedMessages(msgs);
+                // Server now holds the persisted user+assistant messages,
+                // so the optimistic copies are redundant.
+                if (msgs.length > 0) setOptimisticMessages([]);
+            })
             .catch(err => setFetchError(err.message))
             .finally(() => setIsLoadingMessages(false));
     }, [activeChat?.id]);
@@ -364,12 +369,24 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
 
             const finalAssistantContent = displayedStreamingContentRef.current || finalText;
 
+            // Promote the streamed response to an optimistic assistant message so it
+            // stays visible after isStreaming flips false. The fetch effect will
+            // replace optimistic messages once the server messages arrive.
+            setOptimisticMessages((prev) => [
+                ...prev,
+                { id: `sent-assistant-${Date.now()}`, role: 'assistant', content: finalAssistantContent, created_at: new Date().toISOString() },
+            ]);
+
+            // Preserve component state to avoid a visible "page refresh" flash.
+            // Keep optimistic messages on screen until the server messages arrive
+            // (the activeChat.id change triggers the fetch effect), then clear them.
             router.visit(student.aiChat.show.url({ chat: chatId }), {
-                preserveState: false,
+                preserveState: true,
+                only: ['chats', 'activeChat', 'flash', 'errors'],
                 onSuccess: () => {
                     setIsStreaming(false);
-                    setStreamingContent(finalAssistantContent);
-                    setDisplayedStreamingContent(finalAssistantContent);
+                    setStreamingContent('');
+                    setDisplayedStreamingContent('');
                 },
             });
         } catch {
@@ -534,7 +551,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                     ref={messagesContainerRef}
                                     className={`chat-scrollbar h-full space-y-4 overflow-y-auto pr-2 ${isMessagesScrolling ? 'is-scrolling' : ''}`}
                                 >
-                                    {isLoadingMessages ? (
+                                    {isLoadingMessages && optimisticMessages.length === 0 ? (
                                         <ChatSkeleton messageCount={4} />
                                     ) : messages.map((message) => (
                                         <motion.div
