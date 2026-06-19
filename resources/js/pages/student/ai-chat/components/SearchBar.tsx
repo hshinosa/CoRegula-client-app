@@ -9,16 +9,15 @@ interface SearchResult {
     created_at: string | null;
     updated_at: string | null;
     snippet: string | null;
-    match_type: 'title' | 'content' | 'bookmark';
+    match_type: 'title' | 'content';
 }
 
 interface SearchBarProps {
     onSelectResult: (chatId: string) => void;
-    bookmarkedOnly?: boolean;
     className?: string;
 }
 
-export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = '' }: SearchBarProps) {
+export function SearchBar({ onSelectResult, className = '' }: SearchBarProps) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -27,18 +26,15 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
     const containerRef = useRef<HTMLDivElement>(null);
 
     const performSearch = useCallback(async (searchQuery: string) => {
-        if (searchQuery.length < 2 && !bookmarkedOnly) {
+        if (searchQuery.length < 2) {
             setResults([]);
             setIsOpen(false);
             return;
         }
-
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
             if (searchQuery) params.set('q', searchQuery);
-            if (bookmarkedOnly) params.set('bookmarked', 'true');
-
             const response = await fetch(`/student/ai-chat/search?${params.toString()}`, {
                 credentials: 'include',
             });
@@ -54,7 +50,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
         } finally {
             setIsLoading(false);
         }
-    }, [bookmarkedOnly]);
+    }, []);
 
     useEffect(() => {
         if (debounceRef.current) {
@@ -110,7 +106,7 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                     onFocus={() => {
                         if (results.length > 0) setIsOpen(true);
                     }}
-                    placeholder={bookmarkedOnly ? "Cari bookmark..." : "Cari percakapan..."}
+                    placeholder="Cari percakapan..."
                     className="w-full rounded-xl border border-[#E5E7EB] bg-white/80 py-2.5 pl-10 pr-10 text-sm text-brand-dark placeholder:text-gray-600 backdrop-blur-sm transition-all focus:border-brand-primary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/10"
                 />
                 {isLoading && (
@@ -149,26 +145,16 @@ export function SearchBar({ onSelectResult, bookmarkedOnly = false, className = 
                                     <span className="text-sm font-medium text-brand-dark">
                                         {highlightMatch(result.title, query)}
                                     </span>
-                                    {result.match_type === 'bookmark' && (
-                                        <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-[10px] font-medium text-brand-primary">
-                                            Bookmark
+                                    {result.updated_at && (
+                                        <span className="text-[10px] text-gray-600">
+                                            {new Date(result.updated_at).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric',
+                                            })}
                                         </span>
                                     )}
                                 </div>
-                                {result.snippet && (
-                                    <p className="text-xs text-brand-muted-dark line-clamp-2">
-                                        {highlightMatch(result.snippet, query)}
-                                    </p>
-                                )}
-                                {result.updated_at && (
-                                    <span className="text-[10px] text-gray-600">
-                                        {new Date(result.updated_at).toLocaleDateString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                        })}
-                                    </span>
-                                )}
                             </button>
                         ))}
                     </motion.div>

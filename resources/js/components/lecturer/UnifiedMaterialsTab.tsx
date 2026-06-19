@@ -676,22 +676,24 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
             )}
             <div className="space-y-4">
                 {weeks.map((week, weekIdx) => (
-                    <LiquidGlassCard
+                    <div
                         key={week.id}
                         data-week-card={week.id}
-                        intensity="light"
-                        className={`p-5 transition-opacity ${dragWeekId === week.id ? 'opacity-50 ring-2 ring-brand-primary/25' : ''} ${reorderingWeeks ? 'pointer-events-none opacity-80' : ''}`}
-                        lightMode
-                        onDragOver={(e) => {
+                        onDragOver={(e: React.DragEvent) => {
                             e.preventDefault();
                             e.dataTransfer.dropEffect = 'move';
                         }}
-                        onDrop={(e) => {
+                        onDrop={(e: React.DragEvent) => {
                             e.preventDefault();
                             const fromId = e.dataTransfer.getData('text/week-id');
                             if (fromId) moveWeekInOrder(fromId, week.id);
                             setDragWeekId(null);
                         }}
+                    >
+                    <LiquidGlassCard
+                        intensity="light"
+                        className={`p-5 transition-opacity ${dragWeekId === week.id ? 'opacity-50 ring-2 ring-brand-primary/25' : ''} ${reorderingWeeks ? 'pointer-events-none opacity-80' : ''}`}
+                        lightMode
                     >
                         <div className="flex items-start justify-between gap-3">
                             <div className="flex min-w-0 flex-1 items-start gap-2">
@@ -817,6 +819,7 @@ export default function UnifiedMaterialsTab({ courseId, onHubStats }: UnifiedMat
                             </div>
                         )}
                     </LiquidGlassCard>
+                    </div>
                 ))}
             </div>
 

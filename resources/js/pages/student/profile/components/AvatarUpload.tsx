@@ -251,7 +251,7 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                             >
                                 <img
                                     ref={imgRef}
-                                    src={previewUrl}
+                                    src={previewUrl ?? undefined}
                                     alt="Preview"
                                     className="w-full select-none"
                                     style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}

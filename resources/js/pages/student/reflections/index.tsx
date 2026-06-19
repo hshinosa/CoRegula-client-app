@@ -14,12 +14,10 @@ import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { Course, Reflection } from '@/types';
 import { Skeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { toast } from '@/components/ui/toaster';
+
 
 import { ReflectionSearchBar } from './components/ReflectionSearchBar';
 import { FilterChips } from './components/FilterChips';
-import { TagInput } from './components/TagInput';
-import { TagBadge } from './components/TagBadge';
 
 interface Props {
     reflections: Reflection[];
@@ -125,12 +123,8 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     const [isInitialLoading, setIsInitialLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-    const [reflectionTags, setReflectionTags] = useState<Record<string, string[]>>({});
-    const [availableTags, setAvailableTags] = useState<string[]>([]);
-    const [currentTags, setCurrentTags] = useState<string[]>([]);
 
     const navItems = useStudentNav('reflections');
 
@@ -148,11 +142,9 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const q = params.get('q');
-        const tags = params.get('tags');
         const from = params.get('from');
         const to = params.get('to');
         if (q) setSearchQuery(q);
-        if (tags) setSelectedTags(tags.split(','));
         if (from) setDateFrom(from);
         if (to) setDateTo(to);
     }, []);
@@ -160,53 +152,13 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
     useEffect(() => {
         const params = new URLSearchParams();
         if (searchQuery) params.set('q', searchQuery);
-        if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
         if (dateFrom) params.set('from', dateFrom);
         if (dateTo) params.set('to', dateTo);
         const qs = params.toString();
         const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
         window.history.replaceState(null, '', url);
-    }, [searchQuery, selectedTags, dateFrom, dateTo]);
+    }, [searchQuery, dateFrom, dateTo]);
 
-    useEffect(() => {
-        fetch('/student/reflections/tags', { headers: { 'Accept': 'application/json' } })
-            .then((r) => r.ok ? r.json() : { data: [] })
-            .then((d) => setAvailableTags((d.data ?? []).map((t: { tag: string }) => t.tag)))
-            .catch(() => {
-                toast.error('Gagal memuat tag refleksi. Silakan coba lagi.');
-            });
-    }, []);
-
-    const fetchTagsForReflection = useCallback(async (reflectionId: string) => {
-        try {
-            const response = await fetch(`/student/reflections/tags?reflection_id=${reflectionId}`, {
-                headers: { 'Accept': 'application/json' },
-            });
-            if (response.ok) {
-                const d = await response.json();
-                setReflectionTags((prev) => ({
-                    ...prev,
-                    [reflectionId]: (d.data ?? []).map((t: { tag: string }) => t.tag),
-                }));
-            }
-        } catch (_) {
-        }
-    }, []);
-
-    const saveTagsForReflection = useCallback(async (reflectionId: string, tags: string[]) => {
-        try {
-            await fetch('/student/reflections/tags', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ reflection_id: reflectionId, tags }),
-            });
-            setReflectionTags((prev) => ({ ...prev, [reflectionId]: tags }));
-            const allTags = new Set(availableTags);
-            tags.forEach((t) => allTags.add(t));
-            setAvailableTags(Array.from(allTags));
-        } catch (_) {
-        }
-    }, [availableTags]);
 
     const filteredReflections = useMemo(() => {
         let result = safeReflections;
@@ -220,12 +172,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
             );
         }
 
-        if (selectedTags.length > 0) {
-            result = result.filter((r) => {
-                const tags = reflectionTags[r.id] ?? [];
-                return selectedTags.some((t) => tags.includes(t));
-            });
-        }
+
 
         if (dateFrom) {
             result = result.filter((r) => {
@@ -239,12 +186,17 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                 return d <= dateTo + 'T23:59:59';
             });
         }
-
         return result;
-    }, [safeReflections, searchQuery, selectedTags, dateFrom, dateTo, reflectionTags]);
+    }, [safeReflections, searchQuery, dateFrom, dateTo]);
 
-    const sessionReflections = filteredReflections.filter((r) => r.type === 'session');
-    const weeklyReflections = filteredReflections.filter((r) => r.type === 'weekly');
+    const sessionReflections = useMemo(
+        () => filteredReflections.filter((r) => r.type === 'session'),
+        [filteredReflections],
+    );
+    const weeklyReflections = useMemo(
+        () => filteredReflections.filter((r) => r.type === 'weekly'),
+        [filteredReflections],
+    );
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -252,7 +204,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
             onSuccess: () => {
                 setShowCreateModal(false);
                 reset();
-                setCurrentTags([]);
             },
         });
     };
@@ -272,20 +223,13 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
 
     const createdAtFor = (reflection: Reflection) => reflection.createdAt ?? reflection.created_at ?? '';
 
-    const toggleTag = (tag: string) => {
-        setSelectedTags((prev) =>
-            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-        );
-    };
-
     const clearFilters = () => {
-        setSelectedTags([]);
         setDateFrom('');
         setDateTo('');
         setSearchQuery('');
     };
 
-    const hasActiveFilters = searchQuery || selectedTags.length > 0 || dateFrom || dateTo;
+    const hasActiveFilters = searchQuery || dateFrom || dateTo;
 
     const breadcrumbItems = [{ label: 'Refleksi Saya' }];
 
@@ -352,14 +296,11 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                             onClear={() => setSearchQuery('')}
                         />
                         <FilterChips
-                            selectedTags={selectedTags}
                             dateFrom={dateFrom}
                             dateTo={dateTo}
-                            onToggleTag={toggleTag}
                             onDateFromChange={setDateFrom}
                             onDateToChange={setDateTo}
                             onClearAll={clearFilters}
-                            availableTags={availableTags}
                         />
                     </div>
                 </LiquidGlassCard>
@@ -448,13 +389,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                {(reflectionTags[reflection.id] ?? []).length > 0 && (
-                                                                    <div className="flex gap-1">
-                                                                        {(reflectionTags[reflection.id] ?? []).slice(0, 3).map((tag) => (
-                                                                            <TagBadge key={tag} tag={tag} size="sm" />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
                                                                 <motion.div animate={{ rotate: expandedReflection === reflection.id ? 180 : 0 }}>
                                                                     <ChevronDown className="h-5 w-5 text-brand-muted-dark" />
                                                                 </motion.div>
@@ -492,14 +426,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 </p>
                                                                             </div>
                                                                         )}
-                                                                        <div className="mt-4">
-                                                                            <p className="mb-1.5 text-xs font-medium text-brand-dark">Tag</p>
-                                                                            <TagInput
-                                                                                tags={reflectionTags[reflection.id] ?? []}
-                                                                                onChange={(tags) => saveTagsForReflection(reflection.id, tags)}
-                                                                                reflectionId={reflection.id}
-                                                                            />
-                                                                        </div>
                                                                     </div>
                                                                 </motion.div>
                                                             )}
@@ -544,13 +470,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                {(reflectionTags[reflection.id] ?? []).length > 0 && (
-                                                                    <div className="flex gap-1">
-                                                                        {(reflectionTags[reflection.id] ?? []).slice(0, 3).map((tag) => (
-                                                                            <TagBadge key={tag} tag={tag} size="sm" />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
                                                                 <motion.div animate={{ rotate: expandedReflection === reflection.id ? 180 : 0 }}>
                                                                     <ChevronDown className="h-5 w-5 text-brand-muted-dark" />
                                                                 </motion.div>
@@ -588,14 +507,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                                 </p>
                                                                             </div>
                                                                         )}
-                                                                        <div className="mt-4">
-                                                                            <p className="mb-1.5 text-xs font-medium text-brand-dark">Tag</p>
-                                                                            <TagInput
-                                                                                tags={reflectionTags[reflection.id] ?? []}
-                                                                                onChange={(tags) => saveTagsForReflection(reflection.id, tags)}
-                                                                                reflectionId={reflection.id}
-                                                                            />
-                                                                        </div>
                                                                     </div>
                                                                 </motion.div>
                                                             )}
@@ -651,13 +562,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                             </p>
                                         </div>
 
-                                        <div>
-                                            <InputLabel>Tag</InputLabel>
-                                            <TagInput
-                                                tags={currentTags}
-                                                onChange={setCurrentTags}
-                                            />
-                                        </div>
 
                                         <div
                                             className="rounded-2xl p-4"

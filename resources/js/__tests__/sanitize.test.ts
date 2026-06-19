@@ -1,3 +1,5 @@
+/// <reference types="vitest/globals" />
+
 import { sanitizeHtml, sanitizeText } from '../utils/sanitize';
 
 describe('XSS Protection Tests', () => {

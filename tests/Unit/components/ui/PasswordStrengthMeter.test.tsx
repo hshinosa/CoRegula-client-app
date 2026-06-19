@@ -23,7 +23,7 @@ describe('PasswordStrengthMeter', () => {
         render(<PasswordStrengthMeter password="abcdefgh" />);
 
         expect(screen.getByText('Lemah')).toBeInTheDocument();
-        expect(screen.getByText(/Sandi sebaiknya memiliki minimal 8 karakter/i)).toBeInTheDocument();
+        expect(screen.getByText(/Tambahkan huruf besar, angka, simbol untuk keamanan lebih baik/i)).toBeInTheDocument();
     });
 
     it('shows Sedang when two rules are met', () => {

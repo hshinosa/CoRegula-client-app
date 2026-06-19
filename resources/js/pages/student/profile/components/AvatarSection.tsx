@@ -240,7 +240,7 @@ export default function AvatarSection({ avatar, userName, onAvatarChange }: Prop
                             >
                                 <img
                                     ref={imgRef}
-                                    src={previewUrl}
+                                    src={previewUrl ?? undefined}
                                     alt="Preview"
                                     className="mx-auto max-h-80 object-contain"
                                     style={{ transform: `scale(${zoom})` }}
@@ -322,7 +322,7 @@ export default function AvatarSection({ avatar, userName, onAvatarChange }: Prop
                 confirmLabel="Hapus"
                 cancelLabel="Batal"
                 onConfirm={handleDelete}
-                onClose={() => setShowDeleteConfirm(false)}
+                onCancel={() => setShowDeleteConfirm(false)}
                 variant="danger"
             />
         </div>

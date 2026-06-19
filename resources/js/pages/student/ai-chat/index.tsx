@@ -1,7 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Bookmark, CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
+import { CalendarDays, Check, Menu, MessageSquare, Pencil, Plus, Send, Sparkles, Trash2, X, RefreshCw, FileText, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -17,7 +17,7 @@ import { usePage } from '@inertiajs/react';
 import { formatAiOutput } from '@/lib/formatAiOutput';
 import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { SearchBar, SavedMaterialsPanel } from './components';
+import { SearchBar } from './components';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}): Promise<Response> {
@@ -88,7 +88,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [streamingCitations, setStreamingCitations] = useState<Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>>([]);
-    const [savedMaterialIds, setSavedMaterialIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!activeChat?.id) {
@@ -104,31 +103,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             .finally(() => setIsLoadingMessages(false));
     }, [activeChat?.id]);
     const [editingChatId, setEditingChatId] = useState<string | null>(null);
-
-    const [savedMaterialsPanelOpen, setSavedMaterialsPanelOpen] = useState(false);
-
-    const handleSaveMaterial = useCallback(async (courseMaterialId: string) => {
-        try {
-            const resp = await fetch('/student/ai-chat/saved-materials/toggle', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courseMaterialId }),
-            });
-            if (!resp.ok) return;
-            const { saved } = await resp.json() as { saved: boolean };
-            setSavedMaterialIds((prev) => {
-                const next = new Set(prev);
-                if (saved) {
-                    next.add(courseMaterialId);
-                } else {
-                    next.delete(courseMaterialId);
-                }
-                return next;
-            });
-        } catch { /* ignore */ }
-    }, []);
-
     const handleSearchSelect = useCallback((chatId: string) => {
         router.visit(student.aiChat.show.url({ chat: chatId }));
     }, []);
@@ -642,7 +616,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                                 const docUrl = c.course_id && c.course_material_id
                                                                     ? `/courses/${c.course_id}/materials/${c.course_material_id}/stream`
                                                                     : null;
-                                                                const isSaved = c.course_material_id ? savedMaterialIds.has(c.course_material_id) : false;
 
                                                                 return (
                                                                     <div key={i} className="flex items-center gap-1">
@@ -661,16 +634,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                                                 <FileText className="h-2.5 w-2.5" />
                                                                                 {c.source}{c.page ? ` (hal. ${c.page})` : ''}
                                                                             </span>
-                                                                        )}
-                                                                        {c.course_material_id && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => handleSaveMaterial(c.course_material_id!)}
-                                                                                className="flex h-5 w-5 items-center justify-center rounded-full transition-colors hover:bg-brand-primary/10"
-                                                                                title={isSaved ? 'Hapus dari simpanan' : 'Simpan materi ini'}
-                                                                            >
-                                                                                <Bookmark className={`h-2.5 w-2.5 ${isSaved ? 'fill-brand-primary text-brand-primary' : 'text-gray-600'}`} />
-                                                                            </button>
                                                                         )}
                                                                     </div>
                                                                 );
@@ -764,14 +727,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                             title="Chat baru"
                                         >
                                             <Plus className="h-4.5 w-4.5" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setSavedMaterialsPanelOpen(true)}
-                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-brand-muted-dark transition-colors hover:bg-[#f3f4f6] hover:text-brand-primary"
-                                            title="Materi tersimpan"
-                                        >
-                                            <Bookmark className="h-4.5 w-4.5" />
                                         </button>
                                         <textarea
                                             ref={inputRef}
@@ -976,14 +931,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 confirmLabel="Hapus"
                 cancelLabel="Batal"
                 onConfirm={() => showDeleteModal && handleDeleteChat(showDeleteModal)}
-                onClose={() => setShowDeleteModal(null)}
+                onCancel={() => setShowDeleteModal(null)}
                 variant="danger"
             />
 
-            <SavedMaterialsPanel
-                isOpen={savedMaterialsPanelOpen}
-                onClose={() => setSavedMaterialsPanelOpen(false)}
-            />
         </AppLayout>
     );
 }

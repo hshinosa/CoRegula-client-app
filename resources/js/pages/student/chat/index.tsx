@@ -627,7 +627,6 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         void emitChatMessage(optimisticMessage);
 
         setNewMessage('');
-        clearDraft();
         setReplyingTo(null);
         revokePendingFilePreviews(pendingFiles);
         setPendingFiles([]);

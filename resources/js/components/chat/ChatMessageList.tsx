@@ -153,7 +153,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                                         <span className="text-xs text-gray-600">
                                             {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                         </span>
-                                        <RelevanceBadge isRelevant={message.isRelevant} />
+                                        <RelevanceBadge isRelevant={message.is_relevant} />
                                     </>
                                 )}
                                 {onReply && !isSystem && (

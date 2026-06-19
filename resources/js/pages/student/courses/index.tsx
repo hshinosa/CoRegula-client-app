@@ -43,16 +43,6 @@ export default function StudentCoursesIndex() {
         });
     };
 
-    const handleJoinClick = () => {
-        if (!data.join_code.trim()) return;
-        post(student.courses.join.url(), {
-            onSuccess: () => {
-                setShowJoinModal(false);
-                reset();
-                refetch();
-            },
-        });
-    };
 
     return (
         <AppLayout title="Kelas Saya" navItems={navItems}>
@@ -256,7 +246,7 @@ export default function StudentCoursesIndex() {
                                             Batal
                                         </button>
                                         <PrimaryButton
-                                            onClick={handleJoinClick}
+                                            type="submit"
                                             disabled={processing || !data.join_code.trim()}
                                             className="flex-1"
                                         >

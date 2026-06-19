@@ -304,10 +304,6 @@ export interface AnalyticsDataPoint {
     average?: number;
 }
 
-export interface TagCount {
-    tag: string;
-    count: number;
-}
 
 export interface StreakData {
     current: number;
@@ -319,23 +315,10 @@ export interface ReflectionAnalytics {
     frequency: AnalyticsDataPoint[];
     averageLength: AnalyticsDataPoint[];
     streak: StreakData;
-    topTags: TagCount[];
     timeline: AnalyticsDataPoint[];
     totalReflections: number;
     period: string;
 }
-
-// ============ Reflection Tag Types ============
-
-export interface ReflectionTagData {
-    id: number;
-    reflection_id: string;
-    user_id: string;
-    tag: string;
-    created_at: string;
-}
-
-// ============ Chat Types ============
 
 export type InteractionType = 'planning' | 'question' | 'social' | 'off-topic';
 export type SenderType = 'user' | 'ai' | 'system';
