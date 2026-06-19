@@ -143,7 +143,7 @@ class DashboardController extends Controller
 
         // Fetch recent activity
         try {
-            $response = $this->apiRequest()->get($this->apiUrl() . '/api/analytics/activity/recent', ['limit' => 5]);
+            $response = $this->apiRequest()->get($this->apiUrl() . '/api/student/activity/recent', ['limit' => 5]);
             if ($response->successful()) {
                 $recentActivity = $response->json('data', []);
             }
