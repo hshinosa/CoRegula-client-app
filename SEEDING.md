@@ -73,10 +73,10 @@ composer require dompdf/dompdf
 
 ### 1. MaterialsDemoSeeder
 
-**Purpose:** Creates course materials with PDFs for 12 courses.
+**Purpose:** Creates course materials with PDFs for 14 courses.
 
 **What it creates:**
-- **12 Courses** (IF201-IF212) with detailed topics:
+- **14 Courses** with detailed topics:
   - IF201: Web Development & React
   - IF202: Database Systems
   - IF203: Algorithms & Data Structures
@@ -89,6 +89,8 @@ composer require dompdf/dompdf
   - IF210: Security & Cryptography
   - IF211: Data Mining
   - IF212: Cloud Computing
+  - DEVOPS102: DevOps
+  - IMK401: Interaksi Manusia Komputer
 
 - **Per Course:**
   - 3 weeks (topics)
@@ -98,11 +100,11 @@ composer require dompdf/dompdf
   - Course week-material relationships
 
 - **Total Data:**
-  - 36 course weeks
-  - 72 course materials
-  - 72 PDF files generated
-  - 72 material modules
-  - 72 course-week-material links
+  - 42 course weeks
+  - 84 course materials
+  - 84 PDF files generated
+  - 84 material modules
+  - 84 course-week-material links
 
 **Storage Location:**
 - PDFs: `storage/app/public/demo-materials/`
@@ -217,11 +219,11 @@ docker exec -it kolabri-postgres psql -U postgres -d kolabri-db
 
 # Check course weeks
 SELECT COUNT(*) FROM course_weeks;
--- Expected: 36
+-- Expected: 42
 
 # Check course materials
 SELECT COUNT(*) FROM course_materials;
--- Expected: 72
+-- Expected: 84
 
 # Check attendance sessions
 SELECT COUNT(*) FROM attendance_sessions;
@@ -243,7 +245,7 @@ ls -lh Kolabri-client-app/storage/app/public/demo-materials/ | head -20
 
 # Count PDFs
 ls Kolabri-client-app/storage/app/public/demo-materials/*.pdf | wc -l
-# Expected: 72
+# Expected: 84
 
 # Check file sizes (should be 20-50KB each)
 du -sh Kolabri-client-app/storage/app/public/demo-materials/
@@ -281,6 +283,78 @@ du -sh Kolabri-client-app/storage/app/public/demo-materials/
    - Open AI chat interface
    - Ask: "What is React SPA architecture?"
    - Verify AI responds with material content
+
+## RAG Ingest (Reproducible)
+
+Seeding creates course/week/material metadata and PDF files, but it does **not**
+populate the Qdrant vector store. RAG ingest is a separate, explicit step. The
+seeded `knowledge_bases` rows are demo placeholders (fake `/demo/kb/...` paths)
+and do **not** trigger real ingest.
+
+**Convention (must match chat retrieval):** every Qdrant collection is named
+`course_{course_id}` where `course_id` is the **course UUID** (`courses.id`), not
+the course code. Personal-chat retrieval scopes by the same UUID, so ingest MUST
+use the UUID. Ingesting under the course code produces collections that chat
+never queries (dead weight).
+
+### Ingest the demo PDFs
+
+For each material PDF in `storage/app/public/demo-materials/`, POST it to the AI
+engine `/api/ingest` endpoint with `course_id` set to the owning course's UUID:
+
+```bash
+# 1) Build a code -> UUID map from Postgres (deterministic seedUuid IDs).
+docker exec kolabri-postgres-1 bash -lc \
+  'psql -U $POSTGRES_USER -d $POSTGRES_DB -F"|" --no-align -t \
+   -c "SELECT code, id FROM courses ORDER BY code;"' > /tmp/course_map.txt
+
+# 2) Ingest each PDF under its course UUID, from inside the client-app container
+#    (it has the PDFs + network access to ai-engine).
+#    SECRET = CORE_API_SECRET, read from the ai-engine env (never hardcode).
+SECRET=$(docker exec kolabri-ai-engine-1 printenv CORE_API_SECRET)
+
+# Pass the map in via env so the inner shell can resolve code -> UUID.
+MAP=$(cat /tmp/course_map.txt)
+docker exec -e SECRET="$SECRET" -e MAP="$MAP" kolabri-client-app-1 bash -lc '
+cd storage/app/public/demo-materials
+for f in *.pdf; do
+  code=$(echo "${f%%-*}" | tr a-z A-Z)
+  cid=$(echo "$MAP" | awk -F"|" -v c="$code" "\$1==c{print \$2}")
+  [ -z "$cid" ] && { echo "skip $f (no course $code)"; continue; }
+  fid=$(echo -n "$f" | md5sum | cut -d" " -f1)
+  curl -s -X POST http://ai-engine:8001/api/ingest \
+    -H "Authorization: Bearer $SECRET" \
+    -F "file=@$f" -F "course_id=$cid" -F "file_id=$fid" \
+    -F "extra_metadata={\"title\":\"$f\",\"course_code\":\"$code\"}"
+  echo " <- $f ($code/$cid)"
+done
+'
+```
+
+> Filename prefix (`devops102-...`) maps to the course code; the code resolves to
+> the course UUID via Postgres. Ingest always uses the UUID.
+
+### Verify ingest
+
+```bash
+# Collections (one per ingested course, UUID-named)
+curl -s http://localhost:6333/collections | python3 -m json.tool
+
+# Point count for a course collection
+curl -s http://localhost:6333/collections/course_<UUID> | python3 -m json.tool
+```
+
+### Re-seed cutover (UUID change)
+
+`db:reset:demo-data` assigns **deterministic** UUIDs via `seedUuid("course-<CODE>")`.
+If a course previously had a different (e.g. manually-created random) UUID, its old
+`course_<old-uuid>` collection becomes stale after re-seed. Delete the stale
+collection and re-ingest under the new deterministic UUID:
+
+```bash
+curl -s -X DELETE http://localhost:6333/collections/course_<old-uuid>
+# then re-run the ingest loop above
+```
 
 ---
 

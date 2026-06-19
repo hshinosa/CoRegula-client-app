@@ -88,6 +88,16 @@ class MaterialsDemoSeeder extends Seeder
             ['title' => 'Container & Orchestration', 'materials' => ['Docker Container Basics', 'Kubernetes Architecture']],
             ['title' => 'Microservices & Serverless', 'materials' => ['Microservices Design Pattern', 'Serverless (Lambda, Cloud Functions)']],
         ],
+        'DEVOPS102' => [
+            ['title' => 'Konsep Dasar DevOps', 'materials' => ['Pengantar DevOps', 'Fundamental DevOps']],
+            ['title' => 'Studi Kasus DevOps', 'materials' => ['Analisis Kasus DevOps', 'Latihan DevOps']],
+            ['title' => 'Proyek Akhir DevOps', 'materials' => ['Perancangan Proyek', 'Implementasi Evaluasi']],
+        ],
+        'IMK401' => [
+            ['title' => 'Konsep Dasar Interaksi Manusia Komputer', 'materials' => ['Pengantar Interaksi Manusia Komputer', 'Fundamental Interaksi Manusia Komputer']],
+            ['title' => 'Studi Kasus Interaksi Manusia Komputer', 'materials' => ['Analisis Kasus Interaksi Manusia Komputer', 'Latihan Interaksi Manusia Komputer']],
+            ['title' => 'Proyek Akhir Interaksi Manusia Komputer', 'materials' => ['Perancangan Proyek', 'Implementasi Evaluasi']],
+        ],
     ];
 
     private function generatePdf(string $courseCode, string $courseName, string $weekTitle, string $topic): string
