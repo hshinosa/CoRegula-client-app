@@ -14,6 +14,7 @@ import { toast } from '@/components/ui/toaster';
 import { useSocketRoom } from '@/hooks/useSocketRoom';
 import { ChatSummaryCard } from '@/features/chat/summary/chat-summary-card';
 import { useChatSummary } from '@/features/chat/summary/use-chat-summary';
+import { parseSummaryText } from '@/features/chat/summary/parse-summary';
 import { revokePendingFilePreviews } from '@/features/chat/file-preview-cleanup';
 import { uploadAttachments } from '@/lib/upload-attachments';
 import { useMessageWindow } from '@/features/chat/use-message-window';
@@ -1389,8 +1390,8 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             return;
         }
 
-        if (typeof window.visualViewport !== 'undefined') {
-            const viewport = window.visualViewport;
+        const viewport = window.visualViewport;
+        if (viewport) {
             const handler = () => {
                 setKeyboardVisible(viewport.height < window.innerHeight * 0.8);
             };
@@ -1471,15 +1472,9 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             const summaryText = responseData?.data?.summary;
             const summaryError = responseData?.data?.summaryError;
 
-            if (typeof summaryText === 'string' && summaryText.trim().length > 0) {
-                const lines = summaryText.split('\n').filter((l: string) => l.trim().length > 0);
-                setInitialSummary({
-                    roomId: chatSpace.id,
-                    headline: lines[0]?.replace(/^#+\s*/, '').slice(0, 120) || 'Ringkasan diskusi',
-                    keyPoints: lines.slice(1).filter((l: string) => l.startsWith('-') || l.startsWith('*')).map((l: string) => l.replace(/^[-*]\s*/, '')).slice(0, 5),
-                    detailedSummary: summaryText,
-                    generatedAt: new Date().toISOString(),
-                });
+            const parsedSummary = parseSummaryText(summaryText, chatSpace.id);
+            if (parsedSummary) {
+                setInitialSummary(parsedSummary);
             } else if (summaryError) {
                 // Auto-retry: regenerate summary when initial generation failed
                 console.warn('Summary generation failed during close, auto-retrying:', summaryError);
@@ -1498,16 +1493,9 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                     if (retryResponse.ok) {
                         const retryData = await retryResponse.json().catch(() => null);
-                        const retrySummary = retryData?.data?.summary;
-                        if (typeof retrySummary === 'string' && retrySummary.trim().length > 0) {
-                            const lines = retrySummary.split('\n').filter((l: string) => l.trim().length > 0);
-                            setInitialSummary({
-                                roomId: chatSpace.id,
-                                headline: lines[0]?.replace(/^#+\s*/, '').slice(0, 120) || 'Ringkasan diskusi',
-                                keyPoints: lines.slice(1).filter((l: string) => l.startsWith('-') || l.startsWith('*')).map((l: string) => l.replace(/^[-*]\s*/, '')).slice(0, 5),
-                                detailedSummary: retrySummary,
-                                generatedAt: new Date().toISOString(),
-                            });
+                        const parsedRetry = parseSummaryText(retryData?.data?.summary, chatSpace.id, retryData?.data?.generatedAt);
+                        if (parsedRetry) {
+                            setInitialSummary(parsedRetry);
                             setToastMessage({ message: 'Ringkasan berhasil dibuat!', type: 'success' });
                         } else {
                             setToastMessage({ message: 'Ringkasan tidak tersedia. Silakan coba lagi nanti.', type: 'error' });
@@ -1545,7 +1533,6 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwtToken}`,
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
@@ -3046,7 +3033,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             </AnimatePresence>
 
             {/* Session Reflection Modal */}
-            <BaseModal open={showReflectionModal} title="Refleksi Sesi" onClose={() => !isSubmittingReflection && closeReflectionModal()} size="lg" className="w-full max-w-lg rounded-2xl border border-white/50 p-6 shadow-xl" closeOnBackdropClick={!isSubmittingReflection}>
+            <BaseModal open={showReflectionModal} title="Refleksi Sesi" onClose={() => !isSubmittingReflection && closeReflectionModal()} size="lg" className="w-full max-w-lg rounded-2xl border border-white/50 p-6 shadow-xl" closeOnOverlayClick={!isSubmittingReflection}>
                         <div>
                             <div className="mb-4 flex items-center gap-3">
                                 <div 
@@ -3159,7 +3146,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 confirmLabel={isClosingSession ? 'Menutup...' : 'Ya, Tutup Sesi'}
                 cancelLabel="Batal"
                 onConfirm={handleCloseSession}
-                onClose={closeCloseConfirmModal}
+                onCancel={closeCloseConfirmModal}
                 variant="warning"
             />
 

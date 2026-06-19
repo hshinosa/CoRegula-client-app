@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { parseSummaryText } from './parse-summary';
 import type { ChatDiscussionSummary, ChatSummaryState } from './types';
 
 export interface UseChatSummaryOptions {
@@ -37,11 +38,12 @@ export function useChatSummary({
                 return;
             }
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data: { summary: ChatDiscussionSummary | null } = await response.json();
-            if (!data.summary) {
+            const data: { summary: string | null; generatedAt?: string | null } = await response.json();
+            const parsed = chatSpaceId ? parseSummaryText(data.summary, chatSpaceId, data.generatedAt) : null;
+            if (!parsed) {
                 setState({ status: 'empty' });
             } else {
-                setState({ status: 'ready', summary: data.summary });
+                setState({ status: 'ready', summary: parsed });
             }
         } catch (error) {
             setState({
@@ -74,12 +76,13 @@ export function useChatSummary({
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json();
             })
-            .then((data: { summary: ChatDiscussionSummary | null } | null) => {
+            .then((data: { summary: string | null; generatedAt?: string | null } | null) => {
                 if (cancelled) return;
-                if (!data || !data.summary) {
+                const parsed = data && chatSpaceId ? parseSummaryText(data.summary, chatSpaceId, data.generatedAt) : null;
+                if (!parsed) {
                     setState({ status: 'empty' });
                 } else {
-                    setState({ status: 'ready', summary: data.summary });
+                    setState({ status: 'ready', summary: parsed });
                 }
             })
             .catch((error) => {
@@ -116,16 +119,12 @@ export function useChatSummary({
             const data = await regenerateResponse.json();
 
             if (data?.data?.success && typeof data.data.summary === 'string') {
-                const summaryText: string = data.data.summary;
-                const lines = summaryText.split('\n').filter((l: string) => l.trim().length > 0);
-                const summary: ChatDiscussionSummary = {
-                    roomId: chatSpaceId,
-                    headline: lines[0]?.replace(/^#+\s*/, '').slice(0, 120) || 'Ringkasan diskusi',
-                    keyPoints: lines.slice(1).filter((l: string) => l.startsWith('-') || l.startsWith('*')).map((l: string) => l.replace(/^[-*]\s*/, '')).slice(0, 5),
-                    detailedSummary: summaryText,
-                    generatedAt: data.data.generatedAt || new Date().toISOString(),
-                };
-                setState({ status: 'ready', summary });
+                const summary = parseSummaryText(data.data.summary, chatSpaceId, data.data.generatedAt);
+                if (summary) {
+                    setState({ status: 'ready', summary });
+                } else {
+                    setState({ status: 'empty' });
+                }
             } else {
                 const errorMsg: string = data?.data?.error || 'Ringkasan gagal dibuat';
                 setState({ status: 'error', message: errorMsg });
