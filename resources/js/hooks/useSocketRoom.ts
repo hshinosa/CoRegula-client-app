@@ -37,6 +37,8 @@ interface UseSocketRoomOptions {
     onMessagePinned?: (pinnedMessage: { messageId: string; conversationId: string; content: string; sender_name: string; pinned_at: string }) => void;
     onMessageUnpinned?: (messageId: string) => void;
     onMessageClassified?: (classifications: Array<{ messageId: string; isRelevant: boolean }>) => void;
+    onAIChunk?: (data: { chatSpaceId: string; content?: string; replace?: boolean; timestamp: string }) => void;
+    onAIDone?: (data: { chatSpaceId: string; citations?: unknown; error?: boolean; timestamp: string }) => void;
 }
 
 interface UseSocketRoomReturn {
@@ -72,6 +74,8 @@ export function useSocketRoom({
     onMessagePinned,
     onMessageUnpinned,
     onMessageClassified,
+    onAIChunk,
+    onAIDone,
 }: UseSocketRoomOptions): UseSocketRoomReturn {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -94,6 +98,8 @@ export function useSocketRoom({
     const onMessagePinnedRef = useRef(onMessagePinned);
     const onMessageUnpinnedRef = useRef(onMessageUnpinned);
     const onMessageClassifiedRef = useRef(onMessageClassified);
+    const onAIChunkRef = useRef(onAIChunk);
+    const onAIDoneRef = useRef(onAIDone);
 
     onSessionClosedRef.current = onSessionClosed;
     onSessionReopenedRef.current = onSessionReopened;
@@ -105,6 +111,8 @@ export function useSocketRoom({
     onMessagePinnedRef.current = onMessagePinned;
     onMessageUnpinnedRef.current = onMessageUnpinned;
     onMessageClassifiedRef.current = onMessageClassified;
+    onAIChunkRef.current = onAIChunk;
+    onAIDoneRef.current = onAIDone;
 
     useEffect(() => {
         if (!jwtToken) return;
@@ -306,6 +314,15 @@ export function useSocketRoom({
             }, 5000);
         });
 
+        // PERF-AI-01: Streaming AI response chunks
+        socketRef.current.on('ai_chunk', (data: { chatSpaceId: string; content?: string; replace?: boolean; timestamp: string }) => {
+            onAIChunkRef.current?.(data);
+        });
+
+        socketRef.current.on('ai_done', (data: { chatSpaceId: string; citations?: unknown; error?: boolean; timestamp: string }) => {
+            onAIDoneRef.current?.(data);
+        });
+
         socketRef.current.on('intervention_sent', (data: { message: string; triggerReason: string }) => {
             void data.triggerReason;
         });
@@ -328,6 +345,8 @@ export function useSocketRoom({
             socketRef.current?.off('message_pinned');
             socketRef.current?.off('message_unpinned');
             socketRef.current?.off('message_classified');
+            socketRef.current?.off('ai_chunk');
+            socketRef.current?.off('ai_done');
             socketRef.current?.emit('leave_room', chatSpaceId);
             socketRef.current?.disconnect();
         };
