@@ -902,14 +902,6 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                 )}
                                 <div className="rounded-[24px] border bg-white/92 px-3 py-2.5 shadow-[0_14px_32px_rgba(148,163,184,0.10)]" style={{ borderColor: 'rgba(226,232,240,0.9)' }}>
                                     <div className="flex items-center gap-2.5">
-                                        <button
-                                            type="button"
-                                            onClick={handleNewChat}
-                                            className="flex h-9 w-9 items-center justify-center self-center rounded-xl text-brand-muted-dark transition-colors hover:bg-[#f3f4f6] hover:text-brand-primary"
-                                            title="Chat baru"
-                                        >
-                                            <Plus className="h-4.5 w-4.5" />
-                                        </button>
                                         <textarea
                                             ref={inputRef}
                                             value={inputValue}
