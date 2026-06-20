@@ -19,6 +19,7 @@ import { fetchChatMessages } from '@/lib/fetchChatMessages';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { SearchBar } from './components';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
 
 // --- Memoized sub-components ---
 
@@ -38,26 +39,34 @@ function CopyButtonBase({ text, className = '' }: CopyButtonProps) {
 }
 const CopyButton = memo(CopyButtonBase);
 
-interface CitationListProps { citations: Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>; }
-function CitationListBase({ citations }: CitationListProps) {
+interface Citation { source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string; }
+interface CitationListProps { citations: Array<Citation>; onOpenCitation: (cite: Citation) => void; }
+function CitationListBase({ citations, onOpenCitation }: CitationListProps) {
     if (citations.length === 0) return null;
     return (
         <div className="mt-2 border-t border-gray-200 pt-2">
             <p className="mb-1 text-xs font-medium text-[#6B7280]">Sumber referensi:</p>
             <div className="space-y-1">
                 {citations.map((c, i) => {
-                    const docUrl = c.course_id && c.course_material_id ? `/courses/${c.course_id}/materials/${c.course_material_id}/stream` : null;
+                    const hasDoc = c.course_id && c.course_material_id;
+                    if (hasDoc) {
+                        return (
+                            <div key={i} className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenCitation(c)}
+                                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-brand-primary hover:bg-brand-primary/10 transition-colors cursor-pointer"
+                                >
+                                    <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                                </button>
+                            </div>
+                        );
+                    }
                     return (
                         <div key={i} className="flex items-center gap-1">
-                            {docUrl ? (
-                                <a href={docUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-brand-primary hover:bg-brand-primary/10 transition-colors">
-                                    <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
-                                </a>
-                            ) : (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-[#4B5563]">
-                                    <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
-                                </span>
-                            )}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-[#4B5563]">
+                                <FileText className="h-2.5 w-2.5" />{c.source}{c.page ? ` (hal. ${c.page})` : ''}
+                            </span>
                         </div>
                     );
                 })}
@@ -73,9 +82,10 @@ interface MessageItemProps {
     message: { id: string; role: 'user' | 'assistant'; content: string; created_at: string; citations?: Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }> };
     userInitial: string;
     formatTime: (dateString: string) => string;
+    onOpenCitation: (cite: { source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }) => void;
 }
 
-function MessageItemBase({ message, userInitial, formatTime }: MessageItemProps) {
+function MessageItemBase({ message, userInitial, formatTime, onOpenCitation }: MessageItemProps) {
     const isAssistant = message.role === 'assistant';
     const isUser = message.role === 'user';
     const [codeCopied, setCodeCopied] = useState<string | null>(null);
@@ -120,7 +130,7 @@ function MessageItemBase({ message, userInitial, formatTime }: MessageItemProps)
                     <p className={`text-xs ${isUser ? 'text-white/70' : 'text-brand-muted-dark'}`}>{formatTime(message.created_at)}</p>
                     {isAssistant && <div className="opacity-0 transition-opacity group-hover:opacity-100"><CopyButton text={message.content} /></div>}
                 </div>
-                {isAssistant && message.citations && message.citations.length > 0 && <CitationList citations={message.citations} />}
+                {isAssistant && message.citations && message.citations.length > 0 && <CitationList citations={message.citations} onOpenCitation={onOpenCitation} />}
             </div>
         </motion.div>
     );
@@ -210,6 +220,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const abortControllerRef = useRef<AbortController | null>(null);
     const [showScrollBtn, setShowScrollBtn] = useState(false);
     const [lastFailedPrompt, setLastFailedPrompt] = useState<string | null>(null);
+    const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
 
     useEffect(() => {
         if (!activeChat?.id) {
@@ -665,6 +676,16 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         setInputValue(prompt);
         requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
     };
+    const handleOpenCitation = useCallback((cite: { source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }) => {
+        if (!cite.course_id || !cite.course_material_id) return;
+        const streamUrl = `/courses/${cite.course_id}/materials/${cite.course_material_id}/stream`;
+        setDocumentViewer({
+            title: cite.source,
+            fileName: cite.source,
+            streamUrl,
+        });
+    }, []);
+
     const handleCardClick = (prompt: string) => {
         if (isStreaming) return;
         setInputValue('');
@@ -734,6 +755,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                     message={message}
                                                     userInitial={authData.user?.name?.charAt(0).toUpperCase() || 'U'}
                                                     formatTime={formatTime}
+                                                    onOpenCitation={handleOpenCitation}
                                                 />
                                             </div>
                                         );
@@ -1116,6 +1138,11 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                 variant="danger"
             />
 
+            <DocumentViewerModal
+                open={documentViewer !== null}
+                target={documentViewer}
+                onClose={() => setDocumentViewer(null)}
+            />
         </AppLayout>
     );
 }
