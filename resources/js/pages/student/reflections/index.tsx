@@ -305,32 +305,6 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                     </div>
                 </LiquidGlassCard>
 
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                            <LiquidGlassCard intensity="light" className="p-5" lightMode={true}>
-                                <div className="flex items-start gap-4">
-                                    <div
-                                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
-                                        style={{
-                                            background: 'rgba(136,22,28,0.08)',
-                                            border: '1px solid rgba(136,22,28,0.12)',
-                                        }}
-                                    >
-                                        <Lightbulb className="h-5 w-5" style={{ color: 'var(--color-brand-primary)' }} />
-                                    </div>
-                                    <div>
-                                        <p className="text-base font-semibold font-sans text-brand-dark">
-                                            Tentang Refleksi
-                                        </p>
-                                        <p className="mt-2 leading-6 text-sm text-brand-muted-dark">
-                                            Refleksi reguler membantu Anda mengkonsolidasikan pembelajaran dan melacak kemajuan. Di sini Anda
-                                            akan melihat <strong>refleksi sesi</strong> yang dibuat saat sesi diskusi ditutup dan
-                                            <strong> refleksi mingguan</strong> yang Anda buat sendiri.
-                                        </p>
-                                    </div>
-                                </div>
-                            </LiquidGlassCard>
-                        </motion.div>
-
                         {hasActiveFilters && filteredReflections.length === 0 ? (
                             <EmptyState
                                 icon={Pencil}
