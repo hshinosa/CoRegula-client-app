@@ -26,7 +26,6 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
     return (
         <BaseModal open={open} title={title} onClose={onCancel} size="sm" className="p-6" closeOnOverlayClick>
-            <div style={{ background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(20px) saturate(180%)', border: '1px solid rgba(136,22,28,0.12)', boxShadow: '0 25px 60px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.08)' }}>
                 <div className="mb-4 flex items-start gap-3">
                     <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -72,7 +71,6 @@ export function ConfirmDialog({
                         {confirmLabel}
                     </button>
                 </div>
-            </div>
         </BaseModal>
     );
 }

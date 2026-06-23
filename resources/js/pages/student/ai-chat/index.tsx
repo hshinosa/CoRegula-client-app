@@ -619,11 +619,15 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
 
         titleForm.patch(student.aiChat.update.url({ chat: chatId }), {
             preserveScroll: true,
+            preserveState: true,
+            only: ['chats', 'activeChat', 'flash', 'errors'],
             onSuccess: () => {
                 handleCancelRename();
-                router.reload({
-                    only: ['chats', 'activeChat', 'flash', 'errors'],
-                });
+            },
+            onError: (errors) => {
+                if (errors?.title) {
+                    titleForm.setError('title', errors.title);
+                }
             },
         });
     };
