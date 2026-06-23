@@ -1,6 +1,6 @@
 import { AttendanceSession, AttendanceStatus, AttendanceStudentRecord, AttendanceStudentSummary } from '@/types';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
-import { CalendarCheck, CheckCircle2, Download, Minus, Plus, XCircle, X, Clock } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, Download, Minus, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from '@/components/ui/toaster';
 
@@ -18,131 +18,162 @@ const glassPanelStyle = {
 const statusConfig: Record<AttendanceStatus, { label: string; color: string; bg: string; border: string; icon: typeof CheckCircle2 }> = {
     present: { label: 'Hadir', color: '#166534', bg: 'rgba(34,197,94,0.10)', border: 'rgba(34,197,94,0.18)', icon: CheckCircle2 },
     absent: { label: 'Tidak Hadir', color: '#b91c1c', bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.18)', icon: XCircle },
-    late: { label: 'Terlambat', color: '#92400e', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.18)', icon: Clock },
     excused: { label: 'Izin', color: '#4b5563', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.18)', icon: Minus },
 };
 
-type ViewMode = 'sessions' | 'summary' | 'marking';
+type ViewMode = 'sessions' | 'summary' | 'override';
+type GroupTab = 'all' | 'A' | 'B' | 'C';
 
 interface AttendanceTabProps {
     courseId: string;
 }
 
+interface GroupedSessions {
+    byWeek: Record<string, AttendanceSession[]>;
+    other: AttendanceSession[];
+    running: Array<{
+        session_discussion_id: string;
+        title: string;
+        group_id: string | null;
+        week_id: string | null;
+        status: string;
+    }>;
+}
+
 export default function AttendanceTab({ courseId }: AttendanceTabProps) {
-    const [sessions, setSessions] = useState<AttendanceSession[]>([]);
+    const [groupedSessions, setGroupedSessions] = useState<GroupedSessions>({ byWeek: {}, other: [], running: [] });
     const [summary, setSummary] = useState<AttendanceStudentSummary[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>('sessions');
     const [loading, setLoading] = useState(true);
-    const [markingSession, setMarkingSession] = useState<string | null>(null);
-    const [markingRecords, setMarkingRecords] = useState<AttendanceStudentRecord[]>([]);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [newSession, setNewSession] = useState({ title: '', session_date: '', session_number: '', notes: '' });
+    const [overrideSession, setOverrideSession] = useState<string | null>(null);
+    const [overrideRecords, setOverrideRecords] = useState<AttendanceStudentRecord[]>([]);
+    const [groupTab, setGroupTab] = useState<GroupTab>('all');
+    const [summaryWeekFilter, setSummaryWeekFilter] = useState<string>('');
+    const [summaryGroupFilter, setSummaryGroupFilter] = useState<string>('');
 
     const fetchSessions = useCallback(async () => {
-        setLoading(true);
         try {
             const res = await fetch(`/lecturer/courses/${courseId}/attendance`);
+            if (!res.ok) throw new Error('Failed to fetch sessions');
             const data = await res.json();
-            setSessions(data.data || []);
-        } catch {
-            setSessions([]);
+            setGroupedSessions(data);
+        } catch (err) {
+            toast.error('Gagal memuat data kehadiran');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [courseId]);
 
     const fetchSummary = useCallback(async () => {
-        setLoading(true);
         try {
-            const res = await fetch(`/lecturer/courses/${courseId}/attendance/summary`);
+            const params = new URLSearchParams();
+            if (summaryWeekFilter) params.append('week_id', summaryWeekFilter);
+            if (summaryGroupFilter) params.append('group_id', summaryGroupFilter);
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/summary?${params}`);
+            if (!res.ok) throw new Error('Failed to fetch summary');
             const data = await res.json();
-            setSummary(data.data || []);
-        } catch {
-            setSummary([]);
+            setSummary(data.summary || []);
+        } catch (err) {
+            toast.error('Gagal memuat rekapitulasi');
         }
-        setLoading(false);
-    }, [courseId]);
+    }, [courseId, summaryWeekFilter, summaryGroupFilter]);
 
     useEffect(() => {
-        if (viewMode === 'sessions' || viewMode === 'marking') fetchSessions();
-        else if (viewMode === 'summary') fetchSummary();
+        if (viewMode === 'sessions') fetchSessions();
+        if (viewMode === 'summary') fetchSummary();
     }, [viewMode, fetchSessions, fetchSummary]);
 
-    const handleCreateSession = async () => {
-        if (!newSession.title || !newSession.session_date) return;
-        try {
-            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
-                body: JSON.stringify({
-                    title: newSession.title,
-                    session_date: newSession.session_date,
-                    session_number: newSession.session_number ? parseInt(newSession.session_number) : null,
-                    notes: newSession.notes || null,
-                }),
-            });
-            if (res.ok) {
-                setShowCreateForm(false);
-                setNewSession({ title: '', session_date: '', session_number: '', notes: '' });
-                fetchSessions();
-            }
-        } catch {
-            toast.error('Gagal membuat sesi kehadiran');
-        }
-    };
-
-    const startMarking = async (sessionId: string) => {
+    const startOverride = async (sessionId: string) => {
         try {
             const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`);
+            if (!res.ok) throw new Error('Failed to fetch session');
             const data = await res.json();
-            setMarkingRecords(data.students || []);
-            setMarkingSession(sessionId);
-            setViewMode('marking');
-        } catch {
-            toast.error('Gagal memuat data kehadiran');
+            setOverrideRecords(data.records || []);
+            setOverrideSession(sessionId);
+            setViewMode('override');
+        } catch (err) {
+            toast.error('Gagal memuat detail sesi');
         }
     };
 
-    const toggleStatus = (studentId: string) => {
-        setMarkingRecords((prev) =>
+    const cycleStatus = (studentId: string) => {
+        setOverrideRecords((prev) =>
             prev.map((r) => {
-                if (r.student_id !== studentId) return r;
-                const order: AttendanceStatus[] = ['absent', 'present', 'late', 'excused'];
-                const idx = order.indexOf(r.status);
-                return { ...r, status: order[(idx + 1) % order.length] };
-            }),
+                if (r.student_id === studentId) {
+                    const statuses: AttendanceStatus[] = ['present', 'absent', 'excused'];
+                    const currentIndex = statuses.indexOf(r.status);
+                    const nextIndex = (currentIndex + 1) % statuses.length;
+                    return { ...r, status: statuses[nextIndex] };
+                }
+                return r;
+            })
         );
     };
 
-    const saveAttendance = async () => {
-        if (!markingSession) return;
+    const saveOverride = async () => {
+        if (!overrideSession) return;
         try {
-            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${markingSession}/mark`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
-                body: JSON.stringify({
-                    records: markingRecords.map((r) => ({ student_id: r.student_id, status: r.status, notes: r.notes })),
-                }),
+            const overrides = overrideRecords.map((r) => ({
+                studentId: r.student_id,
+                status: r.status,
+                notes: r.notes,
+            }));
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${overrideSession}/override`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ overrides }),
             });
-            if (res.ok) {
-                setViewMode('sessions');
-                setMarkingSession(null);
-                fetchSessions();
-            }
-        } catch {
-            toast.error('Gagal menyimpan kehadiran');
+            if (!res.ok) throw new Error('Failed to save override');
+            toast.success('Koreksi kehadiran disimpan');
+            setViewMode('sessions');
+            setOverrideSession(null);
+            fetchSessions();
+        } catch (err) {
+            toast.error('Gagal menyimpan koreksi');
         }
     };
 
     const deleteSession = async (sessionId: string) => {
         if (!confirm('Hapus sesi kehadiran ini?')) return;
         try {
-            await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`, {
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`, {
                 method: 'DELETE',
-                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
             });
+            if (!res.ok) throw new Error('Failed to delete session');
+            toast.success('Sesi kehadiran dihapus');
             fetchSessions();
-        } catch {
+        } catch (err) {
             toast.error('Gagal menghapus sesi');
+        }
+    };
+
+    const closeSession = async (sessionDiscussionId: string) => {
+        try {
+            const res = await fetch(`/api/session-discussions/${sessionDiscussionId}/close`, {
+                method: 'POST',
+            });
+            if (!res.ok) throw new Error('Failed to close session');
+            toast.success('Sesi ditutup, kehadiran dicatat');
+            fetchSessions();
+        } catch (err) {
+            toast.error('Gagal menutup sesi');
+        }
+    };
+
+    const bulkCloseRunning = async () => {
+        if (!confirm('Tutup semua sesi yang sedang berjalan?')) return;
+        try {
+            const sessionDiscussionIds = groupedSessions.running.map((s) => s.session_discussion_id);
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/bulk-close`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionDiscussionIds }),
+            });
+            if (!res.ok) throw new Error('Failed to bulk close');
+            toast.success('Semua sesi ditutup');
+            fetchSessions();
+        } catch (err) {
+            toast.error('Gagal menutup sesi');
         }
     };
 
@@ -151,301 +182,276 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
     };
 
     const formatDate = (v?: string | null) => {
-        if (!v) return '—';
+        if (!v) return '-';
         return new Date(v).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
+    const getSessionBadge = (session: AttendanceSession) => {
+        if (session.auto_generated && !session.marked_count) {
+            return <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(59,130,246,0.1)', color: '#2563eb' }}>Auto ✓</span>;
+        }
+        if (session.auto_generated && session.marked_count > 0) {
+            return <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>Dikoreksi</span>;
+        }
+        return null;
+    };
+
+    const filterSessionsByGroup = (sessions: AttendanceSession[]) => {
+        if (groupTab === 'all') return sessions;
+        return sessions.filter((s) => s.group_id === groupTab);
     };
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
+            <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-1 rounded-2xl p-1" style={{ background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.5)' }}>
-                    {(['sessions', 'summary'] as const).map((mode) => (
-                        <button
-                            key={mode}
-                            type="button"
-                            onClick={() => setViewMode(mode)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium transition-all"
-                            style={
-                                viewMode === mode
-                                    ? { background: 'rgba(136,22,28,0.10)', color: '#88161c', border: '1px solid rgba(136,22,28,0.15)' }
-                                    : { background: 'transparent', color: '#6B7280', border: '1px solid transparent' }
-                            }
-                        >
-                            {mode === 'sessions' ? 'Pertemuan' : 'Rekapitulasi'}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={handleExport}
-                        className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all"
-                        style={{ ...glassPanelStyle, color: '#4A4A4A' }}
-                    >
-                        <Download className="h-4 w-4" />
-                        Export XES CSV
-                    </button>
-                    {viewMode === 'sessions' && (
-                        <button
-                            type="button"
-                            onClick={() => setShowCreateForm(true)}
-                            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all"
-                            style={{ background: 'rgba(136,22,28,0.10)', color: '#88161c', border: '1px solid rgba(136,22,28,0.15)' }}
-                        >
-                            <Plus className="h-4 w-4" />
-                            Tambah Pertemuan
-                        </button>
-                    )}
-                </div>
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <h3 style={headingStyle} className="text-xl font-semibold flex items-center gap-2">
+                    <CalendarCheck className="w-5 h-5" />
+                    Kehadiran Mahasiswa
+                </h3>
+                <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg" style={glassPanelStyle}>
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                </button>
             </div>
 
-            {showCreateForm && (
-                <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                    <h3 className="mb-4 text-lg font-semibold" style={headingStyle}>Buat Pertemuan Baru</h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block text-sm font-medium" style={{ color: '#4A4A4A' }}>Judul</label>
-                            <input
-                                type="text"
-                                value={newSession.title}
-                                onChange={(e) => setNewSession((p) => ({ ...p, title: e.target.value }))}
-                                placeholder="Contoh: Pertemuan 1"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
-                                style={headingStyle}
-                            />
-                        </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium" style={{ color: '#4A4A4A' }}>Tanggal</label>
-                            <input
-                                type="date"
-                                value={newSession.session_date}
-                                onChange={(e) => setNewSession((p) => ({ ...p, session_date: e.target.value }))}
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
-                                style={headingStyle}
-                            />
-                        </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium" style={{ color: '#4A4A4A' }}>Nomor Pertemuan</label>
-                            <input
-                                type="number"
-                                min="1"
-                                value={newSession.session_number}
-                                onChange={(e) => setNewSession((p) => ({ ...p, session_number: e.target.value }))}
-                                placeholder="Opsional"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
-                                style={headingStyle}
-                            />
-                        </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium" style={{ color: '#4A4A4A' }}>Catatan</label>
-                            <input
-                                type="text"
-                                value={newSession.notes}
-                                onChange={(e) => setNewSession((p) => ({ ...p, notes: e.target.value }))}
-                                placeholder="Opsional"
-                                className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-brand-primary/30 focus:ring-1 focus:ring-brand-primary/20"
-                                style={headingStyle}
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-4 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setShowCreateForm(false)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium transition-all"
-                            style={{ ...glassPanelStyle, color: '#4A4A4A' }}
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleCreateSession}
-                            disabled={!newSession.title || !newSession.session_date}
-                            className="rounded-xl px-5 py-2 text-sm font-medium text-white transition-all disabled:opacity-50"
-                            style={{ background: '#88161c' }}
-                        >
-                            Simpan
-                        </button>
-                    </div>
-                </LiquidGlassCard>
+            {/* View Mode Tabs */}
+            {viewMode !== 'override' && (
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setViewMode('sessions')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewMode === 'sessions' ? 'bg-brand-primary text-white' : 'bg-white/50 text-brand-muted-dark'}`}
+                    >
+                        Sesi Kehadiran
+                    </button>
+                    <button
+                        onClick={() => setViewMode('summary')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewMode === 'summary' ? 'bg-brand-primary text-white' : 'bg-white/50 text-brand-muted-dark'}`}
+                    >
+                        Rekapitulasi
+                    </button>
+                </div>
             )}
 
-            {viewMode === 'marking' && markingRecords.length > 0 && (
-                <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold" style={headingStyle}>Tandai Kehadiran</h3>
-                        <div className="flex gap-2">
+            {/* Sessions View */}
+            {viewMode === 'sessions' && (
+                <>
+                    {/* Group Tabs */}
+                    <div className="flex gap-2">
+                        {(['all', 'A', 'B', 'C'] as GroupTab[]).map((tab) => (
                             <button
-                                type="button"
-                                onClick={() => { setViewMode('sessions'); setMarkingSession(null); }}
-                                className="rounded-xl px-4 py-2 text-sm font-medium transition-all"
-                                style={{ ...glassPanelStyle, color: '#4A4A4A' }}
+                                key={tab}
+                                onClick={() => setGroupTab(tab)}
+                                className={`px-3 py-1.5 rounded text-sm font-medium transition ${groupTab === tab ? 'bg-brand-primary text-white' : 'bg-white/40 text-brand-muted-dark'}`}
                             >
-                                Batal
+                                {tab === 'all' ? 'Semua' : `Kelompok ${tab}`}
                             </button>
-                            <button
-                                type="button"
-                                onClick={saveAttendance}
-                                className="rounded-xl px-5 py-2 text-sm font-medium text-white transition-all"
-                                style={{ background: '#88161c' }}
-                            >
-                                Simpan Kehadiran
-                            </button>
-                        </div>
+                        ))}
                     </div>
 
-                    <div className="mt-4 space-y-2">
-                        {markingRecords.map((record) => {
-                            const cfg = statusConfig[record.status];
-                            return (
-                                <div
-                                    key={record.student_id}
-                                    className="flex items-center justify-between rounded-xl p-4 transition-all"
-                                    style={glassPanelStyle}
-                                >
-                                    <div>
-                                        <p className="font-medium" style={{ color: '#4A4A4A' }}>{record.student_name}</p>
-                                        <p className="text-xs text-brand-muted-dark">{record.student_email}</p>
+                    {/* Sesi per Minggu */}
+                    {Object.keys(groupedSessions.byWeek).length > 0 && (
+                        <div className="space-y-4">
+                            <h4 className="text-base font-semibold" style={headingStyle}>Sesi per Minggu</h4>
+                            {Object.entries(groupedSessions.byWeek).map(([weekId, sessions]) => (
+                                <div key={weekId} className="space-y-2">
+                                    <h5 className="text-sm font-medium text-brand-muted-dark">Minggu {weekId}</h5>
+                                    <div className="grid gap-3">
+                                        {filterSessionsByGroup(sessions).map((session) => (
+                                            <LiquidGlassCard key={session.id} className="p-4">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h5 className="font-medium" style={headingStyle}>{session.title}</h5>
+                                                            {getSessionBadge(session)}
+                                                        </div>
+                                                        <p className={bodyTextClass}>{formatDate(session.session_date)}</p>
+                                                        <p className={bodyTextClass + ' mt-2'}>
+                                                            {session.present_count} hadir / {session.total_students} mahasiswa ({session.attendance_rate}%)
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => startOverride(session.id)} className="px-3 py-1.5 text-xs rounded bg-white/50 hover:bg-white/70 transition">
+                                                            Lihat Detail
+                                                        </button>
+                                                        <button onClick={() => deleteSession(session.id)} className="px-3 py-1.5 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100 transition">
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </LiquidGlassCard>
+                                        ))}
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleStatus(record.student_id)}
-                                        className="flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all"
-                                        style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
-                                    >
-                                        <cfg.icon className="h-4 w-4" />
-                                        {cfg.label}
-                                    </button>
                                 </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Sesi Lainnya */}
+                    {groupedSessions.other.length > 0 && (
+                        <div className="space-y-4">
+                            <h4 className="text-base font-semibold" style={headingStyle}>Sesi Lainnya</h4>
+                            <div className="grid gap-3">
+                                {filterSessionsByGroup(groupedSessions.other).map((session) => (
+                                    <LiquidGlassCard key={session.id} className="p-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h5 className="font-medium" style={headingStyle}>{session.title}</h5>
+                                                    {getSessionBadge(session)}
+                                                </div>
+                                                <p className={bodyTextClass}>{formatDate(session.session_date)}</p>
+                                                <p className={bodyTextClass + ' mt-2'}>
+                                                    {session.present_count} hadir / {session.total_students} mahasiswa ({session.attendance_rate}%)
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => startOverride(session.id)} className="px-3 py-1.5 text-xs rounded bg-white/50 hover:bg-white/70 transition">
+                                                    Lihat Detail
+                                                </button>
+                                                <button onClick={() => deleteSession(session.id)} className="px-3 py-1.5 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100 transition">
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </LiquidGlassCard>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Sedang Berjalan */}
+                    {groupedSessions.running.length > 0 && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-base font-semibold" style={headingStyle}>Sedang Berjalan</h4>
+                                {groupedSessions.running.length > 1 && (
+                                    <button onClick={bulkCloseRunning} className="px-3 py-1.5 text-xs rounded bg-brand-primary text-white hover:opacity-90 transition">
+                                        Tutup Semua Sesi
+                                    </button>
+                                )}
+                            </div>
+                            <div className="grid gap-3">
+                                {groupedSessions.running.map((session) => (
+                                    <LiquidGlassCard key={session.session_discussion_id} className="p-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h5 className="font-medium" style={headingStyle}>{session.title}</h5>
+                                                    <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Sedang Berjalan</span>
+                                                </div>
+                                            </div>
+                                            <button onClick={() => closeSession(session.session_discussion_id)} className="px-3 py-1.5 text-xs rounded bg-brand-primary text-white hover:opacity-90 transition">
+                                                Tutup & Catat Kehadiran
+                                            </button>
+                                        </div>
+                                    </LiquidGlassCard>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Override View */}
+            {viewMode === 'override' && overrideSession && (
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <h4 className="text-base font-semibold" style={headingStyle}>Koreksi Kehadiran</h4>
+                        <button onClick={() => setViewMode('sessions')} className="text-sm text-brand-muted-dark hover:text-brand-primary">
+                            ← Kembali
+                        </button>
+                    </div>
+                    <div className="space-y-2">
+                        {overrideRecords.map((record) => {
+                            const config = statusConfig[record.status];
+                            const Icon = config.icon;
+                            return (
+                                <LiquidGlassCard key={record.student_id} className="p-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex-1">
+                                            <h5 className="font-medium" style={headingStyle}>{record.student_name}</h5>
+                                            <p className={bodyTextClass}>
+                                                {record.message_count !== null && `${record.message_count} pesan`}
+                                                {record.hot_count !== null && `, ${record.hot_count} HOT`}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => cycleStatus(record.student_id)}
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition"
+                                            style={{ background: config.bg, color: config.color, border: `1px solid ${config.border}` }}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            {config.label}
+                                        </button>
+                                    </div>
+                                </LiquidGlassCard>
                             );
                         })}
                     </div>
-                </LiquidGlassCard>
-            )}
-
-            {viewMode === 'sessions' && !showCreateForm && (
-                <div className="space-y-3">
-                    {sessions.length === 0 ? (
-                        <LiquidGlassCard intensity="light" className="p-10 text-center" lightMode={true}>
-                            <CalendarCheck className="mx-auto h-12 w-12 text-brand-muted-dark/40" />
-                            <h4 className="mt-4 text-lg font-semibold" style={headingStyle}>Belum ada pertemuan</h4>
-                            <p className={`mt-2 ${bodyTextClass}`}>Buat pertemuan pertama untuk mulai mencatat kehadiran.</p>
-                        </LiquidGlassCard>
-                    ) : (
-                        sessions.map((session) => (
-                            <LiquidGlassCard key={session.id} intensity="light" className="p-5" lightMode={true}>
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="font-semibold" style={{ color: '#4A4A4A' }}>{session.title}</h4>
-                                            {session.session_number && (
-                                                <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ background: 'rgba(136,22,28,0.08)', color: '#88161c', border: '1px solid rgba(136,22,28,0.15)' }}>
-                                                    #{session.session_number}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className={`mt-1 ${bodyTextClass}`}>{formatDate(session.session_date)}</p>
-                                        {session.notes && <p className="mt-1 text-xs text-brand-muted-dark">{session.notes}</p>}
-                                    </div>
-
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-right">
-                                            <p className="text-sm font-semibold" style={{ color: session.attendance_rate >= 75 ? '#166534' : session.attendance_rate >= 50 ? '#92400e' : '#b91c1c' }}>
-                                                {session.attendance_rate}%
-                                            </p>
-                                            <p className="text-xs text-brand-muted-dark">
-                                                {session.present_count}/{session.total_students} hadir
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => startMarking(session.id)}
-                                                className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-                                                style={{ background: 'rgba(136,22,28,0.10)', color: '#88161c', border: '1px solid rgba(136,22,28,0.15)' }}
-                                            >
-                                                Tandai
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteSession(session.id)}
-                                                className="rounded-lg px-2 py-1.5 text-xs font-medium transition-all"
-                                                style={{ background: 'rgba(239,68,68,0.10)', color: '#b91c1c', border: '1px solid rgba(239,68,68,0.18)' }}
-                                            >
-                                                <X className="h-3.5 w-3.5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </LiquidGlassCard>
-                        ))
-                    )}
+                    <button onClick={saveOverride} className="w-full px-4 py-2 rounded-lg bg-brand-primary text-white font-medium hover:opacity-90 transition">
+                        Simpan Koreksi
+                    </button>
                 </div>
             )}
 
+            {/* Summary View */}
             {viewMode === 'summary' && (
-                <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                    <h3 className="mb-4 text-lg font-semibold" style={headingStyle}>Rekapitulasi Kehadiran</h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="border-b border-[rgba(0,0,0,0.06)]">
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Mahasiswa</th>
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Hadir</th>
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Terlambat</th>
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Izin</th>
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Absen</th>
-                                    <th className="pb-3 pr-4 font-medium text-brand-muted-dark">Persentase</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {summary.length === 0 ? (
+                <div className="space-y-4">
+                    <div className="flex gap-3">
+                        <select value={summaryWeekFilter} onChange={(e) => setSummaryWeekFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm">
+                            <option value="">Semua Minggu</option>
+                            {Object.keys(groupedSessions.byWeek).map((weekId) => (
+                                <option key={weekId} value={weekId}>Minggu {weekId}</option>
+                            ))}
+                        </select>
+                        <select value={summaryGroupFilter} onChange={(e) => setSummaryGroupFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm">
+                            <option value="">Semua Kelompok</option>
+                            <option value="A">Kelompok A</option>
+                            <option value="B">Kelompok B</option>
+                            <option value="C">Kelompok C</option>
+                        </select>
+                    </div>
+                    <LiquidGlassCard className="overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-white/30">
                                     <tr>
-                                        <td colSpan={6} className="py-8 text-center text-brand-muted-dark">Belum ada data kehadiran.</td>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold" style={headingStyle}>Mahasiswa</th>
+                                        <th className="px-4 py-3 text-center text-sm font-semibold" style={headingStyle}>Hadir</th>
+                                        <th className="px-4 py-3 text-center text-sm font-semibold" style={headingStyle}>Izin</th>
+                                        <th className="px-4 py-3 text-center text-sm font-semibold" style={headingStyle}>Absen</th>
+                                        <th className="px-4 py-3 text-center text-sm font-semibold" style={headingStyle}>%</th>
                                     </tr>
-                                ) : (
-                                    summary.map((s) => (
-                                        <tr key={s.student_id} className="border-b border-[rgba(0,0,0,0.04)]">
-                                            <td className="py-3 pr-4">
-                                                <p className="font-medium" style={{ color: '#4A4A4A' }}>{s.student_name}</p>
-                                                <p className="text-xs text-brand-muted-dark">{s.student_email}</p>
-                                            </td>
-                                            <td className="py-3 pr-4 font-medium" style={{ color: '#166534' }}>{s.present}</td>
-                                            <td className="py-3 pr-4 font-medium" style={{ color: '#92400e' }}>{s.late}</td>
-                                            <td className="py-3 pr-4 font-medium" style={{ color: '#4b5563' }}>{s.excused}</td>
-                                            <td className="py-3 pr-4 font-medium" style={{ color: '#b91c1c' }}>{s.absent}</td>
-                                            <td className="py-3 pr-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-2 w-16 rounded-full" style={{ background: 'rgba(0,0,0,0.06)' }}>
-                                                        <div
-                                                            className="h-full rounded-full"
-                                                            style={{
-                                                                width: `${s.attendance_percentage}%`,
-                                                                background: s.attendance_percentage >= 75 ? '#166534' : s.attendance_percentage >= 50 ? '#92400e' : '#b91c1c',
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <span className="font-semibold" style={{ color: s.attendance_percentage >= 75 ? '#166534' : s.attendance_percentage >= 50 ? '#92400e' : '#b91c1c' }}>
-                                                        {s.attendance_percentage}%
-                                                    </span>
+                                </thead>
+                                <tbody className="divide-y divide-white/20">
+                                    {summary.map((s) => (
+                                        <tr key={s.student_id}>
+                                            <td className="px-4 py-3">
+                                                <div>
+                                                    <p className="font-medium text-sm" style={headingStyle}>{s.student_name}</p>
+                                                    <p className={bodyTextClass + ' text-xs'}>{s.student_email}</p>
                                                 </div>
                                             </td>
+                                            <td className="px-4 py-3 text-center text-sm">{s.present}</td>
+                                            <td className="px-4 py-3 text-center text-sm">{s.excused}</td>
+                                            <td className="px-4 py-3 text-center text-sm">{s.absent}</td>
+                                            <td className="px-4 py-3 text-center text-sm font-semibold">{s.attendance_percentage}%</td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </LiquidGlassCard>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </LiquidGlassCard>
+                </div>
             )}
         </div>
     );

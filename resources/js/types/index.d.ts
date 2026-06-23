@@ -442,23 +442,27 @@ export interface ActivitySummary {
 
 // ============ Attendance Types ============
 
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+export type AttendanceStatus = 'present' | 'absent' | 'excused';
 
 export interface AttendanceSession {
     id: string;
+    course_id?: string;
+    session_discussion_id: string | null;
+    week_id: string | null;
+    group_id: string | null;
     title: string;
     session_date: string;
     session_number: number | null;
+    auto_generated: boolean;
+    attendance_method: string | null;
     notes: string | null;
     total_students: number;
     present_count: number;
     absent_count: number;
-    late_count: number;
     excused_count: number;
     marked_count: number;
     attendance_rate: number;
     created_at: string;
-    course_id?: string;
     course?: Pick<Course, 'id' | 'name'>;
 }
 
@@ -467,6 +471,8 @@ export interface AttendanceStudentRecord {
     student_name: string;
     student_email: string;
     status: AttendanceStatus;
+    message_count: number | null;
+    hot_count: number | null;
     notes: string | null;
     marked_at: string | null;
 }
@@ -477,10 +483,33 @@ export interface AttendanceStudentSummary {
     student_email: string;
     total_sessions: number;
     present: number;
-    late: number;
     excused: number;
     absent: number;
     attendance_percentage: number;
+}
+
+// Student-facing attendance types
+export interface StudentAttendanceRecord {
+    id: string;
+    session_id: string;
+    status: 'present' | 'absent' | 'excused';
+    notes: string | null;
+    marked_by: string | null;
+    session: {
+        id: string;
+        title: string;
+        session_date: string;
+        week_id: string | null;
+        auto_generated: boolean;
+    };
+}
+
+export interface StudentAttendanceSummary {
+    present: number;
+    absent: number;
+    excused: number;
+    total: number;
+    percentage: number;
 }
 
 // ============ Materials Types ============

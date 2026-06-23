@@ -5,168 +5,324 @@ namespace App\Http\Controllers\Lecturer;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
+use App\Models\Course;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LecturerAttendanceController extends Controller
 {
     /**
      * List attendance sessions for a course with summary stats.
+     * Groups by: sessions with weekId (by week), sessions without weekId ("Sesi Lainnya"),
+     * and open session discussions from core-api ("Sedang Berjalan").
      */
     public function index(string $course): JsonResponse
     {
-        try {
-            // Fetch enrolled students from Core API
-            $studentsResponse = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/courses/{$course}/students"
-            );
-            $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-            $totalStudents = count($students);
-
-            $sessions = AttendanceSession::where('course_id', $course)
-                ->orderBy('session_date', 'desc')
-                ->orderBy('session_number', 'desc')
-                ->get();
-
-            // Attach attendance stats per session
-            $sessionsData = $sessions->map(function ($session) use ($totalStudents) {
-                $records = $session->records()->get();
-                $presentCount = $records->where('status', 'present')->count();
-                $absentCount = $records->where('status', 'absent')->count();
-                $lateCount = $records->where('status', 'late')->count();
-                $excusedCount = $records->where('status', 'excused')->count();
-                $markedCount = $records->count();
-
-                return [
-                    'id' => $session->id,
-                    'title' => $session->title,
-                    'session_date' => $session->session_date->format('Y-m-d'),
-                    'session_number' => $session->session_number,
-                    'notes' => $session->notes,
-                    'total_students' => $totalStudents,
-                    'present_count' => $presentCount,
-                    'absent_count' => $absentCount,
-                    'late_count' => $lateCount,
-                    'excused_count' => $excusedCount,
-                    'marked_count' => $markedCount,
-                    'attendance_rate' => $totalStudents > 0
-                        ? round(($presentCount + $lateCount) / $totalStudents * 100, 1)
-                        : 0,
-                    'created_at' => $session->created_at->toIso8601String(),
-                ];
-            });
-
-            return response()->json([
-                'data' => $sessionsData,
-                'meta' => [
-                    'total_sessions' => $sessions->count(),
-                    'total_students' => $totalStudents,
-                ],
-            ]);
-        } catch (ConnectionException $e) {
-            Log::error('LecturerAttendanceController: failed to list sessions', [
-                'course' => $course,
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['data' => [], 'meta' => ['total_sessions' => 0, 'total_students' => 0]]);
-        } catch (RequestException $e) {
-            Log::error('LecturerAttendanceController: failed to list sessions', [
-                'course' => $course,
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['data' => [], 'meta' => ['total_sessions' => 0, 'total_students' => 0]]);
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
-    }
 
-    /**
-     * Create attendance session.
-     */
-    public function storeSession(Request $request, string $course): JsonResponse
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'session_date' => 'required|date',
-            'session_number' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string|max:1000',
+        // Query attendance sessions with eager loading (fix N+1)
+        $sessions = AttendanceSession::where('course_id', $course)
+            ->with(['records' => function ($q) {
+                $q->select('session_id', 'status', DB::raw('COUNT(*) as count'))
+                  ->groupBy('session_id', 'status');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Group sessions by week
+        $byWeek = [];
+        $other = [];
+
+        foreach ($sessions as $session) {
+            $stats = [
+                'id' => $session->id,
+                'title' => $session->title,
+                'session_date' => $session->session_date,
+                'session_number' => $session->session_number,
+                'auto_generated' => $session->auto_generated,
+                'attendance_method' => $session->attendance_method,
+                'session_discussion_id' => $session->session_discussion_id,
+                'week_id' => $session->week_id,
+                'group_id' => $session->group_id,
+                'total_students' => $session->total_students,
+                'present_count' => $session->present_count,
+                'absent_count' => $session->absent_count,
+                'excused_count' => $session->excused_count,
+                'marked_count' => $session->marked_count,
+                'attendance_rate' => $session->attendance_rate,
+                'created_at' => $session->created_at,
+            ];
+
+            if ($session->week_id) {
+                if (!isset($byWeek[$session->week_id])) {
+                    $byWeek[$session->week_id] = [];
+                }
+                $byWeek[$session->week_id][] = $stats;
+            } else {
+                $other[] = $stats;
+            }
+        }
+
+        // Query core-api for open session discussions (closedAt = null)
+        $runningResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/session-discussions", [
+            'status' => 'active',
         ]);
 
-        $session = AttendanceSession::create([
-            'id' => (string) Str::uuid(),
-            'course_id' => $course,
-            'title' => $validated['title'],
-            'session_date' => $validated['session_date'],
-            'session_number' => $validated['session_number'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-            'created_by' => session('user.id') ?? null,
-        ]);
+        $running = [];
+        if ($runningResponse->successful()) {
+            $discussions = $runningResponse->json('data', []);
+            foreach ($discussions as $disc) {
+                if (!$disc['closedAt']) {
+                    $running[] = [
+                        'session_discussion_id' => $disc['id'],
+                        'title' => $disc['title'] ?? 'Diskusi',
+                        'group_id' => $disc['groupId'] ?? null,
+                        'week_id' => $disc['weekId'] ?? null,
+                        'status' => 'running',
+                    ];
+                }
+            }
+        }
 
-        return response()->json(['data' => $session], 201);
+        return response()->json([
+            'byWeek' => $byWeek,
+            'other' => $other,
+            'running' => $running,
+        ]);
     }
 
     /**
      * Get a specific session with all attendance records.
+     * Returns student info + message count + HOT count from notes field.
      */
     public function showSession(string $course, string $sessionId): JsonResponse
     {
-        $session = AttendanceSession::where('course_id', $course)->findOrFail($sessionId);
-
-        // Fetch students from Core API
-        $studentsResponse = $this->apiRequest()->get(
-            $this->apiUrl() . "/api/courses/{$course}/students"
-        );
-        $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-
-        $records = $session->records()->get()->keyBy('student_id');
-
-        $studentsData = [];
-        foreach ($students as $student) {
-            $sid = $student['id'] ?? $student['user_id'] ?? null;
-            if (!$sid) continue;
-
-            $record = $records[$sid] ?? null;
-            $studentsData[] = [
-                'student_id' => $sid,
-                'student_name' => $student['name'] ?? $student['user']['name'] ?? 'Unknown',
-                'student_email' => $student['email'] ?? $student['user']['email'] ?? '',
-                'status' => $record?->status ?? 'absent',
-                'notes' => $record?->notes,
-                'marked_at' => $record?->marked_at?->toIso8601String(),
-            ];
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        $session = AttendanceSession::where('id', $sessionId)
+            ->where('course_id', $course)
+            ->first();
+
+        if (!$session) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
+
+        $records = AttendanceRecord::where('session_id', $sessionId)
+            ->get()
+            ->map(function ($record) {
+                // Parse message_count and hot_count from notes if stored as "N pesan, M HOT"
+                $messageCount = null;
+                $hotCount = null;
+                if ($record->notes) {
+                    if (preg_match('/(\d+)\s*pesan,\s*(\d+)\s*HOT/', $record->notes, $matches)) {
+                        $messageCount = (int) $matches[1];
+                        $hotCount = (int) $matches[2];
+                    }
+                }
+
+                return [
+                    'student_id' => $record->student_id,
+                    'student_name' => $record->student_name ?? 'Unknown',
+                    'student_email' => $record->student_email ?? '',
+                    'status' => $record->status,
+                    'message_count' => $messageCount,
+                    'hot_count' => $hotCount,
+                    'notes' => $record->notes,
+                    'marked_at' => $record->marked_at,
+                    'marked_by' => $record->marked_by,
+                ];
+            });
+
         return response()->json([
-            'session' => [
-                'id' => $session->id,
-                'title' => $session->title,
-                'session_date' => $session->session_date->format('Y-m-d'),
-                'session_number' => $session->session_number,
-                'notes' => $session->notes,
-            ],
-            'students' => $studentsData,
+            'session' => $session,
+            'records' => $records,
         ]);
     }
 
     /**
-     * Update attendance session.
+     * Override attendance status for students in a session.
+     * Accepts overrides array [{ studentId, status, notes }].
      */
-    public function updateSession(Request $request, string $course, string $sessionId): JsonResponse
+    public function override(Request $request, string $course, string $sessionId): JsonResponse
     {
-        $session = AttendanceSession::where('course_id', $course)->findOrFail($sessionId);
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'session_date' => 'sometimes|date',
-            'session_number' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string|max:1000',
+            'overrides' => 'required|array',
+            'overrides.*.studentId' => 'required|string',
+            'overrides.*.status' => 'required|in:present,absent,excused',
+            'overrides.*.notes' => 'nullable|string',
         ]);
 
-        $session->update($validated);
+        $session = AttendanceSession::where('id', $sessionId)
+            ->where('course_id', $course)
+            ->first();
 
-        return response()->json(['data' => $session]);
+        if (!$session) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($validated['overrides'] as $override) {
+                $record = AttendanceRecord::where('session_id', $sessionId)
+                    ->where('student_id', $override['studentId'])
+                    ->first();
+
+                if ($record) {
+                    // Preserve original auto-status in notes if not already there
+                    $originalStatus = $record->status;
+                    $notes = $override['notes'] ?? $record->notes;
+                    if ($record->marked_by === null && $originalStatus !== $override['status']) {
+                        // First override - preserve original
+                        $notes = "Original: {$originalStatus}. " . ($notes ?? '');
+                    }
+
+                    $record->update([
+                        'status' => $override['status'],
+                        'marked_by' => auth()->id(),
+                        'marked_at' => now(),
+                        'notes' => $notes,
+                    ]);
+                }
+            }
+
+            // Recalculate session stats
+            $this->recalculateSessionStats($sessionId);
+
+            DB::commit();
+
+            // Return updated records
+            $records = AttendanceRecord::where('session_id', $sessionId)->get();
+            return response()->json(['records' => $records]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to update attendance', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get attendance summary per student for the course.
+     * Filter by week + group. Excused ≠ absent. Pending excluded from denominator.
+     */
+    public function summary(string $course): JsonResponse
+    {
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $weekId = request()->query('week_id');
+        $groupId = request()->query('group_id');
+
+        $query = AttendanceSession::where('course_id', $course);
+
+        if ($weekId) {
+            $query->where('week_id', $weekId);
+        }
+
+        if ($groupId) {
+            $query->where('group_id', $groupId);
+        }
+
+        $sessionIds = $query->pluck('id');
+
+        $records = AttendanceRecord::whereIn('session_id', $sessionIds)->get();
+
+        // Group by student
+        $studentSummary = [];
+        foreach ($records as $record) {
+            $studentId = $record->student_id;
+            if (!isset($studentSummary[$studentId])) {
+                $studentSummary[$studentId] = [
+                    'student_id' => $studentId,
+                    'student_name' => $record->student_name ?? 'Unknown',
+                    'student_email' => $record->student_email ?? '',
+                    'total_sessions' => 0,
+                    'present' => 0,
+                    'absent' => 0,
+                    'excused' => 0,
+                ];
+            }
+
+            $studentSummary[$studentId]['total_sessions']++;
+            if ($record->status === 'present') {
+                $studentSummary[$studentId]['present']++;
+            } elseif ($record->status === 'absent') {
+                $studentSummary[$studentId]['absent']++;
+            } elseif ($record->status === 'excused') {
+                $studentSummary[$studentId]['excused']++;
+            }
+        }
+
+        // Calculate attendance percentage (excused excluded from denominator)
+        foreach ($studentSummary as &$summary) {
+            $denominator = $summary['present'] + $summary['absent'];
+            $summary['attendance_percentage'] = $denominator > 0
+                ? round(($summary['present'] / $denominator) * 100, 2)
+                : 0;
+        }
+
+        return response()->json(['summary' => array_values($studentSummary)]);
+    }
+
+    /**
+     * Bulk close sessions and create attendance records from core-api response.
+     */
+    public function bulkClose(Request $request, string $course): JsonResponse
+    {
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $validated = $request->validate([
+            'sessionDiscussionIds' => 'required|array',
+            'sessionDiscussionIds.*' => 'required|string',
+        ]);
+
+        // Proxy to core-api bulk close
+        $response = $this->apiRequest()->post($this->apiUrl() . '/api/session-discussions/bulk-close', [
+            'sessionDiscussionIds' => $validated['sessionDiscussionIds'],
+        ]);
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Failed to close sessions', 'error' => $response->json()], $response->status());
+        }
+
+        $closedSessions = $response->json('data', []);
+
+        // Create attendance records from attendanceData in each closed session
+        DB::beginTransaction();
+        try {
+            foreach ($closedSessions as $sessionData) {
+                if (isset($sessionData['attendanceData'])) {
+                    $this->createAttendanceFromData($course, $sessionData['attendanceData']);
+                }
+            }
+            DB::commit();
+
+            return response()->json(['message' => 'Sessions closed and attendance recorded', 'data' => $closedSessions]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to create attendance records', 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -174,268 +330,169 @@ class LecturerAttendanceController extends Controller
      */
     public function destroySession(string $course, string $sessionId): JsonResponse
     {
-        $session = AttendanceSession::where('course_id', $course)->findOrFail($sessionId);
-        $session->delete();
-
-        return response()->json(['message' => 'Sesi kehadiran berhasil dihapus.']);
-    }
-
-    /**
-     * Mark attendance for students in a session.
-     */
-    public function markAttendance(Request $request, string $course, string $sessionId): JsonResponse
-    {
-        $session = AttendanceSession::where('course_id', $course)->findOrFail($sessionId);
-
-        $validated = $request->validate([
-            'records' => 'required|array|min:1',
-            'records.*.student_id' => 'required|string',
-            'records.*.status' => 'required|in:present,absent,late,excused',
-            'records.*.notes' => 'nullable|string|max:500',
-        ]);
-
-        $now = now();
-        $markedBy = session('user.id') ?? null;
-
-        foreach ($validated['records'] as $record) {
-            AttendanceRecord::updateOrCreate(
-                [
-                    'session_id' => $session->id,
-                    'student_id' => $record['student_id'],
-                ],
-                [
-                    'id' => (string) Str::uuid(),
-                    'status' => $record['status'],
-                    'notes' => $record['notes'] ?? null,
-                    'marked_at' => $now,
-                    'marked_by' => $markedBy,
-                ]
-            );
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        return response()->json(['message' => 'Kehadiran berhasil disimpan.']);
-    }
+        $session = AttendanceSession::where('id', $sessionId)->where('course_id', $course)->first();
+        if (!$session) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
 
-    /**
-     * Get attendance summary per student for the course.
-     */
-    public function summary(string $course): JsonResponse
-    {
+        DB::beginTransaction();
         try {
-            // Fetch students from Core API
-            $studentsResponse = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/courses/{$course}/students"
-            );
-            $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
+            AttendanceRecord::where('session_id', $sessionId)->delete();
+            $session->delete();
+            DB::commit();
 
-            $totalSessions = AttendanceSession::where('course_id', $course)->count();
-
-            $records = AttendanceRecord::whereIn(
-                'session_id',
-                AttendanceSession::where('course_id', $course)->pluck('id')
-            )->get()->groupBy('student_id');
-
-            $studentSummary = [];
-            foreach ($students as $student) {
-                $sid = $student['id'] ?? $student['user_id'] ?? null;
-                if (!$sid) continue;
-
-                $studentRecords = $records[$sid] ?? collect();
-                $presentCount = $studentRecords->where('status', 'present')->count();
-                $lateCount = $studentRecords->where('status', 'late')->count();
-                $excusedCount = $studentRecords->where('status', 'excused')->count();
-                $absentCount = $studentRecords->where('status', 'absent')->count();
-                $totalMarked = $studentRecords->count();
-
-                $studentSummary[] = [
-                    'student_id' => $sid,
-                    'student_name' => $student['name'] ?? $student['user']['name'] ?? 'Unknown',
-                    'student_email' => $student['email'] ?? $student['user']['email'] ?? '',
-                    'total_sessions' => $totalSessions,
-                    'present' => $presentCount,
-                    'late' => $lateCount,
-                    'excused' => $excusedCount,
-                    'absent' => $absentCount,
-                    'attendance_percentage' => $totalSessions > 0
-                        ? round(($presentCount + $lateCount) / $totalSessions * 100, 1)
-                        : 0,
-                ];
-            }
-
-            // Sort by attendance percentage desc
-            usort($studentSummary, fn($a, $b) => $b['attendance_percentage'] - $a['attendance_percentage']);
-
-            return response()->json([
-                'data' => $studentSummary,
-                'meta' => [
-                    'total_sessions' => $totalSessions,
-                    'total_students' => count($studentSummary),
-                ],
-            ]);
-        } catch (ConnectionException $e) {
-            Log::error('LecturerAttendanceController: failed to get summary', [
-                'course' => $course,
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['data' => [], 'meta' => ['total_sessions' => 0, 'total_students' => 0]]);
-        } catch (RequestException $e) {
-            Log::error('LecturerAttendanceController: failed to get summary', [
-                'course' => $course,
-                'error' => $e->getMessage(),
-            ]);
-            return response()->json(['data' => [], 'meta' => ['total_sessions' => 0, 'total_students' => 0]]);
+            return response()->json(['message' => 'Session deleted']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to delete session', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Export attendance to XES-compatible IEEE CSV event log.
-     *
-     * Format: one row = one event (attendance record).
-     * Required XES columns: case_id, activity, timestamp, resource.
-     * Additional case attributes: student_name, student_email.
+     * Export attendance to CSV.
+     * Updated columns: remove "Late", add "HOT Count", "Pesan Count".
      */
     public function export(string $course): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        try {
-            $studentsResponse = $this->apiRequest()->get(
-                $this->apiUrl() . "/api/courses/{$course}/students"
-            );
-            $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-        } catch (\Throwable $e) {
-            $students = [];
-        }
-
-        $studentMap = [];
-        foreach ($students as $student) {
-            $sid = $student['id'] ?? $student['user_id'] ?? null;
-            if ($sid) {
-                $studentMap[$sid] = [
-                    'name' => $student['name'] ?? $student['user']['name'] ?? 'Unknown',
-                    'email' => $student['email'] ?? $student['user']['email'] ?? '',
-                ];
-            }
+        // Verify lecturer owns the course
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            abort(403, 'Forbidden');
         }
 
         $sessions = AttendanceSession::where('course_id', $course)
             ->orderBy('session_date')
-            ->orderBy('session_number')
-            ->get()
-            ->keyBy('id');
-
-        $records = AttendanceRecord::whereIn('session_id', $sessions->keys())
-            ->orderBy('marked_at')
             ->get();
 
-        $filename = "kehadiran_{$course}_" . date('Y-m-d') . ".csv";
-
         $headers = [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="attendance_' . $course . '_' . date('Y-m-d') . '.csv"',
         ];
 
-        return response()->stream(function () use ($records, $sessions, $studentMap) {
-            $handle = fopen('php://output', 'w');
+        $callback = function () use ($sessions) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Session', 'Date', 'Student ID', 'Student Name', 'Status', 'Pesan Count', 'HOT Count', 'Marked At']);
 
-            // UTF-8 BOM for Excel compatibility
-            fprintf($handle, "\xEF\xBB\xBF");
+            foreach ($sessions as $session) {
+                $records = AttendanceRecord::where('session_id', $session->id)->get();
+                foreach ($records as $record) {
+                    // Parse message_count and hot_count from notes
+                    $messageCount = '';
+                    $hotCount = '';
+                    if ($record->notes && preg_match('/(\d+)\s*pesan,\s*(\d+)\s*HOT/', $record->notes, $matches)) {
+                        $messageCount = $matches[1];
+                        $hotCount = $matches[2];
+                    }
 
-            // XES-compatible IEEE header comment
-            fputcsv($handle, ['# XES-compatible IEEE CSV Event Log']);
-            fputcsv($handle, ['# Format: one row = one event (attendance record)']);
-            fputcsv($handle, ['# case_id: unique student identifier']);
-            fputcsv($handle, ['# activity: attendance status (present, absent, late, excused)']);
-            fputcsv($handle, ['# timestamp: ISO 8601 datetime of the session']);
-            fputcsv($handle, ['# resource: session title / number']);
-            fputcsv($handle, []);
-
-            // Column headers
-            fputcsv($handle, [
-                'case_id',
-                'case:student_name',
-                'case:student_email',
-                'activity',
-                'timestamp',
-                'resource',
-                'session_title',
-                'session_number',
-                'notes',
-            ]);
-
-            foreach ($records as $record) {
-                $session = $sessions[$record->session_id] ?? null;
-                $student = $studentMap[$record->student_id] ?? ['name' => 'Unknown', 'email' => ''];
-
-                $timestamp = $record->marked_at
-                    ? $record->marked_at->toIso8601String()
-                    : ($session ? $session->session_date->format('Y-m-d') . 'T00:00:00+07:00' : '');
-
-                $resource = $session
-                    ? "Sesi {$session->session_number}: {$session->title}"
-                    : 'Unknown Session';
-
-                fputcsv($handle, [
-                    $record->student_id,
-                    $student['name'],
-                    $student['email'],
-                    $record->status,
-                    $timestamp,
-                    $resource,
-                    $session ? $session->title : '',
-                    $session ? $session->session_number : '',
-                    $record->notes ?? '',
-                ]);
-            }
-
-            // Summary section
-            if ($records->isNotEmpty()) {
-                fputcsv($handle, []);
-                fputcsv($handle, ['# SUMMARY: Aggregated attendance per student']);
-                fputcsv($handle, [
-                    'student_id',
-                    'student_name',
-                    'student_email',
-                    'total_sessions',
-                    'present',
-                    'late',
-                    'excused',
-                    'absent',
-                    'attendance_rate_pct',
-                ]);
-
-                $summary = $records->groupBy('student_id')->map(function ($studentRecords) use ($studentMap) {
-                    $sid = $studentRecords->first()->student_id;
-                    $student = $studentMap[$sid] ?? ['name' => 'Unknown', 'email' => ''];
-                    return [
-                        'student_id' => $sid,
-                        'student_name' => $student['name'],
-                        'student_email' => $student['email'],
-                        'total_sessions' => $studentRecords->count(),
-                        'present' => $studentRecords->where('status', 'present')->count(),
-                        'late' => $studentRecords->where('status', 'late')->count(),
-                        'excused' => $studentRecords->where('status', 'excused')->count(),
-                        'absent' => $studentRecords->where('status', 'absent')->count(),
-                        'attendance_rate' => $studentRecords->count() > 0
-                            ? round($studentRecords->whereIn('status', ['present', 'late'])->count() / $studentRecords->count() * 100, 1)
-                            : 0,
-                    ];
-                })->sortByDesc('attendance_rate')->values();
-
-                foreach ($summary as $row) {
-                    fputcsv($handle, [
-                        $row['student_id'],
-                        $row['student_name'],
-                        $row['student_email'],
-                        $row['total_sessions'],
-                        $row['present'],
-                        $row['late'],
-                        $row['excused'],
-                        $row['absent'],
-                        $row['attendance_rate'],
+                    fputcsv($file, [
+                        $session->title,
+                        $session->session_date,
+                        $record->student_id,
+                        $record->student_name ?? '',
+                        $record->status,
+                        $messageCount,
+                        $hotCount,
+                        $record->marked_at ?? '',
                     ]);
                 }
             }
 
-            fclose($handle);
-        }, 200, $headers);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Helper: Create attendance session and records from core-api attendanceData.
+     */
+    private function createAttendanceFromData(string $courseId, array $attendanceData): void
+    {
+        $sessionId = Str::uuid()->toString();
+
+        // Create attendance session
+        AttendanceSession::create([
+            'id' => $sessionId,
+            'course_id' => $courseId,
+            'session_discussion_id' => $attendanceData['sessionDiscussionId'] ?? null,
+            'week_id' => $attendanceData['weekId'] ?? null,
+            'group_id' => $attendanceData['groupId'] ?? null,
+            'title' => 'Auto Attendance - ' . ($attendanceData['weekId'] ?? 'Session'),
+            'session_date' => now(),
+            'session_number' => null,
+            'auto_generated' => true,
+            'attendance_method' => 'auto',
+            'notes' => 'Auto-generated from discussion participation',
+            'created_by' => auth()->id(),
+            'total_students' => count($attendanceData['students'] ?? []),
+            'present_count' => 0,
+            'absent_count' => 0,
+            'excused_count' => 0,
+            'marked_count' => 0,
+            'attendance_rate' => 0,
+        ]);
+
+        // Create attendance records
+        $presentCount = 0;
+        $absentCount = 0;
+
+        foreach ($attendanceData['students'] ?? [] as $student) {
+            $status = $student['status'] ?? 'absent';
+            $messageCount = $student['messageCount'] ?? 0;
+            $hotCount = $student['hotCount'] ?? 0;
+
+            AttendanceRecord::create([
+                'id' => Str::uuid()->toString(),
+                'session_id' => $sessionId,
+                'student_id' => $student['studentId'],
+                'student_name' => $student['studentName'] ?? '',
+                'student_email' => '',
+                'status' => $status,
+                'notes' => "{$messageCount} pesan, {$hotCount} HOT",
+                'marked_at' => now(),
+                'marked_by' => null,
+            ]);
+
+            if ($status === 'present') {
+                $presentCount++;
+            } elseif ($status === 'absent') {
+                $absentCount++;
+            }
+        }
+
+        // Update session stats
+        $totalStudents = count($attendanceData['students'] ?? []);
+        AttendanceSession::where('id', $sessionId)->update([
+            'present_count' => $presentCount,
+            'absent_count' => $absentCount,
+            'marked_count' => $totalStudents,
+            'attendance_rate' => $totalStudents > 0 ? round(($presentCount / $totalStudents) * 100, 2) : 0,
+        ]);
+    }
+
+    /**
+     * Helper: Recalculate session stats after override.
+     */
+    private function recalculateSessionStats(string $sessionId): void
+    {
+        $records = AttendanceRecord::where('session_id', $sessionId)->get();
+        $presentCount = $records->where('status', 'present')->count();
+        $absentCount = $records->where('status', 'absent')->count();
+        $excusedCount = $records->where('status', 'excused')->count();
+        $totalStudents = $records->count();
+
+        AttendanceSession::where('id', $sessionId)->update([
+            'present_count' => $presentCount,
+            'absent_count' => $absentCount,
+            'excused_count' => $excusedCount,
+            'marked_count' => $totalStudents,
+            'attendance_rate' => $totalStudents > 0 ? round(($presentCount / $totalStudents) * 100, 2) : 0,
+        ]);
     }
 }

@@ -42,6 +42,7 @@ use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\ProfilePreferenceController;
 use App\Http\Controllers\Student\ProfileStatsController;
 use App\Http\Controllers\Student\StudentAnalyticsController;
+use App\Http\Controllers\Student\StudentAttendanceController;
 use App\Http\Controllers\Student\GlobalSearchController as StudentGlobalSearchController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Lecturer\LecturerAktivitasController;
@@ -286,16 +287,14 @@ Route::middleware('auth.jwt')->group(function () {
         // Attendance
         Route::get('/courses/{course}/attendance', [LecturerAttendanceController::class, 'index'])
             ->name('courses.attendance.index');
-        Route::post('/courses/{course}/attendance/sessions', [LecturerAttendanceController::class, 'storeSession'])
-            ->name('courses.attendance.sessions.store');
         Route::get('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'showSession'])
             ->name('courses.attendance.sessions.show');
-        Route::put('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'updateSession'])
-            ->name('courses.attendance.sessions.update');
+        Route::put('/courses/{course}/attendance/sessions/{sessionId}/override', [LecturerAttendanceController::class, 'override'])
+            ->name('courses.attendance.sessions.override');
         Route::delete('/courses/{course}/attendance/sessions/{sessionId}', [LecturerAttendanceController::class, 'destroySession'])
             ->name('courses.attendance.sessions.destroy');
-        Route::post('/courses/{course}/attendance/sessions/{sessionId}/mark', [LecturerAttendanceController::class, 'markAttendance'])
-            ->name('courses.attendance.mark');
+        Route::post('/courses/{course}/attendance/bulk-close', [LecturerAttendanceController::class, 'bulkClose'])
+            ->name('courses.attendance.bulk-close');
         Route::get('/courses/{course}/attendance/summary', [LecturerAttendanceController::class, 'summary'])
             ->name('courses.attendance.summary');
         Route::get('/courses/{course}/attendance/export', [LecturerAttendanceController::class, 'export'])
@@ -358,6 +357,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/courses/join', [StudentCourseController::class, 'join'])->name('courses.join');
         Route::get('/courses/{course}', [StudentCourseController::class, 'showStudent'])->name('courses.show');
         Route::post('/courses/{course}/reading-recommendations', [StudentCourseController::class, 'readingRecommendations'])->name('courses.reading-recommendations');
+        Route::get('/courses/{course}/attendance', [StudentAttendanceController::class, 'index'])->name('courses.attendance');
 
         // Groups (redirect to unified course detail page)
         Route::get('/courses/{course}/groups', fn($course) => redirect()->route('student.courses.show', $course))->name('groups.index');
