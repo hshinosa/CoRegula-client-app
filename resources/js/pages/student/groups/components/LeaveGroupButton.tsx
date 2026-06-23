@@ -31,22 +31,6 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
         }
     }, [groupId]);
 
-    if (isOwner) {
-        return (
-            <div
-                className="rounded-xl p-4"
-                style={{
-                    background: 'rgba(245,158,11,0.05)',
-                    border: '1px solid rgba(245,158,11,0.15)',
-                }}
-            >
-                <p className="text-sm text-amber-700">
-                    Anda adalah pemilik grup. Transfer kepemilikan terlebih dahulu sebelum keluar.
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-3">
             {error && (
@@ -62,6 +46,20 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
                 >
                     {error}
                 </motion.div>
+            )}
+
+            {isOwner && (
+                <div
+                    className="rounded-xl p-3 text-xs"
+                    style={{
+                        background: 'rgba(245,158,11,0.05)',
+                        border: '1px solid rgba(245,158,11,0.15)',
+                    }}
+                >
+                    <p className="text-amber-700">
+                        Sebagai ketua, kepemilikan akan otomatis dipindah ke anggota terlama saat Anda keluar. Jika tidak ada anggota lain, grup akan dihapus.
+                    </p>
+                </div>
             )}
 
             <AnimatePresence>
@@ -83,7 +81,9 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
                                     Keluar dari Grup?
                                 </h4>
                                 <p className="mt-1 text-xs text-brand-muted-dark">
-                                    Anda akan kehilangan akses ke semua diskusi dan dokumen dalam grup ini.
+                                    {isOwner
+                                        ? 'Kepemilikan akan dipindah ke anggota terlama. Anda akan kehilangan akses ke semua diskusi grup ini.'
+                                        : 'Anda akan kehilangan akses ke semua diskusi dan dokumen dalam grup ini.'}
                                 </p>
                                 <div className="mt-3 flex gap-2">
                                     <button
