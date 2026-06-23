@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-class GroupChatSpaceWeekBindingTest extends TestCase
+class GroupSessionDiscussionWeekBindingTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -32,13 +32,13 @@ class GroupChatSpaceWeekBindingTest extends TestCase
         return $this->withSession($this->studentSessionData('11111111-1111-1111-1111-111111111111'));
     }
 
-    public function test_store_chat_space_fails_validation_without_week_id(): void
+    public function test_store_session_discussion_fails_validation_without_week_id(): void
     {
         Http::fake();
 
         $response = $this->studentSession()
             ->from(route('student.groups.index', 'course-1'))
-            ->post(route('student.groups.chat-spaces.store', 'group-1'), [
+            ->post(route('student.groups.session-discussions.store', 'group-1'), [
                 'name' => 'Diskusi A',
             ]);
 
@@ -46,12 +46,12 @@ class GroupChatSpaceWeekBindingTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_store_chat_space_proxies_week_id_to_core_api(): void
+    public function test_store_session_discussion_proxies_week_id_to_core_api(): void
     {
         $weekId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
         Http::fake([
-            'http://localhost:3000/api/groups/group-1/chat-spaces' => Http::response([
+            'http://localhost:3000/api/groups/group-1/session-discussions' => Http::response([
                 'data' => [
                     'id' => 'chat-1',
                     'name' => 'Diskusi A',
@@ -62,7 +62,7 @@ class GroupChatSpaceWeekBindingTest extends TestCase
 
         $response = $this->studentSession()
             ->from(route('student.groups.index', 'course-1'))
-            ->post(route('student.groups.chat-spaces.store', 'group-1'), [
+            ->post(route('student.groups.session-discussions.store', 'group-1'), [
                 'name' => 'Diskusi A',
                 'week_id' => $weekId,
             ]);
@@ -71,7 +71,7 @@ class GroupChatSpaceWeekBindingTest extends TestCase
         $response->assertSessionHas('success', 'Ruang chat berhasil dibuat!');
 
         Http::assertSent(function ($request) use ($weekId) {
-            return $request->url() === 'http://localhost:3000/api/groups/group-1/chat-spaces'
+            return $request->url() === 'http://localhost:3000/api/groups/group-1/session-discussions'
                 && $request['name'] === 'Diskusi A'
                 && $request['week_id'] === $weekId;
         });

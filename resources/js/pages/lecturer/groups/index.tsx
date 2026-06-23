@@ -25,7 +25,7 @@ import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course, User } from '@/types';
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
@@ -37,7 +37,7 @@ interface GroupWithDetails {
     name: string;
     joinCode: string;
     members?: User[];
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
     goalsCount?: number;
     status?: string;
     has_goal?: boolean;
@@ -100,7 +100,7 @@ const getGoalChipStyle = (group: GroupWithDetails): CSSProperties => {
 export default function GroupsIndex({ course, groups, students }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState<string | null>(null);
-    const [showChatSpaceModal, setShowChatSpaceModal] = useState<string | null>(null);
+    const [showSessionDiscussionModal, setShowSessionDiscussionModal] = useState<string | null>(null);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
     const [selectedGroupJoinCode, setSelectedGroupJoinCode] = useState<string | null>(null);
     const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
         member_ids: [] as string[],
     });
 
-    const chatSpaceForm = useForm({
+    const sessionDiscussionForm = useForm({
         name: '',
         description: '',
         week_id: '',
@@ -128,7 +128,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
     const deleteForm = useForm({});
 
     useEffect(() => {
-        if (!showChatSpaceModal) {
+        if (!showSessionDiscussionModal) {
             return;
         }
         setWeeksLoading(true);
@@ -140,7 +140,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                 setWeekOptions([]);
             })
             .finally(() => setWeeksLoading(false));
-    }, [showChatSpaceModal, course.id]);
+    }, [showSessionDiscussionModal, course.id]);
 
     const handleCreateGroup = (event: FormEvent) => {
         event.preventDefault();
@@ -164,14 +164,14 @@ export default function GroupsIndex({ course, groups, students }: Props) {
         });
     };
 
-    const handleCreateChatSpace = (event: FormEvent) => {
+    const handleCreateSessionDiscussion = (event: FormEvent) => {
         event.preventDefault();
-        if (!showChatSpaceModal) return;
+        if (!showSessionDiscussionModal) return;
 
-        chatSpaceForm.post(`/lecturer/groups/${showChatSpaceModal}/chat-spaces`, {
+        sessionDiscussionForm.post(`/lecturer/groups/${showSessionDiscussionModal}/session-discussions`, {
             onSuccess: () => {
-                setShowChatSpaceModal(null);
-                chatSpaceForm.reset();
+                setShowSessionDiscussionModal(null);
+                sessionDiscussionForm.reset();
             },
         });
     };
@@ -218,7 +218,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
     );
 
     const totalMembers = groups.reduce((sum, group) => sum + (group.members?.length || 0), 0);
-    const totalChatSpaces = groups.reduce((sum, group) => sum + (group.chatSpaces?.length || 0), 0);
+    const totalSessionDiscussions = groups.reduce((sum, group) => sum + (group.sessionDiscussions?.length || 0), 0);
     const groupsWithGoals = groups.filter((group) => group.has_goal).length;
 
     return (
@@ -288,7 +288,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                             },
                             {
                                 label: 'Sesi Diskusi Aktif',
-                                value: totalChatSpaces,
+                                value: totalSessionDiscussions,
                                 detail: `${groupsWithGoals} grup sudah punya tujuan`,
                                 icon: MessageSquare,
                                 color: '#166534',
@@ -340,7 +340,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                         <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
                             {groups.map((group, index) => {
                                 const memberCount = group.members?.length || 0;
-                                const chatSpaceCount = group.chatSpaces?.length || 0;
+                                const sessionDiscussionCount = group.sessionDiscussions?.length || 0;
 
                                 return (
                                     <motion.div
@@ -365,7 +365,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                                     {group.name}
                                                                 </h2>
                                                                 <p className="text-sm text-brand-muted-dark">
-                                                                    {memberCount} anggota • {chatSpaceCount} sesi diskusi
+                                                                    {memberCount} anggota • {sessionDiscussionCount} sesi diskusi
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -414,8 +414,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                             </p>
                                                         </div>
                                                         <div className="mt-3 flex flex-wrap gap-2">
-                                                            {group.chatSpaces && group.chatSpaces.length > 0 ? (
-                                                                group.chatSpaces.map((space) => (
+                                                            {group.sessionDiscussions && group.sessionDiscussions.length > 0 ? (
+                                                                group.sessionDiscussions.map((space) => (
                                                                     <span
                                                                         key={space.id}
                                                                         className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
@@ -466,7 +466,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                         <UserPlus className="h-4 w-4" />
                                                         Tugaskan Siswa
                                                     </SecondaryButton>
-                                                    <PrimaryButton onClick={() => setShowChatSpaceModal(group.id)} className="justify-center">
+                                                    <PrimaryButton onClick={() => setShowSessionDiscussionModal(group.id)} className="justify-center">
                                                         <Plus className="h-4 w-4" />
                                                         Tambah Sesi Diskusi
                                                     </PrimaryButton>
@@ -718,36 +718,36 @@ export default function GroupsIndex({ course, groups, students }: Props) {
             </FormModal>
 
             <FormModal
-                open={!!showChatSpaceModal}
+                open={!!showSessionDiscussionModal}
                 title="Buat Sesi Diskusi Baru"
                 description="Tambahkan sesi diskusi terpisah di dalam grup untuk topik tertentu."
-                onClose={() => setShowChatSpaceModal(null)}
+                onClose={() => setShowSessionDiscussionModal(null)}
                 maxWidth="max-w-md"
             >
-                <form onSubmit={handleCreateChatSpace} className="space-y-4">
+                <form onSubmit={handleCreateSessionDiscussion} className="space-y-4">
                     <div>
-                        <InputLabel htmlFor="chat_space_name" required>
+                        <InputLabel htmlFor="session_discussion_name" required>
                             Nama Sesi
                         </InputLabel>
                         <input
-                            id="chat_space_name"
+                            id="session_discussion_name"
                             type="text"
-                            value={chatSpaceForm.data.name}
-                            onChange={(event) => chatSpaceForm.setData('name', event.target.value)}
+                            value={sessionDiscussionForm.data.name}
+                            onChange={(event) => sessionDiscussionForm.setData('name', event.target.value)}
                             className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm placeholder:text-gray-600 focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm sm:leading-6"
                             placeholder="misalnya, Diskusi BAB 1"
                         />
-                        <InputError message={chatSpaceForm.errors.name} />
+                        <InputError message={sessionDiscussionForm.errors.name} />
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="chat_space_week" required>
+                        <InputLabel htmlFor="session_discussion_week" required>
                             Minggu kuliah
                         </InputLabel>
                         <select
-                            id="chat_space_week"
-                            value={chatSpaceForm.data.week_id}
-                            onChange={(event) => chatSpaceForm.setData('week_id', event.target.value)}
+                            id="session_discussion_week"
+                            value={sessionDiscussionForm.data.week_id}
+                            onChange={(event) => sessionDiscussionForm.setData('week_id', event.target.value)}
                             required
                             disabled={weeksLoading || weekOptions.length === 0}
                             className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-brand-dark shadow-sm focus:border-brand-primary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/15 sm:text-sm"
@@ -765,15 +765,15 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                 </option>
                             ))}
                         </select>
-                        <InputError message={chatSpaceForm.errors.week_id} />
+                        <InputError message={sessionDiscussionForm.errors.week_id} />
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <SecondaryButton type="button" onClick={() => setShowChatSpaceModal(null)} className="flex-1 justify-center">
+                        <SecondaryButton type="button" onClick={() => setShowSessionDiscussionModal(null)} className="flex-1 justify-center">
                             Batal
                         </SecondaryButton>
-                        <PrimaryButton type="submit" disabled={chatSpaceForm.processing} className="flex-1 justify-center">
-                            {chatSpaceForm.processing ? 'Membuat...' : 'Buat'}
+                        <PrimaryButton type="submit" disabled={sessionDiscussionForm.processing} className="flex-1 justify-center">
+                            {sessionDiscussionForm.processing ? 'Membuat...' : 'Buat'}
                         </PrimaryButton>
                     </div>
                 </form>

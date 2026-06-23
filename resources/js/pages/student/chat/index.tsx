@@ -32,7 +32,7 @@ interface GroupMember {
     avatar?: string;
 }
 
-interface ChatSpaceGoal {
+interface SessionDiscussionGoal {
     id: string;
     content: string;
     isValidated: boolean;
@@ -43,19 +43,19 @@ interface ChatSpaceGoal {
     createdAt: string;
 }
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
     isDefault: boolean;
-    myGoal?: ChatSpaceGoal | null;
+    myGoal?: SessionDiscussionGoal | null;
 }
 
 interface Group {
     id: string;
     name: string;
     members?: GroupMember[];
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
 }
 
 type DisplayMessage = import('@/features/chat/optimistic-message').ChatDisplayMessage;
@@ -132,14 +132,14 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
 
-    // Chat space state - default to first chat space
-    const [activeChatSpaceId] = useState<string | null>(
-        group.chatSpaces?.[0]?.id || null
+    // Sesi diskusi state - default to first sesi diskusi
+    const [activeSessionDiscussionId] = useState<string | null>(
+        group.sessionDiscussions?.[0]?.id || null
     );
 
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    useDraftAutosave(activeChatSpaceId ?? '', newMessage, setNewMessage);
+    useDraftAutosave(activeSessionDiscussionId ?? '', newMessage, setNewMessage);
     const [isTyping, setIsTyping] = useState(false);
     const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
@@ -153,10 +153,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         });
     }, []);
     
-    // Get active chat space
-    const activeChatSpace = useMemo(() => 
-        group.chatSpaces?.find(cs => cs.id === activeChatSpaceId) || group.chatSpaces?.[0] || null,
-        [group.chatSpaces, activeChatSpaceId]
+    // Get active sesi diskusi
+    const activeSessionDiscussion = useMemo(() => 
+        group.sessionDiscussions?.find(cs => cs.id === activeSessionDiscussionId) || group.sessionDiscussions?.[0] || null,
+        [group.sessionDiscussions, activeSessionDiscussionId]
     );
 
     // Task 5 internal helpers (inside component scope)
@@ -244,7 +244,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         jwtToken,
         courseId: course?.id ?? '',
         groupId: group?.id ?? '',
-        chatSpaceId: activeChatSpace?.id ?? '',
+        sessionDiscussionId: activeSessionDiscussion?.id ?? '',
         socketUrl,
         onMessagesLoaded: (loaded) => {
             setMessages(loaded);
@@ -275,7 +275,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     confirmDeliveredRef.current = confirmDelivered;
 
     const emitChatMessage = useCallback((message: DisplayMessage) => {
-        if (!activeChatSpace) {
+        if (!activeSessionDiscussion) {
             setMessages((prev) => markMessageFailed(prev, message.clientId || message.id));
             return Promise.resolve({ queued: false as const, attempts: 0 });
         }
@@ -283,12 +283,12 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         return queueOrSend({
             message,
             payload: toSocketPayload(message, {
-                roomId: activeChatSpace.id,
+                roomId: activeSessionDiscussion.id,
                 courseId: course.id,
                 groupId: group.id,
             }),
         });
-    }, [activeChatSpace, course.id, group.id, queueOrSend]);
+    }, [activeSessionDiscussion, course.id, group.id, queueOrSend]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -326,9 +326,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     }, []);
 
     const handleTyping = () => {
-        if (!isTyping && activeChatSpace) {
+        if (!isTyping && activeSessionDiscussion) {
             setIsTyping(true);
-            const roomId = activeChatSpace.id;
+            const roomId = activeSessionDiscussion.id;
             socketRef.current?.emit('typing', { roomId, isTyping: true });
         }
 
@@ -338,8 +338,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false);
-            if (activeChatSpace) {
-                const roomId = activeChatSpace.id;
+            if (activeSessionDiscussion) {
+                const roomId = activeSessionDiscussion.id;
                 socketRef.current?.emit('typing', { roomId, isTyping: false });
             }
         }, 2000);
@@ -347,9 +347,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
     // Stop typing when input loses focus
     const handleInputBlur = () => {
-        if (isTyping && activeChatSpace) {
+        if (isTyping && activeSessionDiscussion) {
             setIsTyping(false);
-            const roomId = activeChatSpace.id;
+            const roomId = activeSessionDiscussion.id;
             socketRef.current?.emit('typing', { roomId, isTyping: false });
         }
         if (typingTimeoutRef.current) {
@@ -570,10 +570,10 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if ((!newMessage.trim() && pendingFiles.length === 0) || !socketRef.current || !activeChatSpace) return;
+        if ((!newMessage.trim() && pendingFiles.length === 0) || !socketRef.current || !activeSessionDiscussion) return;
 
-        // Use chatSpaceId as roomId
-        const roomId = activeChatSpace.id;
+        // Use sessionDiscussionId as roomId
+        const roomId = activeSessionDiscussion.id;
         
         // Clear typing state first
         if (isTyping) {
@@ -593,7 +593,7 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
         if (pendingFiles.length > 0) {
             setIsUploading(true);
             try {
-                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, activeChatSpace?.id);
+                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, activeSessionDiscussion?.id);
                 attachments = uploaded.map((u, i) => ({
                     id: pendingFiles[i].id,
                     name: u.name,
@@ -643,8 +643,8 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
     };
 
     const handleDelete = (messageId: string) => {
-        if (!socketRef.current || !activeChatSpace) return;
-        const roomId = activeChatSpace.id;
+        if (!socketRef.current || !activeSessionDiscussion) return;
+        const roomId = activeSessionDiscussion.id;
         socketRef.current.emit('delete_message', { roomId, messageId });
     };
 
@@ -790,9 +790,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {activeChatSpace && (
+                                            {activeSessionDiscussion && (
                                                 <Link
-                                                    href={student.goals.create.url({ course: course.id, chatSpace: activeChatSpace.id })}
+                                                    href={student.goals.create.url({ course: course.id, sessionDiscussion: activeSessionDiscussion.id })}
                                                     className="rounded-xl px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
                                                     style={{ 
                                                         background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -1322,9 +1322,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                             <p className="mb-3 text-xs text-brand-muted-dark">
                                 Tetapkan tujuan untuk membantu fokus diskusi Anda.
                             </p>
-                            {activeChatSpace && (
+                            {activeSessionDiscussion && (
                                 <Link
-                                    href={student.goals.create.url({ course: course.id, chatSpace: activeChatSpace.id })}
+                                    href={student.goals.create.url({ course: course.id, sessionDiscussion: activeSessionDiscussion.id })}
                                     className="block w-full rounded-xl px-3 py-2 text-center text-xs font-medium text-white transition-opacity hover:opacity-90"
                                     style={{ 
                                         background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -1491,9 +1491,9 @@ export default function StudentChatIndex({ course, group, goal, hasGoal, socketU
                                         <p className="mb-3 text-xs text-brand-muted-dark">
                                             Tetapkan tujuan untuk membantu fokus diskusi Anda.
                                         </p>
-                                        {activeChatSpace && (
+                                        {activeSessionDiscussion && (
                                             <Link
-                                                href={student.goals.create.url({ course: course.id, chatSpace: activeChatSpace.id })}
+                                                href={student.goals.create.url({ course: course.id, sessionDiscussion: activeSessionDiscussion.id })}
                                                 className="block w-full rounded-xl px-3 py-2 text-center text-xs font-medium text-white transition-opacity hover:opacity-90"
                                                 style={{ 
                                                     background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',

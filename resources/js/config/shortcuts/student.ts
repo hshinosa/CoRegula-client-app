@@ -7,7 +7,7 @@ export const studentShortcuts: KeyboardShortcutMap = {
         { key: 'ctrl+3', description: 'Groups', route: '/student/groups' },
         { key: 'ctrl+4', description: 'Reflections', route: '/student/reflections' },
         { key: 'ctrl+5', description: 'AI Chat', route: '/student/ai-chat' },
-        { key: 'ctrl+6', description: 'Sesi Diskusi', route: '/student/chat-spaces' },
+        { key: 'ctrl+6', description: 'Sesi Diskusi', route: '/student/session-discussions' },
         { key: 'ctrl+7', description: 'Profile', route: '/student/profile' },
     ],
     modals: [

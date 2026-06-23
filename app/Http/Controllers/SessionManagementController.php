@@ -55,7 +55,7 @@ class SessionManagementController extends Controller
             'scheduled_at' => 'nullable|date|after:now',
             'auto_close_timeout_minutes' => 'nullable|integer|min:1',
             'template_id' => 'nullable|string',
-            'chat_space_id' => 'nullable|string',
+            'session_discussion_id' => 'nullable|string',
         ]);
 
         try {

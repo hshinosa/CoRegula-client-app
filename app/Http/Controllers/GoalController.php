@@ -13,28 +13,28 @@ class GoalController extends Controller
 {
 
     /**
-     * Show Goal Creation Page for a specific Chat Space
+     * Show Goal Creation Page for a specific Sesi Diskusi
      */
-    public function create(string $course, string $chatSpace): Response|\Illuminate\Http\RedirectResponse
+    public function create(string $course, string $sessionDiscussion): Response|\Illuminate\Http\RedirectResponse
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
             $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-group");
-            $chatSpaceResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$chatSpace}");
+            $sessionDiscussionResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/session-discussions/{$sessionDiscussion}");
 
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
-            $chatSpaceData = $chatSpaceResponse->successful() ? $chatSpaceResponse->json('data') : null;
+            $sessionDiscussionData = $sessionDiscussionResponse->successful() ? $sessionDiscussionResponse->json('data') : null;
         } catch (ConnectionException $e) {
             Log::error('Failed to fetch goal creation data', ['error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceData = null;
+            $sessionDiscussionData = null;
         } catch (RequestException $e) {
             Log::error('Failed to fetch goal creation data', ['error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceData = null;
+            $sessionDiscussionData = null;
         }
 
         if (!$courseData) {
@@ -42,28 +42,28 @@ class GoalController extends Controller
         }
 
         if (
-            $chatSpaceData
-            && empty($chatSpaceData['isClosed'])
-            && ! empty($chatSpaceData['weekId'])
-            && empty($chatSpaceData['hasPreReadCompleted'])
+            $sessionDiscussionData
+            && empty($sessionDiscussionData['isClosed'])
+            && ! empty($sessionDiscussionData['weekId'])
+            && empty($sessionDiscussionData['hasPreReadCompleted'])
         ) {
-            return redirect()->route('student.chat-spaces.pre-read.show', [
+            return redirect()->route('student.session-discussions.pre-read.show', [
                 'course' => $course,
-                'chatSpace' => $chatSpace,
+                'sessionDiscussion' => $sessionDiscussion,
             ]);
         }
 
-        // If chat space already has a shared goal (myGoal), redirect to chat spaces list
+        // If sesi diskusi already has a shared goal (myGoal), redirect to sesi diskusis list
         // This means another group member already set the goal for everyone
-        if ($chatSpaceData && isset($chatSpaceData['myGoal']) && $chatSpaceData['myGoal']) {
-            return redirect()->route('student.courses.chat-spaces', ['course' => $course])
+        if ($sessionDiscussionData && isset($sessionDiscussionData['myGoal']) && $sessionDiscussionData['myGoal']) {
+            return redirect()->route('student.courses.session-discussions', ['course' => $course])
                 ->with('info', 'Goal sudah ditetapkan oleh anggota grup lain. Silakan masuk ke sesi diskusi.');
         }
 
         return Inertia::render('student/goals/create', [
             'course' => $courseData,
             'group' => $group,
-            'chatSpace' => $chatSpaceData,
+            'sessionDiscussion' => $sessionDiscussionData,
         ]);
     }
 
@@ -73,7 +73,7 @@ class GoalController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'chat_space_id' => 'required|string',
+            'session_discussion_id' => 'required|string',
             'content' => 'required|string|min:20',
         ]);
 
@@ -117,13 +117,13 @@ class GoalController extends Controller
         }
 
         try {
-            // Fetch week context from local MySQL if chat_space has weekId
+            // Fetch week context from local MySQL if session_discussion has weekId
             $weekContext = null;
             try {
-                $chatSpaceResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$validated['chat_space_id']}");
-                if ($chatSpaceResponse->successful()) {
-                    $chatSpaceData = $chatSpaceResponse->json('data');
-                    $weekId = $chatSpaceData['weekId'] ?? null;
+                $sessionDiscussionResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/session-discussions/{$validated['session_discussion_id']}");
+                if ($sessionDiscussionResponse->successful()) {
+                    $sessionDiscussionData = $sessionDiscussionResponse->json('data');
+                    $weekId = $sessionDiscussionData['weekId'] ?? null;
                     
                     if ($weekId) {
                         $week = \App\Models\CourseWeek::with('materials')->find($weekId);
@@ -141,7 +141,7 @@ class GoalController extends Controller
             }
 
             $response = $this->apiRequest()->post($this->apiUrl() . '/api/goals', [
-                'chat_space_id' => $validated['chat_space_id'],
+                'session_discussion_id' => $validated['session_discussion_id'],
                 'content' => $validated['content'],
                 'week_context' => $weekContext,
             ]);

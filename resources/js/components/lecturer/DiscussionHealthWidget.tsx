@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { MessageSquare, TrendingUp, Users } from 'lucide-react';
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     courseId: string;
@@ -17,15 +17,15 @@ interface ChatSpace {
 }
 
 export const DiscussionHealthWidget: React.FC = () => {
-    const [chatSpaces, setChatSpaces] = useState<ChatSpace[]>([]);
+    const [sessionDiscussions, setSessionDiscussions] = useState<SessionDiscussion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchChatSpaces();
+        fetchSessionDiscussions();
     }, []);
 
-    const fetchChatSpaces = async () => {
+    const fetchSessionDiscussions = async () => {
         try {
             setIsLoading(true);
             const response = await fetch('/api/lecturer/discussion-health', {
@@ -41,7 +41,7 @@ export const DiscussionHealthWidget: React.FC = () => {
             }
 
             const data = await response.json();
-            setChatSpaces(data.chatSpaces || []);
+            setSessionDiscussions(data.sessionDiscussions || []);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
         } finally {
@@ -90,14 +90,14 @@ export const DiscussionHealthWidget: React.FC = () => {
                     </div>
                     <h3 className="text-lg font-semibold text-brand-dark">Kesehatan Diskusi</h3>
                 </div>
-                {chatSpaces.length > 0 && (
+                {sessionDiscussions.length > 0 && (
                     <span className="text-sm text-gray-600">
-                        {chatSpaces.length} diskusi aktif
+                        {sessionDiscussions.length} diskusi aktif
                     </span>
                 )}
             </div>
 
-            {chatSpaces.length === 0 ? (
+            {sessionDiscussions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 py-12">
                     <MessageSquare className="h-12 w-12 text-gray-600" />
                     <p className="mt-4 text-sm font-medium text-gray-600">Tidak ada diskusi aktif</p>
@@ -105,7 +105,7 @@ export const DiscussionHealthWidget: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {chatSpaces.map((space) => {
+                    {sessionDiscussions.map((space) => {
                         const healthScore = space.healthScore ?? 0;
                         return (
                             <Link

@@ -15,7 +15,7 @@ import { InputLabel } from '@/components/ui/input-label';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { toast } from '@/components/ui/toaster';
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
@@ -34,7 +34,7 @@ interface GroupWithDetails {
     members?: User[];
     members_count?: number;
     creator?: User | null;
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
     goalsCount?: number;
 }
 
@@ -42,7 +42,7 @@ interface Props {
     course: Course;
     myGroup: GroupWithDetails | null;
     availableGroups: GroupWithDetails[];
-    sessions: ChatSpace[];
+    sessions: SessionDiscussion[];
 }
 
 export default function StudentCourseShow({ course, myGroup, availableGroups, sessions }: Props) {
@@ -133,7 +133,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
     const handleCreateSession = (e: FormEvent) => {
         e.preventDefault();
         if (!myGroup) return;
-        createSessionForm.post(student.groups.chatSpaces.store.url({ group: myGroup.id }), {
+        createSessionForm.post(student.groups.sessionDiscussions.store.url({ group: myGroup.id }), {
             onSuccess: () => {
                 createSessionForm.reset();
                 setShowCreateSessionModal(false);

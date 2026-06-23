@@ -19,16 +19,16 @@ class StudentSessionMaterialsController extends Controller
         private readonly WeekMaterialAccessService $access
     ) {}
 
-    public function indexByCourse(string $course, string $chatSpace): JsonResponse
+    public function indexByCourse(string $course, string $sessionDiscussion): JsonResponse
     {
-        return $this->materialsPayload($course, $chatSpace, null);
+        return $this->materialsPayload($course, $sessionDiscussion, null);
     }
 
-    public function index(string $group, string $chatSpace): JsonResponse
+    public function index(string $group, string $sessionDiscussion): JsonResponse
     {
-        $chat = $this->fetchChatSpace($chatSpace);
+        $chat = $this->fetchSessionDiscussion($sessionDiscussion);
         if (! $chat) {
-            return response()->json(['message' => 'Chat space not found'], 404);
+            return response()->json(['message' => 'Sesi diskusi tidak ditemukan'], 404);
         }
 
         if (($chat['groupId'] ?? null) !== $group) {
@@ -40,14 +40,14 @@ class StudentSessionMaterialsController extends Controller
             return response()->json(['message' => 'Course not found for group'], 404);
         }
 
-        return $this->materialsPayload($courseId, $chatSpace, $group);
+        return $this->materialsPayload($courseId, $sessionDiscussion, $group);
     }
 
-    private function materialsPayload(string $course, string $chatSpace, ?string $expectedGroupId): JsonResponse
+    private function materialsPayload(string $course, string $sessionDiscussion, ?string $expectedGroupId): JsonResponse
     {
-        $chat = $this->fetchChatSpace($chatSpace);
+        $chat = $this->fetchSessionDiscussion($sessionDiscussion);
         if (! $chat) {
-            return response()->json(['message' => 'Chat space not found'], 404);
+            return response()->json(['message' => 'Sesi diskusi tidak ditemukan'], 404);
         }
 
         if ($expectedGroupId !== null && ($chat['groupId'] ?? null) !== $expectedGroupId) {
@@ -116,14 +116,14 @@ class StudentSessionMaterialsController extends Controller
 
     public function stream(Request $request, string $course, string $materialId): StreamedResponse|JsonResponse
     {
-        $chatSpaceId = $request->query('chatSpace');
-        if (! is_string($chatSpaceId) || $chatSpaceId === '') {
-            return response()->json(['message' => 'Parameter chatSpace wajib.'], 422);
+        $sessionDiscussionId = $request->query('sessionDiscussion');
+        if (! is_string($sessionDiscussionId) || $sessionDiscussionId === '') {
+            return response()->json(['message' => 'Parameter sessionDiscussion wajib.'], 422);
         }
 
-        $chat = $this->fetchChatSpace($chatSpaceId);
+        $chat = $this->fetchSessionDiscussion($sessionDiscussionId);
         if (! $chat) {
-            return response()->json(['message' => 'Chat space not found'], 404);
+            return response()->json(['message' => 'Sesi diskusi tidak ditemukan'], 404);
         }
 
         $weekId = $chat['weekId'] ?? null;
@@ -155,17 +155,17 @@ class StudentSessionMaterialsController extends Controller
         );
     }
 
-    private function fetchChatSpace(string $chatSpaceId): ?array
+    private function fetchSessionDiscussion(string $sessionDiscussionId): ?array
     {
         try {
-            $response = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$chatSpaceId}");
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/groups/session-discussions/{$sessionDiscussionId}");
             if (! $response->successful()) {
                 return null;
             }
 
             return $response->json('data');
         } catch (ConnectionException|RequestException $e) {
-            Log::error('fetchChatSpace failed', ['error' => $e->getMessage()]);
+            Log::error('fetchSessionDiscussion failed', ['error' => $e->getMessage()]);
 
             return null;
         }

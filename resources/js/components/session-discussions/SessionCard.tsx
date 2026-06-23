@@ -4,7 +4,7 @@ import { Lock, MessageCircle, MessageSquare, Pencil } from 'lucide-react';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 import { ActivityPreview } from './ActivityPreview';
 
-interface ChatSpaceGoal {
+interface SessionDiscussionGoal {
     id: string;
     content: string;
     isValidated: boolean;
@@ -12,7 +12,7 @@ interface ChatSpaceGoal {
     createdAt: string;
 }
 
-export interface ChatSpaceItem {
+export interface SessionDiscussionItem {
     id: string;
     name: string;
     description?: string;
@@ -22,7 +22,7 @@ export interface ChatSpaceItem {
     hasPreReadCompleted?: boolean;
     isClosed?: boolean;
     closedAt?: string;
-    myGoal?: ChatSpaceGoal | null;
+    myGoal?: SessionDiscussionGoal | null;
     createdAt?: string;
     lastMessage?: string | null;
     lastMessageAt?: string | null;
@@ -31,7 +31,7 @@ export interface ChatSpaceItem {
     status?: 'Aktif' | 'Tidak aktif';
 }
 
-function isClosed(space: ChatSpaceItem): boolean {
+function isClosed(space: SessionDiscussionItem): boolean {
     return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
 }
 
@@ -47,13 +47,13 @@ function formatDate(dateString?: string): string {
 }
 
 interface SpaceCardProps {
-    space: ChatSpaceItem;
+    space: SessionDiscussionItem;
     courseId: string;
-    getChatSpaceUrl: (courseId: string, space: ChatSpaceItem) => string;
+    getSessionDiscussionUrl: (courseId: string, space: SessionDiscussionItem) => string;
     index?: number;
 }
 
-export function SpaceCard({ space, courseId, getChatSpaceUrl, index = 0 }: SpaceCardProps) {
+export function SpaceCard({ space, courseId, getSessionDiscussionUrl, index = 0 }: SpaceCardProps) {
     const closed = isClosed(space);
     const dateSource = closed ? space.closedAt : space.createdAt;
     const formattedDate = formatDate(dateSource);
@@ -66,7 +66,7 @@ export function SpaceCard({ space, courseId, getChatSpaceUrl, index = 0 }: Space
             transition={{ delay: index * 0.05 }}
         >
             <Link
-                href={getChatSpaceUrl(courseId, space)}
+                href={getSessionDiscussionUrl(courseId, space)}
                 className="group block"
             >
                 <LiquidGlassCard

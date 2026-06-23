@@ -51,8 +51,8 @@ interface CourseGroup {
     name: string;
     memberCount?: number;
     member_count?: number;
-    chatSpaceCount?: number;
-    chat_space_count?: number;
+    sessionDiscussionCount?: number;
+    session_discussion_count?: number;
 }
 
 interface CourseItem {
@@ -2034,7 +2034,7 @@ background: 'var(--dm-accent-bg)',
                                                         Members: {group.memberCount ?? group.member_count ?? 0}
                                                     </span>
                                                     <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                                                        Sesi Diskusi: {group.chatSpaceCount ?? group.chat_space_count ?? 0}
+                                                        Sesi Diskusi: {group.sessionDiscussionCount ?? group.session_discussion_count ?? 0}
                                                     </span>
                                                 </div>
                                             </div>

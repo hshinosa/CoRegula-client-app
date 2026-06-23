@@ -1,6 +1,6 @@
 /**
  * @deprecated This page has been consolidated into the unified course detail page.
- * The route `/courses/{course}/chat-spaces` now redirects to `/courses/{course}`.
+ * The route `/courses/{course}/session-discussions` now redirects to `/courses/{course}`.
  * See: resources/js/pages/student/courses/show.tsx
  */
 import { Head, useForm } from '@inertiajs/react';
@@ -20,15 +20,15 @@ import { Skeleton } from '@/components/ui/skeletons';
 
 import { useSpaceFilters } from '@/hooks/useSpaceFilters';
 import { toast } from '@/components/ui/toaster';
-import { SearchBar } from '@/components/chat-spaces/SearchBar';
-import { SortDropdown } from '@/components/chat-spaces/SortDropdown';
-import { SpaceCard } from '@/components/chat-spaces/SpaceCard';
-import { EmptyState } from '@/components/chat-spaces/EmptyState';
-import { Pagination } from '@/components/chat-spaces/Pagination';
+import { SearchBar } from '@/components/session-discussions/SearchBar';
+import { SortDropdown } from '@/components/session-discussions/SortDropdown';
+import { SpaceCard } from '@/components/session-discussions/SessionCard';
+import { EmptyState } from '@/components/session-discussions/EmptyState';
+import { Pagination } from '@/components/session-discussions/Pagination';
 
 import type { SpaceType, SpaceStatus } from '@/hooks/useSpaceFilters';
 
-interface ChatSpaceGoal {
+interface SessionDiscussionGoal {
     id: string;
     content: string;
     isValidated: boolean;
@@ -36,7 +36,7 @@ interface ChatSpaceGoal {
     createdAt: string;
 }
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
@@ -46,7 +46,7 @@ interface ChatSpace {
     hasPreReadCompleted?: boolean;
     isClosed?: boolean;
     closedAt?: string;
-    myGoal?: ChatSpaceGoal | null;
+    myGoal?: SessionDiscussionGoal | null;
     createdAt?: string;
     lastMessage?: string | null;
     lastMessageAt?: string | null;
@@ -55,22 +55,22 @@ interface ChatSpace {
     status?: SpaceStatus;
 }
 
-const isClosedChatSpace = (space: ChatSpace) => {
+const isClosedSessionDiscussion = (space: SessionDiscussion) => {
     return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
 };
 
-const getChatSpaceUrl = (courseId: string, chatSpace: ChatSpace): string => {
-    const closed = isClosedChatSpace(chatSpace);
+const getSessionDiscussionUrl = (courseId: string, sessionDiscussion: SessionDiscussion): string => {
+    const closed = isClosedSessionDiscussion(sessionDiscussion);
     if (closed) {
-        return chatRoom.url({ course: courseId, chatSpace: chatSpace.id });
+        return chatRoom.url({ course: courseId, sessionDiscussion: sessionDiscussion.id });
     }
-    if (chatSpace.myGoal) {
-        return chatRoom.url({ course: courseId, chatSpace: chatSpace.id });
+    if (sessionDiscussion.myGoal) {
+        return chatRoom.url({ course: courseId, sessionDiscussion: sessionDiscussion.id });
     }
-    if (!chatSpace.hasPreReadCompleted && (chatSpace.weekIndex != null || chatSpace.weekTitle)) {
-        return `/student/courses/${courseId}/chat-spaces/${chatSpace.id}/pre-read`;
+    if (!sessionDiscussion.hasPreReadCompleted && (sessionDiscussion.weekIndex != null || sessionDiscussion.weekTitle)) {
+        return `/student/courses/${courseId}/session-discussions/${sessionDiscussion.id}/pre-read`;
     }
-    return student.goals.create.url({ course: courseId, chatSpace: chatSpace.id });
+    return student.goals.create.url({ course: courseId, sessionDiscussion: sessionDiscussion.id });
 };
 
 interface GroupMember {
@@ -84,11 +84,11 @@ interface Group {
     name: string;
     joinCode: string;
     members?: GroupMember[];
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
 }
 
-interface ChatSpaceMeta {
-    data?: ChatSpace[];
+interface SessionDiscussionMeta {
+    data?: SessionDiscussion[];
     pagination?: {
         total: number;
         per_page: number;
@@ -100,13 +100,13 @@ interface ChatSpaceMeta {
 interface Props {
     course: Course;
     group: Group;
-    chatSpaceMeta?: ChatSpaceMeta | null;
+    sessionDiscussionMeta?: SessionDiscussionMeta | null;
 }
 
-export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props) {
+export default function SessionDiscussionsIndex({ course, group, sessionDiscussionMeta }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const navItems = useStudentNav('chat-spaces', { courseId: course.id });
+    const navItems = useStudentNav('session-discussions', { courseId: course.id });
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
@@ -144,23 +144,23 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
         hasActiveFilters,
     } = useSpaceFilters();
 
-    const allChatSpaces: ChatSpace[] = group.chatSpaces || [];
-    const hasServerData = !!chatSpaceMeta?.data;
+    const allSessionDiscussions: SessionDiscussion[] = group.sessionDiscussions || [];
+    const hasServerData = !!sessionDiscussionMeta?.data;
 
     const { filteredSpaces } = useMemo(() => {
         if (hasServerData) {
-            const serverSpaces = chatSpaceMeta!.data!;
+            const serverSpaces = sessionDiscussionMeta!.data!;
             const tCounts: Record<SpaceType, number> = { Akademik: 0, Proyek: 0, Umum: 0 };
             const sCounts: Record<SpaceStatus, number> = { Aktif: 0, 'Tidak aktif': 0 };
-            allChatSpaces.forEach((s) => {
+            allSessionDiscussions.forEach((s) => {
                 if (s.type) tCounts[s.type] = (tCounts[s.type] || 0) + 1;
-                const isActive = !isClosedChatSpace(s);
+                const isActive = !isClosedSessionDiscussion(s);
                 sCounts[isActive ? 'Aktif' : 'Tidak aktif'] += 1;
             });
             return { filteredSpaces: serverSpaces, typeCounts: tCounts, statusCounts: sCounts };
         }
 
-        let spaces = [...allChatSpaces];
+        let spaces = [...allSessionDiscussions];
 
         if (filters.q) {
             const q = filters.q.toLowerCase();
@@ -177,13 +177,13 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
 
         if (filters.statuses.length > 0) {
             spaces = spaces.filter((s) => {
-                const isActive = !isClosedChatSpace(s);
+                const isActive = !isClosedSessionDiscussion(s);
                 const spaceStatus: SpaceStatus = isActive ? 'Aktif' : 'Tidak aktif';
                 return filters.statuses.includes(spaceStatus);
             });
         }
 
-        const sortFns: Record<string, (a: ChatSpace, b: ChatSpace) => number> = {
+        const sortFns: Record<string, (a: SessionDiscussion, b: SessionDiscussion) => number> = {
             'terbaru': (a, b) => {
                 const dateA = a.lastMessageAt || a.createdAt || '';
                 const dateB = b.lastMessageAt || b.createdAt || '';
@@ -197,26 +197,26 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
 
         const tCounts: Record<SpaceType, number> = { Akademik: 0, Proyek: 0, Umum: 0 };
         const sCounts: Record<SpaceStatus, number> = { Aktif: 0, 'Tidak aktif': 0 };
-        allChatSpaces.forEach((s) => {
+        allSessionDiscussions.forEach((s) => {
             if (s.type) tCounts[s.type] = (tCounts[s.type] || 0) + 1;
-            const isActive = !isClosedChatSpace(s);
+            const isActive = !isClosedSessionDiscussion(s);
             sCounts[isActive ? 'Aktif' : 'Tidak aktif'] += 1;
         });
 
         return { filteredSpaces: spaces, typeCounts: tCounts, statusCounts: sCounts };
-    }, [allChatSpaces, filters.q, filters.types, filters.statuses, filters.sort, hasServerData, chatSpaceMeta]);
+    }, [allSessionDiscussions, filters.q, filters.types, filters.statuses, filters.sort, hasServerData, sessionDiscussionMeta]);
 
-    const totalPages = chatSpaceMeta?.pagination?.last_page ?? Math.ceil(filteredSpaces.length / filters.perPage);
-    const totalItems = chatSpaceMeta?.pagination?.total ?? filteredSpaces.length;
-    const currentPage = chatSpaceMeta?.pagination?.current_page ?? filters.page;
-    const paginatedSpaces = chatSpaceMeta?.data ?? filteredSpaces.slice(
+    const totalPages = sessionDiscussionMeta?.pagination?.last_page ?? Math.ceil(filteredSpaces.length / filters.perPage);
+    const totalItems = sessionDiscussionMeta?.pagination?.total ?? filteredSpaces.length;
+    const currentPage = sessionDiscussionMeta?.pagination?.current_page ?? filters.page;
+    const paginatedSpaces = sessionDiscussionMeta?.data ?? filteredSpaces.slice(
         (filters.page - 1) * filters.perPage,
         filters.page * filters.perPage
     );
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(student.groups.chatSpaces.store.url({ group: group.id }), {
+        post(student.groups.sessionDiscussions.store.url({ group: group.id }), {
             onSuccess: () => {
                 reset();
                 setShowCreateModal(false);
@@ -224,7 +224,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
         });
     };
 
-    const showEmptyState = allChatSpaces.length === 0 && !filters.q && !hasActiveFilters;
+    const showEmptyState = allSessionDiscussions.length === 0 && !filters.q && !hasActiveFilters;
     const showFilterEmpty = filteredSpaces.length === 0 && hasActiveFilters && !filters.q;
     const showSearchEmpty = filteredSpaces.length === 0 && filters.q.length > 0;
 
@@ -286,7 +286,7 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                     </div>
                 </LiquidGlassCard>
 
-                {allChatSpaces.length > 0 && (
+                {allSessionDiscussions.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -317,12 +317,12 @@ export default function ChatSpacesIndex({ course, group, chatSpaceMeta }: Props)
                         transition={{ delay: 0.1 }}
                     >
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            {paginatedSpaces.map((chatSpace, index) => (
+                            {paginatedSpaces.map((sessionDiscussion, index) => (
                                 <SpaceCard
-                                    key={chatSpace.id}
-                                    space={chatSpace}
+                                    key={sessionDiscussion.id}
+                                    space={sessionDiscussion}
                                     courseId={course.id}
-                                    getChatSpaceUrl={getChatSpaceUrl}
+                                    getSessionDiscussionUrl={getSessionDiscussionUrl}
                                     index={index}
                                 />
                             ))}

@@ -14,21 +14,21 @@ class AssertChatMembership
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $chatSpaceId = $this->resolveChatSpaceId($request);
+        $sessionDiscussionId = $this->resolveSessionDiscussionId($request);
 
-        if ($chatSpaceId === null) {
+        if ($sessionDiscussionId === null) {
             return response()->json([
-                'message' => 'chat_space_id or conversation_id is required',
+                'message' => 'session_discussion_id or conversation_id is required',
             ], 422);
         }
 
         try {
-            $encodedChatSpaceId = rawurlencode($chatSpaceId);
+            $encodedSessionDiscussionId = rawurlencode($sessionDiscussionId);
 
             $response = Http::withToken((string) session('jwt'))
                 ->timeout(10)
                 ->connectTimeout(5)
-                ->get(config('services.api.base_url', 'http://localhost:3000') . "/api/groups/chat-spaces/{$encodedChatSpaceId}");
+                ->get(config('services.api.base_url', 'http://localhost:3000') . "/api/groups/session-discussions/{$encodedSessionDiscussionId}");
 
             if ($response->status() === 401) {
                 Session::forget(['jwt', 'refresh_token', 'user']);
@@ -38,7 +38,7 @@ class AssertChatMembership
 
             if ($response->status() === 403) {
                 Log::warning('Unauthorized chat REST access attempt', [
-                    'chat_space_id' => $chatSpaceId,
+                    'session_discussion_id' => $sessionDiscussionId,
                     'user_id' => session('user.id'),
                     'path' => $request->path(),
                 ]);
@@ -47,13 +47,13 @@ class AssertChatMembership
             }
 
             if (! $response->successful()) {
-                return response()->json(['message' => 'Chat space not found'], $response->status());
+                return response()->json(['message' => 'Sesi diskusi tidak ditemukan'], $response->status());
             }
 
-            $request->attributes->set('chat_space', $response->json('data'));
+            $request->attributes->set('session_discussion', $response->json('data'));
         } catch (Throwable $e) {
             Log::error('Chat membership assertion failed', [
-                'chat_space_id' => $chatSpaceId,
+                'session_discussion_id' => $sessionDiscussionId,
                 'user_id' => session('user.id'),
                 'path' => $request->path(),
                 'error' => $e->getMessage(),
@@ -65,14 +65,14 @@ class AssertChatMembership
         return $next($request);
     }
 
-    private function resolveChatSpaceId(Request $request): ?string
+    private function resolveSessionDiscussionId(Request $request): ?string
     {
-        $value = $request->route('chatSpace')
-            ?? $request->input('chat_space_id')
-            ?? $request->input('chatSpaceId')
+        $value = $request->route('sessionDiscussion')
+            ?? $request->input('session_discussion_id')
+            ?? $request->input('sessionDiscussionId')
             ?? $request->input('conversation_id')
-            ?? $request->query('chat_space_id')
-            ?? $request->query('chatSpaceId')
+            ?? $request->query('session_discussion_id')
+            ?? $request->query('sessionDiscussionId')
             ?? $request->query('conversation_id');
 
         return is_string($value) && $value !== '' ? $value : null;

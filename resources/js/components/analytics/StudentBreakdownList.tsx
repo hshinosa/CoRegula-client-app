@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Users } from 'lucide-react';
-import { Pagination } from '@/components/chat-spaces/Pagination';
+import { Pagination } from '@/components/session-discussions/Pagination';
 
 export interface StudentMetric {
     id: string;

@@ -25,7 +25,7 @@ interface UseSocketRoomOptions {
     jwtToken: string;
     courseId: string;
     groupId: string;
-    chatSpaceId: string;
+    sessionDiscussionId: string;
     socketUrl?: string;
     onSessionClosed?: (payload: { closedAt?: string; message?: string }) => void;
     onSessionReopened?: () => void;
@@ -37,8 +37,8 @@ interface UseSocketRoomOptions {
     onMessagePinned?: (pinnedMessage: { messageId: string; conversationId: string; content: string; sender_name: string; pinned_at: string }) => void;
     onMessageUnpinned?: (messageId: string) => void;
     onMessageClassified?: (classifications: Array<{ messageId: string; isRelevant: boolean }>) => void;
-    onAIChunk?: (data: { chatSpaceId: string; content?: string; replace?: boolean; timestamp: string }) => void;
-    onAIDone?: (data: { chatSpaceId: string; citations?: unknown; error?: boolean; timestamp: string }) => void;
+    onAIChunk?: (data: { sessionDiscussionId: string; content?: string; replace?: boolean; timestamp: string }) => void;
+    onAIDone?: (data: { sessionDiscussionId: string; citations?: unknown; error?: boolean; timestamp: string }) => void;
 }
 
 interface UseSocketRoomReturn {
@@ -51,7 +51,7 @@ interface UseSocketRoomReturn {
     discussionQuality: DiscussionQuality | null;
     showQualityFeedback: boolean;
     hasMoreMessages: boolean;
-    loadMoreMessages: (chatSpaceId: string, beforeMessageId: string) => void;
+    loadMoreMessages: (sessionDiscussionId: string, beforeMessageId: string) => void;
     emitEditMessage: (messageId: string, content: string, oldContent: string) => void;
     emitDeleteMessage: (messageId: string) => void;
     emitPinMessage: (messageId: string, content: string, senderName: string) => void;
@@ -62,7 +62,7 @@ export function useSocketRoom({
     jwtToken,
     courseId,
     groupId,
-    chatSpaceId,
+    sessionDiscussionId,
     socketUrl,
     onSessionClosed,
     onSessionReopened,
@@ -116,7 +116,7 @@ export function useSocketRoom({
 
     useEffect(() => {
         if (!jwtToken) return;
-        if (!courseId || !groupId || !chatSpaceId) {
+        if (!courseId || !groupId || !sessionDiscussionId) {
             setConnectionError('Informasi mata kuliah, grup, atau sesi diskusi tidak lengkap');
             return;
         }
@@ -158,7 +158,7 @@ export function useSocketRoom({
             setConnectionError(null);
             setIsConnected(true);
             setConnectionStatus('connected');
-            socketRef.current?.emit('join_room', { courseId, groupId, chatSpaceId });
+            socketRef.current?.emit('join_room', { courseId, groupId, sessionDiscussionId });
             setTypingUsers([]);
         });
 
@@ -315,11 +315,11 @@ export function useSocketRoom({
         });
 
         // PERF-AI-01: Streaming AI response chunks
-        socketRef.current.on('ai_chunk', (data: { chatSpaceId: string; content?: string; replace?: boolean; timestamp: string }) => {
+        socketRef.current.on('ai_chunk', (data: { sessionDiscussionId: string; content?: string; replace?: boolean; timestamp: string }) => {
             onAIChunkRef.current?.(data);
         });
 
-        socketRef.current.on('ai_done', (data: { chatSpaceId: string; citations?: unknown; error?: boolean; timestamp: string }) => {
+        socketRef.current.on('ai_done', (data: { sessionDiscussionId: string; citations?: unknown; error?: boolean; timestamp: string }) => {
             onAIDoneRef.current?.(data);
         });
 
@@ -347,14 +347,14 @@ export function useSocketRoom({
             socketRef.current?.off('message_classified');
             socketRef.current?.off('ai_chunk');
             socketRef.current?.off('ai_done');
-            socketRef.current?.emit('leave_room', chatSpaceId);
+            socketRef.current?.emit('leave_room', sessionDiscussionId);
             socketRef.current?.disconnect();
         };
-    }, [jwtToken, courseId, groupId, chatSpaceId, socketUrl]);
+    }, [jwtToken, courseId, groupId, sessionDiscussionId, socketUrl]);
 
-    const loadMoreMessages = useCallback((chatSpaceIdParam: string, beforeMessageId: string) => {
+    const loadMoreMessages = useCallback((sessionDiscussionIdParam: string, beforeMessageId: string) => {
         socketRef.current?.emit('load_more_messages', {
-            chatSpaceId: chatSpaceIdParam,
+            sessionDiscussionId: sessionDiscussionIdParam,
             beforeMessageId,
         });
     }, []);
@@ -364,32 +364,32 @@ export function useSocketRoom({
             messageId,
             content,
             oldContent,
-            chatSpaceId,
+            sessionDiscussionId,
         });
-    }, [chatSpaceId]);
+    }, [sessionDiscussionId]);
 
     const emitDeleteMessage = useCallback((messageId: string) => {
         socketRef.current?.emit('delete_message', {
             messageId,
-            chatSpaceId,
+            sessionDiscussionId,
         });
-    }, [chatSpaceId]);
+    }, [sessionDiscussionId]);
 
     const emitPinMessage = useCallback((messageId: string, content: string, senderName: string) => {
         socketRef.current?.emit('pin_message', {
             messageId,
             content,
             senderName,
-            chatSpaceId,
+            sessionDiscussionId,
         });
-    }, [chatSpaceId]);
+    }, [sessionDiscussionId]);
 
     const emitUnpinMessage = useCallback((messageId: string) => {
         socketRef.current?.emit('unpin_message', {
             messageId,
-            chatSpaceId,
+            sessionDiscussionId,
         });
-    }, [chatSpaceId]);
+    }, [sessionDiscussionId]);
 
     return {
         socketRef,

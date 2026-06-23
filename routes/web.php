@@ -255,7 +255,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::delete('/courses/{course}/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
         Route::post('/courses/{course}/groups/{group}/members', [GroupController::class, 'addMembers'])
             ->name('groups.members.store');
-        Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
+        Route::post('/groups/{group}/session-discussions', [GroupController::class, 'storeSessionDiscussion'])->name('groups.session-discussions.store');
 
         // Analytics Dashboard
         Route::get('/analytics', [AnalyticsController::class, 'overview'])->name('analytics.overview');
@@ -364,7 +364,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/courses/{course}/groups', [GroupController::class, 'store'])->name('groups.store');
         Route::post('/groups/join', [GroupController::class, 'join'])->name('groups.join');
         Route::post('/groups/{group}/invite', [GroupController::class, 'inviteMembers'])->name('groups.invite');
-        Route::post('/groups/{group}/chat-spaces', [GroupController::class, 'storeChatSpace'])->name('groups.chat-spaces.store');
+        Route::post('/groups/{group}/session-discussions', [GroupController::class, 'storeSessionDiscussion'])->name('groups.session-discussions.store');
 
         // Group Detail Page
         Route::get('/groups/{group}', [GroupController::class, 'showStudent'])->name('groups.show');
@@ -384,40 +384,40 @@ Route::middleware('auth.jwt')->group(function () {
         // Leave Group
         Route::post('/groups/{group}/leave', [GroupMemberManagementController::class, 'leave'])->name('groups.leave');
 
-        Route::get('/courses/{course}/chat-spaces/{chatSpace}/pre-read', [StudentPreReadController::class, 'show'])
-            ->name('chat-spaces.pre-read.show');
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/pre-read/complete', [StudentPreReadController::class, 'complete'])
-            ->name('chat-spaces.pre-read.complete');
+        Route::get('/courses/{course}/session-discussions/{sessionDiscussion}/pre-read', [StudentPreReadController::class, 'show'])
+            ->name('session-discussions.pre-read.show');
+        Route::post('/courses/{course}/session-discussions/{sessionDiscussion}/pre-read/complete', [StudentPreReadController::class, 'complete'])
+            ->name('session-discussions.pre-read.complete');
 
-        // Goals - now per chat space
-        Route::get('/courses/{course}/chat-spaces/{chatSpace}/goal', [GoalController::class, 'create'])->name('goals.create');
+        // Goals - now per sesi diskusi
+        Route::get('/courses/{course}/session-discussions/{sessionDiscussion}/goal', [GoalController::class, 'create'])->name('goals.create');
         Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
 
-        // Chat Spaces (redirect to unified course detail page)
+        // Sesi Diskusi (redirect to unified course detail page)
         Route::get('/courses/{course}/weeks', [StudentCourseWeeksController::class, 'index'])->name('courses.weeks.index');
-        Route::get('/courses/{course}/chat-spaces', fn($course) => redirect()->route('student.courses.show', $course))->name('courses.chat-spaces');
+        Route::get('/courses/{course}/session-discussions', fn($course) => redirect()->route('student.courses.show', $course))->name('courses.session-discussions');
 
         Route::get('/courses/{course}/chat', [StudentCourseController::class, 'chat'])->name('courses.chat.index');
-        Route::get('/courses/{course}/chat/{chatSpace}', [StudentCourseController::class, 'chatRoom'])->name('courses.chat.room');
+        Route::get('/courses/{course}/chat/{sessionDiscussion}', [StudentCourseController::class, 'chatRoom'])->name('courses.chat.room');
 
-        Route::get('/courses/{course}/chat-spaces/{chatSpace}/materials', [StudentSessionMaterialsController::class, 'indexByCourse'])
-            ->name('chat-spaces.materials.by-course');
-        Route::get('/groups/{group}/chat-spaces/{chatSpace}/materials', [StudentSessionMaterialsController::class, 'index'])
-            ->name('chat-spaces.materials.index');
+        Route::get('/courses/{course}/session-discussions/{sessionDiscussion}/materials', [StudentSessionMaterialsController::class, 'indexByCourse'])
+            ->name('session-discussions.materials.by-course');
+        Route::get('/groups/{group}/session-discussions/{sessionDiscussion}/materials', [StudentSessionMaterialsController::class, 'index'])
+            ->name('session-discussions.materials.index');
         Route::get('/courses/{course}/materials/{materialId}/stream', [StudentSessionMaterialsController::class, 'stream'])
             ->name('courses.materials.stream');
 
-        // BFF proxy routes for chat-space close/reflection/summary
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/close', [StudentCourseController::class, 'closeSession'])
+        // BFF proxy routes for session-discussion close/reflection/summary
+        Route::post('/courses/{course}/session-discussions/{sessionDiscussion}/close', [StudentCourseController::class, 'closeSession'])
             ->middleware('throttle:10,5')
-            ->name('chat-spaces.close');
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/reflection', [StudentCourseController::class, 'submitReflection'])
+            ->name('session-discussions.close');
+        Route::post('/courses/{course}/session-discussions/{sessionDiscussion}/reflection', [StudentCourseController::class, 'submitReflection'])
             ->middleware('throttle:10,5')
-            ->name('chat-spaces.reflection');
-        Route::get('/courses/{course}/chat-spaces/{chatSpace}/summary', [StudentCourseController::class, 'chatSpaceSummary'])->name('chat-spaces.summary');
-        Route::post('/courses/{course}/chat-spaces/{chatSpace}/regenerate-summary', [StudentCourseController::class, 'regenerateSummary'])
+            ->name('session-discussions.reflection');
+        Route::get('/courses/{course}/session-discussions/{sessionDiscussion}/summary', [StudentCourseController::class, 'sessionDiscussionSummary'])->name('session-discussions.summary');
+        Route::post('/courses/{course}/session-discussions/{sessionDiscussion}/regenerate-summary', [StudentCourseController::class, 'regenerateSummary'])
             ->middleware('throttle:10,5')
-            ->name('chat-spaces.regenerate-summary');
+            ->name('session-discussions.regenerate-summary');
 
         // Reflections
         Route::get('/reflections', [ReflectionController::class, 'index'])->name('reflections.index');

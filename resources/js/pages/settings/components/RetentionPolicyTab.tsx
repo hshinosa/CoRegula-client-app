@@ -15,7 +15,7 @@ const dataTypeLabels: Record<string, string> = {
     USER: 'Pengguna',
     COURSE: 'Kursus',
     GROUP: 'Grup',
-    CHAT_SPACE: 'Ruang Diskusi',
+    SESSION_DISCUSSION: 'Ruang Diskusi',
     KNOWLEDGE_BASE: 'Basis Pengetahuan',
     CHAT_LOG: 'Log Chat',
 };

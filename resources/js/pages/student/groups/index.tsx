@@ -18,7 +18,7 @@ import student from '@/routes/student';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { Skeleton } from '@/components/ui/skeletons';
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
@@ -30,7 +30,7 @@ interface GroupWithDetails {
     name: string;
     joinCode: string;
     members?: User[];
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
     goalsCount?: number;
 }
 

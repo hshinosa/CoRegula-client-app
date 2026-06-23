@@ -215,9 +215,9 @@ class GroupController extends Controller
     }
 
     /**
-     * Create Chat Space in Group
+     * Create Sesi Diskusi in Group
      */
-    public function storeChatSpace(Request $request, string $group)
+    public function storeSessionDiscussion(Request $request, string $group)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50',
@@ -232,16 +232,16 @@ class GroupController extends Controller
                 'description' => $validated['description'] ?? null,
                 'week_id' => $validated['week_id'],
             ];
-            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/chat-spaces", $payload);
+            $response = $this->apiRequest()->post($this->apiUrl() . "/api/groups/{$group}/session-discussions", $payload);
 
             if ($response->successful()) {
                 $chatId = $response->json('data.id');
                 $courseId = $validated['course_id'] ?? null;
                 $role = session('user.role') ?? null;
                 if ($chatId && $courseId && $role === 'student') {
-                    return redirect()->route('student.chat-spaces.pre-read.show', [
+                    return redirect()->route('student.session-discussions.pre-read.show', [
                         'course' => $courseId,
-                        'chatSpace' => $chatId,
+                        'sessionDiscussion' => $chatId,
                     ]);
                 }
 

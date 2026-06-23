@@ -137,7 +137,7 @@ export interface CourseAnalytics {
 
 // ============ Group Types ============
 
-export interface ChatSpace {
+export interface SessionDiscussion {
     id: string;
     group_id: string;
     name: string;
@@ -155,7 +155,7 @@ export interface Group {
     members_count?: number;
     has_goal?: boolean;
     status?: 'green' | 'yellow' | 'red';
-    chat_spaces?: ChatSpace[];
+    session_discussions?: SessionDiscussion[];
     course?: Pick<Course, 'id' | 'name'>;
 }
 
@@ -256,7 +256,7 @@ export interface Reflection {
     content: string;
     title?: string;
     ai_feedback?: string;
-    chatSpace?: ChatSpace;
+    sessionDiscussion?: SessionDiscussion;
     created_at?: string;
     createdAt?: string;
     user?: User;

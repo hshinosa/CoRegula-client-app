@@ -4,24 +4,24 @@ import type { ChatDiscussionSummary, ChatSummaryState } from './types';
 
 export interface UseChatSummaryOptions {
     courseId: string | undefined;
-    chatSpaceId: string | undefined;
+    sessionDiscussionId: string | undefined;
     enabled: boolean;
     initialSummary?: ChatDiscussionSummary | null;
 }
 
 export function useChatSummary({
     courseId,
-    chatSpaceId,
+    sessionDiscussionId,
     enabled,
     initialSummary,
 }: UseChatSummaryOptions): { state: ChatSummaryState; retry: () => Promise<void> } {
     const [state, setState] = useState<ChatSummaryState>(() => {
         if (initialSummary) return { status: 'ready', summary: initialSummary };
-        return enabled && chatSpaceId && courseId ? { status: 'loading' } : { status: 'empty' };
+        return enabled && sessionDiscussionId && courseId ? { status: 'loading' } : { status: 'empty' };
     });
 
     const fetchSummary = useCallback(async () => {
-        if (!chatSpaceId || !courseId) {
+        if (!sessionDiscussionId || !courseId) {
             setState({ status: 'empty' });
             return;
         }
@@ -29,7 +29,7 @@ export function useChatSummary({
         setState({ status: 'loading' });
 
         try {
-            const response = await fetch(`/student/courses/${courseId}/chat-spaces/${chatSpaceId}/summary`, {
+            const response = await fetch(`/student/courses/${courseId}/session-discussions/${sessionDiscussionId}/summary`, {
                 credentials: 'include',
                 headers: { 'Accept': 'application/json' },
             });
@@ -39,7 +39,7 @@ export function useChatSummary({
             }
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data: { summary: string | null; generatedAt?: string | null } = await response.json();
-            const parsed = chatSpaceId ? parseSummaryText(data.summary, chatSpaceId, data.generatedAt) : null;
+            const parsed = sessionDiscussionId ? parseSummaryText(data.summary, sessionDiscussionId, data.generatedAt) : null;
             if (!parsed) {
                 setState({ status: 'empty' });
             } else {
@@ -51,7 +51,7 @@ export function useChatSummary({
                 message: error instanceof Error ? error.message : 'Failed to load summary',
             });
         }
-    }, [courseId, chatSpaceId]);
+    }, [courseId, sessionDiscussionId]);
 
     useEffect(() => {
         if (initialSummary) {
@@ -59,7 +59,7 @@ export function useChatSummary({
             return;
         }
 
-        if (!enabled || !chatSpaceId || !courseId) {
+        if (!enabled || !sessionDiscussionId || !courseId) {
             setState({ status: 'empty' });
             return;
         }
@@ -67,7 +67,7 @@ export function useChatSummary({
         let cancelled = false;
         setState({ status: 'loading' });
 
-        fetch(`/student/courses/${courseId}/chat-spaces/${chatSpaceId}/summary`, {
+        fetch(`/student/courses/${courseId}/session-discussions/${sessionDiscussionId}/summary`, {
             credentials: 'include',
             headers: { 'Accept': 'application/json' },
         })
@@ -78,7 +78,7 @@ export function useChatSummary({
             })
             .then((data: { summary: string | null; generatedAt?: string | null } | null) => {
                 if (cancelled) return;
-                const parsed = data && chatSpaceId ? parseSummaryText(data.summary, chatSpaceId, data.generatedAt) : null;
+                const parsed = data && sessionDiscussionId ? parseSummaryText(data.summary, sessionDiscussionId, data.generatedAt) : null;
                 if (!parsed) {
                     setState({ status: 'empty' });
                 } else {
@@ -96,16 +96,16 @@ export function useChatSummary({
         return () => {
             cancelled = true;
         };
-    }, [courseId, chatSpaceId, enabled, initialSummary]);
+    }, [courseId, sessionDiscussionId, enabled, initialSummary]);
 
     const retry = useCallback(async () => {
-        if (!chatSpaceId || !courseId) return;
+        if (!sessionDiscussionId || !courseId) return;
 
         setState({ status: 'loading' });
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
-            const regenerateResponse = await fetch(`/student/courses/${courseId}/chat-spaces/${chatSpaceId}/regenerate-summary`, {
+            const regenerateResponse = await fetch(`/student/courses/${courseId}/session-discussions/${sessionDiscussionId}/regenerate-summary`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -119,7 +119,7 @@ export function useChatSummary({
             const data = await regenerateResponse.json();
 
             if (data?.data?.success && typeof data.data.summary === 'string') {
-                const summary = parseSummaryText(data.data.summary, chatSpaceId, data.data.generatedAt);
+                const summary = parseSummaryText(data.data.summary, sessionDiscussionId, data.data.generatedAt);
                 if (summary) {
                     setState({ status: 'ready', summary });
                 } else {
@@ -135,7 +135,7 @@ export function useChatSummary({
                 message: error instanceof Error ? error.message : 'Gagal membuat ringkasan',
             });
         }
-    }, [courseId, chatSpaceId]);
+    }, [courseId, sessionDiscussionId]);
 
     return { state, retry };
 }

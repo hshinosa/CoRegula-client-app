@@ -41,7 +41,7 @@ class StudentPreReadGateTest extends TestCase
             'http://localhost:3000/api/courses/course-1/my-group' => Http::response([
                 'data' => ['id' => 'group-1', 'name' => 'G1'],
             ], 200),
-            'http://localhost:3000/api/groups/chat-spaces/chat-1' => Http::response([
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
                 'data' => [
                     'id' => 'chat-1',
                     'name' => 'Diskusi',
@@ -55,12 +55,12 @@ class StudentPreReadGateTest extends TestCase
 
         $response = $this->studentSession()->get(route('student.goals.create', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
 
-        $response->assertRedirect(route('student.chat-spaces.pre-read.show', [
+        $response->assertRedirect(route('student.session-discussions.pre-read.show', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
     }
 
@@ -73,7 +73,7 @@ class StudentPreReadGateTest extends TestCase
             'http://localhost:3000/api/courses/course-1/my-group' => Http::response([
                 'data' => ['id' => 'group-1', 'name' => 'G1'],
             ], 200),
-            'http://localhost:3000/api/groups/chat-spaces/chat-1' => Http::response([
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
                 'data' => [
                     'id' => 'chat-1',
                     'name' => 'Diskusi',
@@ -87,22 +87,22 @@ class StudentPreReadGateTest extends TestCase
 
         $response = $this->studentSession()->get(route('student.courses.chat.room', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
 
-        $response->assertRedirect(route('student.chat-spaces.pre-read.show', [
+        $response->assertRedirect(route('student.session-discussions.pre-read.show', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
     }
 
     public function test_pre_read_complete_proxies_to_core_api(): void
     {
         Http::fake([
-            'http://localhost:3000/api/groups/chat-spaces/chat-1/pre-read/complete' => Http::response([
-                'data' => ['chatSpaceId' => 'chat-1', 'alreadyCompleted' => false],
+            'http://localhost:3000/api/groups/session-discussions/chat-1/pre-read/complete' => Http::response([
+                'data' => ['sessionDiscussionId' => 'chat-1', 'alreadyCompleted' => false],
             ], 200),
-            'http://localhost:3000/api/groups/chat-spaces/chat-1' => Http::response([
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
                 'data' => [
                     'id' => 'chat-1',
                     'hasPreReadCompleted' => true,
@@ -113,19 +113,19 @@ class StudentPreReadGateTest extends TestCase
         ]);
 
         $response = $this->studentSession()
-            ->from(route('student.chat-spaces.pre-read.show', ['course' => 'course-1', 'chatSpace' => 'chat-1']))
-            ->post(route('student.chat-spaces.pre-read.complete', [
+            ->from(route('student.session-discussions.pre-read.show', ['course' => 'course-1', 'sessionDiscussion' => 'chat-1']))
+            ->post(route('student.session-discussions.pre-read.complete', [
                 'course' => 'course-1',
-                'chatSpace' => 'chat-1',
+                'sessionDiscussion' => 'chat-1',
             ]));
 
         $response->assertRedirect(route('student.goals.create', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
 
         Http::assertSent(function ($request) {
-            return $request->url() === 'http://localhost:3000/api/groups/chat-spaces/chat-1/pre-read/complete'
+            return $request->url() === 'http://localhost:3000/api/groups/session-discussions/chat-1/pre-read/complete'
                 && $request->method() === 'POST';
         });
     }

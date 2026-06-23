@@ -203,14 +203,14 @@ class StudentCourseController extends Controller
             $myGroup = $myGroupResponse->successful() ? $myGroupResponse->json('data') : null;
             $availableGroups = $availableGroupsResponse->successful() ? $availableGroupsResponse->json('data', []) : [];
 
-            // Fetch chat spaces (sessions) for student's group
+            // Fetch sesi diskusis (sessions) for student's group
             $sessions = [];
             if ($myGroup && isset($myGroup['id'])) {
-                $chatSpacesResponse = $this->apiRequest()->get(
-                    $this->apiUrl() . "/api/groups/{$myGroup['id']}/chat-spaces"
+                $sessionDiscussionsResponse = $this->apiRequest()->get(
+                    $this->apiUrl() . "/api/groups/{$myGroup['id']}/session-discussions"
                 );
-                $sessions = $chatSpacesResponse->successful() 
-                    ? $chatSpacesResponse->json('data', []) 
+                $sessions = $sessionDiscussionsResponse->successful() 
+                    ? $sessionDiscussionsResponse->json('data', []) 
                     : [];
             }
 
@@ -276,9 +276,9 @@ class StudentCourseController extends Controller
     }
 
     /**
-     * Chat Spaces List Page (select or create chat session)
+     * Sesi Diskusi List Page (select or create chat session)
      */
-    public function chatSpaces(Request $request, string $course): Response
+    public function sessionDiscussions(Request $request, string $course): Response
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
@@ -287,7 +287,7 @@ class StudentCourseController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
 
-            $chatSpaceMeta = null;
+            $sessionDiscussionMeta = null;
             if ($group) {
                 $queryParams = array_filter([
                     'q' => $request->query('q'),
@@ -299,88 +299,88 @@ class StudentCourseController extends Controller
                 ], fn($v) => $v !== null && $v !== '');
 
                 $metaResponse = $this->apiRequest()->get(
-                    $this->apiUrl() . "/api/groups/{$group['id']}/chat-spaces",
+                    $this->apiUrl() . "/api/groups/{$group['id']}/session-discussions",
                     $queryParams
                 );
 
                 if ($metaResponse->successful()) {
-                    $chatSpaceMeta = $metaResponse->json();
+                    $sessionDiscussionMeta = $metaResponse->json();
                 }
             }
         } catch (ConnectionException $e) {
-            Log::error('StudentCourseController: failed to fetch chat spaces data', ['course' => $course, 'error' => $e->getMessage()]);
+            Log::error('StudentCourseController: failed to fetch sesi diskusis data', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceMeta = null;
+            $sessionDiscussionMeta = null;
         } catch (RequestException $e) {
-            Log::error('StudentCourseController: failed to fetch chat spaces data', ['course' => $course, 'error' => $e->getMessage()]);
+            Log::error('StudentCourseController: failed to fetch sesi diskusis data', ['course' => $course, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceMeta = null;
+            $sessionDiscussionMeta = null;
         }
 
         if (!$courseData || !$group) {
             abort(404, 'Course or group not found');
         }
 
-        return Inertia::render('student/chat-spaces/index', [
+        return Inertia::render('student/session-discussions/index', [
             'course' => $courseData,
             'group' => $group,
-            'chatSpaceMeta' => $chatSpaceMeta,
+            'sessionDiscussionMeta' => $sessionDiscussionMeta,
         ]);
     }
 
     /**
-     * Chat Room Page (specific chat space)
+     * Chat Room Page (specific sesi diskusi)
      */
-    public function chatRoom(string $course, string $chatSpace): Response|\Illuminate\Http\RedirectResponse
+    public function chatRoom(string $course, string $sessionDiscussion): Response|\Illuminate\Http\RedirectResponse
     {
         try {
             $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
             $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-group");
-            $chatSpaceResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$chatSpace}");
+            $sessionDiscussionResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/session-discussions/{$sessionDiscussion}");
 
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
-            $chatSpaceData = $chatSpaceResponse->successful() ? $chatSpaceResponse->json('data') : null;
+            $sessionDiscussionData = $sessionDiscussionResponse->successful() ? $sessionDiscussionResponse->json('data') : null;
         } catch (ConnectionException $e) {
-            Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'chatSpace' => $chatSpace, 'error' => $e->getMessage()]);
+            Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceData = null;
+            $sessionDiscussionData = null;
         } catch (RequestException $e) {
-            Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'chatSpace' => $chatSpace, 'error' => $e->getMessage()]);
+            Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion, 'error' => $e->getMessage()]);
             $courseData = null;
             $group = null;
-            $chatSpaceData = null;
+            $sessionDiscussionData = null;
         }
 
-        if (!$courseData || !$group || !$chatSpaceData) {
-            abort(404, 'Course, group, or chat space not found');
+        if (!$courseData || !$group || !$sessionDiscussionData) {
+            abort(404, 'Course, group, or sesi diskusi not found');
         }
 
         if (
-            empty($chatSpaceData['isClosed'])
-            && ! empty($chatSpaceData['weekId'])
-            && empty($chatSpaceData['hasPreReadCompleted'])
+            empty($sessionDiscussionData['isClosed'])
+            && ! empty($sessionDiscussionData['weekId'])
+            && empty($sessionDiscussionData['hasPreReadCompleted'])
         ) {
-            return redirect()->route('student.chat-spaces.pre-read.show', [
+            return redirect()->route('student.session-discussions.pre-read.show', [
                 'course' => $course,
-                'chatSpace' => $chatSpace,
+                'sessionDiscussion' => $sessionDiscussion,
             ]);
         }
 
-        if (empty($chatSpaceData['isClosed']) && empty($chatSpaceData['myGoal'])) {
+        if (empty($sessionDiscussionData['isClosed']) && empty($sessionDiscussionData['myGoal'])) {
             return redirect()->route('student.goals.create', [
                 'course' => $course,
-                'chatSpace' => $chatSpace,
+                'sessionDiscussion' => $sessionDiscussion,
             ]);
         }
 
         return Inertia::render('student/chat/room', [
             'course' => $courseData,
             'group' => $group,
-            'chatSpace' => $chatSpaceData,
+            'sessionDiscussion' => $sessionDiscussionData,
             'socketUrl' => config('services.api.socket_url', 'http://localhost:3000'),
         ]);
     }
@@ -423,31 +423,31 @@ class StudentCourseController extends Controller
         ]);
     }
 
-    public function closeSession(string $course, string $chatSpace)
+    public function closeSession(string $course, string $sessionDiscussion)
     {
-        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/close");
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/session-discussions/{$sessionDiscussion}/close");
         return $this->proxyResponse($response);
     }
 
-    public function submitReflection(\Illuminate\Http\Request $request, string $course, string $chatSpace)
+    public function submitReflection(\Illuminate\Http\Request $request, string $course, string $sessionDiscussion)
     {
         $validated = $request->validate(['content' => 'required|string|min:50|max:5000']);
-        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/reflection", $validated);
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/session-discussions/{$sessionDiscussion}/reflection", $validated);
         return $this->proxyResponse($response);
     }
 
-    public function chatSpaceSummary(string $course, string $chatSpace)
+    public function sessionDiscussionSummary(string $course, string $sessionDiscussion)
     {
-        $response = $this->apiRequest()->get($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/summary");
+        $response = $this->apiRequest()->get($this->apiUrl() . "/api/session-discussions/{$sessionDiscussion}/summary");
         if ($response->status() === 404) {
             return response()->json(['summary' => null], 200);
         }
         return $this->proxyResponse($response);
     }
 
-    public function regenerateSummary(string $course, string $chatSpace)
+    public function regenerateSummary(string $course, string $sessionDiscussion)
     {
-        $response = $this->apiRequest()->post($this->apiUrl() . "/api/chat-spaces/{$chatSpace}/regenerate-summary");
+        $response = $this->apiRequest()->post($this->apiUrl() . "/api/session-discussions/{$sessionDiscussion}/regenerate-summary");
         return $this->proxyResponse($response);
     }
 }

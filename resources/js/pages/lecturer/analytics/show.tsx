@@ -29,7 +29,7 @@ interface Member {
     email: string;
 }
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     isClosed: boolean;
@@ -75,11 +75,11 @@ interface Props {
         id: string;
         name: string;
         memberCount: number;
-        chatSpaceCount: number;
+        sessionDiscussionCount: number;
     };
     analytics: GroupAnalyticsData;
     members: Member[];
-    chatSpaces: ChatSpace[];
+    sessionDiscussions: SessionDiscussion[];
     recentActivity: RecentActivity[];
 }
 
@@ -249,12 +249,12 @@ const formatDateTime = (value?: string | null) => {
     });
 };
 
-export default function GroupAnalyticsDetail({ course, group, analytics, members, chatSpaces, recentActivity }: Props) {
+export default function GroupAnalyticsDetail({ course, group, analytics, members, sessionDiscussions, recentActivity }: Props) {
     const [jwtToken, setJwtToken] = useState('');
 
     const safeAnalytics = useMemo(() => analytics ?? {}, [analytics]);
     const safeMembers = useMemo(() => members ?? [], [members]);
-    const safeChatSpaces = useMemo(() => chatSpaces ?? [], [chatSpaces]);
+    const safeSessionDiscussions = useMemo(() => sessionDiscussions ?? [], [sessionDiscussions]);
     const safeRecentActivity = useMemo(() => recentActivity ?? [], [recentActivity]);
     const safeQualityBreakdown = useMemo(() => safeAnalytics.qualityBreakdown ?? {}, [safeAnalytics]);
 
@@ -398,8 +398,8 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             },
             {
                 label: 'Sesi Diskusi',
-                value: safeChatSpaces.length || group.chatSpaceCount,
-                detail: safeChatSpaces[0]?.name || 'Belum ada sesi aktif',
+                value: safeSessionDiscussions.length || group.sessionDiscussionCount,
+                detail: safeSessionDiscussions[0]?.name || 'Belum ada sesi aktif',
                 action: 'Klik untuk lihat seluruh sesi diskusi',
                 color: '#4A4A4A',
                 onClick: () => setShowSessionModal(true),
@@ -417,7 +417,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                 color: getQualityAccent(liveQuality),
             },
         ],
-        [group.chatSpaceCount, group.memberCount, isConnected, liveQuality, safeAnalytics.local_message_count, safeChatSpaces, safeMembers],
+        [group.sessionDiscussionCount, group.memberCount, isConnected, liveQuality, safeAnalytics.local_message_count, safeSessionDiscussions, safeMembers],
     );
 
     const engagementEntries = Object.entries(safeAnalytics.engagementDistribution ?? {});
@@ -463,7 +463,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             {course.code}
                                         </span>
                                         <span className={badgeClass} style={neutralChipStyle}>
-                                            {group.memberCount} anggota • {group.chatSpaceCount} sesi
+                                            {group.memberCount} anggota • {group.sessionDiscussionCount} sesi
                                         </span>
                                         <span className={`${badgeClass} gap-1.5`} style={isConnected ? successChipStyle : neutralChipStyle}>
                                             <Activity className="h-3.5 w-3.5" />
@@ -884,12 +884,12 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                 </div>
             </BaseModal>
 
-            <BaseModal open={showSessionModal} title={`Sesi Diskusi (${safeChatSpaces.length})`} onClose={() => setShowSessionModal(false)} size="md" className="rounded-2xl border border-brand-primary/10 bg-white p-6 shadow-2xl">
+            <BaseModal open={showSessionModal} title={`Sesi Diskusi (${safeSessionDiscussions.length})`} onClose={() => setShowSessionModal(false)} size="md" className="rounded-2xl border border-brand-primary/10 bg-white p-6 shadow-2xl">
                 <div>
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <h3 className="text-lg font-semibold text-[#1F2937]" style={headingStyle}>
-                                Sesi Diskusi ({safeChatSpaces.length})
+                                Sesi Diskusi ({safeSessionDiscussions.length})
                             </h3>
                             <p className="mt-1 text-sm text-brand-muted-dark">Status sesi, waktu dibuat, dan waktu selesai.</p>
                         </div>
@@ -903,12 +903,12 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                     </div>
 
                     <div className="mt-5 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
-                        {safeChatSpaces.length === 0 ? (
+                        {safeSessionDiscussions.length === 0 ? (
                             <div className="rounded-xl border border-dashed border-gray-200 px-6 py-10 text-center">
                                 <p className="text-sm text-brand-muted-dark">Belum ada sesi diskusi</p>
                             </div>
                         ) : (
-                            safeChatSpaces.map((session) => (
+                            safeSessionDiscussions.map((session) => (
                                 <div key={session.id} className="flex items-start justify-between gap-3 rounded-xl border border-brand-primary/10 bg-brand-primary/[0.03] px-4 py-3">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-[#1F2937]">{session.name || 'Sesi Tanpa Judul'}</p>

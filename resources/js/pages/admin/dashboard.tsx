@@ -39,7 +39,7 @@ type DashboardStats = {
         total: number;
         active: number;
         totalGroups: number;
-        totalChatSpaces: number;
+        totalSessionDiscussions: number;
     };
     discussions: {
         totalMessages: number;
@@ -619,7 +619,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
             total: 0,
             active: 0,
             totalGroups: 0,
-            totalChatSpaces: 0,
+            totalSessionDiscussions: 0,
         },
         discussions: {
             totalMessages: 0,
@@ -684,7 +684,7 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                 text: '#059669',
             },
             helper: `${formatNumber(safeStats.courses.total)} total mata kuliah terlacak`,
-            subtext: `${formatNumber(safeStats.courses.totalGroups)} grup dan ${formatNumber(safeStats.courses.totalChatSpaces)} sesi diskusi mendukung aktivitas diskusi`,
+            subtext: `${formatNumber(safeStats.courses.totalGroups)} grup dan ${formatNumber(safeStats.courses.totalSessionDiscussions)} sesi diskusi mendukung aktivitas diskusi`,
         },
         {
             title: 'Messages Today',

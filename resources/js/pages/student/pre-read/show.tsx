@@ -27,7 +27,7 @@ interface MaterialRow {
 
 interface Props {
     course: Course;
-    chatSpace: {
+    sessionDiscussion: {
         id: string;
         name: string;
         description?: string | null;
@@ -54,7 +54,7 @@ function formatSize(bytes?: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function PreReadShow({ course, chatSpace, materials, isReview }: Props) {
+export default function PreReadShow({ course, sessionDiscussion, materials, isReview }: Props) {
     const navItems = useStudentNav('course-detail', { courseId: course.id });
     const [earlierOpen, setEarlierOpen] = useState(false);
     const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
@@ -63,15 +63,15 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
 
     const handleContinue = (e: FormEvent) => {
         e.preventDefault();
-        post(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/pre-read/complete`);
+        post(`/student/courses/${course.id}/session-discussions/${sessionDiscussion.id}/pre-read/complete`);
     };
 
     const weekLabel =
-        chatSpace.weekTitle &&
-        (chatSpace.weekIndex != null ? `Minggu ${chatSpace.weekIndex}: ${chatSpace.weekTitle}` : chatSpace.weekTitle);
+        sessionDiscussion.weekTitle &&
+        (sessionDiscussion.weekIndex != null ? `Minggu ${sessionDiscussion.weekIndex}: ${sessionDiscussion.weekTitle}` : sessionDiscussion.weekTitle);
 
     return (
-        <AppLayout title={`Pre-read — ${chatSpace.name}`} navItems={navItems}>
+        <AppLayout title={`Pre-read — ${sessionDiscussion.name}`} navItems={navItems}>
             <Head title={`Pre-read — ${course.name}`} />
 
             <div className="relative mx-auto max-w-3xl px-4 py-8">
@@ -100,7 +100,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                                 Bacaan sebelum diskusi
                             </h1>
                             <p className="text-sm text-brand-muted-dark">
-                                Sesi: <span className="font-medium text-brand-dark">{chatSpace.name}</span>
+                                Sesi: <span className="font-medium text-brand-dark">{sessionDiscussion.name}</span>
                             </p>
                             {weekLabel && (
                                 <p className="text-sm font-medium text-brand-primary">{weekLabel}</p>
@@ -139,7 +139,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                                     <li key={row.material.id}>
                                         <MaterialCard
                                             courseId={course.id}
-                                            chatSpaceId={chatSpace.id}
+                                            sessionDiscussionId={sessionDiscussion.id}
                                             row={row}
                                             onOpen={setDocumentViewer}
                                         />
@@ -167,7 +167,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                                         <li key={`${row.week_id}-${row.material.id}`}>
                                             <MaterialCard
                                                 courseId={course.id}
-                                                chatSpaceId={chatSpace.id}
+                                                sessionDiscussionId={sessionDiscussion.id}
                                                 row={row}
                                                 onOpen={setDocumentViewer}
                                             />
@@ -184,7 +184,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                                 Kamu sudah menyelesaikan pre-read untuk sesi ini.
                             </p>
                             <Link
-                                href={student.goals.create.url({ course: course.id, chatSpace: chatSpace.id })}
+                                href={student.goals.create.url({ course: course.id, sessionDiscussion: sessionDiscussion.id })}
                                 className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white transition-all"
                                 style={{
                                     background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -216,16 +216,16 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
 
 function MaterialCard({
     courseId,
-    chatSpaceId,
+    sessionDiscussionId,
     row,
     onOpen,
 }: {
     courseId: string;
-    chatSpaceId: string;
+    sessionDiscussionId: string;
     row: MaterialRow;
     onOpen: (t: DocumentViewerTarget) => void;
 }) {
-    const streamUrl = `/student/courses/${courseId}/materials/${row.material.id}/stream?chatSpace=${encodeURIComponent(chatSpaceId)}`;
+    const streamUrl = `/student/courses/${courseId}/materials/${row.material.id}/stream?sessionDiscussion=${encodeURIComponent(sessionDiscussionId)}`;
 
     return (
         <LiquidGlassCard intensity="light" className="p-4" lightMode>

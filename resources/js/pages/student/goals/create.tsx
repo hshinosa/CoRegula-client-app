@@ -10,10 +10,10 @@ import { useStudentNav } from '@/components/navigation/student-nav';
 import { Course, Group } from '@/types';
 import student from '@/routes/student';
 import { room as chatRoom } from '@/routes/student/courses/chat';
-import { show as preReadShow } from '@/routes/student/chat-spaces/pre-read';
+import { show as preReadShow } from '@/routes/student/session-discussions/pre-read';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
@@ -25,7 +25,7 @@ interface ChatSpace {
 interface Props {
     course: Course;
     group: Group | null;
-    chatSpace: ChatSpace | null;
+    sessionDiscussion: SessionDiscussion | null;
 }
 
 // Taksonomi Bloom - Kata kerja aksi berdasarkan tingkat (Bahasa Indonesia)
@@ -56,13 +56,13 @@ const LEVEL_COLORS = {
     mencipta: 'bg-[rgba(136,22,28,0.18)] text-brand-primary border-[rgba(136,22,28,0.25)]',
 };
 
-export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
+export default function StudentGoalCreate({ course, group, sessionDiscussion }: Props) {
     const [selectedVerb, setSelectedVerb] = useState<string | null>(null);
 
     const navItems = useStudentNav('goals', { courseId: course.id });
 
     const { data, setData, post, processing, errors, clearErrors } = useForm({
-        chat_space_id: chatSpace?.id || '',
+        session_discussion_id: sessionDiscussion?.id || '',
         content: '',
     });
 
@@ -103,8 +103,8 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
         post(student.goals.store.url(), {
             preserveScroll: true,
             onSuccess: () => {
-                if (chatSpace) {
-                    router.visit(chatRoom.url({ course: course.id, chatSpace: chatSpace.id }));
+                if (sessionDiscussion) {
+                    router.visit(chatRoom.url({ course: course.id, sessionDiscussion: sessionDiscussion.id }));
                 } else {
                     router.visit(student.courses.show.url({ course: course.id }));
                 }
@@ -162,8 +162,8 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
         );
     }
 
-    // Check if chat space exists
-    if (!chatSpace) {
+    // Check if sesi diskusi exists
+    if (!sessionDiscussion) {
         return (
             <AppLayout title="Tetapkan Tujuan Kelompok" navItems={navItems}>
                 <Head title="Tetapkan Tujuan Kelompok" />
@@ -227,7 +227,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <Link
-                            href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id }) + '?review=1'}
+                            href={preReadShow.url({ course: course.id, sessionDiscussion: sessionDiscussion.id }) + '?review=1'}
                             className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all"
                             style={{ 
                                 background: 'rgba(255,255,255,0.6)', 
@@ -245,12 +245,12 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                             Tetapkan Tujuan Kelompok
                         </h2>
                         <p className="mt-1 text-sm text-brand-muted-dark">
-                            Untuk sesi diskusi: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{chatSpace.name}</span>
+                            Untuk sesi diskusi: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{sessionDiscussion.name}</span>
                         </p>
-                        {chatSpace.weekTitle && (
+                        {sessionDiscussion.weekTitle && (
                             <p className="mt-1 text-sm font-medium" style={{ color: 'var(--color-brand-primary)' }}>
-                                {chatSpace.weekIndex != null ? `Minggu ${chatSpace.weekIndex}: ` : ''}
-                                {chatSpace.weekTitle}
+                                {sessionDiscussion.weekIndex != null ? `Minggu ${sessionDiscussion.weekIndex}: ` : ''}
+                                {sessionDiscussion.weekTitle}
                             </p>
                         )}
                     </motion.div>
@@ -416,7 +416,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
 
                                 <div className="flex gap-3 pt-4">
                                     <Link
-                                        href={preReadShow.url({ course: course.id, chatSpace: chatSpace.id }) + '?review=1'}
+                                        href={preReadShow.url({ course: course.id, sessionDiscussion: sessionDiscussion.id }) + '?review=1'}
                                         className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all"
                                         style={{ 
                                             background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%)',

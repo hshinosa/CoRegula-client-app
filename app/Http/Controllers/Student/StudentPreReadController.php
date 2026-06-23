@@ -18,21 +18,21 @@ class StudentPreReadController extends Controller
         private readonly WeekMaterialAccessService $access
     ) {}
 
-    public function show(Request $request, string $course, string $chatSpace): Response|RedirectResponse
+    public function show(Request $request, string $course, string $sessionDiscussion): Response|RedirectResponse
     {
-        $chat = $this->fetchChatSpace($chatSpace);
+        $chat = $this->fetchSessionDiscussion($sessionDiscussion);
         if (! $chat) {
-            abort(404, 'Chat space not found');
+            abort(404, 'Sesi diskusi tidak ditemukan');
         }
 
         $isReview = $request->boolean('review');
 
         if (! $isReview && $this->shouldSkipPreRead($chat)) {
-            return $this->redirectAfterPreRead($course, $chatSpace, $chat);
+            return $this->redirectAfterPreRead($course, $sessionDiscussion, $chat);
         }
 
         if (! $isReview && ! empty($chat['hasPreReadCompleted'])) {
-            return $this->redirectAfterPreRead($course, $chatSpace, $chat);
+            return $this->redirectAfterPreRead($course, $sessionDiscussion, $chat);
         }
 
         try {
@@ -73,7 +73,7 @@ class StudentPreReadController extends Controller
 
         return Inertia::render('student/pre-read/show', [
             'course' => $courseData,
-            'chatSpace' => [
+            'sessionDiscussion' => [
                 'id' => $chat['id'],
                 'name' => $chat['name'],
                 'description' => $chat['description'] ?? null,
@@ -87,29 +87,29 @@ class StudentPreReadController extends Controller
         ]);
     }
 
-    public function complete(string $course, string $chatSpace): RedirectResponse
+    public function complete(string $course, string $sessionDiscussion): RedirectResponse
     {
         try {
             $response = $this->apiRequest()->post(
-                $this->apiUrl() . "/api/groups/chat-spaces/{$chatSpace}/pre-read/complete"
+                $this->apiUrl() . "/api/groups/session-discussions/{$sessionDiscussion}/pre-read/complete"
             );
 
             if (! $response->successful()) {
                 return redirect()
-                    ->route('student.chat-spaces.pre-read.show', ['course' => $course, 'chatSpace' => $chatSpace])
+                    ->route('student.session-discussions.pre-read.show', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion])
                     ->withErrors(['pre_read' => $response->json('message', 'Gagal menyelesaikan pre-read')]);
             }
         } catch (ConnectionException|RequestException $e) {
             Log::error('Pre-read complete failed', ['error' => $e->getMessage()]);
 
             return redirect()
-                ->route('student.chat-spaces.pre-read.show', ['course' => $course, 'chatSpace' => $chatSpace])
+                ->route('student.session-discussions.pre-read.show', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion])
                 ->withErrors(['pre_read' => 'Layanan tidak tersedia. Coba lagi.']);
         }
 
-        $chat = $this->fetchChatSpace($chatSpace);
+        $chat = $this->fetchSessionDiscussion($sessionDiscussion);
 
-        return $this->redirectAfterPreRead($course, $chatSpace, $chat ?? []);
+        return $this->redirectAfterPreRead($course, $sessionDiscussion, $chat ?? []);
     }
 
     private function shouldSkipPreRead(array $chat): bool
@@ -117,17 +117,17 @@ class StudentPreReadController extends Controller
         return ! empty($chat['isClosed']) || empty($chat['weekId']);
     }
 
-    private function redirectAfterPreRead(string $course, string $chatSpace, array $chat): RedirectResponse
+    private function redirectAfterPreRead(string $course, string $sessionDiscussion, array $chat): RedirectResponse
     {
         if (! empty($chat['isClosed'])) {
-            return redirect()->route('student.courses.chat.room', ['course' => $course, 'chatSpace' => $chatSpace]);
+            return redirect()->route('student.courses.chat.room', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion]);
         }
 
         if (! empty($chat['myGoal'])) {
-            return redirect()->route('student.courses.chat.room', ['course' => $course, 'chatSpace' => $chatSpace]);
+            return redirect()->route('student.courses.chat.room', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion]);
         }
 
-        return redirect()->route('student.goals.create', ['course' => $course, 'chatSpace' => $chatSpace]);
+        return redirect()->route('student.goals.create', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion]);
     }
 
     private function serializeMaterialRow(array $row): array
@@ -149,17 +149,17 @@ class StudentPreReadController extends Controller
         ];
     }
 
-    private function fetchChatSpace(string $chatSpaceId): ?array
+    private function fetchSessionDiscussion(string $sessionDiscussionId): ?array
     {
         try {
-            $response = $this->apiRequest()->get($this->apiUrl() . "/api/groups/chat-spaces/{$chatSpaceId}");
+            $response = $this->apiRequest()->get($this->apiUrl() . "/api/groups/session-discussions/{$sessionDiscussionId}");
             if (! $response->successful()) {
                 return null;
             }
 
             return $response->json('data');
         } catch (ConnectionException|RequestException $e) {
-            Log::error('fetchChatSpace failed', ['error' => $e->getMessage()]);
+            Log::error('fetchSessionDiscussion failed', ['error' => $e->getMessage()]);
 
             return null;
         }

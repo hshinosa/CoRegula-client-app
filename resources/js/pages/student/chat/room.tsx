@@ -76,7 +76,7 @@ interface GroupMember {
     avatar?: string;
 }
 
-interface ChatSpaceGoal {
+interface SessionDiscussionGoal {
     id: string;
     content: string;
     isValidated: boolean;
@@ -87,19 +87,19 @@ interface ChatSpaceGoal {
     createdAt: string;
 }
 
-interface ChatSpace {
+interface SessionDiscussion {
     id: string;
     name: string;
     description?: string;
     isDefault: boolean;
-    myGoal?: ChatSpaceGoal | null;
+    myGoal?: SessionDiscussionGoal | null;
 }
 
 interface Group {
     id: string;
     name: string;
     members?: GroupMember[];
-    chatSpaces?: ChatSpace[];
+    sessionDiscussions?: SessionDiscussion[];
 }
 
 // Types migrated to optimistic-message helpers
@@ -110,7 +110,7 @@ interface Group {
         id: string;
     }
 
-    interface ChatSpaceData {
+    interface SessionDiscussionData {
         id: string;
         name: string;
         description?: string;
@@ -122,17 +122,17 @@ interface Group {
         closedAt?: string;
         hasReflection?: boolean;
         needsReflection?: boolean;
-        myGoal?: ChatSpaceGoal | null;
+        myGoal?: SessionDiscussionGoal | null;
     }
 
-const isClosedChatSpace = (space: ChatSpaceData) => {
+const isClosedSessionDiscussion = (space: SessionDiscussionData) => {
     return Boolean(space.isClosed || space.closedAt || (!space.isDefault && space.closedAt));
 };
 
 interface Props {
     course: Course;
     group: Group;
-    chatSpace: ChatSpaceData;
+    sessionDiscussion: SessionDiscussionData;
     socketUrl?: string;
 }
 
@@ -506,26 +506,26 @@ const headingStyle = {
     color: 'var(--color-brand-dark)',
 } as const;
 
-export default function StudentChatRoom({ course, group, chatSpace, socketUrl }: Props) {
+export default function StudentChatRoom({ course, group, sessionDiscussion, socketUrl }: Props) {
     const { auth } = usePage<SharedData>().props;
     const [jwtToken, setJwtToken] = useState('');
     const navItems = useStudentNav('chat-room', { courseId: course.id });
     const confirmDeliveredRef = useRef<(clientId?: string) => Promise<void>>(async () => {});
-    const hasGoal = !!chatSpace.myGoal;
-    const goal = chatSpace.myGoal;
+    const hasGoal = !!sessionDiscussion.myGoal;
+    const goal = sessionDiscussion.myGoal;
     const [aiSummary, setAiSummary] = useState<null | { goalAchieved: boolean; topics: string[]; contributions: Record<string, number>; assessment: string }>(null);
     const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
     const [showAiSummaryModal, setShowAiSummaryModal] = useState(false);
-    const initialSessionClosed = isClosedChatSpace(chatSpace);
+    const initialSessionClosed = isClosedSessionDiscussion(sessionDiscussion);
     const [sessionClosed, setSessionClosed] = useState(initialSessionClosed);
-    const [, setSessionClosedAt] = useState<string | null>(chatSpace.closedAt || null);
+    const [, setSessionClosedAt] = useState<string | null>(sessionDiscussion.closedAt || null);
     const [sessionClosedMessage, setSessionClosedMessage] = useState<string | null>(
         initialSessionClosed ? 'Sesi diskusi ini telah ditutup.' : null
     );
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [isInitialMessagesLoading, setIsInitialMessagesLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
-    const { clear: clearDraft } = useDraftAutosave(chatSpace.id, newMessage, setNewMessage);
+    const { clear: clearDraft } = useDraftAutosave(sessionDiscussion.id, newMessage, setNewMessage);
     useEffect(() => {
         getAuthToken().then(setJwtToken).catch((err) => {
             console.error(err);
@@ -538,7 +538,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         (async () => {
             try {
                 const res = await fetch(
-                    `/student/courses/${course.id}/chat-spaces/${chatSpace.id}/materials`,
+                    `/student/courses/${course.id}/session-discussions/${sessionDiscussion.id}/materials`,
                     { headers: { Accept: 'application/json' }, credentials: 'same-origin' },
                 );
                 if (!res.ok || cancelled) {
@@ -558,7 +558,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         return () => {
             cancelled = true;
         };
-    }, [course.id, chatSpace.id]);
+    }, [course.id, sessionDiscussion.id]);
 
     // Fallback: stop loading skeleton after 5s even if socket doesn't report back
     useEffect(() => {
@@ -570,7 +570,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         jwtToken,
         courseId: course.id,
         groupId: group.id,
-        chatSpaceId: chatSpace.id,
+        sessionDiscussionId: sessionDiscussion.id,
         socketUrl,
         onSessionClosed: (payload) => {
             setSessionClosed(true);
@@ -675,12 +675,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         clear: clearSearch,
         scrollToMessage: scrollToSearchResult,
         highlightMessageId: searchHighlightId,
-    } = useMessageSearch({ conversationId: chatSpace.id });
+    } = useMessageSearch({ conversationId: sessionDiscussion.id });
 
-    // Client-side search for discussion session (chat space) messages.
+    // Client-side search for discussion session (sesi diskusi) messages.
     // The server endpoint /api/chat/messages/search only queries ChatMessage rows by conversation_id
-    // (used by regular group/AI chats). Discussion sessions store messages as ChatLog (Mongo, keyed by chatSpaceId)
-    // and deliver them via socket history + realtime. Hence server search always returns 0 for chat spaces,
+    // (used by regular group/AI chats). Discussion sessions store messages as ChatLog (Mongo, keyed by sessionDiscussionId)
+    // and deliver them via socket history + realtime. Hence server search always returns 0 for sesi diskusis,
     // even when "hai" etc. are visible in the live messages list.
     // We filter the already-loaded `messages` state (includes AI welcome, user msgs, optimistic, history).
     const [localSearchResults, setLocalSearchResults] = useState<any[]>([]);
@@ -737,7 +737,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         pinMessage: pinMessageApi,
         unpinMessage: unpinMessageApi,
         refreshPinned,
-    } = usePinnedMessages({ conversationId: chatSpace.id, socketRef: socketRef as React.RefObject<{ emit: (event: string, data: unknown) => void } | null> });
+    } = usePinnedMessages({ conversationId: sessionDiscussion.id, socketRef: socketRef as React.RefObject<{ emit: (event: string, data: unknown) => void } | null> });
 
     const addPinnedMessage = useCallback((msg: import('./room/components/PinnedMessages').PinnedMessage) => {
         refreshPinned();
@@ -749,16 +749,16 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
     const { state: summaryState, retry: retrySummary } = useChatSummary({
         courseId: course.id,
-        chatSpaceId: chatSpace.id,
+        sessionDiscussionId: sessionDiscussion.id,
         enabled: isSummaryVisible,
         initialSummary,
     });
 
-    const [showReflectionModal, setShowReflectionModal] = useState(chatSpace.needsReflection || false);
+    const [showReflectionModal, setShowReflectionModal] = useState(sessionDiscussion.needsReflection || false);
     const [reflectionContent, setReflectionContent] = useState('');
     const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
     const [reflectionError, setReflectionError] = useState<string | null>(null);
-    const [hasSubmittedReflection, setHasSubmittedReflection] = useState(chatSpace.hasReflection || false);
+    const [hasSubmittedReflection, setHasSubmittedReflection] = useState(sessionDiscussion.hasReflection || false);
 
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const pendingFilesRef = useRef<PendingFile[]>([]);
@@ -894,12 +894,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         return queueOrSend({
             message,
             payload: toSocketPayload(message, {
-                roomId: chatSpace.id,
+                roomId: sessionDiscussion.id,
                 courseId: course.id,
                 groupId: group.id,
             }),
         });
-    }, [chatSpace.id, course.id, group.id, queueOrSend, socketRef]);
+    }, [sessionDiscussion.id, course.id, group.id, queueOrSend, socketRef]);
 
     const clearTypingDebounceTimers = useCallback(() => {
         if (typingStartTimeoutRef.current) {
@@ -914,9 +914,9 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
     }, []);
 
     const emitTypingState = useCallback((nextIsTyping: boolean) => {
-        const roomId = chatSpace.id;
+        const roomId = sessionDiscussion.id;
         socketRef.current?.emit('typing', { roomId, isTyping: nextIsTyping });
-    }, [chatSpace.id, socketRef]);
+    }, [sessionDiscussion.id, socketRef]);
 
     const scheduleStopTyping = useCallback(() => {
         if (typingStopTimeoutRef.current) {
@@ -965,7 +965,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         if (pendingFiles.length > 0) {
             setIsUploading(true);
             try {
-                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, chatSpace.id);
+                const uploaded = await uploadAttachments(pendingFiles.map((pf) => pf.file), undefined, sessionDiscussion.id);
                 attachments = uploaded.map((u, i) => ({
                     id: pendingFiles[i].id,
                     name: u.name,
@@ -1330,7 +1330,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 setToastMessage({ message: 'Materi sitasi belum tersedia di daftar minggu ini.', type: 'info' });
                 return;
             }
-            const streamUrl = `/student/courses/${course.id}/materials/${meta.id}/stream?chatSpace=${encodeURIComponent(chatSpace.id)}`;
+            const streamUrl = `/student/courses/${course.id}/materials/${meta.id}/stream?sessionDiscussion=${encodeURIComponent(sessionDiscussion.id)}`;
             setDocumentViewer({
                 title: cite.label ?? meta.title,
                 fileName: meta.file_name,
@@ -1338,7 +1338,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 fileType: meta.file_type,
             });
         },
-        [materialIndex, course.id, chatSpace.id],
+        [materialIndex, course.id, sessionDiscussion.id],
     );
 
     // Handle keyboard for image preview
@@ -1452,7 +1452,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         setCloseSessionError(null);
 
         try {
-            const response = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/close`, {
+            const response = await fetch(`/student/courses/${course.id}/session-discussions/${sessionDiscussion.id}/close`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -1472,7 +1472,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             const summaryText = responseData?.data?.summary;
             const summaryError = responseData?.data?.summaryError;
 
-            const parsedSummary = parseSummaryText(summaryText, chatSpace.id);
+            const parsedSummary = parseSummaryText(summaryText, sessionDiscussion.id);
             if (parsedSummary) {
                 setInitialSummary(parsedSummary);
             } else if (summaryError) {
@@ -1481,7 +1481,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 setToastMessage({ message: 'Ringkasan sedang dibuat ulang...', type: 'info' });
 
                 try {
-                    const retryResponse = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/regenerate-summary`, {
+                    const retryResponse = await fetch(`/student/courses/${course.id}/session-discussions/${sessionDiscussion.id}/regenerate-summary`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -1493,7 +1493,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                     if (retryResponse.ok) {
                         const retryData = await retryResponse.json().catch(() => null);
-                        const parsedRetry = parseSummaryText(retryData?.data?.summary, chatSpace.id, retryData?.data?.generatedAt);
+                        const parsedRetry = parseSummaryText(retryData?.data?.summary, sessionDiscussion.id, retryData?.data?.generatedAt);
                         if (parsedRetry) {
                             setInitialSummary(parsedRetry);
                             setToastMessage({ message: 'Ringkasan berhasil dibuat!', type: 'success' });
@@ -1561,7 +1561,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         } finally {
             setIsClosingSession(false);
         }
-    }, [sessionClosed, isClosingSession, course.id, chatSpace.id, showCloseError, restoreFocusToTrigger, hasGoal, goal, messages, jwtToken]);
+    }, [sessionClosed, isClosingSession, course.id, sessionDiscussion.id, showCloseError, restoreFocusToTrigger, hasGoal, goal, messages, jwtToken]);
 
     const handleOpenCloseConfirmModal = useCallback(() => {
         if (sessionClosed || isClosingSession) return;
@@ -1616,7 +1616,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             try {
                 await axios.delete(`/api/chat/messages/${messageId}`, {
                     data: {
-                        conversation_id: chatSpace.id,
+                        conversation_id: sessionDiscussion.id,
                         content: message.content,
                     },
                 });
@@ -1640,7 +1640,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                 }
             }
         }
-    }, [messages, chatSpace.id, emitDeleteMessage]);
+    }, [messages, sessionDiscussion.id, emitDeleteMessage]);
 
     const handleEdit = useCallback((messageId: string) => {
         setEditingMessageId(messageId);
@@ -1657,7 +1657,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         try {
             const response = await axios.patch(`/api/chat/messages/${editingMessageId}/edit`, {
                 content: newContent,
-                conversation_id: chatSpace.id,
+                conversation_id: sessionDiscussion.id,
                 old_content: message.content,
                 version: message.version ?? 0,
             });
@@ -1695,7 +1695,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         } finally {
             setIsEditingSaving(false);
         }
-    }, [editingMessageId, messages, chatSpace.id, emitEditMessage]);
+    }, [editingMessageId, messages, sessionDiscussion.id, emitEditMessage]);
 
     const handleCancelEdit = useCallback(() => {
         setEditingMessageId(null);
@@ -1747,7 +1747,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         setReflectionError(null);
 
         try {
-            const response = await fetch(`/student/courses/${course.id}/chat-spaces/${chatSpace.id}/reflection`, {
+            const response = await fetch(`/student/courses/${course.id}/session-discussions/${sessionDiscussion.id}/reflection`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -1782,12 +1782,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
         { label: 'Kelas', href: student.courses.index.url() },
         { label: course.name, href: student.courses.show.url(course.id) },
         { label: group.name, href: student.groups.show.url(group.id) },
-        { label: chatSpace.name },
+        { label: sessionDiscussion.name },
     ];
 
     return (
-        <AppLayout title={`${chatSpace.name} - ${group.name}`} navItems={navItems}>
-            <Head title={`${chatSpace.name} - ${course.name}`} />
+        <AppLayout title={`${sessionDiscussion.name} - ${group.name}`} navItems={navItems}>
+            <Head title={`${sessionDiscussion.name} - ${course.name}`} />
             <Breadcrumbs items={breadcrumbItems} />
             <ConnectionBanner status={connectionStatus} />
             {toastMessage && (
@@ -1819,12 +1819,12 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         {group.name}
                                     </h2>
                                     <p className="truncate text-sm text-brand-muted-dark">
-                                        {chatSpace.name} • {course.name}
+                                        {sessionDiscussion.name} • {course.name}
                                     </p>
-                                    {chatSpace.weekTitle && (
+                                    {sessionDiscussion.weekTitle && (
                                         <p className="truncate text-xs font-medium text-brand-primary">
-                                            {chatSpace.weekIndex != null ? `Minggu ${chatSpace.weekIndex}: ` : ''}
-                                            {chatSpace.weekTitle}
+                                            {sessionDiscussion.weekIndex != null ? `Minggu ${sessionDiscussion.weekIndex}: ` : ''}
+                                            {sessionDiscussion.weekTitle}
                                         </p>
                                     )}
                                     {sessionClosed && (
@@ -1992,7 +1992,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Link
-                                                href={student.goals.create.url({ course: course.id, chatSpace: chatSpace.id })}
+                                                href={student.goals.create.url({ course: course.id, sessionDiscussion: sessionDiscussion.id })}
                                                 className="rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                                                 style={{ 
                                                     background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -2117,7 +2117,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             <div className="mb-2 flex justify-center">
                                                 <button
                                                     type="button"
-                                                    onClick={() => loadMoreMessages(chatSpace.id, messages[0].id)}
+                                                    onClick={() => loadMoreMessages(sessionDiscussion.id, messages[0].id)}
                                                     className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
                                                 >
                                                     Muat pesan lebih lama
@@ -2630,7 +2630,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                 Tetapkan tujuan untuk membantu fokus diskusi Anda.
                             </p>
                             <Link
-                                href={student.goals.create.url({ course: course.id, chatSpace: chatSpace.id })}
+                                href={student.goals.create.url({ course: course.id, sessionDiscussion: sessionDiscussion.id })}
                                 className="block w-full rounded-xl px-3 py-2 text-center text-xs font-medium text-white transition-opacity hover:opacity-90"
                                 style={{ 
                                     background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -2685,7 +2685,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                     <ChatWeekMaterialsPanel
                         courseId={course.id}
-                        chatSpaceId={chatSpace.id}
+                        sessionDiscussionId={sessionDiscussion.id}
                         cited={citedMaterials}
                         variant="card"
                         onOpenDocument={(target) => setDocumentViewer(target)}
@@ -2854,7 +2854,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                             Tetapkan tujuan untuk membantu fokus diskusi Anda.
                                         </p>
                                         <Link
-                                            href={student.goals.create.url({ course: course.id, chatSpace: chatSpace.id })}
+                                            href={student.goals.create.url({ course: course.id, sessionDiscussion: sessionDiscussion.id })}
                                             className="block w-full rounded-xl px-3 py-2 text-center text-xs font-medium text-white transition-opacity hover:opacity-90"
                                             style={{ 
                                                 background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -2909,7 +2909,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
 
                                 <ChatWeekMaterialsPanel
                                     courseId={course.id}
-                                    chatSpaceId={chatSpace.id}
+                                    sessionDiscussionId={sessionDiscussion.id}
                                     cited={citedMaterials}
                                     variant="plain"
                                     onOpenDocument={(target) => setDocumentViewer(target)}
@@ -3049,7 +3049,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
                                         Refleksi Sesi
                                     </h3>
                                     <p className="text-sm text-brand-muted-dark">
-                                        {chatSpace.name}
+                                        {sessionDiscussion.name}
                                     </p>
                                 </div>
                             </div>
@@ -3142,7 +3142,7 @@ export default function StudentChatRoom({ course, group, chatSpace, socketUrl }:
             <ConfirmDialog
                 open={showCloseConfirmModal}
                 title="Tutup Sesi Diskusi?"
-                message={`Anda akan menutup sesi diskusi "${chatSpace.name}". Setelah ditutup, anggota grup tidak dapat mengirim pesan lagi sampai dosen membuka kembali sesi ini.`}
+                message={`Anda akan menutup sesi diskusi "${sessionDiscussion.name}". Setelah ditutup, anggota grup tidak dapat mengirim pesan lagi sampai dosen membuka kembali sesi ini.`}
                 confirmLabel={isClosingSession ? 'Menutup...' : 'Ya, Tutup Sesi'}
                 cancelLabel="Batal"
                 onConfirm={handleCloseSession}

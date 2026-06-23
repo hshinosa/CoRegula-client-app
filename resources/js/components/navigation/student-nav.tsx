@@ -16,7 +16,7 @@ export interface NavItem {
 interface StudentNavContext {
     courseId?: string;
     groupId?: string;
-    chatSpaceId?: string;
+    sessionDiscussionId?: string;
 }
 
 // Icons as separate components for reusability
@@ -38,7 +38,7 @@ const Icons = {
     ),
 };
 
-type ActivePage = 'courses' | 'reflections' | 'ai-chat' | 'course-detail' | 'groups' | 'chat-spaces' | 'chat-room' | 'goals';
+type ActivePage = 'courses' | 'reflections' | 'ai-chat' | 'course-detail' | 'groups' | 'session-discussions' | 'chat-room' | 'goals';
 
 export function useStudentNav(activePage: ActivePage, context?: StudentNavContext): NavItem[] {
     const navItems: NavItem[] = [
@@ -46,7 +46,7 @@ export function useStudentNav(activePage: ActivePage, context?: StudentNavContex
             name: 'Kelas Saya',
             href: student.courses.index.url(),
             icon: Icons.courses,
-            active: ['courses', 'course-detail', 'groups', 'chat-spaces', 'chat-room', 'goals'].includes(activePage),
+            active: ['courses', 'course-detail', 'groups', 'session-discussions', 'chat-room', 'goals'].includes(activePage),
         },
         {
             name: 'Refleksi',
@@ -63,7 +63,7 @@ export function useStudentNav(activePage: ActivePage, context?: StudentNavContex
     ];
 
     // Add context-aware sub-items when inside a course
-    if (context?.courseId && ['course-detail', 'groups', 'chat-spaces', 'chat-room', 'goals'].includes(activePage)) {
+    if (context?.courseId && ['course-detail', 'groups', 'session-discussions', 'chat-room', 'goals'].includes(activePage)) {
         navItems[0].subItems = [
             {
                 name: 'Semua Kelas',

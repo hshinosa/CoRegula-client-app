@@ -29,7 +29,7 @@ interface GroupAnalytics {
     groupId: string;
     groupName: string;
     memberCount: number;
-    chatSpaceCount: number;
+    sessionDiscussionCount: number;
     messageCount: number;
     qualityScore?: number;
     recommendation?: string;
@@ -659,7 +659,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                                         {group.groupName}
                                                                     </p>
                                                                     <p className="mt-0.5 text-xs text-brand-muted-dark">
-                                                                        {group.chatSpaceCount} sesi diskusi
+                                                                        {group.sessionDiscussionCount} sesi diskusi
                                                                     </p>
                                                                 </div>
                                                             </div>

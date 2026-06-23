@@ -167,7 +167,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
             const q = searchQuery.toLowerCase();
             result = result.filter((r) =>
                 r.content.toLowerCase().includes(q) ||
-                (r.chatSpace?.name ?? '').toLowerCase().includes(q) ||
+                (r.sessionDiscussion?.name ?? '').toLowerCase().includes(q) ||
                 (r.course?.name ?? '').toLowerCase().includes(q)
             );
         }
@@ -355,7 +355,7 @@ export default function StudentReflectionsIndex({ reflections, courses }: Props)
                                                                 <ReflectionBadge label="Sesi" tone="session" />
                                                                 <div>
                                                                     <p className="font-semibold font-sans text-brand-dark">
-                                                                        {searchQuery ? highlightText(reflection.chatSpace?.name || 'Sesi Diskusi', searchQuery) : (reflection.chatSpace?.name || 'Sesi Diskusi')}
+                                                                        {searchQuery ? highlightText(reflection.sessionDiscussion?.name || 'Sesi Diskusi', searchQuery) : (reflection.sessionDiscussion?.name || 'Sesi Diskusi')}
                                                                     </p>
                                                                     <p className="mt-1 text-sm text-brand-muted-dark">
                                                                         {formatDate(createdAtFor(reflection))}

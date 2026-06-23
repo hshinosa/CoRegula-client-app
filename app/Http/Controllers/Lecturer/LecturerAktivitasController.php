@@ -62,7 +62,7 @@ class LecturerAktivitasController extends Controller
                 }
 
                 // Track sessions (group_id changes = new session)
-                $groupId = $message['group_id'] ?? $message['chat_space_id'] ?? null;
+                $groupId = $message['group_id'] ?? $message['session_discussion_id'] ?? null;
                 if ($groupId) {
                     $key = $groupId . '_' . date('Y-m-d', strtotime($createdAt));
                     $activityMap[$senderId]['sessions_key'][$key] = true;

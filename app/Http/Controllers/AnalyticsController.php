@@ -89,13 +89,13 @@ class AnalyticsController extends Controller
             $analytics = null;
             $recentActivity = [];
             $members = [];
-            $chatSpaces = [];
+            $sessionDiscussions = [];
 
             if ($analyticsData && ($analyticsData['success'] ?? false)) {
                 $analytics = $analyticsData['analytics'] ?? null;
                 $recentActivity = $analyticsData['recentActivity'] ?? [];
                 $members = $analyticsData['members'] ?? [];
-                $chatSpaces = $analyticsData['chatSpaces'] ?? [];
+                $sessionDiscussions = $analyticsData['sessionDiscussions'] ?? [];
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Failed to fetch alerts', ['error' => $e->getMessage()]);
@@ -135,7 +135,7 @@ class AnalyticsController extends Controller
                 'recommendation' => null,
             ],
             'members' => $members,
-            'chatSpaces' => $chatSpaces,
+            'sessionDiscussions' => $sessionDiscussions,
             'recentActivity' => $recentActivity,
             'socketUrl' => config('services.api.socket_url', 'http://localhost:3000'),
         ]);

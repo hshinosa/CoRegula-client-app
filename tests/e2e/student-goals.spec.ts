@@ -27,7 +27,7 @@ async function openStudentGoalsPage(page: Page): Promise<boolean> {
     await goalEntry.click();
     await page.waitForLoadState('networkidle');
 
-    if (!/\/student\/courses\/.*\/(chat|chat-spaces)\//.test(page.url()) && !page.url().includes('/goal')) {
+    if (!/\/student\/courses\/.*\/(chat|session-discussions)\//.test(page.url()) && !page.url().includes('/goal')) {
         return false;
     }
 
@@ -65,7 +65,7 @@ test.describe('Student learning goals', () => {
         }
 
         await expect(page.locator('h1, h2, [data-testid="page-title"]').filter({ hasText: /tujuan pembelajaran/i }).first()).toBeVisible();
-        await expect(page.locator('text=/contoh tujuan|belum ada grup|chat space tidak ditemukan|untuk chat space/i').first()).toBeVisible();
+        await expect(page.locator('text=/contoh tujuan|belum ada grup|sesi diskusi tidak ditemukan|untuk sesi diskusi/i').first()).toBeVisible();
         await expect(page.locator('textarea#content, textarea').first()).toBeVisible();
 
         const submitButton = page.getByRole('button', { name: /tetapkan tujuan/i }).first();

@@ -2,7 +2,7 @@ import type { ChatDiscussionSummary } from './types';
 
 /**
  * Parse a raw markdown-ish summary string (as produced by the AI engine and
- * persisted on ChatSpace.summary) into the structured ChatDiscussionSummary
+ * persisted on SessionDiscussion.summary) into the structured ChatDiscussionSummary
  * shape the UI renders. Returns null for empty/blank input.
  */
 export function parseSummaryText(

@@ -33,7 +33,7 @@ interface MaterialsApiResponse {
 
 interface ChatWeekMaterialsPanelProps {
     courseId: string;
-    chatSpaceId: string;
+    sessionDiscussionId: string;
     cited?: CitedMaterialRow[];
     onOpenDocument: (target: DocumentViewerTarget) => void;
     /** desktop sidebar uses card wrapper; mobile drawer uses plain blocks */
@@ -48,15 +48,15 @@ function fileBadge(fileName: string): string {
 function MaterialRowButton({
     row,
     courseId,
-    chatSpaceId,
+    sessionDiscussionId,
     onOpen,
 }: {
     row: WeekMaterialRow;
     courseId: string;
-    chatSpaceId: string;
+    sessionDiscussionId: string;
     onOpen: (t: DocumentViewerTarget) => void;
 }) {
-    const streamUrl = `/student/courses/${courseId}/materials/${row.material.id}/stream?chatSpace=${encodeURIComponent(chatSpaceId)}`;
+    const streamUrl = `/student/courses/${courseId}/materials/${row.material.id}/stream?sessionDiscussion=${encodeURIComponent(sessionDiscussionId)}`;
 
     return (
         <button
@@ -90,7 +90,7 @@ function PanelBody({
     error,
     data,
     courseId,
-    chatSpaceId,
+    sessionDiscussionId,
     cited,
     onOpenDocument,
 }: {
@@ -98,7 +98,7 @@ function PanelBody({
     error: string | null;
     data: MaterialsApiResponse | null;
     courseId: string;
-    chatSpaceId: string;
+    sessionDiscussionId: string;
     cited: CitedMaterialRow[];
     onOpenDocument: (t: DocumentViewerTarget) => void;
 }) {
@@ -155,7 +155,7 @@ function PanelBody({
                                 key={row.material.id}
                                 row={row}
                                 courseId={courseId}
-                                chatSpaceId={chatSpaceId}
+                                sessionDiscussionId={sessionDiscussionId}
                                 onOpen={onOpenDocument}
                             />
                         ))}
@@ -180,7 +180,7 @@ function PanelBody({
                                     key={`${row.week_id}-${row.material.id}`}
                                     row={row}
                                     courseId={courseId}
-                                    chatSpaceId={chatSpaceId}
+                                    sessionDiscussionId={sessionDiscussionId}
                                     onOpen={onOpenDocument}
                                 />
                             ))}
@@ -199,7 +199,7 @@ function PanelBody({
                 ) : (
                     <div className="space-y-1">
                         {citedDeduped.map((c) => {
-                            const streamUrl = `/student/courses/${courseId}/materials/${c.material.id}/stream?chatSpace=${encodeURIComponent(chatSpaceId)}`;
+                            const streamUrl = `/student/courses/${courseId}/materials/${c.material.id}/stream?sessionDiscussion=${encodeURIComponent(sessionDiscussionId)}`;
                             return (
                                 <button
                                     key={c.material.id}
@@ -231,7 +231,7 @@ function PanelBody({
 
 export function ChatWeekMaterialsPanel({
     courseId,
-    chatSpaceId,
+    sessionDiscussionId,
     cited = [],
     onOpenDocument,
     variant = 'card',
@@ -245,7 +245,7 @@ export function ChatWeekMaterialsPanel({
         setError(null);
         try {
             const res = await fetch(
-                `/student/courses/${courseId}/chat-spaces/${chatSpaceId}/materials`,
+                `/student/courses/${courseId}/session-discussions/${sessionDiscussionId}/materials`,
                 { headers: { Accept: 'application/json' }, credentials: 'same-origin' },
             );
             if (!res.ok) {
@@ -259,7 +259,7 @@ export function ChatWeekMaterialsPanel({
         } finally {
             setLoading(false);
         }
-    }, [courseId, chatSpaceId]);
+    }, [courseId, sessionDiscussionId]);
 
     useEffect(() => {
         void fetchMaterials();
@@ -271,7 +271,7 @@ export function ChatWeekMaterialsPanel({
             error={error}
             data={data}
             courseId={courseId}
-            chatSpaceId={chatSpaceId}
+            sessionDiscussionId={sessionDiscussionId}
             cited={cited}
             onOpenDocument={onOpenDocument}
         />

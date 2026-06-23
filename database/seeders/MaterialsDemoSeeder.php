@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\CourseMaterial;
 use App\Models\CourseWeek;
 use App\Models\CourseWeekMaterial;
-use App\Models\MaterialModule;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Database\Seeder;
@@ -529,12 +528,11 @@ HTML;
         CourseWeekMaterial::query()->delete();
         CourseWeek::query()->delete();
         CourseMaterial::query()->delete();
-        MaterialModule::query()->delete();
 
         $pdfDir = storage_path('app/public/demo-materials');
         if (!is_dir($pdfDir)) mkdir($pdfDir, 0755, true);
 
-        $weekTotal = $moduleTotal = $materialTotal = $linkTotal = $pdfGenerated = 0;
+        $weekTotal = $materialTotal = $linkTotal = $pdfGenerated = 0;
         $seenCourses = [];
 
         foreach ($credentials as $credential) {
@@ -566,8 +564,6 @@ HTML;
                     CourseWeek::create(['id' => $weekId, 'course_id' => $courseId, 'week_index' => $weekNum, 'title' => $weekData['title'], 'sort_order' => $weekNum]);
                     $weekTotal++;
 
-                    $module = MaterialModule::create(['id' => (string) Str::uuid(), 'course_id' => $courseId, 'title' => "Minggu {$weekNum}: {$weekData['title']}", 'sort_order' => $weekNum]);
-                    $moduleTotal++;
 
                     foreach ($weekData['materials'] as $matIndex => $topic) {
                         $fileName = Str::slug("{$courseCode} {$topic}") . '.pdf';
@@ -594,6 +590,6 @@ HTML;
             }
         }
 
-        $this->command?->info("Seeded: {$weekTotal} weeks, {$moduleTotal} modules, {$materialTotal} materials, {$linkTotal} links, {$pdfGenerated} PDFs generated.");
+        $this->command?->info("Seeded: {$weekTotal} weeks, {$materialTotal} materials, {$linkTotal} links, {$pdfGenerated} PDFs generated.");
     }
 }

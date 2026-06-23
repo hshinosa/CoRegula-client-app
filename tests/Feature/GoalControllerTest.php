@@ -29,14 +29,14 @@ class GoalControllerTest extends TestCase
             'http://localhost:3000/api/courses/course-1/my-group' => Http::response([
                 'data' => ['id' => 'group-1', 'name' => 'Kelompok A'],
             ], 200),
-            'http://localhost:3000/api/groups/chat-spaces/chat-1' => Http::response([
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
                 'data' => ['id' => 'chat-1', 'name' => 'Diskusi 1', 'myGoal' => null],
             ], 200),
         ]);
 
         $response = $this->authenticatedSession()->get(route('student.goals.create', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
 
         $response->assertOk();
@@ -44,7 +44,7 @@ class GoalControllerTest extends TestCase
             ->component('student/goals/create')
             ->where('course.id', 'course-1')
             ->where('group.id', 'group-1')
-            ->where('chatSpace.id', 'chat-1')
+            ->where('sessionDiscussion.id', 'chat-1')
         );
     }
 
@@ -57,17 +57,17 @@ class GoalControllerTest extends TestCase
             'http://localhost:3000/api/courses/course-1/my-group' => Http::response([
                 'data' => ['id' => 'group-1', 'name' => 'Kelompok A'],
             ], 200),
-            'http://localhost:3000/api/groups/chat-spaces/chat-1' => Http::response([
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
                 'data' => ['id' => 'chat-1', 'myGoal' => ['id' => 'goal-1']],
             ], 200),
         ]);
 
         $response = $this->authenticatedSession()->get(route('student.goals.create', [
             'course' => 'course-1',
-            'chatSpace' => 'chat-1',
+            'sessionDiscussion' => 'chat-1',
         ]));
 
-        $response->assertRedirect(route('student.courses.chat-spaces', ['course' => 'course-1']));
+        $response->assertRedirect(route('student.courses.session-discussions', ['course' => 'course-1']));
         $response->assertSessionHas('info', 'Goal sudah ditetapkan oleh anggota grup lain. Silakan masuk ke sesi diskusi.');
     }
 
@@ -81,7 +81,7 @@ class GoalControllerTest extends TestCase
 
         $response = $this->authenticatedSession()->from(route('student.courses.index'))
             ->post(route('student.goals.store'), [
-                'chat_space_id' => 'chat-1',
+                'session_discussion_id' => 'chat-1',
                 'content' => 'Mahasiswa akan menganalisis pola diskusi kelompok untuk memahami kualitas kolaborasi.',
             ]);
 
@@ -93,7 +93,7 @@ class GoalControllerTest extends TestCase
     {
         $response = $this->authenticatedSession()->from(route('student.courses.index'))
             ->post(route('student.goals.store'), [
-                'chat_space_id' => 'chat-1',
+                'session_discussion_id' => 'chat-1',
                 'content' => 'Tujuan pembelajaran ini berisi kalimat panjang tanpa kata kerja aksi yang sesuai.',
             ]);
 
@@ -113,7 +113,7 @@ class GoalControllerTest extends TestCase
 
         $response = $this->authenticatedSession()->from(route('student.courses.index'))
             ->post(route('student.goals.store'), [
-                'chat_space_id' => 'chat-1',
+                'session_discussion_id' => 'chat-1',
                 'content' => 'Mahasiswa akan menganalisis data diskusi kelompok untuk meningkatkan refleksi belajar.',
             ]);
 

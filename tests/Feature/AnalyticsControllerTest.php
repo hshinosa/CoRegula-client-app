@@ -69,7 +69,7 @@ class AnalyticsControllerTest extends TestCase
                 ],
                 'recentActivity' => [['id' => 'activity-1']],
                 'members' => [['id' => 'student-1']],
-                'chatSpaces' => [['id' => 'chat-1']],
+                'sessionDiscussions' => [['id' => 'chat-1']],
             ], 200),
         ]);
 
@@ -85,7 +85,7 @@ class AnalyticsControllerTest extends TestCase
             ->where('group.id', 'group-1')
             ->where('analytics.qualityScore', 91)
             ->where('members.0.id', 'student-1')
-            ->where('chatSpaces.0.id', 'chat-1')
+            ->where('sessionDiscussions.0.id', 'chat-1')
         );
     }
 
