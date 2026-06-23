@@ -6,7 +6,6 @@ export const lecturerShortcuts: KeyboardShortcutMap = {
         { key: 'ctrl+2', description: 'Courses', route: '/lecturer/courses' },
         { key: 'ctrl+3', description: 'Sessions', route: '/lecturer/sessions' },
         { key: 'ctrl+4', description: 'Analytics', route: '/lecturer/analytics' },
-        { key: 'ctrl+5', description: 'AI Settings', route: '/lecturer/ai-settings' },
         { key: 'ctrl+6', description: 'Groups', route: '/lecturer/groups' },
     ],
     modals: [

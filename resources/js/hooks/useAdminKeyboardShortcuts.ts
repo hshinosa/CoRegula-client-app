@@ -7,7 +7,6 @@ const ADMIN_NAV_ROUTES = [
     '/admin/users',
     '/admin/master-data',
     '/admin/ai-settings',
-    '/admin/ai-comparison',
     '/admin/audit-log',
 ] as const;
 

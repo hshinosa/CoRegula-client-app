@@ -26,7 +26,6 @@ use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\GroupActivityController;
 use App\Http\Controllers\GroupSettingsController;
 use App\Http\Controllers\GroupMemberManagementController;
-use App\Http\Controllers\LecturerAISettingsController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReflectionController;
@@ -35,8 +34,6 @@ use App\Http\Controllers\ReflectionAnalyticsController;
 use App\Http\Controllers\ReflectionTagController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SessionManagementController;
-use App\Http\Controllers\SessionTemplateController;
-use App\Http\Controllers\Lecturer\LearningSessionController;
 use App\Http\Controllers\Student\StudentCourseWeeksController;
 use App\Http\Controllers\Student\StudentPreReadController;
 use App\Http\Controllers\Student\StudentSessionMaterialsController;
@@ -227,8 +224,6 @@ Route::middleware('auth.jwt')->group(function () {
 
         Route::get('/usage-stats', [AISettingsController::class, 'usageStats'])->name('usage-stats');
         Route::get('/usage-report/{userId}/{month}/{year}', [AISettingsController::class, 'usageReport'])->name('usage-report');
-        Route::get('/ai-comparison', [AISettingsController::class, 'comparisonPage'])->name('ai-comparison.index');
-        Route::post('/ai-compare', [AISettingsController::class, 'compare'])->name('ai-compare');
     });
 
     /*
@@ -281,28 +276,6 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/radar-chart', function () {
             return Inertia::render('lecturer/RadarChartPage');
         })->name('radar-chart');
-
-        // AI Settings
-        Route::prefix('ai-settings')->name('ai-settings.')->group(function () {
-            Route::get('/', [LecturerAISettingsController::class, 'index'])->name('index');
-            Route::post('/preview', [LecturerAISettingsController::class, 'preview'])->name('preview');
-            Route::get('/courses/{courseId}/context', [LecturerAISettingsController::class, 'courseContext'])->name('course-context');
-            Route::get('/history', [LecturerAISettingsController::class, 'history'])->name('history');
-            Route::post('/history/archive', [LecturerAISettingsController::class, 'archiveHistory'])->name('history.archive');
-
-            Route::post('/presets', [LecturerAISettingsController::class, 'storePreset'])->name('presets.store');
-            Route::put('/presets/{id}', [LecturerAISettingsController::class, 'updatePreset'])->name('presets.update');
-            Route::delete('/presets/{id}', [LecturerAISettingsController::class, 'destroyPreset'])->name('presets.destroy');
-            Route::post('/presets/import', [LecturerAISettingsController::class, 'importPreset'])->name('presets.import');
-            Route::get('/presets/{id}/export', [LecturerAISettingsController::class, 'exportPreset'])->name('presets.export');
-
-            Route::get('/ab-tests', [LecturerAISettingsController::class, 'listAbTests'])->name('ab-tests.index');
-            Route::post('/ab-tests', [LecturerAISettingsController::class, 'storeAbTest'])->name('ab-tests.store');
-            Route::get('/ab-tests/{id}', [LecturerAISettingsController::class, 'showAbTest'])->name('ab-tests.show');
-            Route::put('/ab-tests/{id}', [LecturerAISettingsController::class, 'updateAbTest'])->name('ab-tests.update');
-            Route::delete('/ab-tests/{id}', [LecturerAISettingsController::class, 'destroyAbTest'])->name('ab-tests.destroy');
-            Route::get('/ab-tests/{id}/stats', [LecturerAISettingsController::class, 'abTestStats'])->name('ab-tests.stats');
-        });
 
         // Aktivitas Diskusi
         Route::get('/courses/{course}/aktivitas', [LecturerAktivitasController::class, 'index'])
@@ -373,31 +346,6 @@ Route::middleware('auth.jwt')->group(function () {
         Route::post('/courses/{course}/weeks/{weekId}/materials/reorder', [LecturerCourseWeeksController::class, 'reorderWeekMaterials'])
             ->name('courses.weeks.materials.reorder');
 
-        // Session Templates
-        Route::prefix('session-templates')->name('session-templates.')->group(function () {
-            Route::get('/', [SessionTemplateController::class, 'index'])->name('index');
-            Route::post('/', [SessionTemplateController::class, 'store'])->name('store');
-            Route::get('/{id}', [SessionTemplateController::class, 'show'])->name('show');
-            Route::put('/{id}', [SessionTemplateController::class, 'update'])->name('update');
-            Route::delete('/{id}', [SessionTemplateController::class, 'destroy'])->name('destroy');
-            Route::post('/{id}/apply', [SessionTemplateController::class, 'apply'])->name('apply');
-        });
-
-        // Learning Sessions
-        Route::prefix('sessions')->name('sessions.')->group(function () {
-            Route::get('/', [LearningSessionController::class, 'index'])->name('index');
-            Route::post('/', [LearningSessionController::class, 'store'])->name('store');
-            Route::get('/{id}', [LearningSessionController::class, 'show'])->name('show');
-            Route::put('/{id}', [LearningSessionController::class, 'update'])->name('update');
-            Route::delete('/{id}', [LearningSessionController::class, 'destroy'])->name('destroy');
-            Route::post('/{id}/schedule', [LearningSessionController::class, 'schedule'])->name('schedule');
-            Route::post('/{id}/cancel-schedule', [LearningSessionController::class, 'cancelSchedule'])->name('cancel-schedule');
-            Route::put('/{id}/auto-close', [LearningSessionController::class, 'autoCloseUpdate'])->name('auto-close');
-            Route::post('/{id}/activate', [LearningSessionController::class, 'activate'])->name('activate');
-            Route::post('/bulk/close', [LearningSessionController::class, 'bulkClose'])->name('bulk.close');
-            Route::post('/bulk/archive', [LearningSessionController::class, 'bulkArchive'])->name('bulk.archive');
-            Route::post('/bulk/delete', [LearningSessionController::class, 'bulkDestroy'])->name('bulk.destroy');
-        });
     });
 
     // Public shared report access (no auth required)

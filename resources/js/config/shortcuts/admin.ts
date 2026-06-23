@@ -6,7 +6,6 @@ export const adminShortcuts: KeyboardShortcutMap = {
         { key: 'ctrl+2', description: 'Users', route: '/admin/users' },
         { key: 'ctrl+3', description: 'Master Data', route: '/admin/master-data' },
         { key: 'ctrl+4', description: 'AI Settings', route: '/admin/ai-settings' },
-        { key: 'ctrl+5', description: 'AI Comparison', route: '/admin/ai-comparison' },
         { key: 'ctrl+6', description: 'Audit Log', route: '/admin/audit-log' },
     ],
     modals: [

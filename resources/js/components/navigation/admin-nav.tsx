@@ -71,20 +71,6 @@ const adminNavItems: AdminNavItem[] = [
         ),
     },
     {
-        name: 'AI Comparison',
-        href: '/admin/ai-comparison',
-        icon: (
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 17V7m6 10V11M4 19h16M4 5h16"
-                />
-            </svg>
-        ),
-    },
-    {
         name: 'Audit Log',
         href: '/admin/audit-log',
         icon: (

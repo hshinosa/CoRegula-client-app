@@ -154,16 +154,6 @@ class AISettingsController extends Controller
         }
     }
 
-    public function comparisonPage(Request $request)
-    {
-        try {
-            return Inertia::render('admin/ai-comparison', []);
-        } catch (\Throwable $e) {
-            Log::error('AISettingsController: failed to render comparison page', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to load comparison page', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
     public function activate(Request $request, string $id)
     {
         try {
@@ -203,20 +193,6 @@ class AISettingsController extends Controller
         } catch (\Throwable $e) {
             Log::error('AISettingsController: failed to fetch usage report', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Failed to fetch usage report', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
-    public function compare(Request $request)
-    {
-        try {
-            $response = $this->apiRequest()->post($this->apiUrl() . '/api/admin/ai-compare', $request->all());
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('AISettingsController: connection failed comparing models', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('AISettingsController: failed to compare models', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to compare models', 'code' => 'SERVER_ERROR'], 500);
         }
     }
 

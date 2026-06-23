@@ -39,13 +39,6 @@ const SETTINGS_ITEMS: SearchResultItem[] = [
         type: 'setting',
     },
     {
-        id: 'ai-comparison',
-        title: 'AI Comparison',
-        subtitle: 'Bandingkan model AI',
-        href: '/admin/ai-comparison',
-        type: 'setting',
-    },
-    {
         id: 'user-management',
         title: 'User Management',
         subtitle: 'Kelola pengguna sistem',
