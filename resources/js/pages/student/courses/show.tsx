@@ -458,7 +458,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                                 <EmptyState
                                     icon={MessageSquare}
                                     title="Belum ada sesi diskusi"
-                                    description="Sesi diskusi akan muncul setelah grup membuat ruang chat."
+                                    description="Sesi diskusi akan muncul setelah grup membuat sesi diskusi."
                                 />
                             ) : (
                                 <div className="text-center py-8">

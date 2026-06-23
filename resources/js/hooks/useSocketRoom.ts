@@ -117,7 +117,7 @@ export function useSocketRoom({
     useEffect(() => {
         if (!jwtToken) return;
         if (!courseId || !groupId || !chatSpaceId) {
-            setConnectionError('Missing course, group, or chat space information');
+            setConnectionError('Informasi mata kuliah, grup, atau sesi diskusi tidak lengkap');
             return;
         }
 

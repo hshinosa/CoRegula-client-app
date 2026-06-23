@@ -683,8 +683,8 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                 border: '1px solid rgba(16,185,129,0.18)',
                 text: '#059669',
             },
-            helper: `${formatNumber(safeStats.courses.total)} total courses tracked`,
-            subtext: `${formatNumber(safeStats.courses.totalGroups)} groups and ${formatNumber(safeStats.courses.totalChatSpaces)} chat spaces are supporting discussion activity`,
+            helper: `${formatNumber(safeStats.courses.total)} total mata kuliah terlacak`,
+            subtext: `${formatNumber(safeStats.courses.totalGroups)} grup dan ${formatNumber(safeStats.courses.totalChatSpaces)} sesi diskusi mendukung aktivitas diskusi`,
         },
         {
             title: 'Messages Today',

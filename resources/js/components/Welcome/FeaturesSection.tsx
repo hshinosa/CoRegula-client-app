@@ -88,7 +88,7 @@ export default function FeaturesSection({ lightMode }: Props) {
                         <LiquidFeatureCard
                             icon={<MessageSquare className="h-6 w-6" />}
                             title="Diskusi Kelompok"
-                            description="Ruang diskusi terstruktur dengan tracking partisipasi otomatis dan analisis kualitas kontribusi setiap anggota."
+                            description="Sesi diskusi terstruktur dengan tracking partisipasi otomatis dan analisis kualitas kontribusi setiap anggota."
                             delay={0.1}
                             color="indigo"
                             lightMode={lightMode}
@@ -96,7 +96,7 @@ export default function FeaturesSection({ lightMode }: Props) {
                         <LiquidFeatureCard
                             icon={<Brain className="h-6 w-6" />}
                             title="Integrasi AI"
-                            description="Chat spaces dengan AI assistant untuk membantu mahasiswa mendapatkan jawaban dan insight tambahan saat diskusi."
+                            description="Sesi diskusi dengan AI assistant untuk membantu mahasiswa mendapatkan jawaban dan insight tambahan saat diskusi."
                             delay={0.2}
                             color="emerald"
                             lightMode={lightMode}

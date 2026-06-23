@@ -80,7 +80,7 @@ export function SearchBar({
                         onChange={handleChange}
                         placeholder="Cari pesan..."
                         className="w-48 border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-0 dark:text-gray-100 sm:w-64"
-                        aria-label="Cari pesan dalam ruang chat"
+                        aria-label="Cari pesan dalam sesi diskusi"
                     />
                     {isSearching && (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />

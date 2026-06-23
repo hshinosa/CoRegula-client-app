@@ -287,7 +287,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                 color: '#92400e',
                             },
                             {
-                                label: 'Chat Space Aktif',
+                                label: 'Sesi Diskusi Aktif',
                                 value: totalChatSpaces,
                                 detail: `${groupsWithGoals} grup sudah punya tujuan`,
                                 icon: MessageSquare,
@@ -328,7 +328,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                         <EmptyState
                             icon={FolderKanban}
                             title="Belum ada grup"
-                            description="Mulai dengan membuat grup pertama, lalu tugaskan mahasiswa dan siapkan ruang diskusi untuk setiap tim"
+                            description="Mulai dengan membuat grup pertama, lalu tugaskan mahasiswa dan siapkan sesi diskusi untuk setiap tim"
                             action={
                                 <PrimaryButton onClick={() => setShowCreateModal(true)}>
                                     <Plus className="mr-2 h-4 w-4" />
@@ -719,15 +719,15 @@ export default function GroupsIndex({ course, groups, students }: Props) {
 
             <FormModal
                 open={!!showChatSpaceModal}
-                title="Buat Chat Space Baru"
-                description="Tambahkan ruang diskusi terpisah di dalam grup untuk topik tertentu."
+                title="Buat Sesi Diskusi Baru"
+                description="Tambahkan sesi diskusi terpisah di dalam grup untuk topik tertentu."
                 onClose={() => setShowChatSpaceModal(null)}
                 maxWidth="max-w-md"
             >
                 <form onSubmit={handleCreateChatSpace} className="space-y-4">
                     <div>
                         <InputLabel htmlFor="chat_space_name" required>
-                            Nama Chat Space
+                            Nama Sesi
                         </InputLabel>
                         <input
                             id="chat_space_name"

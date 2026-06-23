@@ -2034,7 +2034,7 @@ background: 'var(--dm-accent-bg)',
                                                         Members: {group.memberCount ?? group.member_count ?? 0}
                                                     </span>
                                                     <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
-                                                        Chat Spaces: {group.chatSpaceCount ?? group.chat_space_count ?? 0}
+                                                        Sesi Diskusi: {group.chatSpaceCount ?? group.chat_space_count ?? 0}
                                                     </span>
                                                 </div>
                                             </div>

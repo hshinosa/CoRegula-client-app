@@ -12,7 +12,7 @@ export function SearchBar({
     value,
     onChange,
     onClear,
-    placeholder = 'Cari ruang diskusi...',
+    placeholder = 'Cari sesi diskusi...',
 }: SearchBarProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -50,7 +50,7 @@ export function SearchBar({
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 className="block w-full rounded-xl border-0 bg-white/60 py-3 pl-11 pr-10 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-brand-primary/30"
-                aria-label="Cari ruang diskusi"
+                aria-label="Cari sesi diskusi"
             />
             {value && (
                 <button

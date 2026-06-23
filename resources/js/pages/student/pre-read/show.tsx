@@ -111,7 +111,7 @@ export default function PreReadShow({ course, chatSpace, materials, isReview }: 
                     <LiquidGlassCard intensity="light" className="mb-6 p-5" lightMode>
                         <p className="text-sm text-brand-muted-dark">
                             Tinjau materi minggu ini (dan minggu sebelumnya jika perlu) sebelum menetapkan tujuan
-                            pembelajaran dan masuk ruang diskusi.
+                            pembelajaran dan masuk sesi diskusi.
                         </p>
                     </LiquidGlassCard>
 

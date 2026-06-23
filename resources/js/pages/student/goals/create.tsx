@@ -189,10 +189,10 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                 className="text-xl font-semibold"
                                 style={{ color: 'var(--color-brand-dark)' }}
                             >
-                                Chat Space Tidak Ditemukan
+                                Sesi Diskusi Tidak Ditemukan
                             </h3>
                             <p className="mt-2 text-brand-muted-dark">
-                                Chat space yang Anda cari tidak ditemukan atau Anda tidak memiliki akses.
+                                Sesi diskusi yang Anda cari tidak ditemukan atau Anda tidak memiliki akses.
                             </p>
                             <Link
                                 href={student.courses.show.url({ course: course.id })}
@@ -245,7 +245,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                             Tetapkan Tujuan Kelompok
                         </h2>
                         <p className="mt-1 text-sm text-brand-muted-dark">
-                            Untuk chat space: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{chatSpace.name}</span>
+                            Untuk sesi diskusi: <span className="font-medium" style={{ color: 'var(--color-brand-dark)' }}>{chatSpace.name}</span>
                         </p>
                         {chatSpace.weekTitle && (
                             <p className="mt-1 text-sm font-medium" style={{ color: 'var(--color-brand-primary)' }}>
@@ -278,7 +278,7 @@ export default function StudentGoalCreate({ course, group, chatSpace }: Props) {
                                         <li>Mulai dengan kata kerja aksi dari Taksonomi Bloom</li>
                                         <li>Jadilah spesifik tentang apa yang ingin Anda pelajari</li>
                                         <li>Buatlah dapat diukur sehingga Anda tahu kapan Anda telah mencapainya</li>
-                                        <li>Jaga agar relevan dengan topik diskusi di chat space ini</li>
+                                        <li>Jaga agar relevan dengan topik diskusi di sesi ini</li>
                                     </ul>
                                 </div>
                             </div>

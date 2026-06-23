@@ -23,8 +23,8 @@ export function EmptyState({
         return (
             <SharedEmptyState
                 icon={MessageSquare}
-                title="Belum ada sesi chat"
-                description="Buat sesi chat pertama Anda untuk mulai berdiskusi dengan kelompok"
+                title="Belum ada sesi diskusi"
+                description="Buat sesi diskusi pertama Anda untuk mulai berdiskusi dengan kelompok"
                 action={
                     onCreateNew && (
                         <PrimaryButton onClick={onCreateNew}>
@@ -41,8 +41,8 @@ export function EmptyState({
         return (
             <SharedEmptyState
                 icon={Filter}
-                title="Tidak ada ruang dengan filter ini"
-                description="Tidak ditemukan ruang yang sesuai dengan filter yang dipilih"
+                title="Tidak ada sesi dengan filter ini"
+                description="Tidak ditemukan sesi yang sesuai dengan filter yang dipilih"
                 action={
                     onClearFilters && (
                         <SecondaryButton onClick={onClearFilters}>
@@ -58,8 +58,8 @@ export function EmptyState({
     return (
         <SharedEmptyState
             icon={SearchX}
-            title="Tidak ada ruang yang cocok"
-            description={`Tidak ditemukan ruang dengan kata kunci "${searchQuery}"`}
+            title="Tidak ada sesi yang cocok"
+            description={`Tidak ditemukan sesi dengan kata kunci "${searchQuery}"`}
             action={
                 onClearSearch && (
                     <SecondaryButton onClick={onClearSearch}>
