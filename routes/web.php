@@ -319,14 +319,6 @@ Route::middleware('auth.jwt')->group(function () {
             ->name('courses.materials.view');
         Route::get('/courses/{course}/materials/{materialId}/stats', [LecturerMaterialsController::class, 'viewStats'])
             ->name('courses.materials.stats');
-        Route::post('/courses/{course}/materials/modules', [LecturerMaterialsController::class, 'storeModule'])
-            ->name('courses.materials.modules.store');
-        Route::put('/courses/{course}/materials/modules/{moduleId}', [LecturerMaterialsController::class, 'updateModule'])
-            ->name('courses.materials.modules.update');
-        Route::delete('/courses/{course}/materials/modules/{moduleId}', [LecturerMaterialsController::class, 'destroyModule'])
-            ->name('courses.materials.modules.destroy');
-        Route::post('/courses/{course}/materials/modules/reorder', [LecturerMaterialsController::class, 'reorderModules'])
-            ->name('courses.materials.modules.reorder');
 
         // Course weeks (official syllabus weeks)
         Route::get('/courses/{course}/weeks', [LecturerCourseWeeksController::class, 'index'])

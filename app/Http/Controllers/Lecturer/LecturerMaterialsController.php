@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Lecturer;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourseMaterial;
-use App\Models\MaterialModule;
 use App\Models\MaterialView;
 use App\Services\CoreApiInternalClient;
 use Illuminate\Http\JsonResponse;
@@ -33,105 +32,6 @@ class LecturerMaterialsController extends Controller
 
         return Storage::disk($disk)->path($relativePath);
     }
-    /**
-     * List modules with materials for a course.
-     */
-    public function index(string $course): JsonResponse
-    {
-        $modules = MaterialModule::where('course_id', $course)
-            ->orderBy('sort_order')
-            ->with(['materials' => function ($query) {
-                $query->orderBy('sort_order')->orderBy('created_at', 'desc');
-            }])
-            ->get();
-
-        // Get unassigned materials (no module)
-        $unassigned = CourseMaterial::where('course_id', $course)
-            ->whereNull('module_id')
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'modules' => $modules,
-            'unassigned' => $unassigned,
-        ]);
-    }
-
-    /**
-     * Create a new module.
-     */
-    public function storeModule(Request $request, string $course): JsonResponse
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'sort_order' => 'nullable|integer|min:0',
-        ]);
-
-        $maxOrder = MaterialModule::where('course_id', $course)->max('sort_order') ?? 0;
-
-        $module = MaterialModule::create([
-            'id' => (string) Str::uuid(),
-            'course_id' => $course,
-            'title' => $validated['title'],
-            'sort_order' => $validated['sort_order'] ?? ($maxOrder + 1),
-        ]);
-
-        return response()->json(['data' => $module], 201);
-    }
-
-    /**
-     * Update a module.
-     */
-    public function updateModule(Request $request, string $course, string $moduleId): JsonResponse
-    {
-        $module = MaterialModule::where('course_id', $course)->findOrFail($moduleId);
-
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'sort_order' => 'nullable|integer|min:0',
-        ]);
-
-        $module->update($validated);
-
-        return response()->json(['data' => $module]);
-    }
-
-    /**
-     * Delete a module (materials become unassigned).
-     */
-    public function destroyModule(string $course, string $moduleId): JsonResponse
-    {
-        $module = MaterialModule::where('course_id', $course)->findOrFail($moduleId);
-
-        // Unassign materials from this module
-        CourseMaterial::where('module_id', $moduleId)->update(['module_id' => null]);
-
-        $module->delete();
-
-        return response()->json(['message' => 'Modul berhasil dihapus.']);
-    }
-
-    /**
-     * Reorder modules.
-     */
-    public function reorderModules(Request $request, string $course): JsonResponse
-    {
-        $validated = $request->validate([
-            'order' => 'required|array|min:1',
-            'order.*.id' => 'required|string',
-            'order.*.sort_order' => 'required|integer|min:0',
-        ]);
-
-        foreach ($validated['order'] as $item) {
-            MaterialModule::where('id', $item['id'])
-                ->where('course_id', $course)
-                ->update(['sort_order' => $item['sort_order']]);
-        }
-
-        return response()->json(['message' => 'Urutan modul berhasil diperbarui.']);
-    }
-
     // STORAGE MIGRATION STRATEGY (H3 file-upload hardening):
     // - NEW uploads go to the 'private' disk (not web-accessible).
     // - Legacy files remain on 'public' disk; do NOT migrate in-place (would break URLs).

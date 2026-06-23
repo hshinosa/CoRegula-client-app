@@ -51,7 +51,6 @@ class LecturerMaterialsHubApiTest extends TestCase
         Schema::create('course_materials', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('course_id');
-            $table->uuid('module_id')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('file_name');
@@ -92,7 +91,6 @@ class LecturerMaterialsHubApiTest extends TestCase
         CourseMaterial::create([
             'id' => $moduleChildId,
             'course_id' => $this->courseId,
-            'module_id' => (string) Str::uuid(),
             'title' => 'Modul-only PDF',
             'file_name' => 'mod.pdf',
             'file_path' => 'materials/mod.pdf',

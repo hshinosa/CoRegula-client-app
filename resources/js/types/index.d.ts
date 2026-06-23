@@ -485,14 +485,6 @@ export interface AttendanceStudentSummary {
 
 // ============ Materials Types ============
 
-export interface MaterialModule {
-    id: string;
-    course_id: string;
-    title: string;
-    sort_order: number;
-    materials?: CourseMaterial[];
-    created_at: string;
-}
 
 export interface CourseWeek {
     id: string;
@@ -507,7 +499,6 @@ export interface CourseWeek {
 export interface CourseMaterial {
     id: string;
     course_id: string;
-    module_id: string | null;
     title: string;
     description: string | null;
     file_name: string;

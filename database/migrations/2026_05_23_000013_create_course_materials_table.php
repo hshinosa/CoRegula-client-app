@@ -8,21 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('material_modules')) {
-            Schema::create('material_modules', function (Blueprint $table) {
-                $table->uuid('id')->primary();
-                $table->uuid('course_id')->index();
-                $table->string('title');
-                $table->integer('sort_order')->default(0);
-                $table->timestamps();
-            });
-        }
-
         if (!Schema::hasTable('course_materials')) {
             Schema::create('course_materials', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->uuid('course_id')->index();
-                $table->uuid('module_id')->nullable();
                 $table->string('title');
                 $table->text('description')->nullable();
                 $table->string('file_name');
@@ -33,9 +22,6 @@ return new class extends Migration
                 $table->integer('view_count')->default(0);
                 $table->integer('sort_order')->default(0);
                 $table->timestamps();
-
-                $table->foreign('module_id')->references('id')->on('material_modules')->nullOnDelete();
-                $table->index(['course_id', 'module_id']);
             });
         }
 
@@ -55,6 +41,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('material_views');
         Schema::dropIfExists('course_materials');
-        Schema::dropIfExists('material_modules');
     }
 };
