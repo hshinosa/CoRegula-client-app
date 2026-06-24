@@ -217,7 +217,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
     };
 
     const getSessionBadge = (session: AttendanceSession) => {
-        if (session.auto_generated && !session.marked_count) {
+        if (session.auto_generated && (!session.marked_count || session.marked_count === 0)) {
             return <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(59,130,246,0.1)', color: '#2563eb' }}>Auto ✓</span>;
         }
         if (session.auto_generated && session.marked_count > 0) {
@@ -228,7 +228,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const filterSessionsByGroup = (sessions: AttendanceSession[]) => {
         if (groupTab === 'all') return sessions;
-        return sessions.filter((s) => (s as any).group_label === groupTab);
+        // Pertemuan (no group_label) = class-wide, show in all tabs
+        // Auto-attendance (has group_label) = only in matching tab
+        return sessions.filter((s) => !s.group_label || (s as any).group_label === groupTab);
     };
 
     if (loading) {
