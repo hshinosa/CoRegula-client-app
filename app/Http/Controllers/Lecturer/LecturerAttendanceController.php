@@ -26,15 +26,20 @@ class LecturerAttendanceController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // Get group mapping (group_id UUID → label letter)
+        // Get group mapping + membership (group_id UUID → label, member lists)
         $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
         $groupMap = [];
+        $groupMembers = []; // label → [studentId, ...]
         if ($groupResponse->successful()) {
             foreach ($groupResponse->json('data', []) as $g) {
                 $name = $g['name'] ?? '';
-                // Extract letter from "Kelompok A" → "A"
                 $letter = preg_match('/Kelompok\s+(\w+)/i', $name, $m) ? $m[1] : substr($name, 0, 1);
                 $groupMap[$g['id']] = $letter;
+                $memberIds = [];
+                foreach ($g['members'] ?? [] as $member) {
+                    $memberIds[] = $member['userId'] ?? $member['id'] ?? null;
+                }
+                $groupMembers[$letter] = array_filter($memberIds);
             }
         }
 
@@ -107,6 +112,7 @@ class LecturerAttendanceController extends Controller
             'byWeek' => $byWeek,
             'other' => $other,
             'running' => $running,
+            'groupMembers' => $groupMembers,
         ]);
     }
 

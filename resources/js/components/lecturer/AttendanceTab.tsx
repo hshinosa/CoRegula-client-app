@@ -42,6 +42,7 @@ interface GroupedSessions {
 
 export default function AttendanceTab({ courseId }: AttendanceTabProps) {
     const [groupedSessions, setGroupedSessions] = useState<GroupedSessions>({ byWeek: {}, other: [], running: [] });
+    const [groupMembers, setGroupMembers] = useState<Record<string, string[]>>({});
     const [summary, setSummary] = useState<AttendanceStudentSummary[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>('sessions');
     const [loading, setLoading] = useState(true);
@@ -56,8 +57,8 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
         try {
             const res = await fetch(`/lecturer/courses/${courseId}/attendance`);
             if (!res.ok) throw new Error('Failed to fetch sessions');
-            const data = await res.json();
             setGroupedSessions(data);
+            setGroupMembers(data.groupMembers || {});
         } catch (err) {
             toast.error('Gagal memuat data kehadiran');
         } finally {
@@ -89,10 +90,16 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
             const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`);
             if (!res.ok) throw new Error('Failed to fetch session');
             const data = await res.json();
-            setOverrideRecords((data.records || []).map((r: AttendanceStudentRecord) => ({
+            let records = (data.records || []).map((r: AttendanceStudentRecord) => ({
                 ...r,
                 status: (r.status === 'late' ? 'absent' : r.status) as AttendanceStatus,
-            })));
+            }));
+            // Filter by group tab if selected
+            if (groupTab !== 'all' && groupMembers[groupTab]) {
+                const memberIds = new Set(groupMembers[groupTab]);
+                records = records.filter(r => memberIds.has(r.student_id));
+            }
+            setOverrideRecords(records);
             setOverrideSession(sessionId);
             setViewMode('override');
         } catch (err) {
