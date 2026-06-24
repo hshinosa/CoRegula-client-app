@@ -34,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'student/ai-chat/*/*',
             'student/ai-chat/*/*/*',
             'student/ai-chat/*/*/*/*',
+            'lecturer/courses/*/attendance/*',
+            'lecturer/courses/*/attendance/*/*',
         ]);
 
         $middleware->alias([
