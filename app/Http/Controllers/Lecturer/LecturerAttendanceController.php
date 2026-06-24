@@ -22,7 +22,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -105,7 +105,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -157,7 +157,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -194,7 +194,7 @@ class LecturerAttendanceController extends Controller
 
                     $record->update([
                         'status' => $override['status'],
-                        'marked_by' => auth()->id(),
+                        'marked_by' => session('user.id'),
                         'marked_at' => now(),
                         'notes' => $notes,
                     ]);
@@ -223,7 +223,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -287,7 +287,7 @@ class LecturerAttendanceController extends Controller
     public function bulkClose(Request $request, string $course): JsonResponse
     {
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -314,7 +314,7 @@ class LecturerAttendanceController extends Controller
     public function closeSingle(Request $request, string $course): JsonResponse
     {
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -345,7 +345,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -375,7 +375,7 @@ class LecturerAttendanceController extends Controller
     {
         // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
-        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+        if (!$courseModel || $courseModel->lecturer_id !== session('user.id')) {
             abort(403, 'Forbidden');
         }
 
@@ -442,7 +442,7 @@ class LecturerAttendanceController extends Controller
             'auto_generated' => true,
             'attendance_method' => 'auto',
             'notes' => 'Auto-generated from discussion participation',
-            'created_by' => auth()->id(),
+            'created_by' => session('user.id'),
             'total_students' => count($attendanceData['students'] ?? []),
             'present_count' => 0,
             'absent_count' => 0,
