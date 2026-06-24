@@ -10,11 +10,14 @@ class AttendanceRecord extends Model
     public $incrementing = false;
 
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'id',
         'session_id',
         'student_id',
+        'student_name',
+        'student_email',
         'status',
         'notes',
         'marked_at',

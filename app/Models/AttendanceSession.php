@@ -24,6 +24,12 @@ class AttendanceSession extends Model
         'attendance_method',
         'notes',
         'created_by',
+        'total_students',
+        'present_count',
+        'absent_count',
+        'excused_count',
+        'marked_count',
+        'attendance_rate',
     ];
 
     protected $casts = [
