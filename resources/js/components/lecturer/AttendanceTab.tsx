@@ -216,8 +216,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const filterSessionsByGroup = (sessions: AttendanceSession[]) => {
         if (groupTab === 'all') return sessions;
-        // Sessions without group_label (Pertemuan) show in all tabs
-        return sessions.filter((s) => !s.group_label || (s as any).group_label === groupTab);
+        return sessions.filter((s) => (s as any).group_label === groupTab);
     };
 
     if (loading) {
@@ -347,6 +346,11 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                         </div>
                     )}
 
+                    {groupTab !== 'all' && Object.keys(groupedSessions.byWeek).length === 0 && groupedSessions.other.length === 0 && (
+                        <div className="text-center py-8">
+                            <p className={bodyTextClass}>Belum ada sesi kehadiran untuk Kelompok {groupTab}. Sesi akan muncul otomatis setelah diskusi kelompok ditutup.</p>
+                        </div>
+                    )}
                     {/* Sedang Berjalan */}
                     {groupedSessions.running.length > 0 && (
                         <div className="space-y-4">
