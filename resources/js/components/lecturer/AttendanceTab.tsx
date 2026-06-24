@@ -89,7 +89,10 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
             const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`);
             if (!res.ok) throw new Error('Failed to fetch session');
             const data = await res.json();
-            setOverrideRecords(data.records || []);
+            setOverrideRecords((data.records || []).map((r: AttendanceStudentRecord) => ({
+                ...r,
+                status: (r.status === 'late' ? 'absent' : r.status) as AttendanceStatus,
+            })));
             setOverrideSession(sessionId);
             setViewMode('override');
         } catch (err) {
@@ -387,7 +390,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                     </div>
                     <div className="space-y-2">
                         {overrideRecords.map((record) => {
-                            const config = statusConfig[record.status];
+                            const config = statusConfig[record.status as AttendanceStatus] || statusConfig.absent;
                             const Icon = config.icon;
                             return (
                                 <LiquidGlassCard key={record.student_id} className="p-4">
