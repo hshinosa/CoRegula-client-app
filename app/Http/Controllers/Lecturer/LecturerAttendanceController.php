@@ -26,6 +26,18 @@ class LecturerAttendanceController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Get group mapping (group_id UUID → label letter)
+        $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
+        $groupMap = [];
+        if ($groupResponse->successful()) {
+            foreach ($groupResponse->json('data', []) as $g) {
+                $name = $g['name'] ?? '';
+                // Extract letter from "Kelompok A" → "A"
+                $letter = preg_match('/Kelompok\s+(\w+)/i', $name, $m) ? $m[1] : substr($name, 0, 1);
+                $groupMap[$g['id']] = $letter;
+            }
+        }
+
         // Query attendance sessions with eager loading (fix N+1)
         $sessions = AttendanceSession::where('course_id', $course)
             ->with(['records' => function ($q) {
@@ -50,6 +62,7 @@ class LecturerAttendanceController extends Controller
                 'session_discussion_id' => $session->session_discussion_id,
                 'week_id' => $session->week_id,
                 'group_id' => $session->group_id,
+                'group_label' => $session->group_id ? ($groupMap[$session->group_id] ?? null) : null,
                 'total_students' => $session->total_students,
                 'present_count' => $session->present_count,
                 'absent_count' => $session->absent_count,

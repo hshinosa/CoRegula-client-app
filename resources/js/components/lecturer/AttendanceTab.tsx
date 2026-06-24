@@ -216,7 +216,8 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const filterSessionsByGroup = (sessions: AttendanceSession[]) => {
         if (groupTab === 'all') return sessions;
-        return sessions.filter((s) => s.group_id === groupTab);
+        // Sessions without group_label (Pertemuan) show in all tabs
+        return sessions.filter((s) => !s.group_label || (s as any).group_label === groupTab);
     };
 
     if (loading) {
