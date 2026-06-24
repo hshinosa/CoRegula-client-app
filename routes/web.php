@@ -299,6 +299,8 @@ Route::middleware('auth.jwt')->group(function () {
             ->name('courses.attendance.summary');
         Route::get('/courses/{course}/attendance/export', [LecturerAttendanceController::class, 'export'])
             ->name('courses.attendance.export');
+        Route::post('/courses/{course}/attendance/close-single', [LecturerAttendanceController::class, 'closeSingle'])
+            ->name('courses.attendance.close-single');
 
         Route::get('/courses/{course}/materials-hub', [\App\Http\Controllers\Lecturer\LecturerMaterialsHubController::class, 'show'])
             ->name('courses.materials-hub.show');

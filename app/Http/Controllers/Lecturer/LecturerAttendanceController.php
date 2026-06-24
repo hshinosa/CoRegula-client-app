@@ -282,11 +282,10 @@ class LecturerAttendanceController extends Controller
     }
 
     /**
-     * Bulk close sessions and create attendance records from core-api response.
+     * Bulk close sessions. Core-api saves attendance to PostgreSQL automatically.
      */
     public function bulkClose(Request $request, string $course): JsonResponse
     {
-        // Verify lecturer owns the course
         $courseModel = Course::where('id', $course)->first();
         if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
             return response()->json(['message' => 'Forbidden'], 403);
@@ -297,8 +296,7 @@ class LecturerAttendanceController extends Controller
             'sessionDiscussionIds.*' => 'required|string',
         ]);
 
-        // Proxy to core-api bulk close
-        $response = $this->apiRequest()->post($this->apiUrl() . '/api/session-discussions/bulk-close', [
+        $response = $this->apiRequest(60)->post($this->apiUrl() . '/api/session-discussions/bulk-close', [
             'sessionDiscussionIds' => $validated['sessionDiscussionIds'],
         ]);
 
@@ -306,23 +304,38 @@ class LecturerAttendanceController extends Controller
             return response()->json(['message' => 'Failed to close sessions', 'error' => $response->json()], $response->status());
         }
 
-        $closedSessions = $response->json('data', []);
+        return response()->json(['message' => 'Sessions closed and attendance recorded', 'data' => $response->json('data', [])]);
+    }
 
-        // Create attendance records from attendanceData in each closed session
-        DB::beginTransaction();
-        try {
-            foreach ($closedSessions as $sessionData) {
-                if (isset($sessionData['attendanceData'])) {
-                    $this->createAttendanceFromData($course, $sessionData['attendanceData']);
-                }
-            }
-            DB::commit();
-
-            return response()->json(['message' => 'Sessions closed and attendance recorded', 'data' => $closedSessions]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Failed to create attendance records', 'error' => $e->getMessage()], 500);
+    /**
+     * Close a single session discussion.
+     * Core-api saves attendance to PostgreSQL automatically on close.
+     */
+    public function closeSingle(Request $request, string $course): JsonResponse
+    {
+        $courseModel = Course::where('id', $course)->first();
+        if (!$courseModel || $courseModel->lecturer_id !== auth()->id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
+
+        $validated = $request->validate([
+            'sessionDiscussionId' => 'required|string',
+        ]);
+
+        $response = $this->apiRequest(30)->post(
+            $this->apiUrl() . '/api/session-discussions/' . $validated['sessionDiscussionId'] . '/close'
+        );
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Failed to close session', 'error' => $response->json()], $response->status());
+        }
+
+        $sessionData = $response->json('data', []);
+
+        return response()->json([
+            'message' => 'Sesi ditutup, kehadiran dicatat',
+            'data' => $sessionData,
+        ]);
     }
 
     /**

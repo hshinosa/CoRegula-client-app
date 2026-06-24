@@ -50,6 +50,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
     const [groupTab, setGroupTab] = useState<GroupTab>('all');
     const [summaryWeekFilter, setSummaryWeekFilter] = useState<string>('');
     const [summaryGroupFilter, setSummaryGroupFilter] = useState<string>('');
+    const [closeResult, setCloseResult] = useState<{ summary: string; attendanceData?: { students: Array<{ studentName: string; messageCount: number; hotCount: number; status: string }> } } | null>(null);
 
     const fetchSessions = useCallback(async () => {
         try {
@@ -149,14 +150,28 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const closeSession = async (sessionDiscussionId: string) => {
         try {
-            const res = await fetch(`/api/session-discussions/${sessionDiscussionId}/close`, {
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/close-single`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionDiscussionId }),
             });
-            if (!res.ok) throw new Error('Failed to close session');
-            toast.success('Sesi ditutup, kehadiran dicatat');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || 'Failed to close session');
+            }
+            const data = await res.json();
+            const sessionData = data.data || {};
+            if (sessionData.summary) {
+                setCloseResult({
+                    summary: sessionData.summary,
+                    attendanceData: sessionData.attendanceData,
+                });
+            } else {
+                toast.success(data.message || 'Sesi ditutup, kehadiran dicatat');
+            }
             fetchSessions();
         } catch (err) {
-            toast.error('Gagal menutup sesi');
+            toast.error(err instanceof Error ? err.message : 'Gagal menutup sesi');
         }
     };
 
@@ -451,6 +466,44 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                             </table>
                         </div>
                     </LiquidGlassCard>
+                </div>
+            )}
+
+            {/* Summary Modal after close */}
+            {closeResult && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setCloseResult(null)}>
+                    <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-semibold" style={headingStyle}>Ringkasan Sesi Diskusi</h3>
+                            <button onClick={() => setCloseResult(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+                        </div>
+                        <div className="prose prose-sm max-w-none mb-6">
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{closeResult.summary}</p>
+                        </div>
+                        {closeResult.attendanceData && closeResult.attendanceData.students.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-semibold mb-3" style={headingStyle}>Kehadiran Otomatis</h4>
+                                <div className="space-y-2">
+                                    {closeResult.attendanceData.students.map((s, i) => {
+                                        const statusLabel = s.status === 'present' ? 'Hadir' : 'Tidak Hadir';
+                                        const statusColor = s.status === 'present' ? 'text-green-600' : 'text-red-600';
+                                        return (
+                                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                                <div>
+                                                    <span className="text-sm font-medium" style={headingStyle}>{s.studentName}</span>
+                                                    <span className="text-xs text-gray-500 ml-2">{s.messageCount} pesan, {s.hotCount} HOT</span>
+                                                </div>
+                                                <span className={`text-sm font-semibold ${statusColor}`}>{statusLabel}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                        <button onClick={() => setCloseResult(null)} className="mt-6 w-full px-4 py-2 rounded-lg bg-brand-primary text-white font-medium hover:opacity-90 transition">
+                            Tutup
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
