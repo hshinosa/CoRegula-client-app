@@ -27,20 +27,24 @@ class LecturerAttendanceController extends Controller
         }
 
         // Get group mapping + membership (group_id UUID → label, member lists)
-        $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
         $groupMap = [];
         $groupMembers = []; // label → [studentId, ...]
-        if ($groupResponse->successful()) {
-            foreach ($groupResponse->json('data', []) as $g) {
-                $name = $g['name'] ?? '';
-                $letter = preg_match('/Kelompok\s+(\w+)/i', $name, $m) ? $m[1] : substr($name, 0, 1);
-                $groupMap[$g['id']] = $letter;
-                $memberIds = [];
-                foreach ($g['members'] ?? [] as $member) {
-                    $memberIds[] = $member['userId'] ?? $member['id'] ?? null;
+        try {
+            $groupResponse = $this->apiRequest(10)->get($this->apiUrl() . "/api/courses/{$course}/groups");
+            if ($groupResponse->successful()) {
+                foreach ($groupResponse->json('data', []) as $g) {
+                    $name = $g['name'] ?? '';
+                    $letter = preg_match('/Kelompok\s+(\w+)/i', $name, $m) ? $m[1] : substr($name, 0, 1);
+                    $groupMap[$g['id']] = $letter;
+                    $memberIds = [];
+                    foreach ($g['members'] ?? [] as $member) {
+                        $memberIds[] = $member['userId'] ?? $member['id'] ?? null;
+                    }
+                    $groupMembers[$letter] = array_filter($memberIds);
                 }
-                $groupMembers[$letter] = array_filter($memberIds);
             }
+        } catch (\Exception $e) {
+            // Group mapping is optional — continue with empty maps
         }
 
         // Query attendance sessions with eager loading (fix N+1)

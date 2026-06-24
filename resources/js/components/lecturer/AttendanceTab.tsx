@@ -55,8 +55,11 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const fetchSessions = useCallback(async () => {
         try {
-            const res = await fetch(`/lecturer/courses/${courseId}/attendance`);
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance`, {
+                headers: { 'Accept': 'application/json' },
+            });
             if (!res.ok) throw new Error('Failed to fetch sessions');
+            const data = await res.json();
             setGroupedSessions(data);
             setGroupMembers(data.groupMembers || {});
         } catch (err) {
@@ -87,7 +90,9 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
 
     const startOverride = async (sessionId: string) => {
         try {
-            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`);
+            const res = await fetch(`/lecturer/courses/${courseId}/attendance/sessions/${sessionId}`, {
+                headers: { 'Accept': 'application/json' },
+            });
             if (!res.ok) throw new Error('Failed to fetch session');
             const data = await res.json();
             let records = (data.records || []).map((r: AttendanceStudentRecord) => ({
