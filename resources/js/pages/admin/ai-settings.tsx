@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
+import { ModelFetcher } from '@/components/admin/ModelFetcher';
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
 import { LiquidGlassCard, PrimaryButton, SecondaryButton } from '@/components/Welcome/utils/helpers';
 import { FormModal } from '@/components/ui/FormModal';
@@ -328,6 +329,40 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
             },
             onFinish: () => setIsSyncing(false),
         });
+    };
+
+    const handleCreateModelSelect = (modelId: string) => {
+        setCreateForm((prev) => {
+            let config: Record<string, unknown>;
+            try {
+                config = JSON.parse(prev.config || '{}');
+            } catch {
+                config = {};
+            }
+            config.defaultModel = modelId;
+            return {
+                ...prev,
+                config: JSON.stringify(config, null, 2),
+            };
+        });
+        toast.success(`Model ${modelId} selected`);
+    };
+
+    const handleEditModelSelect = (modelId: string) => {
+        setEditForm((prev) => {
+            let config: Record<string, unknown>;
+            try {
+                config = JSON.parse(prev.config || '{}');
+            } catch {
+                config = {};
+            }
+            config.defaultModel = modelId;
+            return {
+                ...prev,
+                config: JSON.stringify(config, null, 2),
+            };
+        });
+        toast.success(`Model ${modelId} selected`);
     };
 
     const resetCreateForm = () => {
@@ -890,6 +925,13 @@ background: 'var(--dm-accent-bg)',
                         <InputError message={createErrors.baseUrl} className="mt-2" />
                     </div>
 
+                    {createForm.name && (
+                        <ModelFetcher
+                            providerName={createForm.name}
+                            onModelSelect={handleCreateModelSelect}
+                        />
+                    )}
+
                     <div>
                         <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Config (JSON)</label>
                         <textarea
@@ -968,6 +1010,13 @@ background: 'var(--dm-accent-bg)',
                         />
                         <InputError message={editErrors.baseUrl} className="mt-2" />
                     </div>
+
+                    {editForm.name && (
+                        <ModelFetcher
+                            providerName={editForm.name}
+                            onModelSelect={handleEditModelSelect}
+                        />
+                    )}
 
                     <div>
                         <label className="text-sm font-medium text-brand-dark dark:text-gray-200">Config (JSON)</label>
