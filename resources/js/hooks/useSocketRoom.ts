@@ -121,12 +121,11 @@ export function useSocketRoom({
             return;
         }
 
-        const isDev = import.meta.env.DEV;
-        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || (isDev ? window.location.origin : 'http://localhost:3000');
+        const apiUrl = socketUrl || import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || window.location.origin;
 
         socketRef.current = io(apiUrl, {
             auth: { token: jwtToken },
-            transports: ['polling', 'websocket'],
+            transports: ['polling'],
             reconnection: true,
             reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,
