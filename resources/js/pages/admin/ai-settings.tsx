@@ -625,11 +625,11 @@ export default function AdminAiSettingsPage({ providers }: PageProps) {
     };
 
     return (
-        <AppLayout title="AI Settings">
-            <Head title="Admin - AI Settings" />
+        <AppLayout title="Pengaturan AI">
+            <Head title="Admin - Pengaturan AI" />
 
             <div className="space-y-6">
-                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'AI Settings' }]} />
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Pengaturan AI' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -645,35 +645,35 @@ background: 'var(--dm-accent-bg)',
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
-                                        AI Settings
+                                        Pengaturan AI
                                     </h1>
                                     <p className="mt-2 max-w-2xl text-brand-muted-dark dark:text-gray-300">
-                                        Kelola provider AI untuk kebutuhan admin tanpa ubah code. API key tetap disimpan aman,
-                                        hanya ditampilkan dalam bentuk masked, dan satu provider aktif bisa dipilih langsung dari tabel.
+                                        Kelola provider AI untuk kebutuhan admin tanpa mengubah kode. API key tetap disimpan aman,
+                                        hanya ditampilkan dalam bentuk tersamarkan, dan satu provider aktif bisa dipilih langsung dari tabel.
                                     </p>
                                 </div>
                             </div>
 
                             <PrimaryButton onClick={() => setShowCreateModal(true)} className="inline-flex items-center gap-2">
                                 <Plus className="h-4 w-4" />
-                                Add Provider
+                                Tambah Provider
                             </PrimaryButton>
                         </div>
 
                         <div className="mt-5 grid gap-4 md:grid-cols-3">
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Total Providers</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Total provider</p>
                                 <p className="mt-2 text-2xl font-semibold text-brand-dark dark:text-gray-100">{providerList.length}</p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Active Provider</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Provider aktif</p>
                                 <p className="mt-2 text-lg font-semibold text-brand-dark dark:text-gray-100">
                                     {activeProvider ? activeProvider.displayName : 'Belum ada'}
                                 </p>
                             </div>
                             <div className="rounded-2xl border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Security</p>
-                                <p className="mt-2 text-sm font-medium text-brand-dark dark:text-gray-100">API keys tersimpan terenkripsi dan hanya tampil masked.</p>
+                                <p className="text-sm text-brand-muted-dark dark:text-gray-600">Keamanan</p>
+                                <p className="mt-2 text-sm font-medium text-brand-dark dark:text-gray-100">API key tersimpan terenkripsi dan hanya tampil dalam bentuk tersamarkan.</p>
                             </div>
                         </div>
                     </LiquidGlassCard>
@@ -685,15 +685,15 @@ background: 'var(--dm-accent-bg)',
                     ) : (
                     <LiquidGlassCard intensity="medium" className="overflow-hidden p-0" lightMode={true}>
                         <div className="border-b border-black/5 px-6 py-4 dark:border-white/10">
-                            <h2 className="text-lg font-semibold text-brand-dark dark:text-gray-100">Provider List</h2>
-                            <p className="mt-1 text-sm text-brand-muted-dark dark:text-gray-300">Aktifkan satu provider yang akan dipakai sistem, test koneksi kapan pun, lalu update konfigurasi via modal.</p>
+                            <h2 className="text-lg font-semibold text-brand-dark dark:text-gray-100">Daftar provider</h2>
+                            <p className="mt-1 text-sm text-brand-muted-dark dark:text-gray-300">Aktifkan satu provider yang akan dipakai sistem, uji koneksi kapan pun, lalu perbarui konfigurasi lewat modal.</p>
                         </div>
 
                         {providerList.length === 0 ? (
                             <div className="px-6 py-12 text-center">
                                 <Server className="mx-auto h-10 w-10 text-brand-primary/70" />
                                 <h3 className="mt-4 text-lg font-semibold text-brand-dark dark:text-gray-100">Belum ada provider</h3>
-                                <p className="mt-2 text-sm text-brand-muted-dark dark:text-gray-300">Tambahkan provider pertama untuk mulai mengelola AI Settings.</p>
+                                <p className="mt-2 text-sm text-brand-muted-dark dark:text-gray-300">Tambahkan provider pertama untuk mulai mengelola pengaturan AI.</p>
                             </div>
                         ) : (
                             <>
@@ -701,12 +701,12 @@ background: 'var(--dm-accent-bg)',
                                     <table className="min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                                         <thead className="bg-white/60 text-left text-brand-muted-dark dark:bg-white/5 dark:text-gray-600">
                                             <tr>
-                                                <th className="px-6 py-4 font-medium">Name</th>
+                                                <th className="px-6 py-4 font-medium">Nama</th>
                                                 <th className="px-6 py-4 font-medium">Status</th>
                                                 <th className="px-6 py-4 font-medium">Base URL</th>
-                                                <th className="px-6 py-4 font-medium">API Key</th>
-                                                <th className="px-6 py-4 font-medium">Updated</th>
-                                                <th className="px-6 py-4 text-right font-medium">Actions</th>
+                                                <th className="px-6 py-4 font-medium">API key</th>
+                                                <th className="px-6 py-4 font-medium">Diperbarui</th>
+                                                <th className="px-6 py-4 text-right font-medium">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-black/5 bg-white/30 dark:divide-white/10 dark:bg-white/5">

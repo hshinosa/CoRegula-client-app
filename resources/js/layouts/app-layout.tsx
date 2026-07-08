@@ -228,7 +228,7 @@ export default function AppLayout({ children, title, navItems = [] }: AppLayoutP
 
             {/* Sidebar - Desktop */}
             <aside 
-                className="hidden w-72 flex-shrink-0 lg:block"
+                className="relative z-50 hidden w-72 flex-shrink-0 lg:block"
                 style={{
                     background: darkMode ? 'rgba(17, 17, 22, 0.95)' : 'rgba(255, 255, 255, 0.6)',
                     backdropFilter: 'blur(40px) saturate(180%)',

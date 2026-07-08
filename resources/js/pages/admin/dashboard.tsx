@@ -736,14 +736,14 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
     ];
 
     return (
-        <AppLayout title="Dashboard">
-            <Head title="Admin Dashboard" />
+        <AppLayout title="Dasbor">
+            <Head title="Admin - Dasbor" />
 
             <div className="relative space-y-6">
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={300} />
                 <OrganicBlob className="top-40 -right-20" delay={-5} color="rgba(136, 22, 28, 0.03)" size={250} />
 
-                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Dashboard' }]} />
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Dasbor' }]} />
 
                 <div className="flex items-start justify-between">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex-1">
@@ -762,43 +762,43 @@ export default function AdminDashboardPage({ auth, stats, activities = [], usage
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-bold" style={headingStyle}>
-                                            Welcome back, {auth.user?.name}!
+                                            Selamat datang kembali, {auth.user?.name}!
                                         </h1>
-                                         <p className="mt-1 text-sm text-brand-muted-dark">Platform overview for administration, learning activity, and AI governance.</p>
+                                         <p className="mt-1 text-sm text-brand-muted-dark">Ringkasan platform untuk administrasi, aktivitas pembelajaran, dan tata kelola AI.</p>
                                          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-3 py-1.5 text-xs font-medium text-slate-600">
                                              <span className={`h-2.5 w-2.5 rounded-full ${isSocketConnected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                             {isSocketConnected ? 'WebSocket connected' : 'WebSocket disconnected'}
+                                             {isSocketConnected ? 'WebSocket tersambung' : 'WebSocket terputus'}
                                          </div>
                                      </div>
                                  </div>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Most Active Course</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Kelas paling aktif</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
-                                            {safeStats.engagement.mostActiveCourse?.name ?? 'No data yet'}
+                                            {safeStats.engagement.mostActiveCourse?.name ?? 'Belum ada data'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Most Active User</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Pengguna paling aktif</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
-                                            {safeStats.engagement.mostActiveUser?.name ?? 'No data yet'}
+                                            {safeStats.engagement.mostActiveUser?.name ?? 'Belum ada data'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Course Messages</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Pesan kelas</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveCourse
-                                                ? `${formatNumber(safeStats.engagement.mostActiveCourse.messageCount)} messages`
-                                                : 'No messages yet'}
+                                                ? `${formatNumber(safeStats.engagement.mostActiveCourse.messageCount)} pesan`
+                                                : 'Belum ada pesan'}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl border border-white/60 bg-white/40 px-4 py-3">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">User Messages</p>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Pesan pengguna</p>
                                         <p className="mt-2 text-sm font-semibold text-brand-dark">
                                             {safeStats.engagement.mostActiveUser
-                                                ? `${formatNumber(safeStats.engagement.mostActiveUser.messageCount)} messages`
-                                                : 'No messages yet'}
+                                                ? `${formatNumber(safeStats.engagement.mostActiveUser.messageCount)} pesan`
+                                                : 'Belum ada pesan'}
                                         </p>
                                     </div>
                                 </div>

@@ -718,11 +718,11 @@ export default function AdminUserManagementPage({ users, pagination, filters }: 
     };
 
     return (
-        <AppLayout title="User Management">
-            <Head title="Admin - User Management" />
+        <AppLayout title="Kelola Pengguna">
+            <Head title="Admin - Kelola Pengguna" />
 
             <div className="space-y-6">
-                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Users' }]} />
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Pengguna' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -738,7 +738,7 @@ background: 'var(--dm-accent-bg)',
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
-                                        User Management
+                                        Kelola Pengguna
                                     </h1>
                                     <p className="mt-2 text-brand-muted-dark">
                                         Kelola akun pengguna, peran, dan kredensial akses platform.
@@ -749,15 +749,15 @@ background: 'var(--dm-accent-bg)',
                             <div className="flex flex-wrap items-center gap-2">
                                 <SecondaryButton onClick={handleExportUsers} className="px-4 py-2 text-sm">
                                     <Download className="h-4 w-4" />
-                                    Export CSV
+                                    Ekspor CSV
                                 </SecondaryButton>
                                 <SecondaryButton onClick={() => setShowImportModal(true)} className="px-4 py-2 text-sm">
                                     <Import className="h-4 w-4" />
-                                    Import CSV
+                                    Impor CSV
                                 </SecondaryButton>
                                 <PrimaryButton onClick={() => setShowCreateModal(true)}>
                                     <Plus className="h-4 w-4" />
-                                    Add New User
+                                    Tambah Pengguna
                                 </PrimaryButton>
                             </div>
                         </div>
@@ -769,29 +769,29 @@ background: 'var(--dm-accent-bg)',
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                                 <div>
-                                    <label className="text-sm font-medium text-brand-dark">Search</label>
+                                    <label className="text-sm font-medium text-brand-dark">Cari</label>
                                     <div className="relative mt-1.5">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                         <input
                                             type="text"
                                             value={searchInput}
                                             onChange={(event) => setSearchInput(event.target.value)}
-                                            placeholder="Search by name or email"
+                                            placeholder="Cari berdasarkan nama atau email"
                                             className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium text-brand-dark">Role</label>
+                                    <label className="text-sm font-medium text-brand-dark">Peran</label>
                                     <select
                                         value={roleFilter}
                                         onChange={(event) => handleRoleFilterChange(event.target.value as FilterRole)}
                                         className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                     >
-                                        <option value="all">All</option>
-                                        <option value="student">Student</option>
-                                        <option value="lecturer">Lecturer</option>
+                                        <option value="all">Semua</option>
+                                        <option value="student">Mahasiswa</option>
+                                        <option value="lecturer">Dosen</option>
                                         <option value="admin">Admin</option>
                                     </select>
                                 </div>
@@ -800,17 +800,17 @@ background: 'var(--dm-accent-bg)',
                             <div className="flex flex-wrap items-center gap-2">
                                 <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
                                     <Filter className="h-3.5 w-3.5" />
-                                    Active Filters: {activeFiltersCount}
+                                    Filter aktif: {activeFiltersCount}
                                 </div>
                                 <SecondaryButton onClick={handleClearFilters} className="px-4 py-2 text-sm">
-                                    Clear Filters
+                                    Reset filter
                                 </SecondaryButton>
                             </div>
                         </div>
 
                         {selectedUsersCount > 0 && (
                             <div className="flex flex-col gap-3 rounded-2xl border border-brand-primary/15 bg-brand-primary/5 p-4 lg:flex-row lg:items-center lg:justify-between">
-                                <p className="text-sm font-medium text-brand-dark">{selectedUsersCount} users selected</p>
+                                <p className="text-sm font-medium text-brand-dark">{selectedUsersCount} pengguna dipilih</p>
 
                                 <div className="flex flex-wrap items-center gap-2">
                                     <button
@@ -820,7 +820,7 @@ background: 'var(--dm-accent-bg)',
                                         className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         <Trash2 className="h-4 w-4" />
-                                        Bulk Delete
+                                        Hapus massal
                                     </button>
                                     <select
                                         value={bulkRole}
@@ -828,9 +828,9 @@ background: 'var(--dm-accent-bg)',
                                         disabled={bulkProcessing}
                                         className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        <option value="student">Change role to Student</option>
-                                        <option value="lecturer">Change role to Lecturer</option>
-                                        <option value="admin">Change role to Admin</option>
+                                        <option value="student">Ubah peran ke Mahasiswa</option>
+                                        <option value="lecturer">Ubah peran ke Dosen</option>
+                                        <option value="admin">Ubah peran ke Admin</option>
                                     </select>
                                     <button
                                         type="button"
@@ -838,7 +838,7 @@ background: 'var(--dm-accent-bg)',
                                         disabled={bulkProcessing}
                                         className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        Clear Selection
+                                        Bersihkan pilihan
                                     </button>
                                 </div>
                             </div>
@@ -846,11 +846,11 @@ background: 'var(--dm-accent-bg)',
 
                         <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
                             <p className="text-sm text-brand-muted-dark">
-                                Showing {start}-{end} of {total} users
+                                Menampilkan {start}-{end} dari {total} pengguna
                             </p>
 
                             <div className="flex items-center gap-2">
-                                <label className="text-sm text-brand-muted-dark">Items per page</label>
+                                <label className="text-sm text-brand-muted-dark">Item per halaman</label>
                                 <select
                                     value={limit}
                                     onChange={(event) => handleLimitChange(Number(event.target.value))}
@@ -875,15 +875,15 @@ background: 'var(--dm-accent-bg)',
                                                     type="checkbox"
                                                     checked={allUsersSelected}
                                                     onChange={toggleSelectAllUsers}
-                                                    aria-label="Select all users"
+                                                    aria-label="Pilih semua pengguna"
                                                     className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                 />
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Name</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Nama</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Email</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Role</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Created At</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Actions</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Peran</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Dibuat</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--dm-text-muted)]">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/70">
@@ -897,7 +897,7 @@ background: 'var(--dm-accent-bg)',
                                                     <EmptyState
                                                         icon={Search}
                                                         title="Tidak ada data ditemukan"
-                                                        description="Coba ubah pencarian atau filter untuk menemukan user."
+                                                        description="Coba ubah pencarian atau filter untuk menemukan pengguna."
                                                     />
                                                 </td>
                                             </tr>
@@ -909,7 +909,7 @@ background: 'var(--dm-accent-bg)',
                                                             type="checkbox"
                                                             checked={selectedUserIds.has(user.id)}
                                                             onChange={() => toggleUserSelection(user.id)}
-                                                            aria-label={`Select ${user.name}`}
+                                                            aria-label={`Pilih ${user.name}`}
                                                             className="h-4 w-4 rounded border-slate-300 text-brand-primary focus-visible:ring-brand-primary/30"
                                                         />
                                                     </td>

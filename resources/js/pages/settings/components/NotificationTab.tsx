@@ -52,7 +52,7 @@ export function NotificationTab({ preferences, onToggle }: NotificationTabProps)
     return (
         <div className="space-y-6">
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                <h2 className="mb-6 text-lg font-semibold text-neutral-800">
+                <h2 className="mb-6 text-lg font-semibold text-brand-dark">
                     Preferensi Notifikasi
                 </h2>
 
@@ -60,23 +60,23 @@ export function NotificationTab({ preferences, onToggle }: NotificationTabProps)
                     {notificationTypes.map((type) => (
                         <motion.div
                             key={type.key}
-                            className="flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-primary-300"
+                            className="flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-[rgba(136,22,28,0.15)]"
                             whileHover={{ scale: 1.01 }}
                         >
                             <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-primary-50 p-2">
-                                    <type.icon className="h-5 w-5 text-primary-600" />
+                                <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                                    <type.icon className="h-5 w-5 text-brand-primary" />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-neutral-800">{type.label}</p>
-                                    <p className="text-sm text-neutral-500">{type.description}</p>
+                                    <p className="font-medium text-brand-dark">{type.label}</p>
+                                    <p className="text-sm text-brand-muted">{type.description}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => onToggle(type.key)}
                                 className={`relative h-6 w-11 rounded-full transition-all ${
-                                    preferences[type.key] ? 'bg-primary-600' : 'bg-neutral-300'
+                                    preferences[type.key] ? 'bg-brand-primary' : 'bg-neutral-300'
                                 }`}
                             >
                                 <motion.div
@@ -89,8 +89,8 @@ export function NotificationTab({ preferences, onToggle }: NotificationTabProps)
                     ))}
                 </div>
 
-                <div className="mt-6 rounded-xl bg-primary-50 p-4">
-                    <p className="text-sm text-primary-800">
+                <div className="mt-6 rounded-xl p-4" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                    <p className="text-sm text-brand-dark">
                         <strong>Catatan:</strong> Perubahan preferensi notifikasi akan disimpan secara otomatis.
                     </p>
                 </div>

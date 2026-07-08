@@ -52,7 +52,7 @@ export default function CreateCourse() {
                                         Buat Kelas Baru
                                     </h2>
                                     <p className="mt-1 text-sm text-brand-muted-dark sm:text-base">
-                                        Siapkan kelas baru untuk siswa Anda.
+                                        Siapkan kelas baru untuk mahasiswa Anda.
                                     </p>
                                 </div>
                             </div>
@@ -160,8 +160,8 @@ export default function CreateCourse() {
                                         Apa yang terjadi selanjutnya?
                                     </p>
                                     <p className="mt-1 text-sm leading-relaxed text-brand-muted-dark">
-                                        Setelah membuat kelas, Anda akan mendapatkan kode bergabung unik yang dapat digunakan siswa untuk mendaftar.
-                                        Anda juga dapat mengunggah materi kelas dan membuat grup siswa.
+                                        Setelah membuat kelas, Anda akan mendapatkan kode bergabung unik yang dapat digunakan mahasiswa untuk mendaftar.
+                                        Anda juga dapat mengunggah materi kelas dan membuat kelompok mahasiswa.
                                     </p>
                                 </div>
                             </div>

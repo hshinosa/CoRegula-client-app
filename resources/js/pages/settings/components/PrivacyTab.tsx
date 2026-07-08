@@ -156,10 +156,10 @@ export function PrivacyTab() {
         <div className="space-y-6">
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                 <div className="mb-6 flex items-center gap-3">
-                    <div className="rounded-lg bg-primary-50 p-2">
-                        <ShieldCheck className="h-5 w-5 text-primary-600" />
+                    <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                        <ShieldCheck className="h-5 w-5 text-brand-primary" />
                     </div>
-                    <h2 className="text-lg font-semibold text-neutral-800">Preferensi Privasi</h2>
+                    <h2 className="text-lg font-semibold text-brand-dark">Preferensi Privasi</h2>
                 </div>
 
                 {message && (
@@ -178,18 +178,18 @@ export function PrivacyTab() {
                     {privacyTypes.map((type) => (
                         <motion.div
                             key={type.key}
-                            className="flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-primary-300"
+                            className="flex items-start justify-between rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-[rgba(136,22,28,0.15)]"
                             whileHover={{ scale: 1.01 }}
                         >
                             <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-primary-50 p-2">
-                                    <type.icon className="h-5 w-5 text-primary-600" />
+                                <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                                    <type.icon className="h-5 w-5 text-brand-primary" />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-neutral-800">{type.label}</p>
-                                    <p className="text-sm text-neutral-500">{type.description}</p>
-                                    {loading && <p className="mt-1 text-xs text-neutral-400">Memuat preferensi...</p>}
-                                    {savingKey === type.key && <p className="mt-1 text-xs text-primary-600">Menyimpan perubahan...</p>}
+                                    <p className="font-medium text-brand-dark">{type.label}</p>
+                                    <p className="text-sm text-brand-muted">{type.description}</p>
+                                    {loading && <p className="mt-1 text-xs text-brand-muted">Memuat preferensi...</p>}
+                                    {savingKey === type.key && <p className="mt-1 text-xs text-brand-primary">Menyimpan perubahan...</p>}
                                 </div>
                             </div>
 
@@ -199,7 +199,7 @@ export function PrivacyTab() {
                                 disabled={loading || savingKey !== null}
                                 aria-pressed={preferences[type.key]}
                                 className={`relative h-6 w-11 rounded-full transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
-                                    preferences[type.key] ? 'bg-primary-600' : 'bg-neutral-300'
+                                    preferences[type.key] ? 'bg-brand-primary' : 'bg-neutral-300'
                                 }`}
                             >
                                 <motion.div
@@ -212,23 +212,23 @@ export function PrivacyTab() {
                     ))}
                 </div>
 
-                <div className="mt-6 rounded-xl bg-primary-50 p-4">
-                    <p className="text-sm text-primary-800">
+                <div className="mt-6 rounded-xl p-4" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                    <p className="text-sm text-brand-dark">
                         <strong>Catatan:</strong> Perubahan preferensi privasi akan disimpan secara otomatis.
                     </p>
                 </div>
             </LiquidGlassCard>
 
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                <h2 className="mb-4 text-lg font-semibold text-neutral-800">Kebijakan Privasi</h2>
-                <p className="mb-4 text-sm text-neutral-500">
+                <h2 className="mb-4 text-lg font-semibold text-brand-dark">Kebijakan Privasi</h2>
+                <p className="mb-4 text-sm text-brand-muted">
                     Pelajari bagaimana data Anda dikelola, digunakan, dan dilindungi di platform Kolabri.
                 </p>
                 <a
                     href={POLICY_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition-colors hover:underline"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-brand-primary transition-colors hover:underline"
                 >
                     Lihat Kebijakan Privasi
                     <ExternalLink className="h-4 w-4" />

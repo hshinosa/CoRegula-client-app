@@ -489,7 +489,7 @@ export function LiquidGlassCard({
 
     return (
         <div
-            className={`relative overflow-hidden ${className}`}
+            className={`relative ${className}`}
             style={{
                 background: lightMode
                     ? 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)'

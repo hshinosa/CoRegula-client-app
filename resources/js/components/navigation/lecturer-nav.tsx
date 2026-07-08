@@ -42,7 +42,7 @@ export function useLecturerNav(activePage: ActivePage): NavItem[] {
             active: ['courses', 'course-create', 'course-detail', 'groups'].includes(activePage),
         },
         {
-            name: 'Analytics',
+            name: 'Analitik',
             href: lecturer.analytics.overview.url(),
             icon: Icons.analytics,
             active: ['analytics-overview', 'analytics', 'analytics-group'].includes(activePage),

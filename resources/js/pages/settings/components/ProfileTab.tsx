@@ -79,7 +79,7 @@ export function ProfileTab({ profile, onSave, saving }: ProfileTabProps) {
     return (
         <div className="space-y-6">
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                <h2 className="mb-6 text-lg font-semibold text-neutral-800">
+                <h2 className="mb-6 text-lg font-semibold text-brand-dark">
                     Informasi Profil
                 </h2>
 
@@ -97,7 +97,7 @@ export function ProfileTab({ profile, onSave, saving }: ProfileTabProps) {
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-0 right-0 rounded-full bg-primary-600 p-2 text-white shadow-lg transition-all hover:bg-primary-700"
+                            className="absolute bottom-0 right-0 rounded-full bg-brand-primary p-2 text-white shadow-lg transition-all hover:bg-brand-primary-light"
                         >
                             <Camera className="h-4 w-4" />
                         </button>
@@ -110,37 +110,37 @@ export function ProfileTab({ profile, onSave, saving }: ProfileTabProps) {
                         />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-neutral-700">Foto Profil</p>
-                        <p className="text-xs text-neutral-500">JPG, PNG, atau GIF. Maksimal 2MB.</p>
+                        <p className="text-sm font-medium text-brand-muted-dark">Foto Profil</p>
+                        <p className="text-xs text-brand-muted">JPG, PNG, atau GIF. Maksimal 2MB.</p>
                         {errors.avatar && <InputError message={errors.avatar} className="mt-1" />}
                     </div>
                 </div>
 
                 <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                    <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                         Nama Lengkap
                     </label>
                     <input
                         type="text"
                         value={form.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm transition-all focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                         placeholder="Masukkan nama lengkap"
                     />
                     {errors.name && <InputError message={errors.name} className="mt-1" />}
                 </div>
 
                 <div className="mb-6">
-                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                    <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                         Email
                     </label>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                        <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-muted" />
                         <input
                             type="email"
                             value={form.email}
                             onChange={(e) => handleInputChange('email', e.target.value)}
-                            className="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-10 pr-4 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                            className="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-10 pr-4 text-sm transition-all focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                             placeholder="email@example.com"
                         />
                     </div>
@@ -157,7 +157,7 @@ export function ProfileTab({ profile, onSave, saving }: ProfileTabProps) {
                     disabled={saving || !hasChanges}
                     whileHover={{ scale: hasChanges ? 1.02 : 1 }}
                     whileTap={{ scale: hasChanges ? 0.98 : 1 }}
-                    className="flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-xl bg-brand-primary px-6 py-3 text-sm font-medium text-white transition-all hover:bg-brand-primary-light disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Save className="h-4 w-4" />
                     {saving ? 'Menyimpan...' : 'Simpan Perubahan'}

@@ -1146,11 +1146,11 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
     const isPermanentDeleteConfirmed = permanentDeleteConfirmation.trim() === (selectedCourse?.code ?? '');
 
     return (
-        <AppLayout title="Master Data Management">
-            <Head title="Admin - Master Data Management" />
+        <AppLayout title="Data Kelas">
+            <Head title="Admin - Data Kelas" />
 
             <div className="space-y-6">
-                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Master Data' }]} />
+                <Breadcrumbs items={[{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Data Kelas' }]} />
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                     <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -1166,10 +1166,10 @@ background: 'var(--dm-accent-bg)',
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold" style={headingStyle}>
-                                        Master Data Management
+                                        Data Kelas
                                     </h1>
                                     <p className="mt-2 text-brand-muted-dark">
-                                        Kelola course aktif, course yang diarsipkan, dan template course untuk kebutuhan administrasi.
+                                        Kelola kelas aktif, kelas yang diarsipkan, dan template kelas untuk kebutuhan administrasi.
                                     </p>
                                 </div>
                             </div>
@@ -1241,27 +1241,27 @@ background: 'var(--dm-accent-bg)',
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                                 <div>
-                                    <label className="text-sm font-medium text-brand-dark">Search</label>
+                                    <label className="text-sm font-medium text-brand-dark">Cari</label>
                                     <div className="relative mt-1.5">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-600" />
                                         <input
                                             type="text"
                                             value={searchInput}
                                             onChange={(event) => setSearchInput(event.target.value)}
-                                            placeholder="Search by code or course name"
+                                            placeholder="Cari berdasarkan kode atau nama kelas"
                                             className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 pl-9 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium text-brand-dark">Owner</label>
+                                    <label className="text-sm font-medium text-brand-dark">Dosen pengampu</label>
                                     <select
                                         value={ownerFilter}
                                         onChange={(event) => handleOwnerFilterChange(event.target.value)}
                                         className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-brand-sm transition focus:border-brand-primary focus:outline-none focus:ring focus-visible:ring-brand-primary/20"
                                     >
-                                        <option value="all">All Lecturers</option>
+                                        <option value="all">Semua dosen</option>
                                         {lecturers.map((lecturer) => (
                                             <option key={lecturer.id} value={lecturer.id}>
                                                 {lecturer.name}
@@ -1274,19 +1274,19 @@ background: 'var(--dm-accent-bg)',
                             <div className="flex flex-wrap items-center gap-2">
                                 <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
                                     <Filter className="h-3.5 w-3.5" />
-                                    Active Filters: {activeFiltersCount}
+                                    Filter aktif: {activeFiltersCount}
                                 </div>
                                 <SecondaryButton onClick={handleClearFilters} className="px-4 py-2 text-sm">
-                                    Clear Filters
+                                    Reset filter
                                 </SecondaryButton>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-3 border-t border-white/60 pt-4 md:flex-row md:items-center md:justify-between">
-                            <p className="text-sm text-brand-muted-dark">Showing {start}-{end} of {total} {isArchivedView ? 'archived courses' : 'courses'}</p>
+                            <p className="text-sm text-brand-muted-dark">Menampilkan {start}-{end} dari {total} {isArchivedView ? 'kelas arsip' : 'kelas'}</p>
 
                             <div className="flex items-center gap-2">
-                                <label className="text-sm text-brand-muted-dark">Items per page</label>
+                                <label className="text-sm text-brand-muted-dark">Item per halaman</label>
                                 <select
                                     value={limit}
                                     onChange={(event) => handleLimitChange(Number(event.target.value))}

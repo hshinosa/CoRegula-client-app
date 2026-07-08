@@ -70,7 +70,7 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 z-30 mt-2 w-48 overflow-hidden rounded-xl shadow-lg"
+                        className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl shadow-lg"
                         style={{
                             background: 'rgba(255,255,255,0.95)',
                             backdropFilter: 'blur(20px)',

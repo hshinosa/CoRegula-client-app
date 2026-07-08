@@ -17,6 +17,8 @@ interface ProfileDropdownProps {
 export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: ProfileDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const hoverBackground = darkMode ? 'var(--dm-surface-hover)' : 'rgba(136, 22, 28, 0.08)';
+    const dangerHoverBackground = darkMode ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.12)';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -42,8 +44,8 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                 }}
                 onMouseEnter={(e) => {
                     if (!isOpen) {
-                        e.currentTarget.style.background = 'var(--dm-surface-transparent)';
-                        e.currentTarget.style.color = 'var(--dm-text-secondary)';
+                        e.currentTarget.style.background = darkMode ? 'var(--dm-surface-transparent)' : 'rgba(136, 22, 28, 0.08)';
+                        e.currentTarget.style.color = darkMode ? 'var(--dm-text-secondary)' : 'var(--dm-accent)';
                     }
                 }}
                 onMouseLeave={(e) => {
@@ -69,6 +71,8 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                     <div className="p-1.5">
                         <div className="px-3 py-2.5 mb-1">
                             <p className="text-xs font-medium text-[var(--dm-text-muted)] uppercase tracking-wider">Akun</p>
+                            <p className="mt-1 truncate text-sm font-semibold text-[var(--dm-text)]">{user.name}</p>
+                            {user.email && <p className="truncate text-xs text-[var(--dm-text-muted)]">{user.email}</p>}
                         </div>
 
                         <button
@@ -77,7 +81,7 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
                             style={{ color: 'var(--dm-text)' }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                                e.currentTarget.style.background = hoverBackground;
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.background = 'transparent';
@@ -96,7 +100,7 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                             onClick={() => setIsOpen(false)}
                             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--dm-text)] transition-colors"
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--dm-surface-hover)';
+                                e.currentTarget.style.background = hoverBackground;
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.background = 'transparent';
@@ -114,7 +118,7 @@ export default function ProfileDropdown({ user, darkMode, onToggleDarkMode }: Pr
                             as="button"
                             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400 transition-colors"
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                                e.currentTarget.style.background = dangerHoverBackground;
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.background = 'transparent';

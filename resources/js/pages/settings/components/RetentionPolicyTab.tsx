@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Database, Trash2, Edit2, Check, X, AlertTriangle, Save } from 'lucide-react';
+import { Database, Trash2, Edit2, Check, X, AlertTriangle } from 'lucide-react';
 import { LiquidGlassCard } from '@/components/Welcome/utils/helpers';
 
 interface RetentionPolicy {
@@ -119,7 +119,7 @@ export function RetentionPolicyTab() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
             </div>
         );
     }
@@ -128,14 +128,14 @@ export function RetentionPolicyTab() {
         <div className="space-y-6">
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                 <div className="mb-6 flex items-center gap-3">
-                    <div className="rounded-lg bg-primary-50 p-2">
-                        <Database className="h-5 w-5 text-primary-600" />
+                    <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                        <Database className="h-5 w-5 text-brand-primary" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-semibold text-neutral-800">
+                        <h2 className="text-lg font-semibold text-brand-dark">
                             Kebijakan Retensi Data
                         </h2>
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-brand-muted">
                             Kelola berapa lama data disimpan sebelum diarsipkan atau dihapus otomatis.
                         </p>
                     </div>
@@ -153,29 +153,29 @@ export function RetentionPolicyTab() {
 
                 <div className="overflow-hidden rounded-xl border border-neutral-200">
                     <table className="w-full text-sm">
-                        <thead className="bg-neutral-50">
+                        <thead className="bg-[rgba(136,22,28,0.04)]">
                             <tr>
-                                <th className="px-4 py-3 text-left font-medium text-neutral-700">
+                                <th className="px-4 py-3 text-left font-medium text-brand-muted-dark">
                                     Tipe Data
                                 </th>
-                                <th className="px-4 py-3 text-left font-medium text-neutral-700">
+                                <th className="px-4 py-3 text-left font-medium text-brand-muted-dark">
                                     Retensi (hari)
                                 </th>
-                                <th className="px-4 py-3 text-left font-medium text-neutral-700">
+                                <th className="px-4 py-3 text-left font-medium text-brand-muted-dark">
                                     Arsip Setelah (hari)
                                 </th>
-                                <th className="px-4 py-3 text-left font-medium text-neutral-700">
+                                <th className="px-4 py-3 text-left font-medium text-brand-muted-dark">
                                     Auto Purge
                                 </th>
-                                <th className="px-4 py-3 text-right font-medium text-neutral-700">
+                                <th className="px-4 py-3 text-right font-medium text-brand-muted-dark">
                                     Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-200">
                             {policies.map((policy) => (
-                                <tr key={policy.id} className="bg-white hover:bg-neutral-50">
-                                    <td className="px-4 py-3 font-medium text-neutral-800">
+                                <tr key={policy.id} className="bg-white hover:bg-[rgba(136,22,28,0.04)]">
+                                    <td className="px-4 py-3 font-medium text-brand-dark">
                                         {dataTypeLabels[policy.dataType] || policy.dataType}
                                     </td>
                                     <td className="px-4 py-3">
@@ -190,10 +190,10 @@ export function RetentionPolicyTab() {
                                                         retentionDays: parseInt(e.target.value, 10),
                                                     }))
                                                 }
-                                                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none"
+                                                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 text-sm focus:border-brand-primary focus:outline-none"
                                             />
                                         ) : (
-                                            <span className="text-neutral-700">{policy.retentionDays} hari</span>
+                                            <span className="text-brand-muted-dark">{policy.retentionDays} hari</span>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
@@ -208,10 +208,10 @@ export function RetentionPolicyTab() {
                                                         archiveAfterDays: parseInt(e.target.value, 10),
                                                     }))
                                                 }
-                                                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none"
+                                                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 text-sm focus:border-brand-primary focus:outline-none"
                                             />
                                         ) : (
-                                            <span className="text-neutral-700">{policy.archiveAfterDays} hari</span>
+                                            <span className="text-brand-muted-dark">{policy.archiveAfterDays} hari</span>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
@@ -224,7 +224,7 @@ export function RetentionPolicyTab() {
                                                     }))
                                                 }
                                                 className={`relative h-6 w-11 rounded-full transition-all ${
-                                                    editForm.autoPurge ? 'bg-primary-600' : 'bg-neutral-300'
+                                                    editForm.autoPurge ? 'bg-brand-primary' : 'bg-neutral-300'
                                                 }`}
                                             >
                                                 <motion.div
@@ -257,7 +257,7 @@ export function RetentionPolicyTab() {
                                                 </button>
                                                 <button
                                                     onClick={cancelEdit}
-                                                    className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
+                                                    className="rounded-lg p-1.5 text-brand-muted hover:bg-[rgba(136,22,28,0.04)]"
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </button>
@@ -273,7 +273,7 @@ export function RetentionPolicyTab() {
                                                 </button>
                                                 <button
                                                     onClick={() => setDeleteConfirmId(null)}
-                                                    className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
+                                                    className="rounded-lg p-1.5 text-brand-muted hover:bg-[rgba(136,22,28,0.04)]"
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </button>
@@ -282,7 +282,7 @@ export function RetentionPolicyTab() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => startEdit(policy)}
-                                                    className="rounded-lg p-1.5 text-primary-600 hover:bg-primary-50"
+                                                    className="rounded-lg p-1.5 text-brand-primary hover:bg-[rgba(136,22,28,0.08)]"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
                                                 </button>
@@ -304,14 +304,14 @@ export function RetentionPolicyTab() {
                 {policies.length === 0 && !loading && (
                     <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-neutral-300 py-12">
                         <Database className="h-10 w-10 text-neutral-300" />
-                        <p className="mt-3 text-sm text-neutral-500">Belum ada kebijakan retensi data</p>
+                        <p className="mt-3 text-sm text-brand-muted">Belum ada kebijakan retensi data</p>
                     </div>
                 )}
 
-                <div className="mt-6 rounded-xl bg-primary-50 p-4">
+                <div className="mt-6 rounded-xl p-4" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
                     <div className="flex items-start gap-3">
-                        <AlertTriangle className="mt-0.5 h-4 w-4 text-primary-600" />
-                        <div className="text-sm text-primary-800">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 text-brand-primary" />
+                        <div className="text-sm text-brand-dark">
                             <p className="font-medium">Catatan Penting</p>
                             <p className="mt-1">
                                 Data yang sudah melewati masa retensi akan dihapus secara permanen jika <strong>Auto Purge</strong> aktif.

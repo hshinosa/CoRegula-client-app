@@ -55,7 +55,7 @@ export function useStudentNav(activePage: ActivePage, context?: StudentNavContex
             active: activePage === 'reflections',
         },
         {
-            name: 'Chat dengan AI',
+            name: 'Asisten AI',
             href: student.aiChat.index.url(),
             icon: Icons.aiChat,
             active: activePage === 'ai-chat',
@@ -72,10 +72,6 @@ export function useStudentNav(activePage: ActivePage, context?: StudentNavContex
             {
                 name: 'Detail Kelas',
                 href: student.courses.show.url({ course: context.courseId }),
-            },
-            {
-                name: 'Kehadiran',
-                href: student.courses.attendance.url({ course: context.courseId }),
             },
         ];
 

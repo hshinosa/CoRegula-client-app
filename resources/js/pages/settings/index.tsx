@@ -249,9 +249,21 @@ export default function SettingsPage({ profile, preferences }: Props) {
                 <div className="relative space-y-6">
                     <Breadcrumbs items={[{ label: 'Pengaturan' }]} />
 
-                    <h1 className="font-heading text-3xl font-bold text-neutral-800">
-                        Pengaturan
-                    </h1>
+                    <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
+                        <div className="flex items-start gap-4">
+                            <div className="rounded-xl bg-[rgba(136,22,28,0.08)] p-3">
+                                <User className="h-7 w-7 text-brand-primary" />
+                            </div>
+                            <div>
+                                <h1 className="font-heading text-3xl font-bold text-brand-dark">
+                                    Pengaturan
+                                </h1>
+                                <p className="mt-1 text-sm text-brand-muted">
+                                    Kelola profil, notifikasi, dan preferensi akun Anda
+                                </p>
+                            </div>
+                        </div>
+                    </LiquidGlassCard>
 
                     <AnimatePresence mode="wait">
                         {message && (
@@ -280,8 +292,8 @@ export default function SettingsPage({ profile, preferences }: Props) {
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                                                 activeTab === tab.id
-                                                    ? 'bg-primary-50 text-primary-700'
-                                                    : 'text-neutral-600 hover:bg-neutral-50'
+                                                    ? 'border border-[rgba(136,22,28,0.15)] bg-[rgba(136,22,28,0.08)] text-brand-primary'
+                                                    : 'text-brand-muted-dark hover:bg-[rgba(136,22,28,0.04)]'
                                             }`}
                                         >
                                             <tab.icon className="h-5 w-5" />

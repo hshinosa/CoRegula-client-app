@@ -89,7 +89,7 @@ export default function SectionExportMenu({
 
             {isOpen && (
                 <div
-                    className="absolute right-0 z-30 mt-1 w-48 overflow-hidden rounded-xl border shadow-lg"
+                    className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-xl border shadow-lg"
                     style={{ background: 'rgba(255,255,255,0.97)', borderColor: 'rgba(0,0,0,0.08)', backdropFilter: 'blur(12px)' }}
                 >
                     <button

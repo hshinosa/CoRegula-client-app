@@ -71,8 +71,8 @@ export default function PreReadShow({ course, sessionDiscussion, materials, isRe
         (sessionDiscussion.weekIndex != null ? `Minggu ${sessionDiscussion.weekIndex}: ${sessionDiscussion.weekTitle}` : sessionDiscussion.weekTitle);
 
     return (
-        <AppLayout title={`Pre-read — ${sessionDiscussion.name}`} navItems={navItems}>
-            <Head title={`Pre-read — ${course.name}`} />
+        <AppLayout title={`Bacaan awal — ${sessionDiscussion.name}`} navItems={navItems}>
+            <Head title={`Bacaan awal — ${course.name}`} />
 
             <div className="relative mx-auto max-w-3xl px-4 py-8">
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>

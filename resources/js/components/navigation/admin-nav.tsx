@@ -15,7 +15,7 @@ interface AdminNavProps {
 
 const adminNavItems: AdminNavItem[] = [
     {
-        name: 'Dashboard',
+        name: 'Dasbor',
         href: '/admin/dashboard',
         icon: (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,7 +29,7 @@ const adminNavItems: AdminNavItem[] = [
         ),
     },
     {
-        name: 'User Management',
+        name: 'Kelola Pengguna',
         href: '/admin/users',
         icon: (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,7 +43,7 @@ const adminNavItems: AdminNavItem[] = [
         ),
     },
     {
-        name: 'Master Data',
+        name: 'Data Kelas',
         href: '/admin/master-data',
         icon: (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,7 +57,7 @@ const adminNavItems: AdminNavItem[] = [
         ),
     },
     {
-        name: 'AI Settings',
+        name: 'Pengaturan AI',
         href: '/admin/ai-settings',
         icon: (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,7 +71,7 @@ const adminNavItems: AdminNavItem[] = [
         ),
     },
     {
-        name: 'Audit Log',
+        name: 'Log Audit',
         href: '/admin/audit-log',
         icon: (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

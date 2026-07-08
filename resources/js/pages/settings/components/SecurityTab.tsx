@@ -73,17 +73,17 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
         <div className="space-y-6">
             <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
                 <div className="mb-6 flex items-center gap-3">
-                    <div className="rounded-lg bg-primary-50 p-2">
-                        <Key className="h-5 w-5 text-primary-600" />
+                    <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(136,22,28,0.08)' }}>
+                        <Key className="h-5 w-5 text-brand-primary" />
                     </div>
-                    <h2 className="text-lg font-semibold text-neutral-800">
+                    <h2 className="text-lg font-semibold text-brand-dark">
                         Ubah Password
                     </h2>
                 </div>
 
                 <div className="space-y-4">
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-neutral-700">
+                        <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                             Password Saat Ini
                         </label>
                         <PasswordInput
@@ -100,7 +100,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-neutral-700">
+                        <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                             Password Baru
                         </label>
                         <PasswordInput
@@ -117,7 +117,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-neutral-700">
+                        <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                             Konfirmasi Password Baru
                         </label>
                         <PasswordInput
@@ -138,7 +138,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                         disabled={saving}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-brand-primary px-6 py-3 text-sm font-medium text-white transition-all hover:bg-brand-primary-light disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Save className="h-4 w-4" />
                         {saving ? 'Menyimpan...' : 'Ubah Password'}
@@ -151,7 +151,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                     <div className="rounded-lg bg-warning-50 p-2">
                         <Trash2 className="h-5 w-5 text-warning-600" />
                     </div>
-                    <h2 className="text-lg font-semibold text-neutral-800">
+                    <h2 className="text-lg font-semibold text-brand-dark">
                         Hapus Akun
                     </h2>
                 </div>
@@ -183,11 +183,11 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
             <BaseModal open={showDeleteModal} title="Konfirmasi Penghapusan Akun" onClose={() => setShowDeleteModal(false)} size="md" className="rounded-2xl bg-white p-6 shadow-2xl">
                         <div>
                             <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-xl font-bold text-neutral-800">Konfirmasi Penghapusan Akun</h3>
+                                <h3 className="text-xl font-bold text-brand-dark">Konfirmasi Penghapusan Akun</h3>
                                 <button
                                     type="button"
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="rounded-lg p-1 transition-colors hover:bg-neutral-100"
+                                    className="rounded-lg p-1 transition-colors hover:bg-[rgba(136,22,28,0.04)]"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
@@ -201,7 +201,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                    <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                                         Password Anda
                                     </label>
                                     <PasswordInput
@@ -218,7 +218,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                    <label className="mb-2 block text-sm font-medium text-brand-muted-dark">
                                         Ketik <strong>HAPUS</strong> untuk konfirmasi
                                     </label>
                                     <input
@@ -228,7 +228,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                                             setDeleteForm(prev => ({ ...prev, confirmation: e.target.value }));
                                             setDeleteErrors(prev => ({ ...prev, confirmation: '' }));
                                         }}
-                                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm transition-all focus:border-warning-500 focus:outline-none focus:ring-2 focus:ring-warning-500/20"
+                                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm transition-all focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
                                         placeholder="HAPUS"
                                     />
                                     {deleteErrors.confirmation && (
@@ -240,7 +240,7 @@ export function SecurityTab({ onPasswordChange, onAccountDelete, saving }: Secur
                             <div className="mt-6 flex gap-3">
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 transition-all hover:bg-neutral-50"
+                                    className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-brand-muted-dark transition-all hover:bg-[rgba(136,22,28,0.04)]"
                                 >
                                     Batal
                                 </button>
