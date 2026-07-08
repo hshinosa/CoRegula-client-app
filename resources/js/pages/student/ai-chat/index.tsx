@@ -20,6 +20,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { SearchBar } from './components';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DocumentViewerModal, type DocumentViewerTarget } from '@/components/course/DocumentViewerModal';
+import { buildPersistedOptimisticMessages } from './streaming-state';
 
 // --- Memoized sub-components ---
 
@@ -218,6 +219,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [streamingCitations, setStreamingCitations] = useState<Array<{ source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }>>([]);
     const abortControllerRef = useRef<AbortController | null>(null);
+    const streamingContentRef = useRef('');
     const [showScrollBtn, setShowScrollBtn] = useState(false);
     const [lastFailedPrompt, setLastFailedPrompt] = useState<string | null>(null);
     const [documentViewer, setDocumentViewer] = useState<DocumentViewerTarget | null>(null);
@@ -394,6 +396,10 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         displayedStreamingContentRef.current = displayedStreamingContent;
     }, [displayedStreamingContent]);
 
+    useEffect(() => {
+        streamingContentRef.current = streamingContent;
+    }, [streamingContent]);
+
     const doStream = async (chatId: string, content: string) => {
         setLastFailedPrompt(null);
         const controller = new AbortController();
@@ -432,16 +438,16 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
             if (err instanceof DOMException && err.name === 'AbortError') {
                 setIsStreaming(false);
                 setOptimisticMessages((prev) => {
-                    const userMessage = prev.find((message) => message.role === 'user');
-                    const partialContent = displayedStreamingContentRef.current || streamingContent;
-                    if (!userMessage) return prev;
-                    if (partialContent) {
-                        return [
-                            { ...userMessage, id: `sent-user-${Date.now()}` },
-                            { id: `sent-assistant-${Date.now()}`, role: 'assistant', content: partialContent + '\n\n_(Dihentikan oleh pengguna)_', created_at: new Date().toISOString() },
-                        ];
+                    const partialContent = displayedStreamingContentRef.current || streamingContentRef.current;
+
+                    if (!partialContent) {
+                        return prev;
                     }
-                    return [{ ...userMessage, id: `sent-user-${Date.now()}` }];
+
+                    return buildPersistedOptimisticMessages(
+                        prev,
+                        `${partialContent}\n\n_(Dihentikan oleh pengguna)_`,
+                    );
                 });
             } else {
                 setLastFailedPrompt(content);
@@ -450,27 +456,12 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         } finally {
             abortControllerRef.current = null;
             setIsStreaming(false);
-            setOptimisticMessages((prev) => {
-                const userMessage = prev.find((message) => message.role === 'user');
-                const finalAssistantContent = displayedStreamingContentRef.current || streamingContent;
-
-                if (!userMessage || !finalAssistantContent) {
-                    return prev;
-                }
-
-                return [
-                    {
-                        ...userMessage,
-                        id: `sent-user-${Date.now()}`,
-                    },
-                    {
-                        id: `sent-assistant-${Date.now()}`,
-                        role: 'assistant',
-                        content: finalAssistantContent,
-                        created_at: new Date().toISOString(),
-                    },
-                ];
-            });
+            setOptimisticMessages((prev) =>
+                buildPersistedOptimisticMessages(
+                    prev,
+                    displayedStreamingContentRef.current || streamingContentRef.current,
+                ),
+            );
         }
     };
 
@@ -682,7 +673,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
     };
     const handleOpenCitation = useCallback((cite: { source: string; page?: number; snippet?: string; course_id?: string; course_material_id?: string }) => {
         if (!cite.course_id || !cite.course_material_id) return;
-        const streamUrl = `/courses/${cite.course_id}/materials/${cite.course_material_id}/stream`;
+        const streamUrl = `/student/courses/${cite.course_id}/materials/${cite.course_material_id}/stream`;
         setDocumentViewer({
             title: cite.source,
             fileName: cite.source,
@@ -696,11 +687,11 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
         if (!activeChat) doCreateAndStream(prompt); else doStream(activeChat.id, prompt);
     };
 
-    const breadcrumbItems = [{ label: 'Chat dengan AI' }];
+    const breadcrumbItems = [{ label: 'Asisten AI' }];
 
     return (
-        <AppLayout title="Chat dengan AI" navItems={navItems}>
-            <Head title="Chat dengan AI" />
+        <AppLayout title="Asisten AI" navItems={navItems}>
+            <Head title="Asisten AI" />
             <Breadcrumbs items={breadcrumbItems} />
 
             <div className="flex h-[calc(100vh-100px)] flex-col">
@@ -787,7 +778,7 @@ export default function AiChatIndex({ chats, activeChat }: Props) {
                                                         <div className="space-y-1">
                                                             {streamingCitations.map((c, i) => {
                                                                 const docUrl = c.course_id && c.course_material_id
-                                                                    ? `/courses/${c.course_id}/materials/${c.course_material_id}/stream`
+                                                                    ? `/student/courses/${c.course_id}/materials/${c.course_material_id}/stream`
                                                                     : null;
 
                                                                 return (
