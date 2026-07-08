@@ -177,54 +177,7 @@ export interface GroupMember {
     is_online?: boolean;
 }
 
-export interface GroupSettings {
-    id: string;
-    name: string;
-    description: string | null;
-    access_policy: 'open' | 'invite_only' | 'private';
-    avatar_url: string | null;
-    join_code: string;
-    created_at: string;
-    updated_at: string;
-    members_count: number;
-    owner: User;
-}
 
-export interface UpdateGroupSettingsData {
-    name?: string;
-    description?: string | null;
-    access_policy?: 'open' | 'invite_only' | 'private';
-}
-
-export type ActivityType = 'member_joined' | 'member_left' | 'task_submitted' | 'comment_added' | 'document_updated' | 'settings_changed';
-
-export interface GroupActivity {
-    id: string;
-    group_id: string;
-    user_id: string;
-    type: ActivityType;
-    description: string;
-    metadata?: Record<string, unknown>;
-    created_at: string;
-    user: User;
-    is_recent?: boolean;
-}
-
-export interface PaginatedMembers {
-    data: GroupMember[];
-    meta: {
-        total: number;
-        per_page: number;
-        current_page: number;
-        last_page: number;
-    };
-}
-
-export interface CursorPaginatedActivities {
-    data: GroupActivity[];
-    next_cursor: string | null;
-    has_more: boolean;
-}
 
 // ============ Goal Types ============
 
@@ -442,7 +395,7 @@ export interface ActivitySummary {
 
 // ============ Attendance Types ============
 
-export type AttendanceStatus = 'present' | 'absent' | 'excused';
+export type AttendanceStatus = 'present' | 'absent' | 'excused' | 'late';
 
 export interface AttendanceSession {
     id: string;
@@ -450,6 +403,7 @@ export interface AttendanceSession {
     session_discussion_id: string | null;
     week_id: string | null;
     group_id: string | null;
+    group_label?: string | null;
     title: string;
     session_date: string;
     session_number: number | null;

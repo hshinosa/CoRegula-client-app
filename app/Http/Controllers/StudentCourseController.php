@@ -278,57 +278,6 @@ class StudentCourseController extends Controller
     /**
      * Sesi Diskusi List Page (select or create chat session)
      */
-    public function sessionDiscussions(Request $request, string $course): Response
-    {
-        try {
-            $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
-            $groupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/my-group");
-
-            $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
-            $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
-
-            $sessionDiscussionMeta = null;
-            if ($group) {
-                $queryParams = array_filter([
-                    'q' => $request->query('q'),
-                    'type' => $request->query('type'),
-                    'status' => $request->query('status'),
-                    'sort' => $request->query('sort'),
-                    'page' => $request->query('page'),
-                    'per_page' => $request->query('per_page'),
-                ], fn($v) => $v !== null && $v !== '');
-
-                $metaResponse = $this->apiRequest()->get(
-                    $this->apiUrl() . "/api/groups/{$group['id']}/session-discussions",
-                    $queryParams
-                );
-
-                if ($metaResponse->successful()) {
-                    $sessionDiscussionMeta = $metaResponse->json();
-                }
-            }
-        } catch (ConnectionException $e) {
-            Log::error('StudentCourseController: failed to fetch sesi diskusis data', ['course' => $course, 'error' => $e->getMessage()]);
-            $courseData = null;
-            $group = null;
-            $sessionDiscussionMeta = null;
-        } catch (RequestException $e) {
-            Log::error('StudentCourseController: failed to fetch sesi diskusis data', ['course' => $course, 'error' => $e->getMessage()]);
-            $courseData = null;
-            $group = null;
-            $sessionDiscussionMeta = null;
-        }
-
-        if (!$courseData || !$group) {
-            abort(404, 'Course or group not found');
-        }
-
-        return Inertia::render('student/session-discussions/index', [
-            'course' => $courseData,
-            'group' => $group,
-            'sessionDiscussionMeta' => $sessionDiscussionMeta,
-        ]);
-    }
 
     /**
      * Chat Room Page (specific sesi diskusi)

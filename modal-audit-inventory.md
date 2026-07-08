@@ -30,7 +30,6 @@
 | `student/chat-spaces/index.tsx` | 1 | Inline modal |
 | `student/groups/index.tsx` | 2 | Inline modals |
 | `lecturer/analytics/show.tsx` | 2 | Inline modals |
-| `lecturer/session-mgmt/index.tsx` | 1 | Inline `CreateSessionModal` |
 | `lecturer/groups/index.tsx` | 3 | Inline modals |
 | `student/courses/show.tsx` | 3 | Inline modals |
 | `student/ai-chat/index.tsx` | 1 | Inline modal |
@@ -115,7 +114,6 @@ All three share the same structure: `AnimatePresence`, overlay `motion.div`, cen
    - `student/groups/index.tsx`
    - `student/courses/show.tsx`
    - `lecturer/groups/index.tsx`
-   - `lecturer/session-mgmt/index.tsx` (`CreateSessionModal`)
    - `student/reflections/components/TemplateModal.tsx`
 5. **Preserve `student/chat/room.tsx`** modals as-is (they already meet accessibility requirements) or optionally migrate to `BaseModal` for consistency.
 6. **Add regression checks**: ensure every modal has `role="dialog"`, `aria-modal="true"`, labelled title, ESC close, focus trap, and body scroll lock.

@@ -23,8 +23,6 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\StudentCourseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
-use App\Http\Controllers\GroupActivityController;
-use App\Http\Controllers\GroupSettingsController;
 use App\Http\Controllers\GroupMemberManagementController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\NotificationController;
@@ -33,7 +31,6 @@ use App\Http\Controllers\ReflectionTemplateController;
 use App\Http\Controllers\ReflectionAnalyticsController;
 use App\Http\Controllers\ReflectionTagController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SessionManagementController;
 use App\Http\Controllers\Student\StudentCourseWeeksController;
 use App\Http\Controllers\Student\StudentPreReadController;
 use App\Http\Controllers\Student\StudentSessionMaterialsController;
@@ -372,16 +369,9 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/groups/{group}', [GroupController::class, 'showStudent'])->name('groups.show');
 
         // Group Members
-        Route::get('/groups/{group}/members/search', [GroupMemberController::class, 'search'])->name('groups.members.search');
         Route::patch('/groups/{group}/members/{member}', [GroupMemberManagementController::class, 'updateRole'])->name('groups.members.update-role');
         Route::delete('/groups/{group}/members/{member}', [GroupMemberManagementController::class, 'destroy'])->name('groups.members.destroy');
 
-        // Group Activity
-        Route::get('/groups/{group}/activities', [GroupActivityController::class, 'index'])->name('groups.activities.index');
-
-        // Group Settings
-        Route::get('/groups/{group}/settings', [GroupSettingsController::class, 'show'])->name('groups.settings.show');
-        Route::patch('/groups/{group}/settings', [GroupSettingsController::class, 'update'])->name('groups.settings.update');
 
         // Leave Group
         Route::post('/groups/{group}/leave', [GroupMemberManagementController::class, 'leave'])->name('groups.leave');
