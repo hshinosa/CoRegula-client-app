@@ -10,7 +10,7 @@ function resolveWebSocketUrl() {
         import.meta.env.VITE_WS_URL ||
         import.meta.env.VITE_SOCKET_URL ||
         import.meta.env.VITE_API_BASE_URL ||
-        'http://localhost:3000';
+        window.location.origin;
 
     const normalizedUrl = baseUrl.startsWith('http')
         ? new URL(baseUrl)

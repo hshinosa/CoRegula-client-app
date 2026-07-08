@@ -18,9 +18,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Force HTTPS when APP_URL uses https (fixes mixed content behind reverse proxy)
+        // Force all URL generation to use APP_URL (critical for Docker port mapping)
+        URL::forceRootUrl((string) config('app.url'));
+
+        // Ensure scheme matches APP_URL (https://... or http://...)
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
+        } else {
+            URL::forceScheme('http');
         }
 
         Http::globalOptions([

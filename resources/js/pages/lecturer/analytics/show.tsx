@@ -322,7 +322,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
     useEffect(() => {
         if (!jwtToken) return;
 
-        const apiUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const apiUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || window.location.origin;
         const socket: Socket = io(apiUrl, {
             auth: { token: jwtToken },
             transports: ['websocket', 'polling'],
