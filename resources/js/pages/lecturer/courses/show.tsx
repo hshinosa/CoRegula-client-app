@@ -352,59 +352,72 @@ export default function ShowCourse({ course }: Props) {
                                             <InputError message={groupPolicyErrors.max_members_per_group} className="mt-1.5" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-brand-muted-dark">Preset guardrail AI</p>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Tingkat pembatasan AI</p>
                                             <select
                                                 value={groupPolicyData.ai_guardrail_preset}
                                                 onChange={(e) => setGroupPolicyData('ai_guardrail_preset', e.target.value as 'strict' | 'balanced' | 'relaxed')}
                                                 className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
                                             >
-                                                <option value="strict">Strict</option>
-                                                <option value="balanced">Balanced</option>
-                                                <option value="relaxed">Relaxed</option>
+                                                <option value="strict">Ketat</option>
+                                                <option value="balanced">Seimbang</option>
+                                                <option value="relaxed">Fleksibel</option>
                                             </select>
                                             <InputError message={groupPolicyErrors.ai_guardrail_preset} className="mt-1.5" />
                                         </div>
                                         <div className="sm:col-span-2 grid gap-3">
                                             <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
-                                                <span>Izinkan AI me-rewrite jawaban agar tetap aman</span>
+                                                <span>Izinkan AI menyesuaikan jawaban ke bentuk yang aman</span>
                                                 <input
                                                     type="checkbox"
                                                     checked={groupPolicyData.ai_guardrail_allow_rewrite}
                                                     onChange={(e) => setGroupPolicyData('ai_guardrail_allow_rewrite', e.target.checked)}
                                                 />
                                             </label>
+                                            <p className="px-1 text-xs leading-5 text-brand-muted-dark">
+                                                Apabila mahasiswa mengajukan permintaan yang tidak layak dijawab secara langsung, AI tetap memberikan bantuan dalam bentuk arahan belajar, langkah penyelesaian, atau ringkasan konsep.
+                                            </p>
                                             <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
-                                                <span>Tandai saja konten non-kritis tanpa blok penuh</span>
+                                                <span>Untuk pelanggaran ringan, tampilkan peringatan tanpa memblokir respons</span>
                                                 <input
                                                     type="checkbox"
                                                     checked={groupPolicyData.ai_guardrail_allow_flag_only}
                                                     onChange={(e) => setGroupPolicyData('ai_guardrail_allow_flag_only', e.target.checked)}
                                                 />
                                             </label>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-brand-muted-dark">Level scaffolding AI</p>
-                                            <select
-                                                value={groupPolicyData.ai_scaffolding_level}
-                                                onChange={(e) => setGroupPolicyData('ai_scaffolding_level', e.target.value as 'early' | 'late' | 'auto')}
-                                                className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
-                                            >
-                                                <option value="auto">Auto (berdasarkan semester)</option>
-                                                <option value="early">Early (lebih terarah & bertahap)</option>
-                                                <option value="late">Late (lebih mandiri & sumber)</option>
-                                            </select>
-                                            <InputError message={groupPolicyErrors.ai_scaffolding_level} className="mt-1.5" />
+                                            <p className="px-1 text-xs leading-5 text-brand-muted-dark">
+                                                AI tetap dapat merespons, tetapi sistem akan menandai interaksi yang perlu dicermati sesuai kebijakan kelas.
+                                            </p>
                                         </div>
                                         <div className="sm:col-span-2 grid gap-3">
                                             <label className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm text-brand-dark ring-1 ring-white/50">
-                                                <span>Aktifkan adaptasi scaffolding berdasarkan level</span>
+                                                <span>Izinkan AI menyesuaikan tingkat pendampingan sesuai kebutuhan belajar</span>
                                                 <input
                                                     type="checkbox"
                                                     checked={groupPolicyData.ai_scaffolding_enabled}
                                                     onChange={(e) => setGroupPolicyData('ai_scaffolding_enabled', e.target.checked)}
                                                 />
                                             </label>
+                                            <p className="px-1 text-xs leading-5 text-brand-muted-dark">
+                                                {groupPolicyData.ai_scaffolding_enabled
+                                                    ? 'Saat diaktifkan, AI dapat menyesuaikan seberapa rinci arahan yang diberikan agar selaras dengan tingkat kemandirian belajar mahasiswa.'
+                                                    : 'AI tidak menyesuaikan tingkat pendampingan secara khusus.'}
+                                            </p>
                                         </div>
+                                        {groupPolicyData.ai_scaffolding_enabled && (
+                                            <div>
+                                                <p className="text-sm font-medium text-brand-muted-dark">Tingkat pendampingan AI</p>
+                                                <select
+                                                    value={groupPolicyData.ai_scaffolding_level}
+                                                    onChange={(e) => setGroupPolicyData('ai_scaffolding_level', e.target.value as 'early' | 'late' | 'auto')}
+                                                    className="mt-2 block w-full rounded-xl border-0 bg-white/70 px-4 py-3 text-sm text-brand-dark shadow-brand-sm ring-1 ring-inset ring-white/50"
+                                                >
+                                                    <option value="auto">Otomatis menyesuaikan</option>
+                                                    <option value="early">Pendampingan tinggi (lebih terarah dan bertahap)</option>
+                                                    <option value="late">Pendampingan ringan (lebih mandiri)</option>
+                                                </select>
+                                                <InputError message={groupPolicyErrors.ai_scaffolding_level} className="mt-1.5" />
+                                            </div>
+                                        )}
                                     </div>
                                     <PrimaryButton type="submit" className="justify-center" disabled={updatingGroupPolicy}>
                                         {updatingGroupPolicy ? 'Menyimpan...' : 'Simpan aturan grup'}
