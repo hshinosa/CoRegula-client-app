@@ -15,7 +15,7 @@ const glassPanelStyle = {
     border: '1px solid rgba(255,255,255,0.65)',
 } as const;
 
-const statusConfig: Record<AttendanceStatus, { label: string; color: string; bg: string; border: string; icon: typeof CheckCircle2 }> = {
+const statusConfig: Record<Exclude<AttendanceStatus, 'late'>, { label: string; color: string; bg: string; border: string; icon: typeof CheckCircle2 }> = {
     present: { label: 'Hadir', color: '#166534', bg: 'rgba(34,197,94,0.10)', border: 'rgba(34,197,94,0.18)', icon: CheckCircle2 },
     absent: { label: 'Tidak Hadir', color: '#b91c1c', bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.18)', icon: XCircle },
     excused: { label: 'Izin', color: '#4b5563', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.18)', icon: Minus },
@@ -95,14 +95,14 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
             });
             if (!res.ok) throw new Error('Failed to fetch session');
             const data = await res.json();
-            let records = (data.records || []).map((r: AttendanceStudentRecord) => ({
+            let records: AttendanceStudentRecord[] = (data.records || []).map((r: AttendanceStudentRecord) => ({
                 ...r,
-                status: (r.status === 'late' ? 'absent' : r.status) as AttendanceStatus,
+                status: r.status === 'late' ? 'absent' : r.status,
             }));
             // Filter by group tab if selected
             if (groupTab !== 'all' && groupMembers[groupTab]) {
                 const memberIds = new Set(groupMembers[groupTab]);
-                records = records.filter(r => memberIds.has(r.student_id));
+                records = records.filter((r: AttendanceStudentRecord) => memberIds.has(r.student_id));
             }
             setOverrideRecords(records);
             setOverrideSession(sessionId);
@@ -230,7 +230,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
         if (groupTab === 'all') return sessions;
         // Pertemuan (no group_label) = class-wide, show in all tabs
         // Auto-attendance (has group_label) = only in matching tab
-        return sessions.filter((s) => !s.group_label || (s as any).group_label === groupTab);
+        return sessions.filter((s) => !s.group_label || s.group_label === groupTab);
     };
 
     if (loading) {
@@ -409,7 +409,7 @@ export default function AttendanceTab({ courseId }: AttendanceTabProps) {
                     </div>
                     <div className="space-y-2">
                         {overrideRecords.map((record) => {
-                            const config = statusConfig[record.status as AttendanceStatus] || statusConfig.absent;
+                            const config = statusConfig[record.status === 'late' ? 'absent' : record.status];
                             const Icon = config.icon;
                             return (
                                 <LiquidGlassCard key={record.student_id} className="p-4">

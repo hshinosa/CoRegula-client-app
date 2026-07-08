@@ -112,13 +112,15 @@ class StudentAttendanceController extends Controller
             $excusedCount = $records->where('status', 'excused')->count();
             $total = $records->whereIn('status', ['present', 'absent', 'excused'])->count();
 
+            $gradedTotal = $presentCount + $absentCount;
+
             $summary = [
                 'present' => $presentCount,
                 'absent' => $absentCount,
                 'excused' => $excusedCount,
                 'total' => $total,
-                'percentage' => $total > 0 
-                    ? round(($presentCount / ($total - $excusedCount)) * 100, 1)
+                'percentage' => $gradedTotal > 0
+                    ? round(($presentCount / $gradedTotal) * 100, 1)
                     : 0,
             ];
 
@@ -190,14 +192,16 @@ class StudentAttendanceController extends Controller
             $excusedCount = $records->where('status', 'excused')->count();
             $total = $records->whereIn('status', ['present', 'absent', 'excused'])->count();
 
+            $gradedTotal = $presentCount + $absentCount;
+
             return response()->json([
                 'data' => [
                     'present' => $presentCount,
                     'absent' => $absentCount,
                     'excused' => $excusedCount,
                     'total' => $total,
-                    'percentage' => $total > 0 
-                        ? round(($presentCount / ($total - $excusedCount)) * 100, 1)
+                    'percentage' => $gradedTotal > 0
+                        ? round(($presentCount / $gradedTotal) * 100, 1)
                         : 0,
                 ],
             ]);
