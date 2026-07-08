@@ -53,10 +53,9 @@ class GoalController extends Controller
             ]);
         }
 
-        // If sesi diskusi already has a shared goal (myGoal), redirect to sesi diskusis list
-        // This means another group member already set the goal for everyone
+        // If sesi diskusi already has a shared goal (myGoal), redirect to unified course detail page.
         if ($sessionDiscussionData && isset($sessionDiscussionData['myGoal']) && $sessionDiscussionData['myGoal']) {
-            return redirect()->route('student.courses.session-discussions', ['course' => $course])
+            return redirect()->route('student.courses.show', ['course' => $course])
                 ->with('info', 'Goal sudah ditetapkan oleh anggota grup lain. Silakan masuk ke sesi diskusi.');
         }
 

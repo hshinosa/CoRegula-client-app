@@ -46,37 +46,6 @@ class GroupController extends Controller
     /**
      * List Groups in a Course (Student view)
      */
-    public function studentIndex(string $course): Response
-    {
-        try {
-            $courseResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}");
-            $groupsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/groups");
-            $myGroupResponse = $this->apiRequest()->get($this->apiUrl() . "/api/groups/my/{$course}");
-            $studentsResponse = $this->apiRequest()->get($this->apiUrl() . "/api/courses/{$course}/students");
-
-            $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
-            $groups = $groupsResponse->successful() ? $groupsResponse->json('data', []) : [];
-            $myGroup = $myGroupResponse->successful() ? $myGroupResponse->json('data') : null;
-            $students = $studentsResponse->successful() ? $studentsResponse->json('data', []) : [];
-        } catch (ConnectionException | RequestException $e) {
-            Log::error('Failed to fetch student groups', ['error' => $e->getMessage()]);
-            $courseData = null;
-            $groups = [];
-            $myGroup = null;
-            $students = [];
-        }
-
-        if (!$courseData) {
-            abort(404, 'Course not found');
-        }
-
-        return Inertia::render('student/groups/index', [
-            'course' => $courseData,
-            'groups' => $groups,
-            'myGroup' => $myGroup,
-            'students' => $students,
-        ]);
-    }
 
     public function showStudent(string $group)
     {
@@ -140,23 +109,28 @@ class GroupController extends Controller
             ]);
 
             if ($response->successful()) {
-                $groupData = $response->json('data');
+                $groupData = $response->json('data', []);
                 $courseId = $groupData['courseId'] ?? null;
-                
-                // Redirect to goal creation page
-                if ($courseId) {
+                $openSessionDiscussion = collect($groupData['sessionDiscussions'] ?? [])->first(
+                    fn (array $sessionDiscussion): bool => empty($sessionDiscussion['closedAt']) && ! empty($sessionDiscussion['id'])
+                );
+
+                if ($courseId && isset($openSessionDiscussion['id'])) {
                     return redirect()
-                        ->route('student.goals.create', ['course' => $courseId])
+                        ->route('student.goals.create', [
+                            'course' => $courseId,
+                            'sessionDiscussion' => $openSessionDiscussion['id'],
+                        ])
                         ->with('success', 'Berhasil bergabung dengan grup! Silakan tetapkan tujuan pembelajaran Anda.');
                 }
-                
+
                 return back()->with('success', 'Berhasil bergabung dengan grup!');
             }
 
             return back()->withErrors(['join_code' => $response->json('message', 'Kode tidak valid')]);
         } catch (ConnectionException | RequestException $e) {
-            Log::error('Failed to delete group', ['error' => $e->getMessage()]);
-            return back()->withErrors(['error' => 'Failed to delete group']);
+            Log::error('Failed to join group', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to join group']);
         }
     }
 

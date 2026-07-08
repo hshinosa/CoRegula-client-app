@@ -130,7 +130,7 @@ class CourseController extends Controller
             'semester' => 'nullable|string|in:Ganjil,Genap',
             'academic_year' => 'nullable|string|regex:/^\d{4}\/\d{4}$/',
             'min_members_per_group' => 'nullable|integer|min:1',
-            'max_members_per_group' => 'nullable|integer|min:1|gte:min_members_per_group',
+            'max_members_per_group' => 'nullable|integer|min:1|max:8|gte:min_members_per_group',
         ]);
 
         try {
@@ -177,7 +177,7 @@ class CourseController extends Controller
             'academic_year' => 'nullable|string|regex:/^\d{4}\/\d{4}$/',
             'status' => 'nullable|string|in:aktif,selesai',
             'min_members_per_group' => 'nullable|integer|min:1',
-            'max_members_per_group' => 'nullable|integer|min:1|gte:min_members_per_group',
+            'max_members_per_group' => 'nullable|integer|min:1|max:8|gte:min_members_per_group',
             'ai_guardrail_preset' => 'nullable|string|in:strict,balanced,relaxed',
             'ai_guardrail_allow_rewrite' => 'nullable|boolean',
             'ai_guardrail_allow_flag_only' => 'nullable|boolean',
