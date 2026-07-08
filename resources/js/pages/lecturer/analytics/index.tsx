@@ -226,7 +226,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
     useEffect(() => {
         if (!jwtToken) return;
 
-        const apiUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const apiUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || window.location.origin;
 
         const socket: Socket = io(apiUrl, {
             auth: { token: jwtToken },
@@ -412,8 +412,8 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
     const currentTrendData = trendData?.[selectedMetric] ?? [];
 
     return (
-        <AppLayout title={`Analytics - ${course.name}`} navItems={navItems}>
-            <Head title={`Analytics - ${course.name}`} />
+        <AppLayout title={`Analitik - ${course.name}`} navItems={navItems}>
+            <Head title={`Analitik - ${course.name}`} />
 
             <div className="relative">
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={320} />
@@ -439,7 +439,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                              {course.name}
                                          </h1>
                                          <p className="mt-1 text-sm text-brand-muted-dark">
-                                             {course.code} · Analytics Dashboard
+                                            {course.code} · Dasbor Analitik
                                          </p>
                                      </div>
                                  </div>
@@ -448,7 +448,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                       <CourseExportButton courseId={course.id} />
                                       <SecondaryButton onClick={refreshAnalytics}>
                                           <RefreshCw className="mr-2 h-4 w-4" />
-                                          Refresh
+                                          Muat ulang
                                       </SecondaryButton>
                                       <div className="flex items-center gap-2">
                                           <div
@@ -537,7 +537,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                 <div className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5" style={{ color: '#88161c' }} />
                                     <h2 className="text-lg font-semibold" style={headingStyle}>
-                                        Trend Analytics
+                                        Tren Analitik
                                     </h2>
                                 </div>
                                 <div className="flex gap-2">

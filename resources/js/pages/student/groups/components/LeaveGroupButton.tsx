@@ -57,7 +57,7 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
                     }}
                 >
                     <p className="text-amber-700">
-                        Sebagai ketua, kepemilikan akan otomatis dipindah ke anggota terlama saat Anda keluar. Jika tidak ada anggota lain, grup akan dihapus.
+                        Sebagai ketua, kepemilikan akan otomatis dipindah ke anggota terlama saat Anda keluar. Jika tidak ada anggota lain, kelompok akan dihapus.
                     </p>
                 </div>
             )}
@@ -82,8 +82,8 @@ export function LeaveGroupButton({ groupId, isOwner }: LeaveGroupButtonProps) {
                                 </h4>
                                 <p className="mt-1 text-xs text-brand-muted-dark">
                                     {isOwner
-                                        ? 'Kepemilikan akan dipindah ke anggota terlama. Anda akan kehilangan akses ke semua diskusi grup ini.'
-                                        : 'Anda akan kehilangan akses ke semua diskusi dan dokumen dalam grup ini.'}
+                                        ? 'Kepemilikan akan dipindah ke anggota terlama. Anda akan kehilangan akses ke semua diskusi kelompok ini.'
+                                        : 'Anda akan kehilangan akses ke semua diskusi dan dokumen dalam kelompok ini.'}
                                 </p>
                                 <div className="mt-3 flex gap-2">
                                     <button

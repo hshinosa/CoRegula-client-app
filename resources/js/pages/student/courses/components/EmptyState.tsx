@@ -14,14 +14,14 @@ export function EmptyState({ hasFilters, onResetFilters, onJoinCourse }: EmptySt
             <SharedEmptyState
                 icon={SearchX}
                 title="Tidak ada kelas yang cocok"
-                description="Coba kata kunci lain atau hapus filter"
+                description="Coba kata kunci lain atau hapus semua filter"
                 action={
                     onResetFilters && (
                         <button
                             onClick={onResetFilters}
                             className="rounded-xl px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary/5"
                         >
-                            Hapus Semua Filter
+                            Hapus semua filter
                         </button>
                     )
                 }

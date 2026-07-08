@@ -153,7 +153,7 @@ export default function LecturerCoursesIndex({ courses }: Props) {
                                 >
                                     Kelas Saya
                                 </h2>
-                                <p className="mt-1 text-sm text-brand-muted-dark">Kelola kelas dan grup siswa Anda</p>
+                                <p className="mt-1 text-sm text-brand-muted-dark">Kelola kelas dan kelompok mahasiswa Anda</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <PrimaryButton href={lecturer.courses.create.url()}>
@@ -201,7 +201,7 @@ export default function LecturerCoursesIndex({ courses }: Props) {
                                     onClick={handleResetFilters}
                                     className="mt-4 text-sm font-medium text-brand-primary transition-colors"
                                 >
-                                    Reset Pencarian
+                                    Atur ulang pencarian
                                 </button>
                             </LiquidGlassCard>
                         </motion.div>
@@ -320,7 +320,7 @@ export default function LecturerCoursesIndex({ courses }: Props) {
                                                     </span>
                                                     <span className="inline-flex items-center gap-1 text-xs text-brand-muted-dark">
                                                         <Users className="h-3.5 w-3.5" />
-                                                        {course.students_count || 0} siswa
+                                                        {course.students_count || 0} mahasiswa
                                                     </span>
                                                 </div>
 
@@ -337,9 +337,9 @@ export default function LecturerCoursesIndex({ courses }: Props) {
                                                 )}
 
                                                 <div className="mt-4 flex items-center justify-between gap-3">
-                                                    <p className="text-sm text-brand-muted-dark">{course.groups_count || 0} grup</p>
+                                                    <p className="text-sm text-brand-muted-dark">{course.groups_count || 0} kelompok</p>
                                                         <div className="flex items-center text-sm font-medium" style={{ color: '#88161c' }}>
-                                                            Lihat Detail
+                                                            Lihat detail
                                                             <svg
                                                                 className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"
                                                                 fill="none"

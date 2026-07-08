@@ -175,11 +175,11 @@ export default function ShowCourse({ course }: Props) {
                                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
                                     <SecondaryButton href={lecturer.groups.index.url({ course: course.id })} className="min-w-[170px]">
                                         <FolderKanban className="h-4 w-4" />
-                                        Kelola Grup
+                                        Kelola Kelompok
                                     </SecondaryButton>
                                     <PrimaryButton href={lecturer.analytics.detail.url({ course: course.id })} className="min-w-[170px]">
                                         <BarChart3 className="h-4 w-4" />
-                                        Analytics
+                                        Analitik
                                     </PrimaryButton>
                                 </div>
                             </div>
@@ -330,7 +330,7 @@ export default function ShowCourse({ course }: Props) {
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                                     <div className="grid gap-4 sm:grid-cols-2 lg:flex-1">
                                         <div>
-                                            <p className="text-sm font-medium text-brand-muted-dark">Minimal anggota per grup</p>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Minimal anggota per kelompok</p>
                                             <input
                                                 type="number"
                                                 min={1}
@@ -341,7 +341,7 @@ export default function ShowCourse({ course }: Props) {
                                             <InputError message={groupPolicyErrors.min_members_per_group} className="mt-1.5" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-brand-muted-dark">Maksimal anggota per grup</p>
+                                            <p className="text-sm font-medium text-brand-muted-dark">Maksimal anggota per kelompok</p>
                                             <input
                                                 type="number"
                                                 min={1}

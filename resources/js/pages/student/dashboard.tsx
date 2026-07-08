@@ -109,8 +109,8 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
         {
             href: student.aiChat.index.url(),
             icon: Sparkles,
-            title: 'Chat dengan AI',
-            desc: 'Tanya apapun',
+            title: 'Asisten AI',
+            desc: 'Tanya apa saja',
             color: 'var(--color-brand-primary)',
         },
     ];

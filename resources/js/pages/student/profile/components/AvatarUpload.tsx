@@ -228,7 +228,7 @@ export default function AvatarUpload({ onUploadComplete, onCancel }: Props) {
                                 <button
                                     onClick={handleResetZoom}
                                     className="rounded-lg bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
-                                    title="Reset zoom"
+                                    title="Atur ulang zoom"
                                 >
                                     <RotateCcw className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                                 </button>

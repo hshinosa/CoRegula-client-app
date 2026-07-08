@@ -139,11 +139,11 @@ export default function StudentGoalCreate({ course, group, sessionDiscussion }: 
                                 className="text-xl font-semibold"
                                 style={{ color: 'var(--color-brand-dark)' }}
                             >
-                                Belum Ada Grup yang Ditugaskan
+                                Belum Ada Kelompok yang Ditugaskan
                             </h3>
                             <p className="mt-2 text-brand-muted-dark">
-                                Anda perlu ditugaskan ke grup sebelum dapat menetapkan tujuan pembelajaran.
-                                Harap tunggu dosen Anda menugaskan Anda ke grup.
+                                Anda perlu ditugaskan ke kelompok sebelum dapat menetapkan tujuan pembelajaran.
+                                Harap tunggu dosen Anda menugaskan Anda ke kelompok.
                             </p>
                             <Link
                                 href={student.courses.show.url({ course: course.id })}
@@ -364,7 +364,7 @@ export default function StudentGoalCreate({ course, group, sessionDiscussion }: 
                                         value={data.content}
                                         onChange={(e) => setData('content', e.target.value)}
                                         className="mt-2 w-full min-h-[120px] rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white/80 px-4 py-3 text-sm text-[#374151] placeholder-[#9CA3AF] outline-none transition-all focus:border-[rgba(136,22,28,0.25)] focus:bg-white focus:ring-2 focus:ring-[rgba(136,22,28,0.08)]"
-                                        placeholder="misalnya, Analisis pendekatan berbeda untuk normalisasi database dan evaluasi mana yang paling sesuai untuk aplikasi e-commerce"
+                                        placeholder="Contoh: Menganalisis minimal 3 algoritma sorting dan membandingkan kompleksitas waktunya dalam laporan 2 halaman sebelum akhir sesi"
                                         rows={4}
                                     />
                                     <InputError message={errors.content} />
@@ -401,15 +401,15 @@ export default function StudentGoalCreate({ course, group, sessionDiscussion }: 
                                     <ul className="space-y-2 text-sm text-brand-muted-dark">
                                         <li className="flex items-start gap-2">
                                             <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
-                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Membandingkan</strong> berbagai algoritma pengurutan dan menjelaskan kompleksitas waktunya"</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Menganalisis</strong> minimal 3 algoritma sorting (bubble, merge, quick) dan <strong style={{ color: 'var(--color-brand-dark)' }}>membandingkan</strong> kompleksitas waktunya dalam laporan 2 halaman sebelum akhir sesi"</span>
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
-                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Merancang</strong> RESTful API untuk aplikasi blog dengan autentikasi yang tepat"</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Merancang</strong> 5 endpoint RESTful API (CRUD + auth) untuk aplikasi blog dengan dokumentasi lengkap dalam 60 menit"</span>
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
-                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Mengevaluasi</strong> kelebihan dan kekurangan SQL vs NoSQL untuk proyek kami"</span>
+                                            <span>"<strong style={{ color: 'var(--color-brand-dark)' }}>Mengevaluasi</strong> minimal 4 aspek perbandingan (konsistensi, skalabilitas, query, cost) SQL vs NoSQL dan <strong style={{ color: 'var(--color-brand-dark)' }}>merekomendasikan</strong> solusi terbaik dalam 1 jam"</span>
                                         </li>
                                     </ul>
                                 </div>

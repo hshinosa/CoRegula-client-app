@@ -141,7 +141,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
         });
     };
 
-    const memberRangeLabel = `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per grup`;
+    const memberRangeLabel = `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per kelompok`;
 
     const breadcrumbItems = [
         { label: 'Kelas', href: student.courses.index.url() },
@@ -360,8 +360,8 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                                 {availableGroups.length === 0 && (
                                     <EmptyState
                                         icon={Users}
-                                        title="Belum ada grup"
-                                        description="Buat grup baru untuk memulai diskusi dan kolaborasi."
+                                        title="Belum ada kelompok"
+                                        description="Buat kelompok baru untuk memulai diskusi dan kolaborasi."
                                     />
                                 )}
                             </>
@@ -458,7 +458,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
                                 <EmptyState
                                     icon={MessageSquare}
                                     title="Belum ada sesi diskusi"
-                                    description="Sesi diskusi akan muncul setelah grup membuat sesi diskusi."
+                                    description="Sesi diskusi akan muncul setelah kelompok membuat sesi diskusi."
                                 />
                             ) : (
                                 <div className="text-center py-8">
@@ -509,7 +509,7 @@ export default function StudentCourseShow({ course, myGroup, availableGroups, se
             <FormModal
                 open={showJoinGroupModal}
                 title="Gabung dengan Kode"
-                description="Masukkan kode grup 8 karakter yang diberikan kepada Anda"
+                description="Masukkan kode kelompok 8 karakter yang diberikan kepada Anda"
                 onClose={() => setShowJoinGroupModal(false)}
                 maxWidth="max-w-md"
             >

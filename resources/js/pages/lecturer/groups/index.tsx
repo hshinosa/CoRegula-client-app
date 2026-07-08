@@ -49,7 +49,7 @@ interface Props {
     students: User[];
 }
 
-const getMemberRangeLabel = (course: Course) => `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per grup`;
+const getMemberRangeLabel = (course: Course) => `${course.min_members_per_group ?? 1}–${course.max_members_per_group ?? 10} anggota per kelompok`;
 
 const headingStyle = {
     color: 'var(--color-brand-dark)',
@@ -239,19 +239,19 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                             {course.code}
                                         </span>
                                         <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" style={neutralChipStyle}>
-                                            {groups.length} grup aktif
+                                            {groups.length} kelompok aktif
                                         </span>
                                     </div>
 
                                     <h1 className="mt-3 text-2xl font-bold sm:text-3xl" style={headingStyle}>
-                                        Orkestrasi Grup Mahasiswa
+                                        Kelola Kelompok Mahasiswa
                                     </h1>
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
-                                        Atur pembagian kelompok, sesi diskusi, dan penugasan mahasiswa dengan bahasa visual yang sama
-                                        seperti halaman student rollout dan wave dosen sebelumnya.
+                                        Atur pembagian kelompok, sesi diskusi, dan penugasan mahasiswa dalam satu tampilan yang konsisten
+                                        dengan halaman dosen lainnya.
                                     </p>
                                     <p className={`mt-2 ${bodyTextClass}`}>
-                                        Batas ukuran grup aktif: <span className="font-semibold text-brand-dark">{getMemberRangeLabel(course)}</span>
+                                        Batas ukuran kelompok aktif: <span className="font-semibold text-brand-dark">{getMemberRangeLabel(course)}</span>
                                     </p>
                                 </div>
 
@@ -327,8 +327,8 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                     {groups.length === 0 ? (
                         <EmptyState
                             icon={FolderKanban}
-                            title="Belum ada grup"
-                            description="Mulai dengan membuat grup pertama, lalu tugaskan mahasiswa dan siapkan sesi diskusi untuk setiap tim"
+                            title="Belum ada kelompok"
+                            description="Mulai dengan membuat kelompok pertama, lalu tugaskan mahasiswa dan siapkan sesi diskusi untuk setiap tim"
                             action={
                                 <PrimaryButton onClick={() => setShowCreateModal(true)}>
                                     <Plus className="mr-2 h-4 w-4" />
@@ -377,7 +377,7 @@ export default function GroupsIndex({ course, groups, students }: Props) {
                                                             onClick={() => setSelectedGroupJoinCode(group.joinCode)}
                                                             className="rounded-full p-2 transition-colors"
                                                             style={glassPanelStyle}
-                                                            title="Lihat kode grup"
+                                                            title="Lihat kode kelompok"
                                                         >
                                                             <Copy className="h-4 w-4" style={{ color: '#4A4A4A' }} />
                                                         </button>

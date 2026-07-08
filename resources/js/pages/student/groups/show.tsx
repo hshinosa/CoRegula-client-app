@@ -161,7 +161,7 @@ export default function StudentGroupShow({ group }: Props) {
                             <EmptyState
                                 icon={Users}
                                 title="Belum ada anggota"
-                                description="Anggota grup akan muncul setelah bergabung melalui kode undangan."
+                                description="Anggota kelompok akan muncul setelah bergabung melalui kode undangan."
                             />
                         ) : (
                             <div className="space-y-2">
@@ -248,7 +248,7 @@ export default function StudentGroupShow({ group }: Props) {
                                                                     Keluarkan {member.name}?
                                                                 </p>
                                                                 <p className="mt-0.5 text-xs text-red-600">
-                                                                    Anggota yang dikeluarkan tidak bisa mengakses diskusi grup ini lagi.
+                                                                    Anggota yang dikeluarkan tidak bisa mengakses diskusi kelompok ini lagi.
                                                                 </p>
                                                                 {kickError && (
                                                                     <p className="mt-1 text-xs font-medium text-red-700">

@@ -2376,30 +2376,6 @@ export default function StudentChatRoom({ course, group, sessionDiscussion, sock
                                 </AnimatePresence>
 
                                 <form onSubmit={handleSubmit} className="flex gap-2">
-                                    {/* Hidden file input */}
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        multiple
-                                        accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
-                                        onChange={handleFileSelect}
-                                        className="hidden"
-                                        aria-label="Lampirkan file"
-                                    />
-                                    
-                                    {/* File upload button */}
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={!isConnected || sessionClosed}
-                                        className="touch-target flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/50 text-brand-muted-dark transition-colors hover:border-brand-primary hover:text-brand-primary disabled:cursor-not-allowed disabled:opacity-50"
-                                        style={{ background: 'rgba(255,255,255,0.5)' }}
-                                        title={sessionClosed ? "Sesi telah ditutup" : "Lampirkan file"}
-                                        aria-label="Lampirkan file"
-                                    >
-                                        <Paperclip className="h-5 w-5" />
-                                    </button>
-
                                     <div className="relative flex-1">
                                         <input
                                             ref={inputRef}
@@ -2422,7 +2398,7 @@ export default function StudentChatRoom({ course, group, sessionDiscussion, sock
 
                                     <button
                                         type="submit"
-                                        disabled={(!newMessage.trim() && pendingFiles.length === 0) || !isConnected || isUploading || sessionClosed}
+                                        disabled={!newMessage.trim() || !isConnected || isUploading || sessionClosed}
                                         className="touch-target flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-white transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4"
                                         style={{
                                             background: 'linear-gradient(135deg, rgba(164,18,25,0.92) 0%, rgba(136,22,28,0.96) 100%)',
@@ -2972,7 +2948,7 @@ export default function StudentChatRoom({ course, group, sessionDiscussion, sock
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); resetZoom(); }}
                                 className="min-w-[50px] rounded-full px-2 py-0.5 text-xs font-medium text-white transition-colors hover:bg-white/20 sm:min-w-[60px] sm:px-3 sm:py-1 sm:text-sm"
-                                title="Reset zoom (0)"
+                                title="Atur ulang zoom (0)"
                             >
                                 {Math.round(imageZoom * 100)}%
                             </button>

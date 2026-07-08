@@ -53,8 +53,8 @@ export default function AnalyticsOverview({ courses }: Props) {
     const navItems = useLecturerNav('analytics-overview');
 
     return (
-        <AppLayout title="Analytics" navItems={navItems}>
-            <Head title="Analytics Overview" />
+        <AppLayout title="Analitik" navItems={navItems}>
+            <Head title="Ringkasan Analitik" />
 
             <div className="relative space-y-6">
                 <OrganicBlob
@@ -76,7 +76,7 @@ export default function AnalyticsOverview({ courses }: Props) {
                                 <h2
                                     className="text-2xl font-bold font-sans text-brand-dark"
                                 >
-                                    Analytics
+                                    Analitik
                                 </h2>
                                 <p className="text-sm text-gray-500">
                                     {courses.length} kelas · ringkasan kualitas diskusi
@@ -89,7 +89,7 @@ export default function AnalyticsOverview({ courses }: Props) {
                 {courses.length === 0 ? (
                     <LiquidGlassCard intensity="light" className="p-12 text-center" lightMode={true}>
                         <BarChart3 className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-                        <p className="text-gray-500">Belum ada kelas. Buat kelas terlebih dahulu untuk melihat analytics.</p>
+                        <p className="text-gray-500">Belum ada kelas. Buat kelas terlebih dahulu untuk melihat analitik.</p>
                     </LiquidGlassCard>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,7 +130,7 @@ export default function AnalyticsOverview({ courses }: Props) {
                                         </h3>
 
                                         <p className="mt-2 text-sm text-brand-muted-dark">
-                                            Quality Score: <QualityBadge score={course.avgQualityScore} />
+                                            Skor kualitas: <QualityBadge score={course.avgQualityScore} />
                                             {course.needsAttention && (
                                                 <span className="ml-2 inline-flex items-center gap-1 text-red-600">
                                                     <AlertTriangle className="h-3 w-3" />
@@ -140,9 +140,9 @@ export default function AnalyticsOverview({ courses }: Props) {
                                         </p>
 
                                         <div className="mt-4 flex items-center justify-between gap-3">
-                                            <p className="text-sm text-brand-muted-dark">{course.groupsCount} grup</p>
+                                            <p className="text-sm text-brand-muted-dark">{course.groupsCount} kelompok</p>
                                             <div className="flex items-center text-sm font-medium text-brand-primary">
-                                                Lihat Analytics
+                                                Lihat analitik
                                                 <svg
                                                     className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"
                                                     fill="none"

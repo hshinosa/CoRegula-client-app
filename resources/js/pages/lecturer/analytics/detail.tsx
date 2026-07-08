@@ -141,8 +141,8 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
     ];
 
     return (
-        <AppLayout navItems={navItems} title={`Analytics ${course.code}`}>
-            <Head title={`Analytics Detail - ${course.name}`} />
+        <AppLayout navItems={navItems} title={`Analitik ${course.code}`}>
+            <Head title={`Detail Analitik - ${course.name}`} />
 
             <div className="relative">
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={300} />
@@ -162,7 +162,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                             {course.code}
                                         </Link>
                                         <ChevronRight className="h-3.5 w-3.5" />
-                                        <span style={headingStyle}>Analytics</span>
+                                        <span style={headingStyle}>Analitik</span>
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -170,15 +170,15 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                             {course.code}
                                         </span>
                                         <span className={badgeClass} style={neutralChipStyle}>
-                                            {summary.totalGroups} grup • {summary.totalMessages.toLocaleString()} pesan
+                                            {summary.totalGroups} kelompok • {summary.totalMessages.toLocaleString()} pesan
                                         </span>
                                     </div>
 
                                     <h1 className="mt-4 text-2xl font-bold sm:text-3xl" style={headingStyle}>
-                                        Analytics {course.name}
+                                        Analitik {course.name}
                                     </h1>
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
-                                        Analisis performa diskusi kelas, tren metrik, performa kelompok, dan breakdown mahasiswa dalam satu tampilan yang konsisten dengan halaman dosen lain.
+                                        Analisis performa diskusi kelas, tren metrik, performa kelompok, dan rincian mahasiswa dalam satu tampilan yang konsisten dengan halaman dosen lain.
                                     </p>
                                 </div>
 
@@ -256,7 +256,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                     <InteractiveTrendChart
                                         data={safeAnalytics.trends}
                                         metrics={TREND_METRICS}
-                                        title="Trend per Metrik"
+                                        title="Tren per Metrik"
                                         height={350}
                                         showBenchmark={benchmarkEnabled}
                                         onBrushChange={handleBrushChange}
@@ -264,7 +264,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                 </div>
                             ) : (
                                 <div className="flex h-48 items-center justify-center rounded-2xl border border-brand-primary/10 bg-white/90" style={glassPanelStyle}>
-                                    <p className="text-sm text-gray-600">Belum ada data trend. Data akan muncul setelah ada aktivitas diskusi.</p>
+                                    <p className="text-sm text-gray-600">Belum ada data tren. Data akan muncul setelah ada aktivitas diskusi.</p>
                                 </div>
                             )}
                         </LiquidGlassCard>
@@ -274,8 +274,8 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                         <LiquidGlassCard intensity="light" className="rounded-2xl border border-brand-primary/10 bg-white/95 p-6" lightMode>
                             <div className="mb-4 flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-lg font-semibold" style={headingStyle}>Breakdown per kelompok</h2>
-                                    <p className={`mt-1 ${bodyTextClass}`}>Masuk ke detail tiap grup untuk melihat kualitas diskusi dan aktivitas terbaru.</p>
+                                    <h2 className="text-lg font-semibold" style={headingStyle}>Rincian per kelompok</h2>
+                                    <p className={`mt-1 ${bodyTextClass}`}>Masuk ke detail tiap kelompok untuk melihat kualitas diskusi dan aktivitas terbaru.</p>
                                 </div>
                             </div>
                             {safeAnalytics.groups && safeAnalytics.groups.length > 0 ? (
