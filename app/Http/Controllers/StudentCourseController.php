@@ -292,6 +292,17 @@ class StudentCourseController extends Controller
             $courseData = $courseResponse->successful() ? $courseResponse->json('data') : null;
             $group = $groupResponse->successful() ? $groupResponse->json('data') : null;
             $sessionDiscussionData = $sessionDiscussionResponse->successful() ? $sessionDiscussionResponse->json('data') : null;
+
+            if (! $group && ! empty($sessionDiscussionData['groupId'])) {
+                $fallbackGroupResponse = $this->apiRequest()->get(
+                    $this->apiUrl() . "/api/groups/{$sessionDiscussionData['groupId']}"
+                );
+                $group = $fallbackGroupResponse->successful() ? $fallbackGroupResponse->json('data') : null;
+            }
+
+            if (! $courseData && ! empty($group['course'])) {
+                $courseData = $group['course'];
+            }
         } catch (ConnectionException $e) {
             Log::error('StudentCourseController: failed to fetch chat room data', ['course' => $course, 'sessionDiscussion' => $sessionDiscussion, 'error' => $e->getMessage()]);
             $courseData = null;

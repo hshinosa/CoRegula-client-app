@@ -96,6 +96,49 @@ class StudentPreReadGateTest extends TestCase
         ]));
     }
 
+    public function test_chat_room_uses_session_group_fallback_when_my_group_lookup_fails(): void
+    {
+        Http::fake([
+            'http://localhost:3000/api/courses/course-1' => Http::response([
+                'data' => ['id' => 'course-1', 'name' => 'AI'],
+            ], 200),
+            'http://localhost:3000/api/courses/course-1/my-group' => Http::response([
+                'error' => 'Group not found',
+            ], 404),
+            'http://localhost:3000/api/groups/session-discussions/chat-1' => Http::response([
+                'data' => [
+                    'id' => 'chat-1',
+                    'name' => 'Diskusi',
+                    'groupId' => 'group-1',
+                    'weekId' => null,
+                    'hasPreReadCompleted' => true,
+                    'isClosed' => true,
+                    'myGoal' => ['id' => 'goal-1', 'content' => 'Tujuan'],
+                ],
+            ], 200),
+            'http://localhost:3000/api/groups/group-1' => Http::response([
+                'data' => [
+                    'id' => 'group-1',
+                    'name' => 'G1',
+                    'course' => ['id' => 'course-1', 'name' => 'AI'],
+                    'members' => [],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->studentSession()->get(route('student.courses.chat.room', [
+            'course' => 'course-1',
+            'sessionDiscussion' => 'chat-1',
+        ]));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('student/chat/room')
+            ->where('group.id', 'group-1')
+            ->where('sessionDiscussion.id', 'chat-1')
+        );
+    }
+
     public function test_pre_read_complete_proxies_to_core_api(): void
     {
         Http::fake([
