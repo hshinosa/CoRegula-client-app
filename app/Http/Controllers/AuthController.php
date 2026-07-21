@@ -56,7 +56,7 @@ class AuthController extends Controller
                 $redirectRoute = $data['user']['role'] === 'admin'
                     ? 'admin.dashboard'
                     : ($data['user']['role'] === 'lecturer'
-                        ? 'lecturer.courses.index'
+                        ? 'dashboard'
                         : 'student.courses.index');
 
                 return redirect()->route($redirectRoute)->with('success', 'Welcome back!');
@@ -155,7 +155,7 @@ class AuthController extends Controller
                 $redirectRoute = $data['user']['role'] === 'admin'
                     ? 'admin.dashboard'
                     : ($data['user']['role'] === 'lecturer'
-                        ? 'lecturer.courses.index'
+                        ? 'dashboard'
                         : 'student.courses.index');
 
                 return redirect()->route($redirectRoute)->with('success', 'Akun berhasil dibuat!');

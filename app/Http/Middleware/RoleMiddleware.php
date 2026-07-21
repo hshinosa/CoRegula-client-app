@@ -27,7 +27,7 @@ class RoleMiddleware
             }
 
             if ($user && $user['role'] === 'lecturer') {
-                return redirect()->route('lecturer.courses.index');
+                return redirect()->route('dashboard');
             }
             
             if ($user && $user['role'] === 'student') {

@@ -17,11 +17,15 @@ class GuestMiddleware
         if (session('jwt') && session('user')) {
             $user = session('user');
             
-            // Redirect to appropriate dashboard
-            if ($user['role'] === 'lecturer') {
-                return redirect()->route('lecturer.courses.index');
+            // Redirect to appropriate home for authenticated guests
+            if ($user['role'] === 'admin') {
+                return redirect()->route('admin.dashboard');
             }
-            
+
+            if ($user['role'] === 'lecturer') {
+                return redirect()->route('dashboard');
+            }
+
             return redirect()->route('student.courses.index');
         }
 

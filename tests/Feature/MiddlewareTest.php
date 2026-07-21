@@ -55,7 +55,7 @@ class MiddlewareTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_role_middleware_redirects_lecturer_to_courses(): void
+    public function test_role_middleware_redirects_lecturer_to_dashboard(): void
     {
         $response = $this
             ->withSession([
@@ -64,7 +64,7 @@ class MiddlewareTest extends TestCase
             ])
             ->get('/admin/dashboard');
 
-        $response->assertRedirect(route('lecturer.courses.index'));
+        $response->assertRedirect(route('dashboard'));
     }
 
     public function test_guest_middleware_redirects_authenticated_student(): void
@@ -88,7 +88,7 @@ class MiddlewareTest extends TestCase
             ])
             ->get('/login');
 
-        $response->assertRedirect(route('lecturer.courses.index'));
+        $response->assertRedirect(route('dashboard'));
     }
 
     public function test_guest_middleware_allows_unauthenticated(): void

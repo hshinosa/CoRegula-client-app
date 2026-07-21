@@ -97,7 +97,7 @@ class AuthControllerTest extends TestCase
             'terms' => true,
         ]);
 
-        $response->assertRedirect(route('lecturer.courses.index'));
+        $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('success', 'Akun berhasil dibuat!');
         $response->assertSessionHas('jwt', 'jwt-456');
         $response->assertSessionHas('user.role', 'lecturer');

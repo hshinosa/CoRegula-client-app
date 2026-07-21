@@ -68,7 +68,7 @@ class GoogleAuthController extends Controller
                 $redirectRoute = $data['user']['role'] === 'admin'
                     ? 'admin.dashboard'
                     : ($data['user']['role'] === 'lecturer'
-                        ? 'lecturer.courses.index'
+                        ? 'dashboard'
                         : 'student.courses.index');
 
                 return redirect()->route($redirectRoute)->with('success', 'Berhasil masuk dengan Google!');
