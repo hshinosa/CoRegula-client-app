@@ -7,11 +7,11 @@ test.beforeEach(async ({ page }) => {
     if (!available) test.skip(true, 'App not running');
 });
 
-test('Lecturer lands on /lecturer/courses after login', async ({ page }) => {
+test('Lecturer lands on /dashboard after login', async ({ page }) => {
     const loggedIn = await loginAs(page, TEST_CREDENTIALS.lecturer.email, TEST_CREDENTIALS.lecturer.password);
     if (!loggedIn) test.skip(true, 'Auth service not available');
 
-    await expect(page).toHaveURL(/\/lecturer\/courses$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
 });
 
 test('Courses page shows list', async ({ page }) => {

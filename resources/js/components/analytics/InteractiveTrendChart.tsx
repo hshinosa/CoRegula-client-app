@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Area,
     AreaChart,
@@ -14,6 +14,9 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { METRIC_LABEL_EXPLANATIONS, QUALITY_METRIC_EXPLANATIONS } from '@/lib/analytics-metric-explanations';
+import { Info } from 'lucide-react';
+
 
 export interface TrendDataPoint {
     date: string;
@@ -89,6 +92,8 @@ export default function InteractiveTrendChart({
     );
 
     const [activeChartType, setActiveChartType] = useState<'line' | 'bar'>(chartType);
+    const [showMetricHint, setShowMetricHint] = useState(false);
+    const metricHintRef = useRef<HTMLDivElement>(null);
 
     const toggleMetric = useCallback(
         (value: string) => {
@@ -120,6 +125,16 @@ export default function InteractiveTrendChart({
         },
         [onBrushChange],
     );
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (metricHintRef.current && !metricHintRef.current.contains(event.target as Node)) {
+                setShowMetricHint(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     if (!data || data.length === 0) {
         return (
@@ -165,31 +180,78 @@ export default function InteractiveTrendChart({
                     )}
                 </div>
 
-                <div className="flex items-center gap-1 rounded-lg p-0.5" style={{ background: 'rgba(0,0,0,0.04)' }}>
+                <div className="relative flex items-center gap-2" ref={metricHintRef}>
                     <button
                         type="button"
-                        onClick={() => setActiveChartType('line')}
-                        className="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+                        onClick={() => setShowMetricHint((current) => !current)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border transition-colors"
                         style={{
-                            background: activeChartType === 'line' ? '#fff' : 'transparent',
-                            color: activeChartType === 'line' ? '#4A4A4A' : '#9CA3AF',
-                            boxShadow: activeChartType === 'line' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                            background: showMetricHint ? 'rgba(136,22,28,0.10)' : 'rgba(255,255,255,0.92)',
+                            color: showMetricHint ? 'var(--color-brand-primary)' : '#6B7280',
+                            borderColor: showMetricHint ? 'rgba(136,22,28,0.22)' : 'rgba(0,0,0,0.08)',
                         }}
+                        aria-label="Tampilkan penjelasan metrik"
+                        title="Penjelasan metrik"
                     >
-                        Line
+                        <Info className="h-4 w-4" />
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveChartType('bar')}
-                        className="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-                        style={{
-                            background: activeChartType === 'bar' ? '#fff' : 'transparent',
-                            color: activeChartType === 'bar' ? '#4A4A4A' : '#9CA3AF',
-                            boxShadow: activeChartType === 'bar' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                        }}
-                    >
-                        Bar
-                    </button>
+                    {showMetricHint ? (
+                        <div
+                            className="absolute right-full top-1/2 z-20 mr-3 w-[min(28rem,calc(100vw-4rem))] -translate-y-1/2 rounded-2xl border border-brand-primary/10 bg-white/96 p-4 shadow-2xl"
+                            style={{ backdropFilter: 'blur(16px)' }}
+                        >
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {metrics
+                                    .filter((metric) => selectedMetrics.includes(metric.value))
+                                    .map((metric) => {
+                                        const explanation =
+                                            metric.label === 'HOT %'
+                                                ? QUALITY_METRIC_EXPLANATIONS['HOT Thinking']
+                                                : metric.label === 'Skor Kualitas'
+                                                  ? QUALITY_METRIC_EXPLANATIONS['Quality Score']
+                                                  : metric.label === 'Engagement'
+                                                    ? METRIC_LABEL_EXPLANATIONS.Engagement
+                                                    : QUALITY_METRIC_EXPLANATIONS[metric.label] ?? `${metric.label} menunjukkan perubahan nilai metrik ini dari waktu ke waktu.`;
+
+                                        return (
+                                            <div key={`${metric.value}-explanation`}>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: metric.color }} />
+                                                    <p className="text-xs font-semibold" style={{ color: metric.color }}>{metric.label}</p>
+                                                </div>
+                                                <p className="mt-1 text-xs leading-5 text-brand-muted-dark">{explanation}</p>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    ) : null}
+                    <div className="flex items-center gap-1 rounded-lg border border-brand-primary/10 bg-brand-primary/[0.04] p-0.5">
+                        <button
+                            type="button"
+                            onClick={() => setActiveChartType('line')}
+                            className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                            style={{
+                                background: activeChartType === 'line' ? 'var(--color-brand-primary)' : 'transparent',
+                                color: activeChartType === 'line' ? '#fff' : '#6B7280',
+                                boxShadow: activeChartType === 'line' ? '0 8px 20px rgba(136,22,28,0.18)' : 'none',
+                            }}
+                        >
+                            Line
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveChartType('bar')}
+                            className="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                            style={{
+                                background: activeChartType === 'bar' ? 'var(--color-brand-primary)' : 'transparent',
+                                color: activeChartType === 'bar' ? '#fff' : '#6B7280',
+                                boxShadow: activeChartType === 'bar' ? '0 8px 20px rgba(136,22,28,0.18)' : 'none',
+                            }}
+                        >
+                            Bar
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -204,10 +266,11 @@ export default function InteractiveTrendChart({
                             className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all"
                             style={{
                                 background: isActive
-                                    ? `${metric.color}15`
+                                    ? `${metric.color}18`
                                     : 'rgba(0,0,0,0.03)',
                                 color: isActive ? metric.color : '#9CA3AF',
-                                border: `1px solid ${isActive ? `${metric.color}30` : 'rgba(0,0,0,0.06)'}`,
+                                border: `1px solid ${isActive ? `${metric.color}4D` : 'rgba(0,0,0,0.06)'}`,
+                                boxShadow: isActive ? `0 6px 16px ${metric.color}1A` : 'none',
                             }}
                         >
                             <span
@@ -219,6 +282,8 @@ export default function InteractiveTrendChart({
                     );
                 })}
             </div>
+
+            
 
             <ResponsiveContainer width="100%" height={height}>
                 <Chart data={data} margin={{ top: 5, right: 20, bottom: 30, left: 0 }}>
@@ -299,10 +364,6 @@ export default function InteractiveTrendChart({
                     />
                 </Chart>
             </ResponsiveContainer>
-
-            <p className="mt-2 text-center text-[10px] text-gray-600">
-                Geser brush di bawah chart untuk zoom area tertentu
-            </p>
         </div>
     );
 }

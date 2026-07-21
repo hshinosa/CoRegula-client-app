@@ -106,6 +106,8 @@ export default function IndividualStudentAnalytics({
             value: data.qualityScore !== null ? data.qualityScore.toFixed(1) : 'N/A',
             color: getQualityColor(data.qualityScore),
             detail: getQualityLabel(data.qualityScore),
+            explanation:
+                'Skor Kualitas adalah ringkasan mutu kontribusi mahasiswa secara keseluruhan. Angka ini tidak berdiri sendiri: penilaiannya merangkum beberapa sinyal analitik yang lebih luas, terutama HOT Thinking, kualitas keterlibatan kognitif, dan keragaman bahasa. Jadi meskipun di tampilan ringkas ini metrik utama yang ditonjolkan hanya beberapa, skor ini tetap merefleksikan penilaian yang lebih kaya daripada sekadar jumlah pesan atau satu indikator tunggal.',
         },
         {
             icon: Zap,
@@ -113,6 +115,8 @@ export default function IndividualStudentAnalytics({
             value: `${data.hotPercentage.toFixed(1)}%`,
             color: '#334155',
             detail: 'Higher-Order Thinking',
+            explanation:
+                'HOT Thinking menunjukkan seberapa sering pesan mahasiswa berisi analisis, evaluasi, perbandingan, penyusunan argumen, atau pengembangan ide. Metrik ini adalah salah satu komponen penting dalam penilaian, tetapi bukan satu-satunya. Karena itu, HOT tinggi biasanya membantu Quality Score, namun tetap dibaca bersama kualitas engagement dan keragaman bahasa.',
         },
         {
             icon: MessageSquare,
@@ -120,34 +124,25 @@ export default function IndividualStudentAnalytics({
             value: data.messageCount,
             color: '#166534',
             detail: 'Pesan terkirim',
+            explanation:
+                'Total pesan menunjukkan volume kontribusi mahasiswa, bukan mutu diskusi secara langsung. Jumlah pesan yang tinggi bisa berarti aktif, tetapi belum tentu berkualitas jika isinya repetitif atau dangkal. Karena itu metrik ini dipakai sebagai konteks pendukung dan tetap perlu dibaca bersama HOT Thinking serta Skor Kualitas yang merangkum penilaian lebih luas.',
         },
     ];
 
     return (
         <div className="space-y-5">
-            <div className="flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#F3F4F6]"
-                >
-                    <ArrowLeft className="h-4 w-4 text-brand-muted-dark" />
-                </button>
-                <div>
-                    <nav className="flex items-center gap-1 text-xs text-gray-600">
-                        <button type="button" onClick={onBack} className="hover:text-brand-dark hover:underline">
-                            Mahasiswa
-                        </button>
-                        <span>/</span>
-                        <span className="text-brand-dark">{data.student.name}</span>
-                    </nav>
-                </div>
-            </div>
-
             <div
                 className="flex items-center gap-4 rounded-2xl p-4"
                 style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.65)' }}
             >
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/70"
+                    aria-label="Kembali"
+                >
+                    <ArrowLeft className="h-4 w-4 text-brand-muted-dark" />
+                </button>
                 <div
                     className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
                     style={{ background: getQualityColor(data.qualityScore) }}
@@ -160,7 +155,7 @@ export default function IndividualStudentAnalytics({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4">
                 {statCards.map((card) => (
                     <div
                         key={card.label}
@@ -175,6 +170,7 @@ export default function IndividualStudentAnalytics({
                             {card.value}
                         </p>
                         <p className="mt-0.5 text-xs text-gray-600">{card.detail}</p>
+                        <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{card.explanation}</p>
                     </div>
                 ))}
             </div>

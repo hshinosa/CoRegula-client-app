@@ -4,12 +4,14 @@ import {
     Activity,
     BarChart3,
     Clock3,
-    MessageSquare,
+    Info,
     Lightbulb,
+    MessageSquare,
     Users,
     X,
 } from 'lucide-react';
-import { CSSProperties, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+
 import { io, Socket } from 'socket.io-client';
 
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
@@ -22,6 +24,13 @@ import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
 import { getAuthToken } from '@/lib/getAuthToken';
 import { toast } from '@/components/ui/toaster';
+import {
+    ENGAGEMENT_TYPE_EXPLANATIONS,
+    QUALITY_METRIC_EXPLANATIONS,
+    RADAR_METRIC_DEFINITIONS,
+    RADAR_METRIC_LABELS,
+} from '@/lib/analytics-metric-explanations';
+
 
 interface Member {
     id: string;
@@ -126,23 +135,6 @@ const glassPanelStyle = {
     border: '1px solid rgba(136,22,28,0.10)',
 } as const;
 
-const RADAR_METRIC_LABELS = [
-    'Hot',
-    'Lexical Variety',
-    'Forethought',
-    'Performance',
-    'Collaboration',
-    'Reflection',
-];
-
-const RADAR_METRIC_DEFINITIONS: Record<string, string> = {
-    'Hot': 'Higher-Order Thinking — frekuensi argumen analitis, evaluatif, atau sintetis.',
-    'Lexical Variety': 'Keragaman kosakata akademis dalam diskusi grup.',
-    'Forethought': 'Proxy dari proporsi engagement kognitif (planning phase SRL).',
-    'Performance': 'Skor kualitas diskusi keseluruhan dari analytics pipeline.',
-    'Collaboration': 'Proporsi engagement perilaku + sosial vs total engagement.',
-    'Reflection': 'Proxy turunan dari quality score (perlu data refleksi sesungguhnya untuk akurasi).',
-};
 
 const getQualityChipStyle = (score?: number | null): CSSProperties => {
     if (score === undefined || score === null) return neutralChipStyle;
@@ -214,7 +206,8 @@ const engagementTypeInfo: Record<
     { description: string; chipStyle: CSSProperties; bar: string }
 > = {
     cognitive: {
-        description: 'Pemikiran kritis, analisis, dan pemahaman konsep.',
+        description:
+            ENGAGEMENT_TYPE_EXPLANATIONS.cognitive,
         chipStyle: {
             background: 'rgba(71,85,105,0.10)',
             color: '#334155',
@@ -223,18 +216,27 @@ const engagementTypeInfo: Record<
         bar: '#475569',
     },
     behavioral: {
-        description: 'Partisipasi aktif, koordinasi tugas, dan tindakan nyata.',
+        description: ENGAGEMENT_TYPE_EXPLANATIONS.behavioral,
         chipStyle: successChipStyle,
         bar: '#22c55e',
     },
     emotional: {
-        description: 'Dukungan emosional, motivasi, dan empati antaranggota.',
+        description: ENGAGEMENT_TYPE_EXPLANATIONS.emotional,
         chipStyle: {
             background: 'rgba(180,83,9,0.10)',
             color: '#92400e',
             border: '1px solid rgba(180,83,9,0.18)',
         },
         bar: '#b45309',
+    },
+    social: {
+        description: ENGAGEMENT_TYPE_EXPLANATIONS.social,
+        chipStyle: {
+            background: 'rgba(71,85,105,0.08)',
+            color: '#334155',
+            border: '1px solid rgba(71,85,105,0.14)',
+        },
+        bar: '#64748b',
     },
 };
 
@@ -260,9 +262,11 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
 
     const [liveActivity, setLiveActivity] = useState<RecentActivity[]>(safeRecentActivity);
     const [liveQuality, setLiveQuality] = useState(safeAnalytics.qualityScore);
-    const [isConnected, setIsConnected] = useState(false);
     const [showMemberModal, setShowMemberModal] = useState(false);
     const [showSessionModal, setShowSessionModal] = useState(false);
+    const [showRadarMetricHint, setShowRadarMetricHint] = useState(false);
+    const radarMetricHintRef = useRef<HTMLDivElement>(null);
+
 
     const hotPercentage = safeQualityBreakdown.hot_percentage ?? safeAnalytics.hotPercentage ?? 0;
     const lexicalVariety = safeQualityBreakdown.lexical_variety ?? 0;
@@ -328,19 +332,12 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             transports: ['websocket', 'polling'],
         });
 
-        socket.on('connect', () => {
-            setIsConnected(true);
-        });
-
-        socket.on('disconnect', () => {
-            setIsConnected(false);
-        });
-
         socket.on('quality_update', (data) => {
             if (data.groupId === group.id) {
                 setLiveQuality(data.qualityScore);
             }
         });
+
 
         socket.on('receive_message', (data: any) => {
             if (data.senderType === 'system' || data.isIntervention) return;
@@ -359,24 +356,35 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             socket.disconnect();
         };
     }, [jwtToken, group.id]);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (radarMetricHintRef.current && !radarMetricHintRef.current.contains(event.target as Node)) {
+                setShowRadarMetricHint(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
 
     const qualityCards = [
         {
             label: 'HOT Thinking',
             value: `${hotPercentage.toFixed(0)}%`,
-            detail: 'Higher-order discussion',
+            detail: 'Proporsi pesan dengan penalaran tingkat tinggi.',
             color: '#334155',
         },
         {
             label: 'Lexical Variety',
             value: `${lexicalVariety.toFixed(0)}%`,
-            detail: 'Keragaman kosakata',
+            detail: 'Keragaman kosakata dalam diskusi.',
             color: '#92400e',
         },
         {
             label: 'Participants',
             value: participantCount,
-            detail: 'Peserta aktif yang terdeteksi',
+            detail: 'Jumlah anggota yang aktif berkontribusi.',
             color: '#166534',
         },
     ];
@@ -413,19 +421,19 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
             {
                 label: 'Status',
                 value: getQualityLabel(liveQuality),
-                detail: isConnected ? 'Sinkron dengan pembaruan live' : 'Menunggu sinyal pembaruan live',
+                detail: 'Status kualitas diskusi saat ini',
                 color: getQualityAccent(liveQuality),
             },
         ],
-        [group.sessionDiscussionCount, group.memberCount, isConnected, liveQuality, safeAnalytics.local_message_count, safeSessionDiscussions, safeMembers],
+        [group.sessionDiscussionCount, group.memberCount, liveQuality, safeAnalytics.local_message_count, safeSessionDiscussions, safeMembers],
     );
 
     const engagementEntries = Object.entries(safeAnalytics.engagementDistribution ?? {});
     const engagementTotal = engagementEntries.reduce((sum, [, count]) => sum + count, 0);
 
     return (
-        <AppLayout title={`${group.name} Analytics`} navItems={navItems}>
-            <Head title={`${group.name} Analytics`} />
+        <AppLayout title={`Analitik ${group.name}`} navItems={navItems}>
+            <Head title={`Detail Analitik - ${group.name}`} />
 
             <div className="relative">
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={320} />
@@ -452,7 +460,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             href={lecturer.analytics.index.url({ course: course.id })}
                                             className="transition-colors hover:text-brand-primary"
                                         >
-                                            Analytics
+                                            Analitik
                                         </Link>
                                         <span>/</span>
                                         <span style={headingStyle}>{group.name}</span>
@@ -462,18 +470,11 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         <span className={badgeClass} style={brandChipStyle}>
                                             {course.code}
                                         </span>
-                                        <span className={badgeClass} style={neutralChipStyle}>
-                                            {group.memberCount} anggota • {group.sessionDiscussionCount} sesi
-                                        </span>
-                                        <span className={`${badgeClass} gap-1.5`} style={isConnected ? successChipStyle : neutralChipStyle}>
-                                            <Activity className="h-3.5 w-3.5" />
-                                            {isConnected ? 'Live aktif' : 'Menunggu live'}
-                                        </span>
                                     </div>
 
                                     <div className="space-y-2">
                                         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl" style={headingStyle}>
-                                            Detail analytics diskusi {group.name}
+                                            Detail analitik diskusi {group.name}
                                         </h1>
                                         <p className={`max-w-2xl ${bodyTextClass}`}>
                                             Ringkasan kualitas diskusi, distribusi engagement SSRL, radar metrik, dan aktivitas percakapan terbaru dalam satu tampilan yang konsisten.
@@ -483,10 +484,10 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
 
                                 <div className="flex flex-col items-start gap-3 xl:items-end">
                                     <Link
-                                        href={lecturer.analytics.index.url({ course: course.id })}
+                                        href={lecturer.analytics.detail.url({ course: course.id })}
                                         className="inline-flex items-center rounded-full border border-brand-primary/15 bg-white px-4 py-2 text-sm font-medium text-brand-primary shadow-sm transition-colors hover:bg-brand-primary/5"
                                     >
-                                        Kembali ke analytics kelas
+                                        Kembali ke analitik kelas
                                     </Link>
 
                                     <div className="w-full rounded-2xl border border-brand-primary/10 bg-white/90 p-5 xl:w-[260px]" style={glassPanelStyle}>
@@ -583,7 +584,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                 Ringkasan kualitas diskusi
                                             </h2>
                                             <p className={`mt-1 ${bodyTextClass}`}>
-                                                Snapshot cepat untuk melihat arah kualitas percakapan dan sinyal pembelajaran kolaboratif grup.
+                                                Ringkasan cepat kualitas diskusi grup.
                                             </p>
                                         </div>
                                     </div>
@@ -596,20 +597,22 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                     )}
                                 </div>
 
-                                <div className="grid gap-4 sm:grid-cols-3 xl:w-[52%]">
+                                <div className="grid gap-4 sm:grid-cols-1 xl:w-[56%]">
                                     {qualityCards.map((card) => (
                                         <div
                                             key={card.label}
                                             className="rounded-2xl border p-5"
                                             style={{ background: `${card.color}08`, borderColor: `${card.color}16` }}
                                         >
-                                            <p className="text-3xl font-semibold tracking-tight" style={{ color: card.color }}>
-                                                {card.value}
-                                            </p>
-                                            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted-dark">
-                                                {card.label}
-                                            </p>
-                                            <p className="mt-2 text-sm text-brand-muted-dark">{card.detail}</p>
+                                            <div className="flex flex-wrap items-end justify-between gap-3">
+                                                <p className="text-3xl font-semibold tracking-tight" style={{ color: card.color }}>
+                                                    {card.value}
+                                                </p>
+                                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted-dark">
+                                                    {card.label}
+                                                </p>
+                                            </div>
+                                            <p className="mt-3 text-sm leading-6 text-brand-muted-dark">{card.detail}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -634,7 +637,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                 Distribusi engagement SSRL
                                             </h2>
                                             <p className={`mt-1 ${bodyTextClass}`}>
-                                                Klasifikasi percakapan berdasarkan jenis keterlibatan dalam pembelajaran kolaboratif.
+                                                Ringkasan jenis keterlibatan yang paling dominan dalam percakapan.
                                             </p>
                                         </div>
                                     </div>
@@ -653,7 +656,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                         return (
                                             <div key={type} className="rounded-2xl border bg-white/90 p-4" style={glassPanelStyle}>
                                                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-                                                    <div className="lg:w-56 lg:shrink-0">
+                                                    <div className="lg:w-[42%] lg:shrink-0">
                                                         <div className="flex items-center gap-2">
                                                             <p className="text-sm font-semibold capitalize" style={{ color: info.chipStyle.color as string }}>
                                                                 {type}
@@ -662,7 +665,7 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                                                 {count} sinyal
                                                             </span>
                                                         </div>
-                                                        <p className="mt-1 text-sm text-brand-muted-dark">{info.description}</p>
+                                                        <p className="mt-2 text-sm leading-6 text-brand-muted-dark">{info.description}</p>
                                                     </div>
 
                                                     <div className="flex flex-1 items-center gap-3">
@@ -692,17 +695,51 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                             transition={{ delay: 0.25 }}
                         >
                             <LiquidGlassCard intensity="light" className="rounded-2xl border border-brand-primary/10 bg-white/95 p-6" lightMode={true}>
-                                <div className="flex items-start gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-primary/10 bg-brand-primary/5">
-                                        <BarChart3 className="h-5 w-5 text-brand-primary" />
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-primary/10 bg-brand-primary/5">
+                                            <BarChart3 className="h-5 w-5 text-brand-primary" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-semibold" style={headingStyle}>
+                                                Radar metrik SSRL
+                                            </h2>
+                                            <p className={`mt-1 ${bodyTextClass}`}>
+                                                Profil singkat enam dimensi kualitas diskusi grup.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-xl font-semibold" style={headingStyle}>
-                                            Radar metrik SSRL
-                                        </h2>
-                                        <p className={`mt-1 ${bodyTextClass}`}>
-                                            Profil enam dimensi kualitas diskusi grup dalam skala 0–10.
-                                        </p>
+
+                                    <div className="relative" ref={radarMetricHintRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRadarMetricHint((current) => !current)}
+                                            className="flex h-8 w-8 items-center justify-center rounded-full border transition-colors"
+                                            style={{
+                                                background: showRadarMetricHint ? 'rgba(136,22,28,0.10)' : 'rgba(255,255,255,0.92)',
+                                                color: showRadarMetricHint ? 'var(--color-brand-primary)' : '#6B7280',
+                                                borderColor: showRadarMetricHint ? 'rgba(136,22,28,0.22)' : 'rgba(0,0,0,0.08)',
+                                            }}
+                                            aria-label="Tampilkan penjelasan metrik radar"
+                                            title="Penjelasan metrik radar"
+                                        >
+                                            <Info className="h-4 w-4" />
+                                        </button>
+                                        {showRadarMetricHint ? (
+                                            <div
+                                                className="absolute right-full top-1/2 z-20 mr-3 w-[min(28rem,calc(100vw-4rem))] -translate-y-1/2 rounded-2xl border border-brand-primary/10 bg-white/96 p-4 shadow-2xl"
+                                                style={{ backdropFilter: 'blur(16px)' }}
+                                            >
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    {RADAR_METRIC_LABELS.map((label) => (
+                                                        <div key={`${label}-radar-explanation`}>
+                                                            <p className="text-xs font-semibold text-brand-dark">{label}</p>
+                                                            <p className="mt-1 text-xs leading-5 text-brand-muted-dark">{RADAR_METRIC_DEFINITIONS[label]}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
 
@@ -722,7 +759,6 @@ export default function GroupAnalyticsDetail({ course, group, analytics, members
                                             labels={RADAR_METRIC_LABELS}
                                             classAverage={radarMetrics}
                                             primaryLabel={group.name}
-                                            metricDefinitions={RADAR_METRIC_DEFINITIONS}
                                             showDelta={false}
                                         />
                                     </div>

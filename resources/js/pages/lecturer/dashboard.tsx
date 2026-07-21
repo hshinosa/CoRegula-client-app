@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Activity, BookOpen, Plus, Users, AlertTriangle, BarChart3, Wifi, WifiOff } from 'lucide-react';
+import { Activity, BookOpen, Plus, Users, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -268,14 +268,6 @@ export default function LecturerDashboard({ stats, recentActivity, chartData }: 
                                         <h2 className="text-lg font-semibold font-sans text-brand-dark">
                                             Aktivitas Terbaru
                                         </h2>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        {isConnected ? (
-                                            <Wifi className="h-3.5 w-3.5 text-green-500" />
-                                        ) : (
-                                            <WifiOff className="h-3.5 w-3.5 text-gray-600" />
-                                        )}
-                                        <span className="text-[10px] text-brand-muted-dark">{isConnected ? 'Live' : 'Offline'}</span>
                                     </div>
                                 </div>
 

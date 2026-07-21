@@ -362,6 +362,13 @@ export default function ShowCourse({ course }: Props) {
                                                 <option value="balanced">Seimbang</option>
                                                 <option value="relaxed">Fleksibel</option>
                                             </select>
+                                            <p className="mt-2 px-1 text-xs leading-5 text-brand-muted-dark">
+                                                {groupPolicyData.ai_guardrail_preset === 'strict'
+                                                    ? 'Ketat: AI paling selektif. Permintaan yang mengarah ke jawaban langsung, penyelesaian tugas, atau di luar konteks belajar lebih mudah diblokir. Cocok untuk kelas dengan risiko kecurangan tinggi.'
+                                                    : groupPolicyData.ai_guardrail_preset === 'relaxed'
+                                                      ? 'Fleksibel: AI lebih longgar. Pelanggaran ringan cenderung ditandai saja, sementara bantuan belajar tetap diberikan. Cocok untuk brainstorming atau eksplorasi konsep.'
+                                                      : 'Seimbang: Default. AI tetap membatasi permintaan yang tidak etis atau tidak mendukung belajar mandiri, tetapi tetap memberi petunjuk, langkah, atau ringkasan konsep. Cocok untuk diskusi kelas reguler.'}
+                                            </p>
                                             <InputError message={groupPolicyErrors.ai_guardrail_preset} className="mt-1.5" />
                                         </div>
                                         <div className="sm:col-span-2 grid gap-3">

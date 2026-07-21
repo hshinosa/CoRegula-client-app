@@ -96,8 +96,8 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
     const metrics = comparisonData.length > 0 ? Object.keys(comparisonData[0].metrics) : [];
 
     return (
-        <AppLayout title="Perbandingan Analytics" navItems={navItems}>
-            <Head title="Perbandingan Analytics" />
+        <AppLayout title="Perbandingan Analitik" navItems={navItems}>
+            <Head title="Perbandingan Analitik" />
 
             <div className="relative">
                 <OrganicBlob className="top-0 -left-20" delay={0} color="rgba(136, 22, 28, 0.04)" size={320} />
@@ -115,7 +115,7 @@ export default function AnalyticsComparison({ comparisonData, allCourses = [], s
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-bold font-sans text-brand-dark">
-                                            Perbandingan Analytics
+                                            Perbandingan Analitik
                                         </h1>
                                         <p className="mt-1 text-sm text-brand-muted-dark">
                                             Bandingkan metrik antar kelas (maks 3)

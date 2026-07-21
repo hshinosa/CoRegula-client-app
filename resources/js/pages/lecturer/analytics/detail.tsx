@@ -8,22 +8,19 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import {
-    BenchmarkToggle,
-    DateRangePicker,
-    InteractiveTrendChart,
-    type MetricOption,
-    SectionExportMenu,
-    ShareLinkGenerator,
-    StudentBreakdownList,
-    IndividualStudentAnalytics,
-} from '@/components/analytics';
-import type { DateRange } from '@/components/analytics';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import { useLecturerNav } from '@/components/navigation/lecturer-nav';
 import AppLayout from '@/layouts/app-layout';
 import lecturer from '@/routes/lecturer';
 import { Course } from '@/types';
+import {
+    InteractiveTrendChart,
+    type MetricOption,
+    StudentBreakdownList,
+    IndividualStudentAnalytics,
+} from '@/components/analytics';
+import type { DateRange } from '@/components/analytics';
+
 
 interface TrendDataPoint {
     date: string;
@@ -93,21 +90,28 @@ const getQualityLabel = (score: number | null) => {
 
 export default function AnalyticsDetail({ course, analytics }: Props) {
     const navItems = useLecturerNav('analytics');
-
     const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
     const [preset, setPreset] = useState<string>('');
-    const [benchmarkEnabled, setBenchmarkEnabled] = useState(false);
+
+
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
     const safeAnalytics = useMemo(() => analytics ?? { summary: { totalGroups: 0, averageQualityScore: null, totalMessages: 0, groupsNeedingAttention: 0 }, groups: [], trends: null }, [analytics]);
     const summary = safeAnalytics.summary;
 
+    const handleBrushChange = useCallback((_startIndex: number, _endIndex: number) => {}, []);
     const handleDateChange = useCallback((range: DateRange, newPreset?: string) => {
         setDateRange(range);
         setPreset(newPreset ?? '');
     }, []);
+    const preserveBreakdownScroll = useCallback((action: () => void) => {
+        const scrollY = window.scrollY;
+        action();
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, behavior: 'auto' });
+        });
+    }, []);
 
-    const handleBrushChange = useCallback((_startIndex: number, _endIndex: number) => {}, []);
 
     const statCards = [
         {
@@ -151,7 +155,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                 <div className="relative space-y-6">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                         <LiquidGlassCard intensity="medium" className="rounded-2xl border border-brand-primary/10 bg-white/95 p-6 sm:p-8" lightMode>
-                            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                                 <div className="max-w-3xl">
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-brand-muted-dark">
                                         <Link href={lecturer.courses.index.url()} className="transition-colors hover:text-brand-primary">
@@ -165,7 +169,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                         <span style={headingStyle}>Analitik</span>
                                     </div>
 
-                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    <div className="mt-3 flex flex-wrap items-center gap-2">
                                         <span className={badgeClass} style={brandChipStyle}>
                                             {course.code}
                                         </span>
@@ -174,7 +178,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                         </span>
                                     </div>
 
-                                    <h1 className="mt-4 text-2xl font-bold sm:text-3xl" style={headingStyle}>
+                                    <h1 className="mt-3 text-2xl font-bold sm:text-3xl" style={headingStyle}>
                                         Analitik {course.name}
                                     </h1>
                                     <p className={`mt-2 max-w-2xl ${bodyTextClass}`}>
@@ -182,27 +186,13 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                     </p>
                                 </div>
 
-                                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+                                <div className="flex justify-start lg:justify-end">
                                     <Link
                                         href={lecturer.courses.show.url({ course: course.id })}
                                         className="inline-flex min-w-[170px] items-center justify-center rounded-full border border-brand-primary/15 bg-white px-4 py-2 text-sm font-medium text-brand-primary shadow-sm transition-colors hover:bg-brand-primary/5"
                                     >
                                         Kembali ke kelas
                                     </Link>
-                                    <DateRangePicker value={dateRange} preset={preset} onChange={handleDateChange} />
-                                    <SectionExportMenu
-                                        courseId={course.id}
-                                        section="overview"
-                                        startDate={dateRange.startDate}
-                                        endDate={dateRange.endDate}
-                                        preset={preset}
-                                    />
-                                    <ShareLinkGenerator
-                                        courseId={course.id}
-                                        section="overview"
-                                        startDate={dateRange.startDate}
-                                        endDate={dateRange.endDate}
-                                    />
                                 </div>
                             </div>
                         </LiquidGlassCard>
@@ -242,14 +232,6 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                     <h2 className="text-lg font-semibold" style={headingStyle}>Trend performa</h2>
                                     <p className={`mt-1 ${bodyTextClass}`}>Pantau perubahan metrik kualitas diskusi sepanjang periode aktif.</p>
                                 </div>
-                                <BenchmarkToggle
-                                    courseId={course.id}
-                                    startDate={dateRange.startDate}
-                                    endDate={dateRange.endDate}
-                                    preset={preset}
-                                    enabled={benchmarkEnabled}
-                                    onToggle={setBenchmarkEnabled}
-                                />
                             </div>
                             {safeAnalytics.trends && safeAnalytics.trends.length > 0 ? (
                                 <div className="rounded-2xl border border-brand-primary/10 bg-white/90 p-3 sm:p-4">
@@ -258,7 +240,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                         metrics={TREND_METRICS}
                                         title="Tren per Metrik"
                                         height={350}
-                                        showBenchmark={benchmarkEnabled}
+                                        showBenchmark={false}
                                         onBrushChange={handleBrushChange}
                                     />
                                 </div>
@@ -320,13 +302,13 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                         <LiquidGlassCard intensity="light" className="rounded-2xl border border-brand-primary/10 bg-white/95 p-6" lightMode>
                             <div className="mb-4">
                                 <h2 className="text-lg font-semibold" style={headingStyle}>Breakdown mahasiswa</h2>
-                                <p className={`mt-1 ${bodyTextClass}`}>Telusuri performa individual tanpa keluar dari konteks analytics kelas.</p>
+                                <p className={`mt-1 ${bodyTextClass}`}>Telusuri performa individual tanpa keluar dari konteks analitik kelas.</p>
                             </div>
                             {selectedStudentId ? (
                                 <IndividualStudentAnalytics
                                     courseId={course.id}
                                     studentId={selectedStudentId}
-                                    onBack={() => setSelectedStudentId(null)}
+                                    onBack={() => preserveBreakdownScroll(() => setSelectedStudentId(null))}
                                     startDate={dateRange.startDate}
                                     endDate={dateRange.endDate}
                                     preset={preset}
@@ -337,7 +319,7 @@ export default function AnalyticsDetail({ course, analytics }: Props) {
                                     startDate={dateRange.startDate}
                                     endDate={dateRange.endDate}
                                     preset={preset}
-                                    onSelectStudent={setSelectedStudentId}
+                                    onSelectStudent={(studentId) => preserveBreakdownScroll(() => setSelectedStudentId(studentId))}
                                 />
                             )}
                         </LiquidGlassCard>

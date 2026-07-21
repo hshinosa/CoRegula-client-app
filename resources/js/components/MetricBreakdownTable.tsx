@@ -68,25 +68,24 @@ export const MetricBreakdownTable: React.FC<MetricBreakdownTableProps> = ({
 
                         return (
                             <tr key={label} style={{ borderBottom: idx === labels.length - 1 ? 'none' : '1px solid rgba(74,74,74,0.06)' }}>
-                                <td className="px-4 py-3 font-medium text-brand-dark">
+                                <td className="px-4 py-3 align-top">
+                                    <p className="font-medium text-brand-dark">{label}</p>
                                     {metricDefinitions?.[label] ? (
-                                        <span title={metricDefinitions[label]} className="cursor-help border-b border-dashed border-[#9CA3AF]">
-                                            {label}
-                                        </span>
-                                    ) : (
-                                        label
-                                    )}
+                                        <p className="mt-1.5 max-w-xl text-xs leading-5 text-brand-muted-dark">
+                                            {metricDefinitions[label]}
+                                        </p>
+                                    ) : null}
                                 </td>
-                                <td className="px-4 py-3 text-right font-semibold text-brand-primary">
+                                <td className="px-4 py-3 text-right align-top font-semibold text-brand-primary">
                                     {formatScore(value)}
                                 </td>
                                 {showComparison && compValue !== null && (
-                                    <td className="px-4 py-3 text-right font-semibold" style={{ color: '#475569' }}>
+                                    <td className="px-4 py-3 text-right align-top font-semibold" style={{ color: '#475569' }}>
                                         {formatScore(compValue)}
                                     </td>
                                 )}
                                 {showDelta && (
-                                    <td className="px-4 py-3 text-right">
+                                    <td className="px-4 py-3 text-right align-top">
                                         <span
                                             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                             style={{ color: tone.color, background: tone.background }}

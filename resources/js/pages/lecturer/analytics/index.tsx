@@ -26,8 +26,10 @@ import { toast } from '@/components/ui/toaster';
 import CourseExportButton from '@/components/CourseExportButton';
 
 interface GroupAnalytics {
-    groupId: string;
-    groupName: string;
+    id?: string;
+    name?: string;
+    groupId?: string;
+    groupName?: string;
     memberCount: number;
     sessionDiscussionCount: number;
     messageCount: number;
@@ -633,11 +635,13 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                         </thead>
                                         <tbody>
                                             {liveGroups.map((group) => {
+                                                const groupId = group.groupId ?? group.id;
+                                                const groupName = group.groupName ?? group.name ?? 'Grup tanpa nama';
                                                 const engagementEntries = Object.entries(group.engagementDistribution || {});
                                                 const total = engagementEntries.reduce((sum, [, count]) => sum + (count as number), 0);
 
                                                 return (
-                                                    <tr key={group.groupId} className="group/row">
+                                                    <tr key={groupId ?? group.name} className="group/row">
                                                         <td className="border-t border-white/50 px-4 py-4 align-top">
                                                             <div className="flex items-center gap-3">
                                                                 <div
@@ -656,7 +660,7 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-sm font-medium text-brand-dark">
-                                                                        {group.groupName}
+                                                                        {groupName}
                                                                     </p>
                                                                     <p className="mt-0.5 text-xs text-brand-muted-dark">
                                                                         {group.sessionDiscussionCount} sesi diskusi
@@ -687,17 +691,21 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                             </span>
                                                         </td>
                                                         <td className="border-t border-white/50 px-4 py-4 text-center align-top">
-                                                            <Link
-                                                                href={lecturer.analytics.group.url({
-                                                                    course: course.id,
-                                                                    group: group.groupId,
-                                                                })}
-                                                                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-                                                                style={brandChipStyle}
-                                                            >
-                                                                Detail
-                                                                <ArrowRight className="h-3 w-3" />
-                                                            </Link>
+                                                            {groupId ? (
+                                                                <Link
+                                                                    href={lecturer.analytics.group.url({
+                                                                        course: course.id,
+                                                                        group: groupId,
+                                                                    })}
+                                                                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+                                                                    style={brandChipStyle}
+                                                                >
+                                                                    Detail
+                                                                    <ArrowRight className="h-3 w-3" />
+                                                                </Link>
+                                                            ) : (
+                                                                <span className="text-xs text-brand-muted-dark">Detail tidak tersedia</span>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 );
@@ -717,14 +725,16 @@ export default function CourseAnalytics({ course, analytics, filters }: Props) {
                                                     Object.keys(group.engagementDistribution).length > 0,
                                             )
                                             .map((group) => {
+                                                const groupId = group.groupId ?? group.id;
+                                                const groupName = group.groupName ?? group.name ?? 'Grup tanpa nama';
                                                 const engagementEntries = Object.entries(group.engagementDistribution!);
                                                 const total = engagementEntries.reduce((sum, [, count]) => sum + (count as number), 0);
 
                                                 return (
-                                                    <div key={group.groupId} className="rounded-2xl p-4" style={glassPanelStyle}>
+                                                    <div key={groupId ?? group.name} className="rounded-2xl p-4" style={glassPanelStyle}>
                                                         <div className="mb-3 flex items-center justify-between">
                                                             <p className="text-sm font-medium text-brand-dark">
-                                                                {group.groupName}
+                                                                {groupName}
                                                             </p>
                                                             <span className="text-xs text-brand-muted-dark">{total} total</span>
                                                         </div>

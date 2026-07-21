@@ -53,6 +53,14 @@ export default function StudentBreakdownList({
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ total: 0, perPage: 15, currentPage: 1, lastPage: 1 });
     const [scoreFilter, setScoreFilter] = useState<{ min?: number; max?: number }>({});
+    const preserveScroll = useCallback((action: () => void) => {
+        const scrollY = window.scrollY;
+        action();
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, behavior: 'auto' });
+        });
+    }, []);
+
 
     const fetchStudents = useCallback(async () => {
         setLoading(true);
@@ -93,15 +101,17 @@ export default function StudentBreakdownList({
 
     const handleSort = useCallback(
         (field: SortField) => {
-            if (sortField === field) {
-                setSortDir((p) => (p === 'desc' ? 'asc' : 'desc'));
-            } else {
-                setSortField(field);
-                setSortDir('desc');
-            }
-            setPage(1);
+            preserveScroll(() => {
+                if (sortField === field) {
+                    setSortDir((p) => (p === 'desc' ? 'asc' : 'desc'));
+                } else {
+                    setSortField(field);
+                    setSortDir('desc');
+                }
+                setPage(1);
+            });
         },
-        [sortField],
+        [preserveScroll, sortField],
     );
 
     const SortIcon = ({ field }: { field: SortField }) => {
@@ -131,7 +141,13 @@ export default function StudentBreakdownList({
                             type="text"
                             placeholder="Cari mahasiswa..."
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                const nextValue = e.target.value;
+                                preserveScroll(() => {
+                                    setSearch(nextValue);
+                                    setPage(1);
+                                });
+                            }}
                             className="rounded-lg border border-[#E5E7EB] bg-white py-1.5 pl-8 pr-3 text-xs text-brand-dark placeholder-[#9CA3AF] focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary/20"
                         />
                     </div>
@@ -139,11 +155,13 @@ export default function StudentBreakdownList({
                         value={`${scoreFilter.min ?? ''}-${scoreFilter.max ?? ''}`}
                         onChange={(e) => {
                             const v = e.target.value;
-                            if (v === '-') setScoreFilter({});
-                            else if (v === '0-49') setScoreFilter({ min: 0, max: 49 });
-                            else if (v === '50-69') setScoreFilter({ min: 50, max: 69 });
-                            else if (v === '70-100') setScoreFilter({ min: 70, max: 100 });
-                            setPage(1);
+                            preserveScroll(() => {
+                                if (v === '-') setScoreFilter({});
+                                else if (v === '0-49') setScoreFilter({ min: 0, max: 49 });
+                                else if (v === '50-69') setScoreFilter({ min: 50, max: 69 });
+                                else if (v === '70-100') setScoreFilter({ min: 70, max: 100 });
+                                setPage(1);
+                            });
                         }}
                         className="rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-xs text-brand-dark focus:border-brand-primary focus:outline-none"
                     >
@@ -224,8 +242,9 @@ export default function StudentBreakdownList({
                                     <td className="px-4 py-3 text-center">
                                         <button
                                             type="button"
-                                            onClick={() => onSelectStudent?.(s.id)}
+                                            onClick={() => preserveScroll(() => onSelectStudent?.(s.id))}
                                             className="rounded-lg px-3 py-1 text-xs font-medium transition-colors"
+
                                             style={{ background: 'rgba(136,22,28,0.08)', color: '#88161c', border: '1px solid rgba(136,22,28,0.15)' }}
                                         >
                                             Detail
@@ -245,7 +264,7 @@ export default function StudentBreakdownList({
                         totalPages={meta.lastPage}
                         totalItems={meta.total}
                         perPage={meta.perPage}
-                        onPageChange={setPage}
+                        onPageChange={(nextPage) => preserveScroll(() => setPage(nextPage))}
                     />
                 </div>
             )}

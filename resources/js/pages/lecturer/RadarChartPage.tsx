@@ -8,6 +8,7 @@ import MetricBreakdownTable from '@/components/MetricBreakdownTable';
 import MetricsRadarChart from '@/components/MetricsRadarChart';
 import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers';
 import AppLayout from '@/layouts/app-layout';
+import { RADAR_METRIC_DEFINITIONS } from '@/lib/analytics-metric-explanations';
 
 type Scope = 'class' | 'group' | 'student' | 'session';
 type SortMode = 'default' | 'score-desc' | 'score-asc' | 'name';
@@ -40,14 +41,7 @@ const METRIC_LABELS = [
     'Reflection',
 ];
 
-const METRIC_DEFINITIONS: Record<string, string> = {
-    'Hot': 'Higher-Order Thinking — frekuensi argumen analitis, evaluatif, atau sintetis dalam diskusi',
-    'Lexical Variety': 'Keragaman kosakata akademis yang dipakai mahasiswa',
-    'Forethought': 'Kemampuan merencanakan langkah belajar sebelum eksekusi (fase perencanaan SRL)',
-    'Performance': 'Kualitas eksekusi tugas dan kontribusi konkret pada diskusi',
-    'Collaboration': 'Frekuensi interaksi yang membangun ide rekan dan menjawab pertanyaan',
-    'Reflection': 'Kemampuan mengevaluasi proses dan hasil belajar (fase refleksi SRL)',
-};
+const METRIC_DEFINITIONS = RADAR_METRIC_DEFINITIONS;
 
 const avgOf = (metrics: number[]) => metrics.reduce((a, b) => a + b, 0) / metrics.length;
 
