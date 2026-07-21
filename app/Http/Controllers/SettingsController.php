@@ -115,9 +115,6 @@ class SettingsController extends Controller
             'notifications.discussion' => 'sometimes|boolean',
             'notifications.reflection' => 'sometimes|boolean',
             'notifications.announcement' => 'sometimes|boolean',
-            'analyticsVisibility' => 'sometimes|boolean',
-            'aiInteractionConsent' => 'sometimes|boolean',
-            'dataSharingConsent' => 'sometimes|boolean',
         ]);
 
         $payload = [];
@@ -130,10 +127,6 @@ class SettingsController extends Controller
             $payload['notify_reflection'] = $validated['notifications']['reflection'] ?? true;
             $payload['notify_announcement'] = $validated['notifications']['announcement'] ?? true;
         }
-        if (array_key_exists('analyticsVisibility', $validated)) $payload['analytics_visibility'] = $validated['analyticsVisibility'];
-        if (array_key_exists('aiInteractionConsent', $validated)) $payload['ai_interaction_consent'] = $validated['aiInteractionConsent'];
-        if (array_key_exists('dataSharingConsent', $validated)) $payload['data_sharing_consent'] = $validated['dataSharingConsent'];
-
         try {
             $response = $this->apiRequest()->put($this->apiUrl() . '/api/users/me/preferences', $payload);
             if ($response->successful()) {
@@ -149,30 +142,4 @@ class SettingsController extends Controller
         }
     }
 
-    public function destroyAccount(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'password' => 'required|string',
-            'confirmation' => 'required|string|in:HAPUS AKUN SAYA',
-        ]);
-
-        try {
-            $response = $this->apiRequest()->delete($this->apiUrl() . '/api/users/me', [
-                'password' => $validated['password'],
-            ]);
-            if ($response->successful()) {
-                if ($request->hasSession()) {
-                    $request->session()->flush();
-                }
-                return response()->json(['message' => 'Akun berhasil dihapus', 'redirect' => '/']);
-            }
-            return response()->json(['message' => 'Gagal menghapus akun'], $response->status());
-        } catch (ConnectionException $e) {
-            \Illuminate\Support\Facades\Log::warning('Settings: failed to delete account', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Terjadi kesalahan server'], 500);
-        } catch (RequestException $e) {
-            \Illuminate\Support\Facades\Log::warning('Settings: failed to delete account', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Terjadi kesalahan server'], 500);
-        }
-    }
 }

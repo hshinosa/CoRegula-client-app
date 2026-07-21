@@ -225,53 +225,14 @@ export interface CreateReflectionData {
     content: string;
 }
 
-// ============ Reflection Template Types ============
-
-export type TemplateCategory = 'Harian' | 'Mingguan' | 'Proyek' | 'Evaluasi Diri';
-
-export interface ReflectionTemplate {
-    id: number;
-    user_id: string | null;
-    title: string;
-    description: string | null;
-    content_template: string;
-    category: string | null;
-    is_global: boolean;
-    created_at: string;
-    updated_at: string;
-}
-
-export interface CreateTemplateData {
-    title: string;
-    description?: string;
-    content_template: string;
-    category?: string;
-}
-
-// ============ Reflection Analytics Types ============
-
-export interface AnalyticsDataPoint {
-    label: string;
-    count: number;
-    averageWords?: number;
-    average?: number;
-}
 
 
-export interface StreakData {
-    current: number;
-    longest: number;
-    hasReflectionToday: boolean;
-}
 
-export interface ReflectionAnalytics {
-    frequency: AnalyticsDataPoint[];
-    averageLength: AnalyticsDataPoint[];
-    streak: StreakData;
-    timeline: AnalyticsDataPoint[];
-    totalReflections: number;
-    period: string;
-}
+
+
+
+
+
 
 export type InteractionType = 'planning' | 'question' | 'social' | 'off-topic';
 export type SenderType = 'user' | 'ai' | 'system';

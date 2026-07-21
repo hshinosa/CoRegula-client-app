@@ -21,7 +21,6 @@ Timeouts are configured at each layer to prevent cascading failures and ensure p
 | Reveal catch-up | 12s | - | `resources/js/pages/student/ai-chat/index.tsx` | Streaming display sync |
 | Toast messages | 4s | - | `resources/js/components/ui/toaster.tsx` | Auto-dismiss duration |
 | Toast (chat) | 5s | - | `resources/js/components/chat/Toast.tsx` | Chat-specific toasts |
-| Settings message | 4s | - | `resources/js/pages/settings/components/PrivacyTab.tsx` | Privacy settings feedback |
 
 ## Backend (Laravel BFF)
 

@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Bell, Palette, Shield, ShieldCheck, Database, ChevronRight } from 'lucide-react';
+import { User, Bell, Palette, Shield, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import Breadcrumbs from '@/components/dashboard/Breadcrumbs';
@@ -14,8 +14,6 @@ import { ProfileTab } from './components/ProfileTab';
 import { NotificationTab } from './components/NotificationTab';
 import { AppearanceTab } from './components/AppearanceTab';
 import { SecurityTab } from './components/SecurityTab';
-import { PrivacyTab } from './components/PrivacyTab';
-import { RetentionPolicyTab } from './components/RetentionPolicyTab';
 
 interface NotificationPrefs {
     courses: boolean;
@@ -42,7 +40,7 @@ interface Props {
     preferences: Preferences;
 }
 
-type TabId = 'profile' | 'notifications' | 'appearance' | 'security' | 'privacy' | 'retensi-data';
+type TabId = 'profile' | 'notifications' | 'appearance' | 'security';
 
 export default function SettingsPage({ profile, preferences }: Props) {
     const { auth } = usePage<SharedData>().props;
@@ -64,7 +62,7 @@ export default function SettingsPage({ profile, preferences }: Props) {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
-        if (tab && ['profile', 'notifications', 'appearance', 'security', 'privacy', 'retensi-data'].includes(tab)) {
+        if (tab && ['profile', 'notifications', 'appearance', 'security'].includes(tab)) {
             setActiveTab(tab as TabId);
         }
     }, []);
@@ -203,39 +201,11 @@ export default function SettingsPage({ profile, preferences }: Props) {
         }
     };
 
-    const handleAccountDelete = async (data: { password: string; confirmation: string }) => {
-        setSaving(true);
-        try {
-            const res = await fetch('/settings/account', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                },
-                body: JSON.stringify(data),
-            });
-
-            const result = await res.json();
-            if (res.ok) {
-                window.location.href = result.redirect ?? '/';
-            } else {
-                showMessage('error', result.message ?? 'Gagal menghapus akun');
-            }
-        } catch {
-            showMessage('error', 'Terjadi kesalahan jaringan');
-        } finally {
-            setSaving(false);
-        }
-    };
-
     const tabs = [
         { id: 'profile' as const, label: 'Profil', icon: User },
         { id: 'notifications' as const, label: 'Notifikasi', icon: Bell },
         { id: 'appearance' as const, label: 'Tampilan', icon: Palette },
         { id: 'security' as const, label: 'Keamanan', icon: Shield },
-        { id: 'privacy' as const, label: 'Privasi', icon: ShieldCheck },
-        ...(userRole === 'admin' ? [{ id: 'retensi-data' as const, label: 'Retensi Data', icon: Database }] : []),
     ];
 
     return (
@@ -339,14 +309,11 @@ export default function SettingsPage({ profile, preferences }: Props) {
                                     {activeTab === 'security' && (
                                         <SecurityTab
                                             onPasswordChange={handlePasswordChange}
-                                            onAccountDelete={handleAccountDelete}
                                             saving={saving}
                                         />
                                     )}
 
-                                    {activeTab === 'privacy' && <PrivacyTab />}
 
-                                    {activeTab === 'retensi-data' && <RetentionPolicyTab />}
                                 </motion.div>
                             </AnimatePresence>
                         </div>
