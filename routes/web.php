@@ -2,9 +2,6 @@
 
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AiChatSearchController;
-use App\Http\Controllers\AiChatTemplateController;
-use App\Http\Controllers\AiChatBookmarkController;
-use App\Http\Controllers\SavedMaterialController;
 use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuditLogController;
@@ -27,9 +24,6 @@ use App\Http\Controllers\GroupMemberManagementController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReflectionController;
-use App\Http\Controllers\ReflectionTemplateController;
-use App\Http\Controllers\ReflectionAnalyticsController;
-use App\Http\Controllers\ReflectionTagController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Student\StudentCourseWeeksController;
 use App\Http\Controllers\Student\StudentPreReadController;
@@ -38,7 +32,6 @@ use App\Http\Controllers\Student\ProfileAvatarController;
 use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\ProfilePreferenceController;
 use App\Http\Controllers\Student\ProfileStatsController;
-use App\Http\Controllers\Student\StudentAnalyticsController;
 use App\Http\Controllers\Student\StudentAttendanceController;
 use App\Http\Controllers\Student\GlobalSearchController as StudentGlobalSearchController;
 use App\Http\Controllers\UserManagementController;
@@ -140,17 +133,10 @@ Route::middleware('auth.jwt')->group(function () {
     Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
     Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
-    Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
 
-    Route::get('/api/privacy/policy', [CoreApiProxyController::class, 'privacyPolicy'])->name('api.privacy.policy');
-    Route::get('/api/user/privacy-preferences', [CoreApiProxyController::class, 'privacyPreferencesGet'])->name('api.user.privacy-preferences.get');
-    Route::put('/api/user/privacy-preferences', [CoreApiProxyController::class, 'privacyPreferencesPut'])->name('api.user.privacy-preferences.put');
     Route::get('/api/lecturer/discussion-health', [CoreApiProxyController::class, 'discussionHealth'])->name('api.lecturer.discussion-health');
 
-    // Plan vs Diskusi Chart
-    Route::get('/plan-vs-diskusi', function () {
-        return Inertia::render('PlanVsDiskusiPage');
-    })->name('plan-vs-diskusi');
+    // plan-vs-diskusi: Future Works / research surface — route removed from product UI scope.
 
     /*
     |--------------------------------------------------------------------------
@@ -158,10 +144,6 @@ Route::middleware('auth.jwt')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/api/retention-policies', [CoreApiProxyController::class, 'retentionPoliciesIndex'])->name('api.retention-policies.index');
-        Route::put('/api/retention-policies/{id}', [CoreApiProxyController::class, 'retentionPoliciesUpdate'])->name('api.retention-policies.update');
-        Route::delete('/api/retention-policies/{id}', [CoreApiProxyController::class, 'retentionPoliciesDestroy'])->name('api.retention-policies.destroy');
-
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
         Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.page');
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-log.index');
@@ -194,7 +176,6 @@ Route::middleware('auth.jwt')->group(function () {
             Route::get('/{id}', [MasterDataController::class, 'show'])->name('show');
             Route::post('/', [MasterDataController::class, 'store'])->name('store');
             Route::post('/{id}/clone', [MasterDataController::class, 'clone'])->name('clone');
-            Route::post('/from-template/{templateId}', [MasterDataController::class, 'createFromTemplate'])->name('from-template');
             Route::post('/{id}/archive', [MasterDataController::class, 'archive'])->name('archive');
             Route::post('/{id}/restore', [MasterDataController::class, 'restore'])->name('restore');
             Route::delete('/{id}/permanent', [MasterDataController::class, 'permanentDelete'])->name('permanent');
@@ -202,12 +183,7 @@ Route::middleware('auth.jwt')->group(function () {
             Route::delete('/{id}', [MasterDataController::class, 'destroy'])->name('destroy');
         });
 
-        Route::prefix('course-templates')->name('course-templates.')->group(function () {
-            Route::post('/', [MasterDataController::class, 'storeTemplate'])->name('store');
-            Route::get('/list', [MasterDataController::class, 'listTemplates'])->name('index');
-            Route::get('/{id}', [MasterDataController::class, 'showTemplate'])->name('show');
-            Route::delete('/{id}', [MasterDataController::class, 'destroyTemplate'])->name('destroy');
-        });
+        // course-templates: Future Works — removed from product scope (no admin template library in UC-inti).
 
         Route::prefix('ai-settings')->name('ai-settings.')->group(function () {
             Route::get('/', [AISettingsController::class, 'index'])->name('index');
@@ -411,55 +387,14 @@ Route::middleware('auth.jwt')->group(function () {
             ->middleware('throttle:10,5')
             ->name('session-discussions.regenerate-summary');
 
-        // Reflections
+        // Reflections (submit + history only; templates/tags/analytics = Future Works / out of scope)
         Route::get('/reflections', [ReflectionController::class, 'index'])->name('reflections.index');
         Route::post('/reflections', [ReflectionController::class, 'store'])->name('reflections.store');
 
-        // Reflection Templates
-        Route::get('/reflections/templates', [ReflectionTemplateController::class, 'index'])->name('reflections.templates.index');
-        Route::post('/reflections/templates', [ReflectionTemplateController::class, 'store'])->name('reflections.templates.store');
-        Route::get('/reflections/templates/{template}', [ReflectionTemplateController::class, 'show'])->name('reflections.templates.show');
-        Route::put('/reflections/templates/{template}', [ReflectionTemplateController::class, 'update'])->name('reflections.templates.update');
-        Route::delete('/reflections/templates/{template}', [ReflectionTemplateController::class, 'destroy'])->name('reflections.templates.destroy');
-
-        // Reflection Analytics
-        Route::get('/reflections/analytics', [ReflectionAnalyticsController::class, 'index'])->name('reflections.analytics');
-
-        // Reflection Tags
-        Route::get('/reflections/tags', [ReflectionTagController::class, 'index'])->name('reflections.tags.index');
-        Route::post('/reflections/tags', [ReflectionTagController::class, 'store'])->name('reflections.tags.store');
-        Route::delete('/reflections/tags/{reflectionId}/{tag}', [ReflectionTagController::class, 'destroy'])->name('reflections.tags.destroy');
-        Route::get('/reflections/tags/suggestions', [ReflectionTagController::class, 'suggestions'])->name('reflections.tags.suggestions');
-
-        // AI Chat
+        // AI Chat (personal; no dedicated templates page, bookmarks, or saved-materials)
         Route::get('/ai-chat', [AiChatController::class, 'index'])->name('ai-chat.index');
         Route::post('/ai-chat', [AiChatController::class, 'store'])->name('ai-chat.store');
-
-        // AI Chat Search (must be before wildcard {chat})
         Route::get('/ai-chat/search', [AiChatSearchController::class, 'index'])->name('ai-chat.search');
-
-        // AI Chat Templates (must be before wildcard {chat})
-        Route::get('/ai-chat/templates', [AiChatTemplateController::class, 'index'])->name('ai-chat.templates.index');
-        Route::post('/ai-chat/templates', [AiChatTemplateController::class, 'store'])->name('ai-chat.templates.store');
-        Route::get('/ai-chat/templates/categories', [AiChatTemplateController::class, 'categories'])->name('ai-chat.templates.categories');
-        Route::get('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'show'])->name('ai-chat.templates.show');
-        Route::put('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'update'])->name('ai-chat.templates.update');
-        Route::delete('/ai-chat/templates/{template}', [AiChatTemplateController::class, 'destroy'])->name('ai-chat.templates.destroy');
-
-        // AI Chat Bookmarks (must be before wildcard {chat})
-        Route::get('/ai-chat/bookmarks', [AiChatBookmarkController::class, 'index'])->name('ai-chat.bookmarks.index');
-        Route::post('/ai-chat/bookmarks', [AiChatBookmarkController::class, 'store'])->name('ai-chat.bookmarks.store');
-        Route::post('/ai-chat/bookmarks/toggle', [AiChatBookmarkController::class, 'toggle'])->name('ai-chat.bookmarks.toggle');
-        Route::post('/ai-chat/bookmarks/check', [AiChatBookmarkController::class, 'check'])->name('ai-chat.bookmarks.check');
-        Route::delete('/ai-chat/bookmarks/{bookmark}', [AiChatBookmarkController::class, 'destroy'])->name('ai-chat.bookmarks.destroy');
-
-        // AI Chat Saved Materials (must be before wildcard {chat})
-        Route::get('/ai-chat/saved-materials', [SavedMaterialController::class, 'index'])->name('ai-chat.saved-materials.index');
-        Route::post('/ai-chat/saved-materials/toggle', [SavedMaterialController::class, 'toggle'])->name('ai-chat.saved-materials.toggle');
-        Route::post('/ai-chat/saved-materials/check', [SavedMaterialController::class, 'check'])->name('ai-chat.saved-materials.check');
-        Route::delete('/ai-chat/saved-materials/{id}', [SavedMaterialController::class, 'destroy'])->name('ai-chat.saved-materials.destroy');
-
-        // AI Chat wildcard routes
         Route::get('/ai-chat/{chat}', [AiChatController::class, 'show'])->name('ai-chat.show');
         Route::get('/ai-chat/{chat}/messages', [AiChatController::class, 'messages'])->name('ai-chat.messages.index');
         Route::patch('/ai-chat/{chat}', [AiChatController::class, 'update'])->name('ai-chat.update');
@@ -470,19 +405,10 @@ Route::middleware('auth.jwt')->group(function () {
         // Profile
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::put('/profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
-
-        // Profile Avatar
         Route::post('/profile/avatar', [ProfileAvatarController::class, 'store'])->name('profile.avatar.store');
         Route::delete('/profile/avatar', [ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
-
-        // Profile Stats
         Route::get('/profile/stats', [ProfileStatsController::class, 'index'])->name('profile.stats');
-
-        // Profile Preferences
         Route::get('/profile/preferences', [ProfilePreferenceController::class, 'index'])->name('profile.preferences.index');
         Route::patch('/profile/preferences', [ProfilePreferenceController::class, 'update'])->name('profile.preferences.update');
-
-        // Dashboard Analytics
-        Route::get('/dashboard/analytics', [StudentAnalyticsController::class, 'index'])->name('dashboard.analytics');
     });
 });

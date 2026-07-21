@@ -9,7 +9,6 @@ import {
     Eye,
     Filter,
     FileSpreadsheet,
-    FolderArchive,
     Import,
     Loader2,
     MoreVertical,
@@ -80,23 +79,6 @@ interface CourseItem {
     archivedBy?: CourseOwner | null;
 }
 
-interface TemplateGroupItem {
-    name: string;
-    description?: string;
-}
-
-interface CourseTemplateItem {
-    id: string;
-    name: string;
-    description?: string | null;
-    namePattern: string;
-    descriptionTemplate?: string | null;
-    defaultGroups: TemplateGroupItem[];
-    createdAt?: string;
-    created_at?: string;
-    createdBy?: CourseOwner | null;
-}
-
 interface PaginationData {
     page: number;
     limit: number;
@@ -138,22 +120,6 @@ interface ApiErrorResponse {
     };
     message?: string;
     errors?: Record<string, string | string[]>;
-}
-
-interface TemplateFormData {
-    name: string;
-    description: string;
-    namePattern: string;
-    descriptionTemplate: string;
-    defaultGroups: TemplateGroupItem[];
-    sourceCourseId?: string;
-}
-
-interface CreateFromTemplateFormData {
-    code: string;
-    name: string;
-    description: string;
-    ownerId: string;
 }
 
 const headingStyle = {
@@ -231,10 +197,6 @@ function getStudentCount(course: CourseItem) {
 
 function getCreatedAt(course: CourseItem) {
     return course.createdAt ?? course.created_at ?? null;
-}
-
-function getTemplateCreatedAt(template: CourseTemplateItem) {
-    return template.createdAt ?? template.created_at ?? null;
 }
 
 function CourseCard({
@@ -338,16 +300,11 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
     const [showCloneModal, setShowCloneModal] = useState(false);
     const [showArchiveModal, setShowArchiveModal] = useState(false);
     const [showPermanentDeleteModal, setShowPermanentDeleteModal] = useState(false);
-    const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [showCreateFromTemplateModal, setShowCreateFromTemplateModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
 
     const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null);
     const [courseDetails, setCourseDetails] = useState<CourseItem | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-    const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplateItem | null>(null);
-    const [templateLibrary, setTemplateLibrary] = useState<CourseTemplateItem[]>([]);
-    const [templatesLoading, setTemplatesLoading] = useState(false);
     const [selectedCourseIds, setSelectedCourseIds] = useState<Set<string>>(new Set());
     const [bulkProcessing, setBulkProcessing] = useState(false);
     const [importFile, setImportFile] = useState<File | null>(null);
@@ -375,25 +332,8 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
     const [archiveProcessing, setArchiveProcessing] = useState(false);
     const [permanentDeleteProcessing, setPermanentDeleteProcessing] = useState(false);
     const [cloneProcessing, setCloneProcessing] = useState(false);
-    const [templateProcessing, setTemplateProcessing] = useState(false);
-    const [createFromTemplateProcessing, setCreateFromTemplateProcessing] = useState(false);
     const [cloneForm, setCloneForm] = useState({ name: '', code: '' });
     const [cloneErrors, setCloneErrors] = useState<Record<string, string>>({});
-    const [templateForm, setTemplateForm] = useState<TemplateFormData>({
-        name: '',
-        description: '',
-        namePattern: '{semester} - {subject}',
-        descriptionTemplate: '',
-        defaultGroups: [{ name: 'Group A', description: '' }],
-    });
-    const [templateErrors, setTemplateErrors] = useState<Record<string, string>>({});
-    const [createFromTemplateForm, setCreateFromTemplateForm] = useState<CreateFromTemplateFormData>({
-        code: '',
-        name: '',
-        description: '',
-        ownerId: lecturers[0]?.id ?? '',
-    });
-    const [createFromTemplateErrors, setCreateFromTemplateErrors] = useState<Record<string, string>>({});
     const [permanentDeleteConfirmation, setPermanentDeleteConfirmation] = useState('');
 
     const activeFiltersCount = useMemo(() => {
@@ -499,16 +439,6 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
     const selectedCoursesCount = selectedCourseIds.size;
     const allCoursesSelected = courses.length > 0 && courses.every((course) => selectedCourseIds.has(course.id));
 
-    useEffect(() => {
-        if (!createFromTemplateForm.ownerId && lecturers[0]?.id) {
-            setCreateFromTemplateForm((prev) => ({ ...prev, ownerId: lecturers[0].id }));
-        }
-    }, [createFromTemplateForm.ownerId, lecturers]);
-
-    useEffect(() => {
-        void fetchTemplates();
-    }, []);
-
     const requestCourses = useCallback(({
         page = paginationState.page,
         limitValue = limit,
@@ -549,19 +479,6 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
             },
         );
     }, [isArchivedView, limit, ownerFilter, paginationState.page, searchInput]);
-
-    const fetchTemplates = async () => {
-        setTemplatesLoading(true);
-
-        try {
-            const response = await axios.get('/admin/course-templates/list');
-            setTemplateLibrary(response.data?.data ?? []);
-        } catch (error) {
-            toast.error(extractErrorMessage(error, 'Gagal memuat template course.'));
-        } finally {
-            setTemplatesLoading(false);
-        }
-    };
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -641,30 +558,6 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
         setPermanentDeleteConfirmation('');
     };
 
-    const closeTemplateModal = () => {
-        setShowTemplateModal(false);
-        setTemplateErrors({});
-        setTemplateForm({
-            name: '',
-            description: '',
-            namePattern: '{semester} - {subject}',
-            descriptionTemplate: '',
-            defaultGroups: [{ name: 'Group A', description: '' }],
-        });
-    };
-
-    const closeCreateFromTemplateModal = () => {
-        setShowCreateFromTemplateModal(false);
-        setSelectedTemplate(null);
-        setCreateFromTemplateErrors({});
-        setCreateFromTemplateForm({
-            code: '',
-            name: '',
-            description: '',
-            ownerId: lecturers[0]?.id ?? '',
-        });
-    };
-
     const closeImportModal = () => {
         setShowImportModal(false);
         setImportFile(null);
@@ -731,32 +624,6 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
         setSelectedCourse(course);
         setPermanentDeleteConfirmation('');
         setShowPermanentDeleteModal(true);
-    };
-
-    const openTemplateFromCourse = (course: CourseItem) => {
-        setSelectedCourse(course);
-        setTemplateForm({
-            name: `${course.name} Template`,
-            description: course.description ?? '',
-            namePattern: '{semester} - {subject}',
-            descriptionTemplate: course.description ?? '',
-            defaultGroups: [{ name: 'Group A', description: '' }],
-            sourceCourseId: course.id,
-        });
-        setTemplateErrors({});
-        setShowTemplateModal(true);
-    };
-
-    const openCreateFromTemplate = (template: CourseTemplateItem) => {
-        setSelectedTemplate(template);
-        setCreateFromTemplateForm({
-            code: '',
-            name: template.namePattern,
-            description: template.descriptionTemplate ?? '',
-            ownerId: lecturers[0]?.id ?? '',
-        });
-        setCreateFromTemplateErrors({});
-        setShowCreateFromTemplateModal(true);
     };
 
     const openDetails = async (course: CourseItem) => {
@@ -940,93 +807,6 @@ export default function AdminMasterDataPage({ courses, pagination, filters, lect
         }
     };
 
-    const handleTemplateGroupChange = (index: number, field: keyof TemplateGroupItem, value: string) => {
-        setTemplateForm((prev) => ({
-            ...prev,
-            defaultGroups: prev.defaultGroups.map((group, groupIndex) =>
-                groupIndex === index ? { ...group, [field]: value } : group,
-            ),
-        }));
-    };
-
-    const handleAddTemplateGroup = () => {
-        setTemplateForm((prev) => ({
-            ...prev,
-            defaultGroups: [...prev.defaultGroups, { name: '', description: '' }],
-        }));
-    };
-
-    const handleRemoveTemplateGroup = (index: number) => {
-        setTemplateForm((prev) => ({
-            ...prev,
-            defaultGroups: prev.defaultGroups.filter((_, groupIndex) => groupIndex !== index),
-        }));
-    };
-
-    const handleSaveTemplate = async (event: FormEvent) => {
-        event.preventDefault();
-
-        setTemplateErrors({});
-        setTemplateProcessing(true);
-
-        try {
-            await axios.post('/admin/course-templates', {
-                name: templateForm.name.trim(),
-                description: templateForm.description.trim(),
-                namePattern: templateForm.namePattern.trim(),
-                descriptionTemplate: templateForm.descriptionTemplate.trim(),
-                defaultGroups: templateForm.defaultGroups.map((group) => ({
-                    name: group.name.trim(),
-                    description: group.description?.trim() || undefined,
-                })),
-                sourceCourseId: templateForm.sourceCourseId,
-            });
-            toast.success('Template berhasil disimpan.');
-            closeTemplateModal();
-            await fetchTemplates();
-        } catch (error) {
-            setTemplateErrors(normalizeErrors(error));
-            toast.error(extractErrorMessage(error, 'Gagal menyimpan template.'));
-        } finally {
-            setTemplateProcessing(false);
-        }
-    };
-
-    const handleCreateCourseFromTemplate = async (event: FormEvent) => {
-        event.preventDefault();
-        if (!selectedTemplate) return;
-
-        setCreateFromTemplateErrors({});
-        setCreateFromTemplateProcessing(true);
-
-        try {
-            await axios.post(`/admin/master-data/from-template/${selectedTemplate.id}`, {
-                code: createFromTemplateForm.code.trim().toUpperCase(),
-                name: createFromTemplateForm.name.trim(),
-                description: createFromTemplateForm.description.trim(),
-                ownerId: createFromTemplateForm.ownerId,
-            });
-            toast.success('Course dari template berhasil dibuat.');
-            closeCreateFromTemplateModal();
-            router.visit('/admin/master-data?tab=active', { preserveScroll: true });
-        } catch (error) {
-            setCreateFromTemplateErrors(normalizeErrors(error));
-            toast.error(extractErrorMessage(error, 'Gagal membuat course dari template.'));
-        } finally {
-            setCreateFromTemplateProcessing(false);
-        }
-    };
-
-    const handleDeleteTemplate = async (template: CourseTemplateItem) => {
-        try {
-            await axios.delete(`/admin/course-templates/${template.id}`);
-            toast.success('Template berhasil dihapus.');
-            await fetchTemplates();
-        } catch (error) {
-            toast.error(extractErrorMessage(error, 'Gagal menghapus template.'));
-        }
-    };
-
     const handleBulkActivate = async () => {
         if (selectedCourseIds.size === 0) return;
 
@@ -1169,7 +949,7 @@ background: 'var(--dm-accent-bg)',
                                         Data Kelas
                                     </h1>
                                     <p className="mt-2 text-brand-muted-dark">
-                                        Kelola kelas aktif, kelas yang diarsipkan, dan template kelas untuk kebutuhan administrasi.
+                                        Kelola kelas aktif dan kelas yang diarsipkan untuk kebutuhan administrasi.
                                     </p>
                                 </div>
                             </div>
@@ -1219,14 +999,6 @@ background: 'var(--dm-accent-bg)',
                             >
                                 <Archive className="h-4 w-4" />
                                 Archived Courses
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowTemplateModal(true)}
-                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm text-slate-600"
-                            >
-                                <FolderArchive className="h-4 w-4" />
-                                Templates
                             </button>
                             <button
                                 type="button"
@@ -1455,17 +1227,6 @@ background: 'var(--dm-accent-bg)',
                                                                                 type="button"
                                                                                 onClick={() => {
                                                                                     setOpenActionsFor(null);
-                                                                                    openTemplateFromCourse(course);
-                                                                                }}
-                                                                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-                                                                            >
-                                                                                <FolderArchive className="h-4 w-4" />
-                                                                                Save as Template
-                                                                            </button>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => {
-                                                                                    setOpenActionsFor(null);
                                                                                     openArchive(course);
                                                                                 }}
                                                                                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-amber-700 hover:bg-amber-50"
@@ -1533,55 +1294,6 @@ background: 'var(--dm-accent-bg)',
                                 )}
                             </div>
 
-                            <div className="mt-6 rounded-2xl border border-white/70 bg-white/45 p-4">
-                                <div className="mb-4 flex items-center justify-between gap-3">
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-dark">Template Library</h3>
-                                        <p className="mt-1 text-sm text-slate-500">Simpan struktur course tanpa konten, lalu buat course baru lebih cepat.</p>
-                                    </div>
-                                </div>
-
-                                {templatesLoading ? (
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Loading templates...
-                                    </div>
-                                ) : templateLibrary.length === 0 ? (
-                                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 px-4 py-8 text-center text-sm text-slate-500">
-                                        Belum ada template course yang tersimpan.
-                                    </div>
-                                ) : (
-                                    <div className="grid gap-4 lg:grid-cols-2">
-                                        {templateLibrary.slice(0, 4).map((template) => (
-                                            <div key={template.id} className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-brand-dark">{template.name}</p>
-                                                        <p className="mt-1 text-xs text-slate-500">{template.description?.trim() || 'No description provided.'}</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => void handleDeleteTemplate(template)}
-                                                        className="rounded-lg border border-rose-200 bg-rose-50 p-2 text-rose-600"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-                                                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Pattern: {template.namePattern}</span>
-                                                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Groups: {template.defaultGroups?.length ?? 0}</span>
-                                                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Created: {formatDate(getTemplateCreatedAt(template))}</span>
-                                                </div>
-                                                <div className="mt-4 flex gap-2">
-                                                    <SecondaryButton onClick={() => openCreateFromTemplate(template)} className="flex-1 px-4 py-2 text-sm">
-                                                        Create from Template
-                                                    </SecondaryButton>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
                         </div>
 
                         <AdminPagination
@@ -2100,199 +1812,6 @@ background: 'var(--dm-accent-bg)',
                 </form>
             </FormModal>
 
-            <FormModal
-                open={showTemplateModal}
-                title="Save as Template"
-                description="Simpan struktur course agar bisa dipakai ulang untuk semester berikutnya."
-                onClose={closeTemplateModal}
-                maxWidth="max-w-2xl"
-            >
-                <form onSubmit={(event) => void handleSaveTemplate(event)} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label className="block text-sm font-medium text-brand-dark">Template Name</label>
-                            <input
-                                type="text"
-                                value={templateForm.name}
-                                onChange={(event) => setTemplateForm((prev) => ({ ...prev, name: event.target.value }))}
-                                className={inputClassName}
-                            />
-                            <InputError message={templateErrors.name} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-brand-dark">Name Pattern</label>
-                            <input
-                                type="text"
-                                value={templateForm.namePattern}
-                                onChange={(event) => setTemplateForm((prev) => ({ ...prev, namePattern: event.target.value }))}
-                                className={inputClassName}
-                                placeholder="{semester} - {subject}"
-                            />
-                            <p className="mt-1 text-xs text-slate-500">Placeholders: {'{semester}'}, {'{subject}'}, {'{year}'}</p>
-                            <InputError message={templateErrors.namePattern} />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-brand-dark">Description</label>
-                        <input
-                            type="text"
-                            value={templateForm.description}
-                            onChange={(event) => setTemplateForm((prev) => ({ ...prev, description: event.target.value }))}
-                            className={inputClassName}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-brand-dark">Description Template</label>
-                        <textarea
-                            value={templateForm.descriptionTemplate}
-                            onChange={(event) => setTemplateForm((prev) => ({ ...prev, descriptionTemplate: event.target.value }))}
-                            className={`${inputClassName} min-h-28 resize-none`}
-                        />
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-3">
-                            <label className="block text-sm font-medium text-brand-dark">Default Groups</label>
-                            <SecondaryButton onClick={handleAddTemplateGroup} className="px-3 py-2 text-sm">
-                                Add Group
-                            </SecondaryButton>
-                        </div>
-
-                        {templateForm.defaultGroups.map((group, index) => (
-                            <div
-                                key={`template-group-${index}`}
-                                className="grid gap-3 rounded-2xl border border-slate-200 bg-white/80 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-                            >
-                                <input
-                                    type="text"
-                                    value={group.name}
-                                    onChange={(event) => handleTemplateGroupChange(index, 'name', event.target.value)}
-                                    className={inputClassName}
-                                    placeholder="Group name"
-                                />
-                                <input
-                                    type="text"
-                                    value={group.description ?? ''}
-                                    onChange={(event) => handleTemplateGroupChange(index, 'description', event.target.value)}
-                                    className={inputClassName}
-                                    placeholder="Group description"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveTemplateGroup(index)}
-                                    className="inline-flex h-11 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 text-sm text-rose-600"
-                                >
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={closeTemplateModal} className="flex-1">
-                            Cancel
-                        </SecondaryButton>
-                        <PrimaryButton className="flex-1" disabled={templateProcessing}>
-                            {templateProcessing ? (
-                                <span className="inline-flex items-center gap-2">
-                                    {buttonSpinner}
-                                    Saving...
-                                </span>
-                            ) : (
-                                'Save Template'
-                            )}
-                        </PrimaryButton>
-                    </div>
-                </form>
-            </FormModal>
-
-            <FormModal
-                open={showCreateFromTemplateModal}
-                title="Create from Template"
-                description="Review template structure and create a new course from it."
-                onClose={closeCreateFromTemplateModal}
-                maxWidth="max-w-2xl"
-            >
-                <form onSubmit={(event) => void handleCreateCourseFromTemplate(event)} className="space-y-5">
-                    <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
-                        <p className="text-sm font-semibold text-brand-dark">{selectedTemplate?.name}</p>
-                        <p className="mt-2 text-xs text-slate-500">Pattern: {selectedTemplate?.namePattern}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                            Groups: {selectedTemplate?.defaultGroups?.map((group) => group.name).join(', ') || '-'}
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label className="block text-sm font-medium text-brand-dark">Course Code</label>
-                            <input
-                                type="text"
-                                value={createFromTemplateForm.code}
-                                onChange={(event) =>
-                                    setCreateFromTemplateForm((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))
-                                }
-                                className={inputClassName}
-                            />
-                            <InputError message={createFromTemplateErrors.code} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-brand-dark">Owner</label>
-                            <select
-                                value={createFromTemplateForm.ownerId}
-                                onChange={(event) => setCreateFromTemplateForm((prev) => ({ ...prev, ownerId: event.target.value }))}
-                                className={inputClassName}
-                            >
-                                <option value="">Select lecturer</option>
-                                {lecturers.map((lecturer) => (
-                                    <option key={lecturer.id} value={lecturer.id}>
-                                        {lecturer.name} ({lecturer.email})
-                                    </option>
-                                ))}
-                            </select>
-                            <InputError message={createFromTemplateErrors.ownerId} />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-brand-dark">Course Name</label>
-                        <input
-                            type="text"
-                            value={createFromTemplateForm.name}
-                            onChange={(event) => setCreateFromTemplateForm((prev) => ({ ...prev, name: event.target.value }))}
-                            className={inputClassName}
-                        />
-                        <InputError message={createFromTemplateErrors.name} />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-brand-dark">Course Description</label>
-                        <textarea
-                            value={createFromTemplateForm.description}
-                            onChange={(event) => setCreateFromTemplateForm((prev) => ({ ...prev, description: event.target.value }))}
-                            className={`${inputClassName} min-h-28 resize-none`}
-                        />
-                        <InputError message={createFromTemplateErrors.description} />
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <SecondaryButton onClick={closeCreateFromTemplateModal} className="flex-1">
-                            Cancel
-                        </SecondaryButton>
-                        <PrimaryButton className="flex-1" disabled={createFromTemplateProcessing}>
-                            {createFromTemplateProcessing ? (
-                                <span className="inline-flex items-center gap-2">
-                                    {buttonSpinner}
-                                    Creating...
-                                </span>
-                            ) : (
-                                'Create Course'
-                            )}
-                        </PrimaryButton>
-                    </div>
-                </form>
-            </FormModal>
         </AppLayout>
     );
 }

@@ -53,13 +53,6 @@ const SETTINGS_ITEMS: SearchResultItem[] = [
         type: 'setting',
     },
     {
-        id: 'course-templates',
-        title: 'Course Templates',
-        subtitle: 'Kelola template kursus',
-        href: '/admin/course-templates',
-        type: 'setting',
-    },
-    {
         id: 'audit-log',
         title: 'Audit Log',
         subtitle: 'Lihat log aktivitas',

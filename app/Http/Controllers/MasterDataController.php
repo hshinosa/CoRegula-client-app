@@ -115,81 +115,6 @@ class MasterDataController extends Controller
         }
     }
 
-    public function listTemplates()
-    {
-        try {
-            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/course-templates');
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('MasterDataController: connection failed listing templates', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('MasterDataController: failed to fetch templates', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to fetch templates', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
-    public function showTemplate($id)
-    {
-        try {
-            $response = $this->apiRequest()->get($this->apiUrl() . "/api/admin/course-templates/{$id}");
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('MasterDataController: connection failed fetching template', ['id' => $id, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('MasterDataController: failed to fetch template details', ['id' => $id, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to fetch template details', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
-    public function storeTemplate(Request $request)
-    {
-        try {
-            $response = $this->apiRequest()->post($this->apiUrl() . '/api/admin/course-templates', $request->all());
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('MasterDataController: connection failed creating template', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('MasterDataController: failed to create template', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to create template', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
-    public function destroyTemplate($id)
-    {
-        try {
-            $response = $this->apiRequest()->delete($this->apiUrl() . "/api/admin/course-templates/{$id}");
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('MasterDataController: connection failed deleting template', ['id' => $id, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('MasterDataController: failed to delete template', ['id' => $id, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to delete template', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
-    public function createFromTemplate(Request $request, $templateId)
-    {
-        try {
-            $response = $this->apiRequest()->post($this->apiUrl() . "/api/admin/courses/from-template/{$templateId}", $request->all());
-
-            return response()->json($response->json(), $response->status());
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('MasterDataController: connection failed creating from template', ['templateId' => $templateId, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Service unavailable', 'code' => 'SERVICE_TIMEOUT'], 503);
-        } catch (\Throwable $e) {
-            Log::error('MasterDataController: failed to create course from template', ['templateId' => $templateId, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Failed to create course from template', 'code' => 'SERVER_ERROR'], 500);
-        }
-    }
-
     public function archive($id)
     {
         try {
@@ -320,21 +245,6 @@ class MasterDataController extends Controller
             }
         } catch (\Throwable $e) {
             Log::warning('MasterDataController: failed to fetch lecturers', ['error' => $e->getMessage()]);
-        }
-
-        return [];
-    }
-
-    private function fetchTemplates(): array
-    {
-        try {
-            $response = $this->apiRequest()->get($this->apiUrl() . '/api/admin/course-templates');
-
-            if ($response->successful()) {
-                return $response->json('data') ?? [];
-            }
-        } catch (\Throwable $e) {
-            Log::warning('MasterDataController: failed to fetch templates', ['error' => $e->getMessage()]);
         }
 
         return [];

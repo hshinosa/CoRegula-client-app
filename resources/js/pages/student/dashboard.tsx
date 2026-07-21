@@ -13,7 +13,6 @@ import { LiquidGlassCard, OrganicBlob } from '@/components/Welcome/utils/helpers
 import AppLayout from '@/layouts/app-layout';
 import student from '@/routes/student';
 import { SharedData } from '@/types';
-import DataExportButton from '@/components/DataExportButton';
 
 interface StudentStats {
     enrolledCourses: number;
@@ -213,15 +212,6 @@ export default function StudentDashboard({ stats, recentActivity = [] }: Props) 
                                 />
                             </LiquidGlassCard>
 
-                            <LiquidGlassCard intensity="medium" className="p-6" lightMode={true}>
-                                <h2 className="mb-4 text-lg font-semibold font-sans text-brand-dark">
-                                    Data Pribadi
-                                </h2>
-                                <p className="mb-4 text-sm text-brand-muted-dark">
-                                    Unduh semua data pribadi Anda dalam format JSON
-                                </p>
-                                <DataExportButton />
-                            </LiquidGlassCard>
                         </motion.div>
                     </div>
                 </div>

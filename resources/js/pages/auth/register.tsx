@@ -211,10 +211,6 @@ export default function Register() {
                                     <Link href="/terms" className="font-medium text-brand-primary hover:underline">
                                         Syarat & Ketentuan
                                     </Link>
-                                    {' '}dan{' '}
-                                    <Link href="/privacy" className="font-medium text-brand-primary hover:underline">
-                                        Kebijakan Privasi
-                                    </Link>
                                     {' '}Kolabri
                                 </span>
                             </label>

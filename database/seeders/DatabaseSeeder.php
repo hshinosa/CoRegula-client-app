@@ -21,8 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            PromptTemplateSeeder::class,
-            ReflectionTemplateSeeder::class,
             MaterialsDemoSeeder::class,
             AttendanceDemoSeeder::class,
         ]);

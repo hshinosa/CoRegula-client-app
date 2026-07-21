@@ -65,19 +65,6 @@ const faqCategories: FaqCategory[] = [
             },
         ],
     },
-    {
-        label: 'Keamanan & Privasi',
-        items: [
-            {
-                question: 'Bagaimana data mahasiswa dilindungi?',
-                answer: 'Keamanan data adalah prioritas kami. Semua data dienkripsi dan disimpan secara aman. Kami mengikuti standar keamanan data akademik dan hanya menggunakan data untuk keperluan analitik pembelajaran.',
-            },
-            {
-                question: 'Siapa yang bisa melihat data analitik saya?',
-                answer: 'Data analitik hanya dapat diakses oleh dosen pengampu kelas dan admin yang berwenang. Mahasiswa bisa melihat data refleksi diri mereka sendiri.',
-            },
-        ],
-    },
 ];
 
 export default function FaqSection({ lightMode }: Props) {
